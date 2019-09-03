@@ -12,8 +12,7 @@ stages:
 setingup:
  stage: setup
  script:
-  - apt-get update --yes
-  - apt-get install --yes gcc g++ cmake ninja-build libafterimage0
+  - apt-get install --yes wget gcc g++ cmake ninja-build libafterimage0
   - wget -q https://root.cern.ch/download/root_v6.14.00.Linux-ubuntu14-x86_64-gcc4.8.tar.gz
   - tar -xf root_v6.14.00.Linux-ubuntu14-x86_64-gcc4.8.tar.gz
   - source ~/root/bin/thisroot.sh
