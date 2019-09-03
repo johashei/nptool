@@ -181,5 +181,7 @@ class THeliosPhysics : public TObject, public NPL::VDetector {
   public:
     static NPL::VDetector* Construct();
 
+ClassDef(THeliosPhysics,1)  // HeliosData structure
+
 };
 #endif
