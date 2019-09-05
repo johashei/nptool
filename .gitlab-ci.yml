@@ -1,38 +1,16 @@
 # Specify the docker image to use (only used if using docker runners)
-# See: http://doc.gitlab.com/ee/ci/docker/using_docker_images.html
-
-image: ubuntu:18.04
+# Using custom made image stored in the nptool registry on gitlab in2p3
+image: gitlab-registry.in2p3.fr/np/nptool
 
 stages:
-  - setup
   - build-NPLib
   - build-NPSimulation
   - test
-
-setingup:
- stage: setup
- script:
-  - apt-get update --yes
-  - apt-get install --yes wget gcc g++ cmake ninja-build libafterimage0
-  - cd
-  - ls
-  - wget -q https://root.cern.ch/download/root_v6.14.00.Linux-ubuntu14-x86_64-gcc4.8.tar.gz
-  - tar -xf root_v6.14.00.Linux-ubuntu14-x86_64-gcc4.8.tar.gz
-  - source root/bin/thisroot.sh
-  - wget -q http://cern.ch/geant4-data/releases/lib4.10.5.p01/Linux-g++4.8.5-CC7.tar.gz
-  - tar -xf Linux-g++4.8.5-CC7.tar.gz
-  - source Geant4-10.5.1-Linux/share/Geant4-10.5.1/geant4make/geant4make.sh
- artifacts:
-  paths:
-   - root
-   - Geant4-10.5.1-Linux
-  expire_in: 1 hour
    
-
-
 building-NPLib:
  stage: build-NPLib
  script:
+  - source nptool.sh
   - cd $NPTOOL/NPLib 
   - cmake -GNinja ./
   - ninja install 
@@ -59,5 +37,5 @@ building-NPSimulation:
 testing:
  stage: test
  script:
-  - ./scripts/RootLogon.sh 
-  - ./scripts/test/all.sh
+  - $NPTOOL/NPLib/scripts/RootLogon.sh 
+  - $NPTOOL/NPLib/scripts/test/all.sh
