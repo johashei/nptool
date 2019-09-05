@@ -10,7 +10,7 @@ stages:
 building-NPLib:
  stage: build-NPLib
  script:
-  - source /root/bin/thisroot.sh
+  - source /root_install/bin/thisroot.sh
   - source /geant4_install/share/Geant4-10.5.1/geant4make/geant4make.sh
   - source nptool.sh
   - cd $NPTOOL/NPLib 
@@ -26,7 +26,7 @@ building-NPLib:
 building-NPSimulation:
  stage: build-NPSimulation
  script:
-  - source /root/bin/thisroot.sh
+  - source /root_install/bin/thisroot.sh
   - source /geant4_install/share/Geant4-10.5.1/geant4make/geant4make.sh
   - source nptool.sh
   - cd $NPTOOL/NPSimulation 
@@ -42,7 +42,7 @@ building-NPSimulation:
 testing:
  stage: test
  script:
-  - source /root/bin/thisroot.sh
+  - source /root_install/bin/thisroot.sh
   - source /geant4_install/share/Geant4-10.5.1/geant4make/geant4make.sh
   - source nptool.sh
   - $NPTOOL/NPLib/scripts/RootLogon.sh 
