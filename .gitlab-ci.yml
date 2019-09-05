@@ -18,9 +18,9 @@ building-NPLib:
   - ninja install 
  artifacts:
   paths:
-    - lib
-    - include
-    - bin
+    - NPLib/lib
+    - NPLib/include
+    - NPLib/bin
   expire_in: 1 hour
   
 building-NPSimulation:
@@ -34,9 +34,9 @@ building-NPSimulation:
   - ninja install 
  artifacts:
   paths:
-    - lib
-    - include
-    - bin
+    - NPSimulation/lib
+    - NPSimulation/include
+    - NPSimulation/bin
   expire_in: 1 hour
 
 testing:
