@@ -3,9 +3,17 @@
 image: gitlab-registry.in2p3.fr/np/nptool
 
 stages:
+  - setup
   - build-NPLib
   - build-NPSimulation
   - test
+
+setting-up:
+ stage: setup
+ script:
+  - source /root/bin/thisroot.sh
+  - source /geant4_install/share/Geant4-10.5.1/geant4make/geant4make.sh
+  - source nptool.sh
    
 building-NPLib:
  stage: build-NPLib
