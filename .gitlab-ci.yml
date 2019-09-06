@@ -21,6 +21,8 @@ building-NPLib:
     - NPLib/lib
     - NPLib/include
     - NPLib/bin
+    - NPLib/ClassList.txt
+    - NPLib/NPLibConfig.cmake
   expire_in: 1 hour
   
 building-NPSimulation:
@@ -37,6 +39,7 @@ building-NPSimulation:
     - NPSimulation/lib
     - NPSimulation/include
     - NPSimulation/bin
+    - NPSimulation/ressources
   expire_in: 1 hour
 
 testing:
