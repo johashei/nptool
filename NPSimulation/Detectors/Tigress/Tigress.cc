@@ -588,28 +588,28 @@ void Tigress::ReadSensitive(const G4Event* event){
   HPGEHitMap = (NPS::HitsMap<G4double*>*)(event->GetHCofThisEvent()->GetHC(HPGECollectionID));
 
   // Loop on the HPGE map
-  for (HPGE_itr = HPGEHitMap->GetMap()->begin() ; HPGE_itr != HPGEHitMap->GetMap()->end() ; HPGE_itr++){
+ /*	 for (HPGE_itr = HPGEHitMap->GetMap()->begin() ; HPGE_itr != HPGEHitMap->GetMap()->end() ; HPGE_itr++){
 
 		G4double* Info = *(HPGE_itr->second);
 
-//		G4double Energy   =  Info[0]; // RandGauss::shoot(Info[0], ResoEnergy/2.334);
-//		G4double Time     =  Info[1];
-//		G4int CloverNbr   = (int)Info[7];
+		G4double Energy   =  Info[0]; // RandGauss::shoot(Info[0], ResoEnergy/2.334);
+		G4double Time     =  Info[1];
+		G4int CloverNbr   = (int)Info[7];
 		G4int CrystalNbr  = (int)Info[8];
    
 		// Figure out segment number, in progress
-		G4int SegmentNbr = 0;
+	G4int SegmentNbr = 0;
 		G4double zpos = Info[4]; // mm
 		if(fabs(zpos) < 10)                         { SegmentNbr = 2; } // MIDDLE
 		else if(CrystalNbr == 1 || CrystalNbr == 4) { SegmentNbr = 1; } // RIGHT
 		else                                        { SegmentNbr = 3; } // LEFT
-		
+	
 		//m_TigressData->SetCoreE(CloverNbr, CrystalNbr, Energy/keV);
 		//m_TigressData->SetCoreT(CloverNbr, CrystalNbr, Time/ns);
 		//m_TigressData->SetSegmentE(CloverNbr, SegmentNbr, Energy/keV);
 		//m_TigressData->SetSegmentT(CloverNbr, SegmentNbr, Time/keV);
   }
-
+*/	
   // clear map for next event
   HPGEHitMap->clear();
 }

@@ -1,0 +1,31 @@
+FROM ubuntu:19.04
+# proxy for lpccaen
+ENV http_proxy http://caeproxy.in2p3.fr:3128
+ENV https_proxy http://caeproxy.in2p3.fr:3128
+ENV ftp_proxy http://caeproxy.in2p3.fr:3128
+ENV ssl_proxy http://caeproxy.in2p3.fr:3128
+RUN apt-get -y update
+
+# general necessities
+RUN apt-get install -y cmake ninja-build gcc g++ wget git 
+
+# getting root
+RUN wget https://root.cern/download/root_v6.18.02.source.tar.gz
+RUN tar -xf root_v6.18.02.source.tar.gz -C root --strip-components 1
+RUN apt-get install -y libsm-dev libxft2-dev libxpm-dev libxext-dev libtiff-dev libpython-dev python-dev python  
+RUN mkdir root_build root_install
+RUN /bin/bash -c "cd root_build ; cmake -GNinja -DCMAKE_INSTALL_PREFIX=/root_install -Dpython=off /root"
+RUN /bin/bash -c "cd root_build ; ninja install;ninja clean"
+RUN echo "source root/bin/thisroot.sh" > .bashrc
+
+# getting geant4
+RUN wget http://cern.ch/geant4-data/releases/geant4.10.05.p01.tar.gz
+RUN mkdir geant4 geant4_build geant4_install
+RUN tar -xf geant4.10.05.p01.tar.gz -C geant4 --strip-components 1
+RUN apt-get install -y libexpat1-dev libxerces-c-dev
+RUN /bin/bash -c "cd geant4_build ; cmake -GNinja -DCMAKE_INSTALL_PREFIX=/geant4_install -DGEANT4_INSTALL_DATA=ON -DGEANT4_USE_GDML=ON /geant4"
+RUN /bin/bash -c "cd geant4_build ; ninja install;ninja clean"
+RUN echo "source geant4_install/share/Geant4-10.5.1/geant4make/geant4make.sh" >> .bashrc 
+
+# starting bash prompt
+CMD /bin/bash -rcfile .bashrc

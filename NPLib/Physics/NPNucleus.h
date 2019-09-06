@@ -51,7 +51,7 @@ namespace NPL {
     Nucleus(string isotope, const string& pathENSDF);
     Nucleus(int Z, int A);
     Nucleus(string name, vector<string> subpart, double binding,double Ex=0, string SpinParity="", double Spin=0, string Parity="", double LifeTime=-1);
-    ~Nucleus();
+    virtual ~Nucleus();
   
   public:
     void SetUp(string isotope);

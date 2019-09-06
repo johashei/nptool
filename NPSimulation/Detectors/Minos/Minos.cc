@@ -976,7 +976,7 @@ void Minos::ReadSensitive(const G4Event* ){
   
   ///////////
   // Calorimeter scorer
-  CalorimeterScorers::PS_Calorimeter* Scorer= (CalorimeterScorers::PS_Calorimeter*) m_MinosTargetScorer->GetPrimitive(0);
+//  CalorimeterScorers::PS_Calorimeter* Scorer= (CalorimeterScorers::PS_Calorimeter*) m_MinosTargetScorer->GetPrimitive(0);
   /* // decomment if interested
   unsigned int size = Scorer->GetMult(); 
   for(unsigned int i = 0 ; i < size ; i++){
@@ -1033,7 +1033,7 @@ void Minos::InitializeScorers() {
   m_MinosTargetScorer->RegisterPrimitive(InteractionMinosTargetScorer);
   m_MinosPadScorer->RegisterPrimitive(DriftElectronMinosTPCScorer);
 
-  G4VPrimitiveScorer* TPCScorer= new TPCScorers::PS_TPCCathode("MinosTPC", 0);
+  /*G4VPrimitiveScorer* TPCScorer= */ new TPCScorers::PS_TPCCathode("MinosTPC", 0);
   
   //G4VPrimitiveScorer* TPCInterScorer= new InteractionScorers::PS_Interactions("TPCInterScorer",ms_InterCoord, 0); // decomment if interested
 
