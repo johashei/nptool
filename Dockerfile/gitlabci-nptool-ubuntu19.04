@@ -31,5 +31,8 @@ RUN /bin/bash -c "cd geant4_build ; cmake -GNinja -DCMAKE_INSTALL_PREFIX=/geant4
 RUN /bin/bash -c "cd geant4_build ; ninja install;ninja clean; cd .. ; rm -rf geant4_build ; rm -rf geant4"
 RUN echo "source geant4_install/share/Geant4-10.5.1/geant4make/geant4make.sh" >> .bashrc 
 
+# creating a root folder to act as home
+RUN mkdir root
+
 # starting bash prompt
 CMD /bin/bash -rcfile .bashrc
