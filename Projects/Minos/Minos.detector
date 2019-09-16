@@ -1,23 +1,16 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %Target
-% THICKNESS= 10 micrometer
-% RADIUS=	20 mm
-% MATERIAL= CD2
+% THICKNESS= 150 mm
+% RADIUS=	28 mm
+% MATERIAL= Vacuum  
 % ANGLE= 0 deg
 % X= 0 mm
 % Y= 0 mm
-% Z= 0 mm
+% Z= 75 mm
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%Minos
-% POS = 35 35 35 cm
-% Shape= Square
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 Minos
-  R= 0 mm
-  THETA= 0 deg
-  POS = 0 0 -50 cm
-  PHI= 0 deg
-  TargetLength = 152.76 mm
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
+ POS= 0 0 0 mm
+ TargetLength= 152.76 mm
+ TargetMaterial= LH2 
+ CellMaterial= Mylar 
+ TPCOnly= 0 

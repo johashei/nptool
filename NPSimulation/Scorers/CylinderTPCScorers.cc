@@ -23,8 +23,8 @@
 using namespace CylinderTPCScorers;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-vector<AnodeData>::iterator AnodeDataVector::find(const unsigned int& Pad){
-  for(vector<AnodeData>::iterator it= m_Data.begin()  ; it !=m_Data.end() ; it++){
+vector<CathodeData>::iterator CathodeDataVector::find(const unsigned int& Pad){
+  for(vector<CathodeData>::iterator it= m_Data.begin()  ; it !=m_Data.end() ; it++){
     if((*it).GetPad()==Pad)
       return it;
   }
@@ -33,17 +33,17 @@ vector<AnodeData>::iterator AnodeDataVector::find(const unsigned int& Pad){
 
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-PS_TPCAnode::PS_TPCAnode(G4String name,vector<G4int> NestingLevel,G4int depth)
+PS_TPCCathode::PS_TPCCathode(G4String name,vector<G4int> NestingLevel,G4int depth)
 :G4VPrimitiveScorer(name, depth){
     m_NestingLevel = NestingLevel;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-PS_TPCAnode::~PS_TPCAnode(){
+PS_TPCCathode::~PS_TPCCathode(){
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-G4bool PS_TPCAnode::ProcessHits(G4Step* aStep, G4TouchableHistory*){
+G4bool PS_TPCCathode::ProcessHits(G4Step* aStep, G4TouchableHistory*){
 
     /* unsigned int mysize = m_NestingLevel.size(); */
     /* for (unsigned int i =0; i < mysize ; i++){ */
@@ -58,18 +58,16 @@ G4bool PS_TPCAnode::ProcessHits(G4Step* aStep, G4TouchableHistory*){
  
     G4int Pad = aStep->GetPreStepPoint()->GetTouchableHandle()->GetCopyNumber(0);
 
-
     // contain Enegy Time, DetNbr, StripFront and StripBack
     t_Charge = aStep->GetTrack()->GetWeight();
-    t_DriftTime = aStep->GetPreStepPoint()->GetProperTime();
-   
+    t_DriftTime = aStep->GetPreStepPoint()->GetLocalTime();    
     // Convert Pad number to X,Y position 
 
-        //For the case of replica pads
-    G4int Ring = aStep->GetPreStepPoint()->GetTouchableHandle()->GetCopyNumber(1);   
     int PadsPerRing[18]={144,152,156,164,172,176,184,192,196,204,212,216,224,228,236,244,248,256};  
-    
-    G4double R = (50.+ Ring*2.2)*mm;
+        
+      //For the case of replica pads
+    G4int Ring = aStep->GetPreStepPoint()->GetTouchableHandle()->GetCopyNumber(1);   
+    G4double R = (45.75 + 0.5 + Ring*2.1)*mm;
     G4double dPhi= (2.*M_PI/PadsPerRing[Ring]);
     G4double Phi = Pad*dPhi;
     for(int i = 0; i < Ring; i++){
@@ -77,9 +75,10 @@ G4bool PS_TPCAnode::ProcessHits(G4Step* aStep, G4TouchableHistory*){
     }
     t_Pad = Pad;
 
-        //For the case of parameterized pads
-    /*
-    t_Pad = Pad;
+        
+      //For the case of parameterized pads
+    
+/*    t_Pad = Pad;
     G4int Ring = 0;
     if  (Pad<144){
         Ring = 0;}
@@ -118,48 +117,48 @@ G4bool PS_TPCAnode::ProcessHits(G4Step* aStep, G4TouchableHistory*){
     else if (3348<=Pad && Pad<3604){
         Ring = 17;}
 
-    G4double R = (50.+ Ring*2.2)*mm;
+    G4double R = (45.2+ 0.5 + Ring*2.1)*mm;
     G4double dPhi= (2*M_PI/PadsPerRing[Ring]);
     for(int i = 0; i < Ring; i++) {
         Pad -= PadsPerRing[Ring];
     }
     G4double Phi = Pad*dPhi;
-    */
-    
+*/   
 
     t_X = R*cos(Phi);
     t_Y = R*sin(Phi);
 
-    vector<AnodeData>::iterator it;
+    vector<CathodeData>::iterator it;
     it = m_Data.find(t_Pad);
-    if(it!= m_Data.end())
+    if(it!= m_Data.end()){
       it->Add(t_Charge); 
+      it->AddChargePoint(t_Charge, t_DriftTime); 
+    } 
     else
       m_Data.Set(t_Charge,t_DriftTime,t_Pad,t_X,t_Y);
-
     return TRUE;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-void PS_TPCAnode::Initialize(G4HCofThisEvent*){
+void PS_TPCCathode::Initialize(G4HCofThisEvent*){
   m_Data.clear();
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-void PS_TPCAnode::EndOfEvent(G4HCofThisEvent*){
+void PS_TPCCathode::EndOfEvent(G4HCofThisEvent*){
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-void PS_TPCAnode::clear(){
+void PS_TPCCathode::clear(){
    m_Data.clear();
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-void PS_TPCAnode::DrawAll(){
+void PS_TPCCathode::DrawAll(){
     
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-void PS_TPCAnode::PrintAll(){
+void PS_TPCCathode::PrintAll(){
 }
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

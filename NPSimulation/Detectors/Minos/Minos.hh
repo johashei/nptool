@@ -42,6 +42,8 @@ using namespace std;
 #include "Decay.hh"
 #include "BeamReaction.hh"
 
+#include "TF1.h"
+
 class Minos : public NPS::VDetector{
   ////////////////////////////////////////////////////
   /////// Default Constructor and Destructor /////////
@@ -54,18 +56,14 @@ class Minos : public NPS::VDetector{
     /////// Specific Function of this Class ///////////
     ////////////////////////////////////////////////////
   public:
-    // Cartesian
-    void AddDetector(G4ThreeVector POS, string Shape);
-    // Spherical
-    void AddDetector(double R,double Theta,double Phi,string Shape);  
-    // With TargetLenght
-    void AddDetector(double R,double Theta,double Phi, double TargetLength);
   // With TargetLenght
-    void AddDetector(G4ThreeVector POS, double TargetLength);
+    void AddDetector(G4ThreeVector POS, double TargetLength, G4String MaterialOfTarget,G4String MaterialOfCell, int TPCOnly);
+    /* void AddDetector(G4ThreeVector POS, double TargetLength, int TPCOnly); */
  
   private:
   //For material definition
     void DefineMaterials();
+  
   public:
     void SetTargetMaterial(G4String materialChoice);
     void SetChamberMaterial(G4String materialChoice);
@@ -75,8 +73,6 @@ class Minos : public NPS::VDetector{
     void SetOuterRohacellMaterial(G4String materialChoice);
     void SetKaptonMaterial(G4String materialChoice);
 
-
-           
     G4LogicalVolume* BuildSquareDetector();
     G4LogicalVolume* BuildCylindricalDetector();
     G4LogicalVolume* BuildTarget();
@@ -93,61 +89,22 @@ class Minos : public NPS::VDetector{
  
  public:
      
-     G4double    GetTargetLength()      {return TargetLength*2.;};
-     G4Material* GetTargetMaterial()    {return TargetMaterial;};
-     
-     G4double    GetTargetRadius()      {return TargetRadius;};
+     /* G4double    GetTargetLength()      {return TargetLength*2.;}; */
+     /* G4Material* GetTargetMaterial()    {return TargetMaterial;}; */
+     /* G4double    GetTargetRadius()      {return TargetRadius;}; */
 
-  /*
-     const G4VPhysicalVolume* GetphysiWorld() {return physiWorld;};           
-     const G4VPhysicalVolume* GetTarget()     {return physiTarget;};
-     const G4VPhysicalVolume* GetChamber()    {return physiChamber;};
-     const G4VPhysicalVolume* GetTPC()        {return physiTPC;};
-     const G4VPhysicalVolume* GetWindow0()     {return physiWindow0;};
-     const G4VPhysicalVolume* GetWindow1()     {return physiWindow1;};                 
-     const G4VPhysicalVolume* GetWindow2()     {return physiWindow2;}; 
-     const G4VPhysicalVolume* GetInnerRohacell()        {return physiInnerRohacell;};
-     const G4VPhysicalVolume* GetOuterRohacell()        {return physiOuterRohacell;};
-     const G4VPhysicalVolume* GetKapton()        {return physiKapton;};
-  */
-  
   private:
      G4Material*        TargetMaterial;
-     G4double           TargetRadius;
-     G4double           TargetLength;
-
      G4Material*        WindowMaterial;
-     G4double           WindowThickness;
-     
      G4Material*        ChamberMaterial;
-     G4double           ChamberInnerRadius;
-     G4double           ChamberLength;
-     G4double           ChamberThickness;
-    
      G4Material*        InnerRohacellMaterial;
-     G4double           InnerRohacellThickness;
-
      G4Material*        OuterRohacellMaterial;
-     G4double           OuterRohacellThickness;
-     
      G4Material*        KaptonMaterial;
-     G4double           KaptonThickness;
-     
      G4Material*        TPCMaterial;
-     G4double           TPCRadiusExt;
-         
      G4Material*        defaultMaterial;
-     G4double           WorldSizeXY;
-     G4double           WorldSizeZ;
-
-     G4double           AnodeThickness;
   
     G4LogicalVolume* m_SquareDetector;
     G4LogicalVolume* m_CylindricalDetector;
-
-  // G4Box*             solidWorld;    //pointer to the solid World 
-  // G4LogicalVolume*   logicWorld;    //pointer to the logical World
-  // G4VPhysicalVolume* physiWorld;    //pointer to the physical World
 
      G4Tubs*             solidTarget;   
      G4LogicalVolume*   logicTarget;   
@@ -185,10 +142,16 @@ class Minos : public NPS::VDetector{
      G4Tubs*             solidKapton;   
      G4LogicalVolume*   logicKapton;   
   // G4VPhysicalVolume* physiKapton;   
-     
-      
-  
     
+     G4double TargetLength;
+     G4int    TPCOnly;
+
+     G4double start,end,time, DriftTime;
+     TH1F* Raw_Signal ;      
+     TH1F* Elec_Signal;
+     TF1* fa1;   
+     vector<double> Charge2, Time;
+     
     ////////////////////////////////////////////////////
     //////  Inherite from NPS::VDetector class /////////
     ////////////////////////////////////////////////////
@@ -212,10 +175,9 @@ class Minos : public NPS::VDetector{
   public:   // Scorer
     //   Initialize all Scorer used by the MUST2Array
     void InitializeScorers() ;
-
+    void SimulateGainAndDigitizer(vector<double> Q, vector<double> T);
+    
     //   Associated Scorer
-    G4MultiFunctionalDetector* m_MinosTargetScorer ;
-    G4MultiFunctionalDetector* m_MinosTPCScorer ;
     G4MultiFunctionalDetector* m_MinosPadScorer ;
   
     ////////////////////////////////////////////////////
@@ -227,113 +189,36 @@ class Minos : public NPS::VDetector{
     ////////////////////////////////////////////////////
     ///////////////Private intern Data//////////////////
     ////////////////////////////////////////////////////
-  private: // Geometry
-    // Detector Coordinate 
-    vector<double>  m_R; 
-    vector<double>  m_Theta;
-    vector<double>  m_Phi; 
+  private: 
+    
+  // Geometry
+  // Detector Coordinate 
+  vector<G4ThreeVector>  m_POS; 
+  vector<double>         m_TargetLength;
+  vector<G4String>       m_TargetMaterial;
+  vector<G4String>       m_CellMaterial;
+  vector<int>            m_TPCOnly;
 
-  //   Target Length
-    vector<double>   m_TargetLength;
-
-    // Visualisation Attribute
-    G4VisAttributes* m_VisSquare;
-    G4VisAttributes* m_VisCylinder;
-
+  // Visualisation Attribute
+  G4VisAttributes* m_VisTarget;
+  G4VisAttributes* m_VissimpleBox;
+  G4VisAttributes* m_VisTPC;
+  G4VisAttributes* m_VisInnerRohacell;
+  G4VisAttributes* m_VisOuterRohacell;
+  G4VisAttributes* m_VisOuterOuterRohacell;
+  G4VisAttributes* m_VisKapton;
+  G4VisAttributes* m_VisTargetCell;
+  G4VisAttributes* m_VisOuterKapton;
 
   private:
-    // Region were reaction can occure:
-    G4Region* m_ReactionRegion;
-    vector<G4VFastSimulationModel*> m_ReactionModel;
-
+    
+  // Region were reaction can occure:
+  G4Region* m_ReactionRegion;
+  vector<G4VFastSimulationModel*> m_ReactionModel;
 
   // Needed for dynamic loading of the library
   public:
     static NPS::VDetector* Construct();
 };
-
-class PadParameterisation : public G4VPVParameterisation
-{
- public:
- PadParameterisation(){};
- ~PadParameterisation(){};
- void ComputeTransformation(const G4int copyNo, G4VPhysicalVolume* physVol) const{
-   // Note: copyNo will start with zero!
-    int PadsPerRing[18]={144,152,156,164,172,176,184,192,196,204,212,216,224,228,236,244,248,256};  
-    G4int Ring = 0;
-    if  (copyNo<144){
-        Ring = 0;}
-    else if (144<=copyNo && copyNo<296){
-        Ring = 1;}
-    else if (296<=copyNo && copyNo<452){
-        Ring = 2;}
-    else if (452<=copyNo && copyNo<616){
-        Ring = 3;}
-    else if (616<=copyNo && copyNo<788){
-        Ring = 4;}
-    else if (788<=copyNo && copyNo<964){
-        Ring = 5;}
-    else if (964<=copyNo && copyNo<1148){
-        Ring = 6;}
-    else if (1148<=copyNo && copyNo<1340){
-        Ring = 7;}
-    else if (1340<=copyNo && copyNo<1536){
-        Ring = 8;}
-    else if (1536<=copyNo && copyNo<1740){
-        Ring = 9;}
-    else if (1740<=copyNo && copyNo<1952){
-        Ring = 10;}
-    else if (1952<=copyNo && copyNo<2168){
-        Ring = 11;}
-    else if (2168<=copyNo && copyNo<2392){
-        Ring = 12;}
-    else if (2392<=copyNo && copyNo<2620){
-        Ring = 13;}
-    else if (2620<=copyNo && copyNo<2856){
-        Ring = 14;}
-    else if (2856<=copyNo && copyNo<3100){
-        Ring = 15;}
-    else if (3100<=copyNo && copyNo<3348){
-        Ring = 16;}
-    else if (3348<=copyNo && copyNo<3604){
-        Ring = 17;}
- 
-    G4double R = (45.2+ (Ring+0.5)*2.1)*mm;
-    G4double dPhi= (2.*M_PI/PadsPerRing[Ring]);
-
-    G4double Phi = copyNo*dPhi;
-    G4double Xposition = R*cos(Phi);
-    G4double Yposition = R*sin(Phi);
-    G4ThreeVector origin(Xposition,Yposition,0);
-    physVol->SetTranslation(origin);
-    //Rotation for trapezes
-    G4RotationMatrix* Rot = new G4RotationMatrix();
-    Rot->rotateY(-90*deg);
-    Rot->rotateX(+Phi);
-    physVol->SetRotation(Rot);
-    //Rotation for boxes
-    /* G4RotationMatrix* Rot2 = new G4RotationMatrix(); */
-    /* Rot2->rotateZ(-20*deg); */
-    /* physVol->SetRotation(Rot2); */
- } 
-
-}; 
-
-
-
-/* class PadParameterisation : public G4VPVParameterisation */
-/* { */
-
-/*   public: */
-
-/*       PadParameterisation();//G4int NoPads, G4double StartZ, G4double Spacing); */
-
-/*     ~PadParameterisation(); */
-     
-/*     void ComputeTransformation(const G4int copyNo, */
-/*                              G4VPhysicalVolume *physVol) const; */
-   
-/* }; */
-
 
 #endif

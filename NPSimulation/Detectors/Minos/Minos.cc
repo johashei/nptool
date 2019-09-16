@@ -56,12 +56,10 @@
 
 // NPTool header
 #include "Minos.hh"
-#include "CalorimeterScorers.hh"
 #include "InteractionScorers.hh"
-#include "TPCScorers.hh"
+/* #include "TPCScorers.hh" */
 #include "CylinderTPCScorers.hh"
 
-#include "RootOutput.h"
 #include "MaterialManager.hh"
 #include "NPSDetectorFactory.hh"
 #include "NPOptionManager.h"
@@ -70,38 +68,64 @@
 // CLHEP header
 #include "CLHEP/Random/RandGauss.h"
 
+// ROOT
+#include "TH1F.h"
+#include "TF1.h"
+#include "RootOutput.h"
+
 using namespace std;
 using namespace CLHEP;
 
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 namespace Minos_NS{
-  // Energy and time Resolution
-  const double EnergyThreshold = 0.1*MeV;
-  const double ResoTime = 4.5*ns ;
-  const double ResoEnergy = 1.0*MeV ;
-  const double Radius = 50*mm ; 
-  const double Width = 100*mm ;
-  const double Thickness = 300*mm ;
-  const string Material = "BC400";
+
+  // TPC
+  const G4double  ChamberInnerRadius      = 37.*mm; 
+  const G4double  ChamberThickness        = 2.*mm; 
+  const G4double  ChamberLength           = 300.*mm;
+  const G4double  InnerRohacellThickness  = 1.*mm; 
+  const G4double  KaptonThickness         = 0.125*mm; 
+  const G4double  OuterRohacellThickness  = 2.*mm;
+  const G4double  TPCRadiusExt            = 91.525*mm;
+
+  // MINOS
+  const G4double  TargetRadius            =  28.*mm; 
+  const G4double  WindowThickness         = 0.150*mm;
 
 }
+
+using namespace Minos_NS;
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 // Minos Specific Method
 Minos::Minos(){
   m_Event = new TMinosData() ;
-  m_MinosTargetScorer = 0;
-  m_MinosTPCScorer = 0;
   m_MinosPadScorer = 0;
-  m_SquareDetector = 0;
-  m_CylindricalDetector = 0;
   m_ReactionRegion=NULL;
 
   // RGB Color + Transparency
-  m_VisSquare = new G4VisAttributes(G4Colour(0, 1, 0, 0.5));   
-  m_VisCylinder = new G4VisAttributes(G4Colour(0, 0, 1, 0.5));   
+  m_VisTarget= new G4VisAttributes(G4Colour(0.6,1.,1., .4));
+  m_VissimpleBox= new G4VisAttributes(G4Colour(0,1,0,.6));
+  m_VisTPC= new G4VisAttributes(G4Colour(1.,0.5,0.6,0.3));
+  m_VisInnerRohacell= new G4VisAttributes(G4Colour(1.,1.,1., .3));
+  m_VisOuterRohacell= new G4VisAttributes(G4Colour(1.,1.,1., .4));
+  m_VisOuterOuterRohacell= new G4VisAttributes(G4Colour(1.,1.,1., .8));
+  m_VisKapton = new G4VisAttributes(G4Colour(1.,1.,0.6,0.4));
+  m_VisTargetCell = new G4VisAttributes(G4Colour(0,0,1, .4));
+  m_VisTargetCell->SetForceSolid(true);
+  m_VisOuterKapton = new G4VisAttributes(G4Colour(1.,1.,0.6,0.8));
+  
+  Raw_Signal = new TH1F("raw_Signal","raw_Signal",350,0,350);  // 30ns per bin
+  Elec_Signal = new TH1F("Elec_Signal","Elec_Signal",350,0,350);
+ 
+/*  Raw_Signal = new TH1F;*/
+/*  Elec_Signal = new TH1F;*/
+
+  
+  fa1 = new TF1("fa1","[0]*exp(-3.*(x-[1])/[2]) * sin((x-[1])/[2]) * pow((x-[1])/[2], 3)",0,1000);
+  
   solidTarget=0;   
   logicTarget=0;   
   solidChamber=0;  
@@ -125,37 +149,19 @@ Minos::Minos(){
 Minos::~Minos(){
 }
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-void Minos::AddDetector(G4ThreeVector POS, double TargetLength){
-  // Convert the POS value to R theta Phi as Spherical coordinate is easier in G4 
-  m_R.push_back(POS.mag());
-  m_Theta.push_back(POS.theta());
-  m_Phi.push_back(POS.phi());
-  m_TargetLength.push_back(TargetLength);
+
+
+
+/* void Minos::AddDetector(G4ThreeVector POS, double LengthOfTarget, int PresenceOfMinos){ */
+void Minos::AddDetector(G4ThreeVector POS, double LengthOfTarget, G4String MaterialOfTarget,G4String MaterialOfCell, int PresenceOfMinos){
+  m_POS.push_back(POS);
+  m_TargetLength.push_back(LengthOfTarget);
+  m_TargetMaterial.push_back(MaterialOfTarget);
+  m_CellMaterial.push_back(MaterialOfCell);
+  m_TPCOnly.push_back(PresenceOfMinos);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-void Minos::AddDetector(double  R, double  Theta, double  Phi, double TargetLength){
-  m_R.push_back(R);
-  m_Theta.push_back(Theta);
-  m_Phi.push_back(Phi);
-  m_TargetLength.push_back(TargetLength);
-}
-
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-// G4LogicalVolume* Minos::BuildSquareDetector(){
-//   if(!m_SquareDetector){
-//     G4Box* box = new G4Box("Minos_Box",Minos_NS::Width*0.5,
-//         Minos_NS::Width*0.5,Minos_NS::Thickness*0.5);
-
-//     G4Material* DetectorMaterial = MaterialManager::getInstance()->GetMaterialFromLibrary(Minos_NS::Material);
-//     m_SquareDetector = new G4LogicalVolume(box,DetectorMaterial,"logic_Minos_Box",0,0,0);
-//     m_SquareDetector->SetVisAttributes(m_VisSquare);
-//     m_SquareDetector->SetSensitiveDetector(m_MinosTargetScorer);
-//   }
-//   return m_SquareDetector;
-// }
-
 
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -174,7 +180,6 @@ void Minos::DefineMaterials()
   // define Elements
   //
 
-
   G4Element* H  = new G4Element("Hydrogen",symbol="H" , z= 1., a= 1.01*g/mole);
   G4Element* C  = new G4Element("Carbon"  ,symbol="C" , z= 6., a= 12.01*g/mole);
   G4Element* F  = new G4Element("Fluorin"  ,symbol="F" , z= 9., a= 19.0*g/mole);
@@ -184,14 +189,11 @@ void Minos::DefineMaterials()
   G4Element* Fe = new G4Element("Fer",symbol="Fe" , z= 26., a= 55.9*g/mole);
   G4Element* Cr = new G4Element("Chrome",symbol="Cr" , z= 24., a= 52.*g/mole);
 
-
   new G4Material("Aluminium", z=13., a=26.98*g/mole, density=2.700*g/cm3);
   new G4Material("liquidArgon", z=18., a= 39.95*g/mole, density= 1.390*g/cm3);
   new G4Material("Lead"     , z=82., a= 207.19*g/mole, density= 11.35*g/cm3);
   new G4Material("Silicium", z=14., a=28.09*g/mole, density=2.330*g/cm3);
   new G4Material("Titanium", z=22., a=47.87*g/mole, density=4.510*g/cm3);
-
-
 
   G4Material* iso = new G4Material("isobutane", density=0.002506*g/cm3, ncomponents=2);
   iso->AddElement(C, natoms=4);
@@ -215,11 +217,12 @@ void Minos::DefineMaterials()
   G4MaterialPropertiesTable* MPT = new G4MaterialPropertiesTable();      
   MPT->AddConstProperty("DE_PAIRENERGY",30*eV);
   MPT->AddConstProperty("DE_ABSLENGTH",10*pc); 
-  MPT->AddConstProperty("DE_DRIFTSPEED",11*cm/microsecond);
-  MPT->AddConstProperty("DE_TRANSVERSALSPREAD",50e-5*mm2/ns);
-  MPT->AddConstProperty("DE_LONGITUDINALSPREAD",50e-5*mm2/ns);
+  MPT->AddConstProperty("DE_DRIFTSPEED",3.6*cm/microsecond);
+  MPT->AddConstProperty("DE_TRANSVERSALSPREAD",7e-5*mm2/ns);
+  MPT->AddConstProperty("DE_LONGITUDINALSPREAD",7e-5*mm2/ns);
+  /* MPT->AddConstProperty("DE_TRANSVERSALSPREAD",7e-15*mm2/ns); */
+  /* MPT->AddConstProperty("DE_LONGITUDINALSPREAD",7e-15*mm2/ns); */
   mix->SetMaterialPropertiesTable(MPT);
-
 
   G4Material* Ar_CF4_95_5 = 
     new G4Material("Ar_CF4_95_5", density= 0.0017611*g/cm3, ncomponents=2);
@@ -248,7 +251,6 @@ void Minos::DefineMaterials()
   G4Material* LH2 = 
     new G4Material("LH2", density= 0.07293*g/cm3, ncomponents=1);
   LH2->AddElement(H, natoms=2);
-
   G4Material* Myl = 
     new G4Material("Mylar", density= 1.397*g/cm3, ncomponents=3);
   Myl->AddElement(C, natoms=10);
@@ -267,11 +269,15 @@ void Minos::DefineMaterials()
   Air->AddElement(O, fractionmass=0.21);
   Air->AddElement(Ar, fractionmass=0.009);
 
+  /* G4Material* Vacuum = */
+    /* new G4Material("Vacuum", z=1., a=1.01*g/mole,density= universe_mean_density, */
+        /* kStateGas, 2.73*kelvin, 3.e-18*pascal); */ 
 
   G4Material* Vacuum =
-    new G4Material("Galactic", z=1., a=1.01*g/mole,density= universe_mean_density,
-        kStateGas, 2.73*kelvin, 3.e-18*pascal);
-
+    new G4Material("Vacuum", density= universe_mean_density, ncomponents=2);
+  Vacuum-> AddElement(N,.7);
+  Vacuum-> AddElement(O,.3);
+    
   G4Material* beam = 
     new G4Material("Beam", density= 1.e-5*g/cm3, ncomponents=1,
         kStateGas, STP_Temperature, 2.e-2*bar);
@@ -296,9 +302,7 @@ void Minos::DefineMaterials()
   Rohacell->AddElement(H, fractionmass=0.0805);
   Rohacell->AddElement(O, fractionmass=0.3154);
   Rohacell->AddElement(N, fractionmass=0.00276);
-
-  //G4cout << *(G4Material::GetMaterialTable()) << G4endl;
-
+    
   //default materials of the World
   defaultMaterial  = Vacuum;
 }
@@ -350,23 +354,6 @@ void Minos::SetKaptonMaterial(G4String materialChoice)
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-G4LogicalVolume* Minos::BuildCylindricalDetector(){
-  if(!m_CylindricalDetector){
-    /*
-       G4Tubs* tub = new G4Tubs("Minos_Cyl",0,Minos_NS::Radius,Minos_NS::Thickness*0.5,0,360*deg);
-
-       G4Material* DetectorMaterial = MaterialManager::getInstance()->GetMaterialFromLibrary(Minos_NS::Material);
-       m_CylindricalDetector = new G4LogicalVolume(tub,DetectorMaterial,"logic_Minos_tub",0,0,0);
-       m_CylindricalDetector->SetVisAttributes(m_VisSquare);
-       m_CylindricalDetector->SetSensitiveDetector(m_MinosScorer);
-       */
-
-
-  }
-  return m_CylindricalDetector;
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 // Below are vis attributes that permits someone to test / play 
 // with the interactive expansion / contraction geometry system of the
@@ -378,27 +365,16 @@ G4LogicalVolume* Minos::BuildTarget(){
     //                               
     // Target
     //  
-    solidTarget=0; logicTarget=0; /*physiTarget=0;*/
-    solidChamber=0; logicChamber=0; /*physiChamber=0;*/
-    solidTPC=0; logicTPC=0; /*physiTPC=0;*/
-
     solidTarget = new G4Tubs("Target",		//its name
-        0.,TargetRadius,TargetLength,0,360.);//size
-
+        0.,TargetRadius,TargetLength/2.,0,360.);//size
     logicTarget = new G4LogicalVolume(solidTarget,	//its solid
         TargetMaterial,	//its material
         "Target");	//its name    
-
-
-    {G4VisAttributes* atb= new G4VisAttributes(G4Colour(0.6,1.,1., .4));
-      //atb->SetForceSolid(true);
-      logicTarget->SetVisAttributes(atb);}
-    //logicTarget->SetSensitiveDetector(m_MinosTargetScorer);
-
-
+    logicTarget->SetVisAttributes(m_VisTarget);
   }
   return logicTarget;
 }
+
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 G4LogicalVolume* Minos::BuildChamber(){
   if(!logicChamber){
@@ -406,16 +382,12 @@ G4LogicalVolume* Minos::BuildChamber(){
     // Chamber
     //
     solidChamber = new G4Tubs("Chamber",			//its name
-        ChamberInnerRadius,ChamberInnerRadius+ChamberThickness,ChamberLength,0,360.); //size
-
+        ChamberInnerRadius,ChamberInnerRadius+ChamberThickness,ChamberLength/2.,0,360.); //size
     logicChamber = new G4LogicalVolume(solidChamber,	//its solid
         ChamberMaterial,	//its material
         "Chamber");	//its name                               
-
-    {G4VisAttributes* simpleBoxVisAtt= new G4VisAttributes(G4Colour(0,1,0,.6));
-      simpleBoxVisAtt->SetVisibility(true);
-      logicChamber->SetVisAttributes(simpleBoxVisAtt);}
-
+    m_VissimpleBox->SetVisibility(true);
+    logicChamber->SetVisAttributes(m_VissimpleBox);
   }
   return logicChamber;
 }
@@ -426,16 +398,11 @@ G4LogicalVolume* Minos::BuildInnerRohacell(){
     // Inner Rohacell
     //
     solidInnerRohacell = new G4Tubs("InnerRohacell",			//its name
-        ChamberInnerRadius /*+ ChamberThickness*/,ChamberInnerRadius + ChamberThickness+InnerRohacellThickness,ChamberLength,0,360.); //size
-
+        ChamberInnerRadius /*+ ChamberThickness*/,ChamberInnerRadius + ChamberThickness+InnerRohacellThickness,ChamberLength/2.,0,360.); //size
     logicInnerRohacell = new G4LogicalVolume(solidInnerRohacell,	//its solid
         InnerRohacellMaterial,	//its material
         "InnerRohacell");	//its name
-
-    G4VisAttributes* atb= new G4VisAttributes(G4Colour(1.,1.,1., .3));
-      logicInnerRohacell->SetVisAttributes(atb);
-
-
+    logicInnerRohacell->SetVisAttributes(m_VisInnerRohacell);
   }
   return logicInnerRohacell;
 }
@@ -446,16 +413,12 @@ G4LogicalVolume* Minos::BuildOuterRohacell(){
     // Outer Rohacell
     //
     solidOuterRohacell = new G4Tubs("OuterRohacell",			//its name
-        ChamberInnerRadius /*+ ChamberThickness + InnerRohacellThickness + KaptonThickness*/,ChamberInnerRadius + ChamberThickness + InnerRohacellThickness + KaptonThickness+OuterRohacellThickness,ChamberLength,0,360.); //size
+        ChamberInnerRadius /*+ ChamberThickness + InnerRohacellThickness + KaptonThickness*/,ChamberInnerRadius + ChamberThickness + InnerRohacellThickness + KaptonThickness+OuterRohacellThickness,ChamberLength/2.,0,360.); //size
 
     logicOuterRohacell = new G4LogicalVolume(solidOuterRohacell,	//its solid
         OuterRohacellMaterial,	//its material
         "OuterRohacell");	//its name
-
-    G4VisAttributes* atb= new G4VisAttributes(G4Colour(1.,1.,1., .4));
-      logicOuterRohacell->SetVisAttributes(atb);
-
-    
+    logicOuterRohacell->SetVisAttributes(m_VisOuterRohacell);
   }
   return logicOuterRohacell;
 }
@@ -467,16 +430,12 @@ G4LogicalVolume* Minos::BuildOuterOuterRohacell(){
     // Outer Rohacell
     //
     solidOuterRohacell = new G4Tubs("OuterRohacell",			//its name
-        TPCRadiusExt-OuterRohacellThickness-KaptonThickness, TPCRadiusExt ,ChamberLength,0,360.); //size
+        TPCRadiusExt-OuterRohacellThickness-KaptonThickness, TPCRadiusExt ,ChamberLength/2.,0,360.); //size
 
     logicOuterRohacell = new G4LogicalVolume(solidOuterRohacell,	//its solid
         OuterRohacellMaterial,	//its material
         "OuterRohacell");	//its name
-
-    G4VisAttributes* atb= new G4VisAttributes(G4Colour(1.,1.,1., .8));
-      logicOuterRohacell->SetVisAttributes(atb);
-
-    
+    logicOuterRohacell->SetVisAttributes(m_VisOuterOuterRohacell);
   }
   return logicOuterRohacell;
 }
@@ -490,15 +449,11 @@ G4LogicalVolume* Minos::BuildKapton(){
     // Kapton
     //
     solidKapton = new G4Tubs("Kapton",			//its name
-        ChamberInnerRadius+ ChamberThickness +InnerRohacellThickness ,ChamberInnerRadius + ChamberThickness+InnerRohacellThickness+KaptonThickness,ChamberLength,0,360.); //size
-
+        ChamberInnerRadius+ ChamberThickness +InnerRohacellThickness ,ChamberInnerRadius + ChamberThickness+InnerRohacellThickness+KaptonThickness,ChamberLength/2.,0,360.); //size
     logicKapton = new G4LogicalVolume(solidKapton,	//its solid
         KaptonMaterial,	//its material
         "Kapton");	//its name
-
-
-    G4VisAttributes* atb= new G4VisAttributes(G4Colour(1.,1.,0.6,0.4));
-      logicKapton->SetVisAttributes(atb);
+    logicKapton->SetVisAttributes(m_VisKapton);
   }
 
   
@@ -511,16 +466,12 @@ G4LogicalVolume* Minos::BuildOuterKapton(){
     // Kapton
     //
     solidKapton = new G4Tubs("Kapton",			//its name
-        TPCRadiusExt-OuterRohacellThickness-KaptonThickness, TPCRadiusExt-OuterRohacellThickness,ChamberLength,0,360.); //size
+        TPCRadiusExt-OuterRohacellThickness-KaptonThickness, TPCRadiusExt-OuterRohacellThickness,ChamberLength/2.,0,360.); //size
 
     logicKapton = new G4LogicalVolume(solidKapton,	//its solid
         KaptonMaterial,	//its material
         "Kapton");	//its name
-
-
-    G4VisAttributes* atb= new G4VisAttributes(G4Colour(1.,1.,0.6,0.8));
-      logicKapton->SetVisAttributes(atb);
-      // logicKapton->SetSensitiveDetector(m_MinosTPCScorer);  // decomment this and coment line logicTPC->SetSensitiveDetector(m_MinosTPCScorer); to see only kaptonOuter
+      logicKapton->SetVisAttributes(m_VisOuterKapton);
   }
 
   
@@ -531,19 +482,13 @@ G4LogicalVolume* Minos::BuildTPC(){
   if(!logicTPC){
     //                               
     // TPC
-
-    solidTPC = new G4Tubs("TPC",		//its name
-        ChamberInnerRadius /*+ ChamberThickness + InnerRohacellThickness + KaptonThickness + OuterRohacellThickness*/,TPCRadiusExt,ChamberLength,0,360.); 
-
+    //
+    solidTPC = new G4Tubs("TPC",
+        ChamberInnerRadius /*+ ChamberThickness + InnerRohacellThickness + KaptonThickness + OuterRohacellThickness*/,TPCRadiusExt,ChamberLength/2.,0,360.); 
     logicTPC = new G4LogicalVolume(solidTPC,    //its solid
         TPCMaterial, //its material
         "TPC"); //name
-
-
-    {G4VisAttributes* atb= new G4VisAttributes(G4Colour(1.,0.5,0.6,0));
-      logicTPC->SetVisAttributes(atb);}
-    //logicTPC->SetSensitiveDetector(m_MinosTPCScorer); // decomment if interested
-
+    logicTPC->SetVisAttributes(m_VisTPC);
   }
   return logicTPC;
 }
@@ -557,59 +502,47 @@ G4LogicalVolume* Minos::BuildTPC(){
 G4LogicalVolume* Minos::BuildWindow0(){
   if(!logicWindow0){
     solidWindow0 = new G4Tubs("WindowTube",		//its name
-        0./*TargetRadius*/,TargetRadius+WindowThickness*2.,TargetLength+WindowThickness*2.,0,360.);   // WindowThickness*2. it is multiply by 2 because because it was divided by 2 
-
+        0.,TargetRadius+WindowThickness,TargetLength/2.+WindowThickness,0,360.);  
+    
     logicWindow0 = new G4LogicalVolume(solidWindow0,    //its solid
         WindowMaterial, //its material
         "WindowTube"); //name
-
-    {G4VisAttributes* atb= new G4VisAttributes(G4Colour(0,0,1, .4));
-      atb->SetForceSolid(true);
-      logicWindow0->SetVisAttributes(atb);}
-
-
-
+    logicWindow0->SetVisAttributes(m_VisTargetCell);
   }
   return logicWindow0;
 }
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+
 G4LogicalVolume* Minos::BuildWindow1(){
   if(!logicWindow1){
     solidWindow1 = new G4Tubs("WindowEntrance",		//its name
-        0.,TargetRadius+2.*WindowThickness,WindowThickness,0,360.); 
-
+        0.,TargetRadius+WindowThickness,WindowThickness,0,360.); 
    
     logicWindow1 = new G4LogicalVolume(solidWindow1,    //its solid
         WindowMaterial, //its material
         "WindowEntrance"); //name
-
-    {G4VisAttributes* atb= new G4VisAttributes(G4Colour(0,0,1, .4));
-      atb->SetForceSolid(true);
-      logicWindow1->SetVisAttributes(atb);} 
-
-
+      logicWindow1->SetVisAttributes(m_VisTargetCell); 
   }
   return logicWindow1;
 }
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
 G4LogicalVolume* Minos::BuildWindow2(){
   if(!logicWindow2){
     solidWindow2 = new G4Tubs("WindowOutcoming",		//its name
-        0.,TargetRadius+2.*WindowThickness,WindowThickness,0,360.); 
+        0.,TargetRadius+WindowThickness,WindowThickness,0,360.); 
 
     logicWindow2 = new G4LogicalVolume(solidWindow2,    //its solid
         WindowMaterial, //its material
         "WindowOutcoming"); //name
-
-    {G4VisAttributes* atb= new G4VisAttributes(G4Colour(0,0,1, .4));
-      atb->SetForceSolid(true);
-      logicWindow2->SetVisAttributes(atb);} 
-
+    logicWindow2->SetVisAttributes(m_VisTargetCell); 
   }
   return logicWindow2;
 }
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo.....
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 // Virtual Method of NPS::VDetector class
 
@@ -621,25 +554,20 @@ void Minos::ReadConfiguration(NPL::InputParser parser){
     cout << "//// " << blocks.size() << " detectors found " << endl; 
 
   vector<string> cart = {"POS","TargetLength"};
-  vector<string> sphe = {"R","Theta","Phi","TargetLength"};
 
   for(unsigned int i = 0 ; i < blocks.size() ; i++){
     if(blocks[i]->HasTokenList(cart)){
       if(NPOptionManager::getInstance()->GetVerboseLevel())
         cout << endl << "////  Minos " << i+1 <<  endl;
-
-      G4ThreeVector Pos = NPS::ConvertVector(blocks[i]->GetTVector3("POS","mm"));
-       TargetLength = blocks[i]->GetDouble("TargetLength","mm");
-      AddDetector(Pos,TargetLength);
-    }
-    else if(blocks[i]->HasTokenList(sphe)){
-      if(NPOptionManager::getInstance()->GetVerboseLevel())
-        cout << endl << "////  Minos " << i+1 <<  endl;
-      double R = blocks[i]->GetDouble("R","mm");
-      double Theta = blocks[i]->GetDouble("Theta","deg");
-      double Phi = blocks[i]->GetDouble("Phi","deg");
-       TargetLength = blocks[i]->GetDouble("TargetLength","mm");
-      AddDetector(R,Theta,Phi,TargetLength);
+        
+        G4ThreeVector Pos = NPS::ConvertVector(blocks[i]->GetTVector3("POS","mm"));
+        TargetLength = blocks[i]->GetDouble("TargetLength","mm");
+        G4String TargetMaterialname = blocks[i]->GetString("TargetMaterial");
+        G4String CellMaterial = blocks[i]->GetString("CellMaterial");
+        TPCOnly = blocks[i]->GetInt("TPCOnly");
+        AddDetector(Pos,TargetLength,TargetMaterialname, CellMaterial, TPCOnly);
+        /* AddDetector(Pos,TargetLength, TPCOnly); */
+      
     }
     else{
       cout << "ERROR: check your input file formatting " << endl;
@@ -653,60 +581,29 @@ void Minos::ReadConfiguration(NPL::InputParser parser){
 // Construct detector and inialise sensitive part.
 // Called After DetecorConstruction::AddDetector Method
 void Minos::ConstructDetector(G4LogicalVolume* world){
-  for (unsigned short i = 0 ; i < m_R.size() ; i++) {
-    TargetRadius = 28.*mm; TargetLength = m_TargetLength[i]/2.;
-    m_TargetLength[i] = m_TargetLength[i]/2.;
-    
-    ChamberInnerRadius = 37.*mm; ChamberThickness = 2.*mm; 
-    ChamberLength = 300./2.*mm;
-    
-    InnerRohacellThickness = 1.*mm; KaptonThickness = 0.125*mm; OuterRohacellThickness = 2.*mm;
-    TPCRadiusExt = 91.525*mm;
-
-    WindowThickness = 0.150/2.*mm;
-
-    AnodeThickness = 10*mm;
+  for (unsigned short i = 0 ; i < m_POS.size() ; i++) {
+    TargetLength = m_TargetLength[i]; 
+    TPCOnly = m_TPCOnly[i];
 
     DefineMaterials();
 
-    SetTargetMaterial("LH2");  
+    SetTargetMaterial(m_TargetMaterial[i]);  
     SetChamberMaterial("Inox");
     SetTPCMaterial("mix"); 
-    SetWindowMaterial("Mylar");  
+    SetWindowMaterial(m_CellMaterial[i]);  
     SetKaptonMaterial("Kapton");  
     SetInnerRohacellMaterial("Rohacell");
     SetOuterRohacellMaterial("Rohacell");
 
-    G4double wX = m_R[i] * sin(m_Theta[i] ) * cos(m_Phi[i] ) ;
-    G4double wY = m_R[i] * sin(m_Theta[i] ) * sin(m_Phi[i] ) ;
-    G4double wZ = m_R[i] * cos(m_Theta[i] ) ;
-    G4ThreeVector Det_pos = G4ThreeVector(wX, wY, wZ) ;
-    // So the face of the detector is at R instead of the middle
-    Det_pos+=Det_pos.unit()*Minos_NS::Thickness*0.5;       
-    // Building Detector reference frame
-    G4double ii = cos(m_Theta[i]) * cos(m_Phi[i]);
-    G4double jj = cos(m_Theta[i]) * sin(m_Phi[i]);
-    G4double kk = -sin(m_Theta[i]);
-    G4ThreeVector Y(ii,jj,kk);
-    G4ThreeVector w = Det_pos.unit();
-    G4ThreeVector u = w.cross(Y);
-    G4ThreeVector v = w.cross(u);
-    v = v.unit();
-    u = u.unit();
-
-    /* G4RotationMatrix* Rot = new G4RotationMatrix(u,v,w); */
-
-    // if(m_Shape[i] == "Cylindrical"){
-    //   // new G4PVPlacement(G4Transform3D(*Rot,Det_pos),
-    //   //  BuildCylindricalDetector(),
-    //   //  "Minos",world,false,i+1);
-    // }
-    // else if(m_Shape[i] == "Square"){
-
-    // }
-
+    G4ThreeVector Det_pos = m_POS[i] ;
+    
+    double MinosX = Det_pos.x();    
+    double MinosY= Det_pos.y();    
+    double MinosZ = Det_pos.z() + m_TargetLength[i]/2. ;    
+    
     new G4PVPlacement(0,//its name
-        G4ThreeVector(wX,wY, wZ + ChamberLength - m_TargetLength[i]-WindowThickness*2. - 5*mm ),	// Z positioning putting TPC beginn and Target beginning w/ difference of 5mm 
+        G4ThreeVector(0,0,+ChamberLength/2 ),	
+        /* G4ThreeVector(wX,wY, wZ + ChamberLength - m_TargetLength[i]-WindowThickness*2. - 5*mm ),	// Z positioning putting TPC beginn and Target beginning w/ difference of 5mm */ 
         BuildTPC(),	//its logical volume
         "TPC",	//its name
         world,	//its mother  volume
@@ -718,8 +615,7 @@ void Minos::ConstructDetector(G4LogicalVolume* world){
     G4ElectricField* field = new G4UniformElectricField(G4ThreeVector(0.0,0.0,200*volt/cm));
     // Create an equation of motion for this field
     G4EqMagElectricField*  Equation = new G4EqMagElectricField(field); 
-    G4MagIntegratorStepper* Stepper = new G4ClassicalRK4( Equation, 8 );       
-
+    G4MagIntegratorStepper* Stepper = new G4ClassicalRK4( Equation, 8 );
     // Get the global field manager 
     G4FieldManager* FieldManager= new G4FieldManager();
     // Set this field to the global field manager 
@@ -738,88 +634,43 @@ void Minos::ConstructDetector(G4LogicalVolume* world){
     
  ///////// CONSTRUCT PADS using parametrized volumes or replica (uncomment the correct section) 
     
-    //// Using parametrized volumes
-    
-    /* G4double InnerRadius = 45*mm; */ 
-    /* G4double OuterRadius = 88.46*mm; */ 
-    /* // Volume where Pads are placed */ 
-    /* G4Tubs* solidAnode = new G4Tubs("Anode", */	
-    /*     InnerRadius, OuterRadius, 1.2*mm,0,360*deg); */
-    /* G4LogicalVolume* logicAnode = new G4LogicalVolume(solidAnode, */
-    /*     TPCMaterial, */ 
-    /*     "Anode"); */
-    /* new G4PVPlacement(0, */		
-    /*         G4ThreeVector(0,0,-ChamberLength+2*mm), */
-    /*     logicAnode,	//its logical volume */
-    /*     "Anode",	//its name */
-    /*     logicTPC,	//its mother  volume */
-    /*     false,		//no boolean operation */
-    /*     0);		//copy number */
-    /* {G4VisAttributes* atb= new G4VisAttributes(G4Colour(1., 1., 0.,0.1)); */
-    /* logicAnode->SetVisAttributes(atb);} */
-    
-    /* // Volume of One Pad */
-        
-    /*     //Box Pad */
-    /* /1* G4Box* solidPad = new G4Box("Pad", 1.0*mm,1.0*mm,1.0*mm); *1/ */
-    /* /1* G4LogicalVolume* logicPad = new G4LogicalVolume(solidPad, Cu,"Pad"); *1/ */
-
-    /*     //Trapez Pad */
-    /* G4Trd* solidPad = new G4Trd("Pad",0.97,0.97,0.97,1.01,1.04); */
-    /* G4LogicalVolume* logicPad = new G4LogicalVolume(solidPad, Cu,"Pad"); */
-
-    /* {G4VisAttributes* atb= new G4VisAttributes(G4Colour(0.8, 0.4, 0.,0.8)); */
-    /* logicPad->SetVisAttributes(atb);} */
-    /* logicPad->SetSensitiveDetector(m_MinosPadScorer); */
-    
-    /* G4int NbOfPads = 3604; */
-  
-  /* G4VPVParameterisation* PadParam = */
-    /* new PadParameterisation( */
-    /*         ); */
-
-    /* new G4PVParameterised("Pad",       // their name */
-    /*     logicPad,   // their logical volume */
-    /*     logicAnode,       // Mother logical volume */
-    /*     kZAxis,          // Are placed along this axis */
-    /*     NbOfPads,    // Number of Pads */
-    /*     PadParam,    // The parametrisation */
-    /*     false); // checking overlaps */
-
     //// Using REPLICA
 
+    // Construct Pads ring by ring
     for (int RingNbr = 0; RingNbr < 18; RingNbr++){ 
 
         int PadsPerRing[18]={144,152,156,164,172,176,184,192,196,204,212,216,224,228,236,244,248,256};  
-        G4double InnerRadius =  (45.2+RingNbr*2.1+0.02)*mm;
-        G4double OuterRadius =  (47.3+RingNbr*2.1)*mm;
-
-        G4VSolid* AnodeRing = new G4Tubs("ring",InnerRadius,OuterRadius,
-                1.1*mm,0.,360*deg);
-        G4LogicalVolume * AnodeRing_log = new G4LogicalVolume(AnodeRing, 
+        /* G4double InnerRadius =  (45.2+RingNbr*2.1+0.02)*mm;// 0.02 mm between each ring */
+        G4double InnerRadius =  (45.75+RingNbr*2.1)*mm;
+        G4double OuterRadius =  (47.75+RingNbr*2.1)*mm;
+        
+        //Volume where are placed replica pads
+        G4VSolid* CathodeRing = new G4Tubs("ring",InnerRadius,OuterRadius,
+                0.01*mm,0.,360*deg);
+        G4LogicalVolume * CathodeRing_log = new G4LogicalVolume(CathodeRing, 
                 TPCMaterial, "ringL", 0, 0, 0);
          
-        {G4VisAttributes* atb= new G4VisAttributes(G4Colour(0.8, 0.4, 0.,0));
-        AnodeRing_log->SetVisAttributes(atb);}
+        {G4VisAttributes* atb= new G4VisAttributes(G4Colour(0.8, 0.4, 0.,0.4));
+        CathodeRing_log->SetVisAttributes(atb);}
 
-        new G4PVPlacement(0,G4ThreeVector(0,0,-ChamberLength+2*mm),
-                AnodeRing_log,"ring", logicTPC, false, RingNbr);
-        
+        new G4PVPlacement(0,G4ThreeVector(0,0,-ChamberLength/2+0.01*mm),
+                CathodeRing_log,"ring", logicTPC, false, RingNbr);
+
         G4double Pad_dPhi = (360./(PadsPerRing[RingNbr]+1))*deg; // longitudinal component of Pad
         G4double Pad_shift = (360./PadsPerRing[RingNbr])*deg; // dPhi between each Pads
 
         G4VSolid* Pad = new G4Tubs("div_ring", InnerRadius, OuterRadius,
-                1*mm,0, Pad_dPhi);
+                0.01*mm,0, Pad_dPhi);
         
         G4LogicalVolume* Pad_log = new G4LogicalVolume(Pad,
                 Cu,"div_ringL",0,0,0);
         
-        {G4VisAttributes* atb= new G4VisAttributes(G4Colour(0.8, 0.4, 0.,0.8));
+        {G4VisAttributes* atb= new G4VisAttributes(G4Colour(0.8, 0.4, 0.,0.4));
         Pad_log->SetVisAttributes(atb);}
         Pad_log->SetSensitiveDetector(m_MinosPadScorer);
         
         new G4PVReplica("div_ring_phys", Pad_log, 
-                AnodeRing_log, kPhi, PadsPerRing[RingNbr],Pad_shift ,0); 
+                CathodeRing_log, kPhi, PadsPerRing[RingNbr],Pad_shift ,0); 
     
     }
             
@@ -835,25 +686,14 @@ void Minos::ConstructDetector(G4LogicalVolume* world){
 
     //check the order and positioning of kapton , chamber and rohacell from pag 16 of Thesis Clementine
     
-    new G4PVPlacement(0,//its name
-        G4ThreeVector(0,0,0/*ChamberLength*/),	//at (0,0,0)
+    new G4PVPlacement(0, G4ThreeVector(0,0,0),	//at (0,0,0)
         BuildChamber(),	//its logical volume
         "Chamber",	//its name
         logicOuterRohacell,	//its mother  volume
         false,		//no boolean operation
         0);		//copy number
 
-    /*new G4PVPlacement(0,		//its name
-      G4ThreeVector(0,0,ChamberLength),	//at (0,0,0)
-      BuildInnerRohacell(),	//its logical volume
-      "InnerRohacell",	//its name
-      world,	//its mother  volume
-      false,		//no boolean operation
-      0);*/   
-
-
-    new G4PVPlacement(0,		//its name
-        G4ThreeVector(0,0,0/*ChamberLength*/),	//at (0,0,0)
+    new G4PVPlacement(0, G4ThreeVector(0,0,0),	//at (0,0,0)
         BuildKapton(),	//its logical volume
         "Kapton",	//its name
         logicOuterRohacell,	//its mother  volume
@@ -861,7 +701,7 @@ void Minos::ConstructDetector(G4LogicalVolume* world){
         0);		//copy number
 
     new G4PVPlacement(0,		//its name
-        G4ThreeVector(0,0,0/*ChamberLength*/),	//at (0,0,0)
+        G4ThreeVector(0,0,0),	//at (0,0,0)
         BuildOuterOuterRohacell(),	//its logical volume
         "Rohacell"/*"OuterRohacell"*/,	//its name
         logicTPC/*world*/,	//its mother  volume
@@ -869,87 +709,52 @@ void Minos::ConstructDetector(G4LogicalVolume* world){
         0);		//copy number
 
     new G4PVPlacement(0,		//its name
-        G4ThreeVector(0,0,0/*ChamberLength*/),	//at (0,0,0)
+        G4ThreeVector(0,0,0),	//at (0,0,0)
         BuildOuterKapton(),	//its logical volume
         "Kapton",	//its name
         logicOuterRohacell,	//its mother  volume
         false,		//no boolean operation
         0);		//copy number
 
-    
-    new G4PVPlacement(0,		//its name
-        G4ThreeVector(wX,wY, wZ ),	//at (0,0,0)
-        BuildWindow0(),	//its logical volume
-        "WindowTube",	//its name
-        world,	//its mother  volume
-        false,		//no boolean operation
-        0);
+    if(TPCOnly!=1){   
+      new G4PVPlacement(0,		//its name
+          G4ThreeVector(MinosX,MinosY, MinosZ),	//at (0,0,0)
+          BuildWindow0(),	//its logical volume
+          "WindowTube",	//its name
+          world,	//its mother  volume
+          false,		//no boolean operation
+          0);
 
-    /*new G4PVPlacement(0,		//its name
-      G4ThreeVector(0,0, -1.*(m_TargetLength[i]+WindowThickness)),	//at (0,0,0)
-      BuildWindow1(),	//its logical volume
-      "WindowEntrance",	//its name
-      logicWindow0,	//its mother  volume
-      false,		//no boolean operation
-      0);  new G4PVPlacement(0,		//its name
-      G4ThreeVector(0,0, (m_TargetLength[i]+WindowThickness)),	//at (0,0,0)
-      BuildWindow2(),	//its logical volume
-      "WindowOutcoming",	//its name
-      logicWindow0,	//its mother  volume
-      false,		//no boolean operation
-      0);		//copy number
-      */                    
+      new G4PVPlacement(0,//no rotation
+          G4ThreeVector(0,0,0/*m_TargetLength[i]*/),	//at (0,0,0)
+          BuildTarget(),	//its logical volume
+          "Target",	//its name
+          logicWindow0,	//its mother  volume
+          false,		//no boolean operation
+          0);		//copy number
 
-    new G4PVPlacement(0,//no rotation
-        G4ThreeVector(0,0,0/*m_TargetLength[i]*/),	//at (0,0,0)
-        BuildTarget(),	//its logical volume
-        "Target",	//its name
-        logicWindow0,	//its mother  volume
-        false,		//no boolean operation
-        0);		//copy number
-
-
-    // G4ProductionCuts* ecut = new G4ProductionCuts();
-    //G4ProductionCuts* pcut = new G4ProductionCuts();
-    if(!m_ReactionRegion){
-
-      //    ecut->SetProductionCut(1000,"e-");
-      //  pcut->SetProductionCut(1,"p");
-
-      m_ReactionRegion= new G4Region("NPSimulationProcess");
-      m_ReactionRegion -> AddRootLogicalVolume(logicTarget);
-
-      // logicTPC -> SetRegion(m_ReactionRegion);
-      //m_ReactionRegion->SetProductionCuts(ecut);
-      //m_ReactionRegion->SetProductionCuts(ecut);     
-      // m_ReactionRegion -> AddRootLogicalVolume(logicTPC);
-
-      m_ReactionRegion->SetUserLimits(new G4UserLimits(1.2*mm)); //???
+      if(!m_ReactionRegion){
+        m_ReactionRegion= new G4Region("NPSimulationProcess");
+        m_ReactionRegion -> AddRootLogicalVolume(logicTarget);
+        m_ReactionRegion->SetUserLimits(new G4UserLimits(1.2*mm)); //???
+      }
+      
+      G4FastSimulationManager* mng = m_ReactionRegion->GetFastSimulationManager();
+      unsigned int size = m_ReactionModel.size();
+      for(unsigned int o = 0 ; o < size ; o++){
+        mng->RemoveFastSimulationModel(m_ReactionModel[o]);
+      }
+      m_ReactionModel.clear();
+      G4VFastSimulationModel* fsm;
+      fsm = new NPS::BeamReaction("BeamReaction",m_ReactionRegion);
+      ((NPS::BeamReaction*) fsm)->SetStepSize(1.2*mm);
+      m_ReactionModel.push_back(fsm);
+      fsm = new NPS::Decay("Decay",m_ReactionRegion);
+      m_ReactionModel.push_back(fsm);
     }
-
-    G4FastSimulationManager* mng = m_ReactionRegion->GetFastSimulationManager();
-    unsigned int size = m_ReactionModel.size();
-    for(unsigned int o = 0 ; o < size ; o++){
-      mng->RemoveFastSimulationModel(m_ReactionModel[o]);
-    }
-    m_ReactionModel.clear();
-    G4VFastSimulationModel* fsm;
-    fsm = new NPS::BeamReaction("BeamReaction",m_ReactionRegion);
-    ((NPS::BeamReaction*) fsm)->SetStepSize(1.2*mm);
-    m_ReactionModel.push_back(fsm);
-    fsm = new NPS::Decay("Decay",m_ReactionRegion);
-    m_ReactionModel.push_back(fsm);
-
-    // G4Region* Region_cut = new G4Region("RegionCut");
-    // logicTPC->SetRegion(Region_cut);
-    // Region_cut->SetProductionCuts(ecut);
-    // Region_cut->SetProductionCuts(pcut);
-    // Region_cut->AddRootLogicalVolume(logicTPC);                          
-
   }
-  //                                        
+  
   // Visualization attributes
-  //
   world->SetVisAttributes (G4VisAttributes::Invisible);
 
 }
@@ -966,87 +771,110 @@ void Minos::InitializeRootOutput(){
   pTree->SetBranchAddress("Minos", &m_Event) ;
 }
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+//....oooOO0OOooo.;
 // Read sensitive part and fill the Root tree.
 // Called at in the EventAction::EndOfEventAction
 void Minos::ReadSensitive(const G4Event* ){
   m_Event->Clear();
 
-
-  
-  ///////////
-  // Calorimeter scorer
-//  CalorimeterScorers::PS_Calorimeter* Scorer= (CalorimeterScorers::PS_Calorimeter*) m_MinosTargetScorer->GetPrimitive(0);
-  /* // decomment if interested
-  unsigned int size = Scorer->GetMult(); 
-  for(unsigned int i = 0 ; i < size ; i++){
-    vector<unsigned int> level = Scorer->GetLevel(i); 
-    double Energy = RandGauss::shoot(Scorer->GetEnergy(i),Minos_NS::ResoEnergy);
-    if(Energy>Minos_NS::EnergyThreshold){
-      double Time = RandGauss::shoot(Scorer->GetTime(i),Minos_NS::ResoTime);
-      int DetectorNbr = level[0];
-      m_Event->SetEnergy(DetectorNbr,Energy);
-      m_Event->SetTime(DetectorNbr,Time); 
-    }
-  }
-  */
-
-  ///////////
-  // DriftElectron scorer
-  CylinderTPCScorers::PS_TPCAnode* Scorer2= (CylinderTPCScorers::PS_TPCAnode*) m_MinosPadScorer->GetPrimitive(0);
+///////////
+// DriftElectron scorer
+  CylinderTPCScorers::PS_TPCCathode* Scorer2= (CylinderTPCScorers::PS_TPCCathode*) m_MinosPadScorer->GetPrimitive(0);
 
   unsigned int size2 = Scorer2->GetMult(); 
   for(unsigned int i = 0 ; i < size2 ; i++){
+    
     int Pad = Scorer2->GetPad(i);
-    double Charge = Scorer2->GetCharge(i);
     double X = Scorer2->GetX(i);
     double Y = Scorer2->GetY(i);
-    double DriftTime = RandGauss::shoot(Scorer2->GetDriftTime(i),Minos_NS::ResoTime);
-    m_Event->SetCharge(Pad,Charge,X,Y,DriftTime);
+    
+    m_Event->SetCharge(Pad,X,Y);
+    /* m_Event->AddChargePoint(Scorer2->GetQ(i), Scorer2->GetT(i)); */
+   
+    SimulateGainAndDigitizer(Scorer2->GetQ(i), Scorer2->GetT(i));
   }
+
 }
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-////////////////////////////////////////////////////////////////   
-void Minos::InitializeScorers() { 
-  // This check is necessary in case the geometry is reloaded
-  bool already_exist = false;
-  bool already_exist2 = false;
-  bool already_exist3 = false;
+void Minos::SimulateGainAndDigitizer(vector<double> rawQ, vector<double> rawT){
+
+  Charge2.clear();
+  Time.clear();
   
-  m_MinosTargetScorer = CheckScorer("MinosTargetScorer",already_exist) ;
-  m_MinosTPCScorer = CheckScorer("MinosTPCScorer",already_exist2) ;
-  m_MinosPadScorer = CheckScorer("MinosPadScorer",already_exist3) ;
-
-  if(already_exist && already_exist2 && already_exist3 ) 
-   return ;
-
-  // Otherwise the scorer is initialised
-  vector<int> level; level.push_back(0);
-  G4VPrimitiveScorer* CalorimeterMinosTargetScorer= new CalorimeterScorers::PS_Calorimeter("CalorimeterMinosTargetScore",level, 0) ;
-  G4VPrimitiveScorer* InteractionMinosTargetScorer= new InteractionScorers::PS_Interactions("InteractionMinosTargetScore",ms_InterCoord, 0) ;
-  G4VPrimitiveScorer* DriftElectronMinosTPCScorer= new CylinderTPCScorers::PS_TPCAnode("DriftElectronsScore",level, 0) ;
-
-
-  //and register it to the multifunctionnal detector
-  m_MinosTargetScorer->RegisterPrimitive(CalorimeterMinosTargetScorer);
-  m_MinosTargetScorer->RegisterPrimitive(InteractionMinosTargetScorer);
-  m_MinosPadScorer->RegisterPrimitive(DriftElectronMinosTPCScorer);
-
-  /*G4VPrimitiveScorer* TPCScorer= */ new TPCScorers::PS_TPCCathode("MinosTPC", 0);
+  Raw_Signal->Reset();
+  Elec_Signal->Reset();
   
-  //G4VPrimitiveScorer* TPCInterScorer= new InteractionScorers::PS_Interactions("TPCInterScorer",ms_InterCoord, 0); // decomment if interested
+  // Reallocate electrons from each pack
+   
+  // Add white noise; 
+  for( int bin = 0 ; bin < Elec_Signal->GetNbinsX() ; bin++)
+    Elec_Signal->SetBinContent(bin,20+(10-gRandom->Uniform(20)*20));    
+ 
+  for (unsigned int j = 1; j < rawQ.size()-1; j++){
+    time = (rawT[j+1]-rawT[j-1])/rawQ[0];        
+    
+    for ( int k = -rawQ[0]/2; k < (rawQ[0]/2); k++){
+          Raw_Signal->Fill((rawT[j]+k*time)/30.);
+    }
+  }
+ 
+  // Application of the electronic reponse function
 
-  G4VPrimitiveScorer* PadScorer= new CylinderTPCScorers::PS_TPCAnode("MinosTPCAnode",level, 0);
+
+  for ( int x=0; x <  Raw_Signal->GetNbinsX(); x++){
+    if(Raw_Signal->GetBinContent(x) < 0.5)
+      continue;
+    else {
+    start = Raw_Signal->GetBinCenter(x);
+    end = Raw_Signal->GetBinCenter(x)+1200/30.;  
+    /* DriftTime = Raw_Signal->GetBinCenter(x); */
+    
+    fa1->SetRange(start, end);
+    fa1->SetParameter(0,1500);
+    fa1->SetParameter(1,start);
+    fa1->SetParameter(2,450/30.);
+    /* Elec_Signal->SetBinContent(bin,20+(10-gRandom->Uniform(20)*20)) */
+    /* for (int p=0; p< 0; p++) */
+    for (int p=0; p< Raw_Signal->GetBinContent(x)*1500; p++)
+      Elec_Signal->Fill(fa1->GetRandom());
+    
+    }
+  }
+
+
+  for ( int bin=0; bin < Elec_Signal->GetNbinsX(); bin++){
+    Charge2.push_back(Elec_Signal->GetBinContent(bin));
+    Time.push_back(Elec_Signal->GetBinCenter(bin));
   
-  // m_MinosTPCScorer->RegisterPrimitive(TPCScorer);      // decomment if interested
-  // m_MinosTPCScorer->RegisterPrimitive(TPCCalScorer);
-  //m_MinosTPCScorer->RegisterPrimitive(TPCInterScorer);  // decomment if interested
+  }
+ 
+  m_Event->AddChargePoint(Charge2,Time);
+}
+
+  //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+  ////////////////////////////////////////////////////////////////   
+  void Minos::InitializeScorers() { 
+    // This check is necessary in case the geometry is reloaded
+    bool already_exist = false;
+    bool already_exist2 = false;
+    bool already_exist3 = false;
+    
+    m_MinosPadScorer = CheckScorer("MinosPadScorer",already_exist3) ;
+
+    if(already_exist && already_exist2 && already_exist3 ) 
+     return ;
+
+    // Otherwise the scorer is initialised
+    vector<int> level; level.push_back(0);
+    
+    G4VPrimitiveScorer* DriftElectronMinosTPCScorer= new CylinderTPCScorers::PS_TPCCathode("DriftElectronsScore",level, 0) ;
+
+    //and register it to the multifunctionnal detector
+    m_MinosPadScorer->RegisterPrimitive(DriftElectronMinosTPCScorer);
+  
+  G4VPrimitiveScorer* PadScorer= new CylinderTPCScorers::PS_TPCCathode("MinosTPCCathode",level, 0);
   m_MinosPadScorer->RegisterPrimitive(PadScorer);
   
-  
-  G4SDManager::GetSDMpointer()->AddNewDetector(m_MinosTPCScorer) ;
-  G4SDManager::GetSDMpointer()->AddNewDetector(m_MinosTargetScorer) ;
   G4SDManager::GetSDMpointer()->AddNewDetector(m_MinosPadScorer) ;
 }
 

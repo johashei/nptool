@@ -1,94 +1,92 @@
 Minos
-  R= 35 mm
-  THETA= 90 deg
-  POS = 0 0 -305.72 mm
-  PHI= 63 deg
-  TargetLength = 152.76 mm
+ POS= 0 0 0 mm
+ TargetLength= 152.76 mm
+ TargetMaterial= LH2
+ CellMaterial= Mylar 
+ TPCOnly= 0 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 Dali
  R = 212.4 mm 
  Alpha = 240 deg
- Zeta = -90.03 mm 
+ Zeta = 313.42 mm 
  Shape = Square
  Material = NaI(Tl)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 Dali
  R = 212.4 mm 
  Alpha = 180 deg 
- Zeta = -90.03 mm
+ Zeta = 313.42 mm
  Shape = Square
  Material = NaI(Tl)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-Dali
- R = 212.4 mm 
+Drali
+ R= 212.4 mm 
  Alpha = 120 deg 
- Zeta = -90.03 mm 
+ Zeta = 313.42 mm 
  Shape = Square
  Material = NaI(Tl)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 Dali
  R = 212.4 mm 
  Alpha = 60 deg 
- Zeta = -90.03 mm
+ Zeta = 313.42 mm
  Shape = Square
  Material = NaI(Tl)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 Dali
  R = 212.4 mm
  Alpha = 0 deg 
- Zeta = -90.03 mm
+ Zeta = 313.42 mm
  Shape = Square
  Material = NaI(Tl)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 Dali
  R = 212.4 mm 
  Alpha = -60 deg 
- Zeta = -90.03 mm
+ Zeta = 313.42 mm
  Shape = Square
  Material = NaI(Tl)
-
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 Dali
  R = 212.4 mm
  Alpha = 240 deg 
- Zeta = 90.03 mm 
+ Zeta = 479.42 mm 
  Shape = Square
  Material = NaI(Tl)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 Dali
  R = 212.4 mm 
  Alpha = 180 deg 
- Zeta = 90.03 mm
+ Zeta = 479.42 mm
  Shape = Square
  Material = NaI(Tl)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 Dali
  R = 212.4 mm 
  Alpha = 120 deg 
- Zeta = 90.03 mm
+ Zeta = 479.42 mm
  Shape = Square
  Material = NaI(Tl)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 Dali
  R = 212.4 mm 
  Alpha = 60 deg 
- Zeta = 90.03 mm 
+ Zeta = 479.42 mm 
  Shape = Square
  Material = NaI(Tl)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 Dali
  R = 212.4 mm 
  Alpha = 0 deg 
- Zeta = 90.03 mm 
+ Zeta = 479.42 mm 
  Shape = Square
  Material = NaI(Tl)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 Dali
  R = 212.4 mm 
  Alpha = -60 deg 
- Zeta = 90.03 mm 
+ Zeta = 479.42 mm 
  Shape = Square
  Material = NaI(Tl)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

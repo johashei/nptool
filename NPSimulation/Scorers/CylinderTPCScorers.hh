@@ -1,4 +1,5 @@
-#ifndef DEAnodeScorers_h
+# ifndef CylinderTPCScorers_h
+# define CylinderTPCScorers_h
 
 /*****************************************************************************
  * Copyright (C) 2009-2016   this file is part of the NPTool Project         *
@@ -31,17 +32,19 @@ using namespace CLHEP;
 namespace CylinderTPCScorers{
 
   //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......  
-  class AnodeData{
+  class CathodeData{
     public:
-      AnodeData(){};
-      AnodeData(const double& Charge, const double& DriftTime, const unsigned int& Pad, const double& X, const double& Y){
+      CathodeData(){};
+      CathodeData(const double& Charge, const double& DriftTime, const unsigned int& Pad, const double& X, const double& Y){
         m_Charge = Charge;
-        m_DriftTime   = DriftTime;
+        /* m_DriftTime   = DriftTime; */
         m_Pad   = Pad;
         m_X   = X;
         m_Y   = Y;
+        m_Q.push_back(Charge) ;
+        m_T.push_back(DriftTime) ;
       }
-      ~AnodeData(){};
+      ~CathodeData(){};
     
    private:
      double m_Charge;
@@ -49,45 +52,62 @@ namespace CylinderTPCScorers{
      double m_X;
      double m_Y;
      unsigned int m_Pad;
-   
+     vector<double> m_Q;
+     vector<double> m_T;
+
    public:
      inline double GetCharge() const {return m_Charge;};
      inline double GetDriftTime() const {return m_DriftTime;};
      inline double GetX() const {return m_X;};
      inline double GetY() const {return m_Y;};
      inline unsigned int GetPad() const {return m_Pad;};
+
+     inline vector<double> GetQ() const {return m_Q;};
+     inline vector<double> GetT() const {return m_T;};
+
      void Add(const double& Charge){m_Charge+=Charge;};
+     
+     void AddChargePoint(const double& Charge, const double& Time ){
+       m_Q.push_back(Charge);
+       m_T.push_back(Time);
+     };
   };
 
   //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......  
-   // Manage a vector of Anode hit
-  class AnodeDataVector{
+   // Manage a vector of Cathode hit
+  class CathodeDataVector{
     public:
-      AnodeDataVector(){};
-      ~AnodeDataVector(){};
+      CathodeDataVector(){};
+      ~CathodeDataVector(){};
 
     private:
-      vector<AnodeData> m_Data;
+      vector<CathodeData> m_Data;
 
     public:
-      vector<AnodeData>::iterator find(const unsigned int& Pad) ;
+      vector<CathodeData>::iterator find(const unsigned int& Pad) ;
       void clear(){m_Data.clear();} ;
-      vector<AnodeData>::iterator end() {return m_Data.end();};
-      vector<AnodeData>::iterator begin() {return m_Data.begin();};
+      
+      vector<CathodeData>::iterator end() {return m_Data.end();};
+      vector<CathodeData>::iterator begin() {return m_Data.begin();};
+      
       unsigned int size() {return m_Data.size();};
+      
       void Add(const unsigned int& Pad,const double& Charge) {find(Pad)->Add(Charge);};
-      void Set(const double& Charge, const double& DriftTime, const unsigned int& Pad, const double& X, const double& Y) {m_Data.push_back(AnodeData(Charge,DriftTime,Pad,X,Y));};
-      AnodeData* operator[](const unsigned int& i){return &m_Data[i];};
-  };
-
-
-  
+      
+      void AddChargePoint(const unsigned int& Pad, const double& Charge, const double& Time)
+      {find(Pad)->AddChargePoint(Charge, Time);};
+      
+      void Set(const double& Charge, const double& DriftTime, const unsigned int& Pad, const double& X, const double& Y) {m_Data.push_back(CathodeData(Charge,DriftTime,Pad,X,Y));};
+      
+      CathodeData* operator[](const unsigned int& i){return &m_Data[i];};
+      };
+    
   //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......  
-  class PS_TPCAnode : public G4VPrimitiveScorer{
+  class PS_TPCCathode : public G4VPrimitiveScorer{
 
     public: // with description
-      PS_TPCAnode(G4String name, vector<G4int>, G4int depth=0);
-      ~PS_TPCAnode();
+      PS_TPCCathode(G4String name, vector<G4int>, G4int depth=0);
+      ~PS_TPCCathode(); 
 
     protected: // with description
       G4bool ProcessHits(G4Step*, G4TouchableHistory*);
@@ -100,7 +120,7 @@ namespace CylinderTPCScorers{
       void PrintAll();
 
    private: 
-      AnodeDataVector m_Data;    
+      CathodeDataVector m_Data;    
 
     private: // Needed for intermediate calculation (avoid multiple instantiation in Processing Hit)
      
@@ -119,7 +139,9 @@ namespace CylinderTPCScorers{
       double GetX(const double& i) {return m_Data[i]->GetX();};
       double GetY(const double& i) {return m_Data[i]->GetY();};
       unsigned int GetPad(const unsigned int& i) {return m_Data[i]->GetPad();};
-
+      
+      vector<double> GetQ(const double& i) {return m_Data[i]->GetQ();}
+      vector<double> GetT(const double& i) {return m_Data[i]->GetT();}
 
   };
 
