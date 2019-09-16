@@ -111,23 +111,23 @@ void TMinosSpectra::FillRawSpectra(TMinosData* RawData) {
   static string name;
   static string family;
 
-  // Energy 
-  unsigned int sizeE = RawData->GetMultEnergy();
-  for (unsigned int i = 0; i < sizeE; i++) {
-    name = "Minos"+NPL::itoa(RawData->GetE_DetectorNbr(i))+"_ENERGY_RAW";
-    family = "Minos/RAW";
+  /* // Energy */ 
+  /* unsigned int sizeE = RawData->GetMultEnergy(); */
+  /* for (unsigned int i = 0; i < sizeE; i++) { */
+  /*   name = "Minos"+NPL::itoa(RawData->GetE_DetectorNbr(i))+"_ENERGY_RAW"; */
+  /*   family = "Minos/RAW"; */
 
-    FillSpectra(family,name,RawData->Get_Energy(i));
-  }
+  /*   FillSpectra(family,name,RawData->Get_Energy(i)); */
+  /* } */
 
-  // Time
-  unsigned int sizeT = RawData->GetMultTime();
-  for (unsigned int i = 0; i < sizeT; i++) {
-    name = "Minos"+NPL::itoa(RawData->GetT_DetectorNbr(i))+"_TIME_RAW";
-    family = "Minos/RAW";
+  /* // Time */
+  /* unsigned int sizeT = RawData->GetMultTime(); */
+  /* for (unsigned int i = 0; i < sizeT; i++) { */
+  /*   name = "Minos"+NPL::itoa(RawData->GetT_DetectorNbr(i))+"_TIME_RAW"; */
+  /*   family = "Minos/RAW"; */
 
-    FillSpectra(family,name,RawData->Get_Time(i));
-  }
+  /*   FillSpectra(family,name,RawData->Get_Time(i)); */
+  /* } */
 }
 
 
@@ -137,23 +137,23 @@ void TMinosSpectra::FillPreTreatedSpectra(TMinosData* PreTreatedData) {
   static string name;
   static string family;
   
-  // Energy 
-  unsigned int sizeE = PreTreatedData->GetMultEnergy();
-  for (unsigned int i = 0; i < sizeE; i++) {
-    name = "Minos"+NPL::itoa(PreTreatedData->GetE_DetectorNbr(i))+"_ENERGY_CAL";
-    family = "Minos/CAL";
+  /* // Energy */ 
+  /* unsigned int sizeE = PreTreatedData->GetMultEnergy(); */
+  /* for (unsigned int i = 0; i < sizeE; i++) { */
+  /*   name = "Minos"+NPL::itoa(PreTreatedData->GetE_DetectorNbr(i))+"_ENERGY_CAL"; */
+  /*   family = "Minos/CAL"; */
 
-    FillSpectra(family,name,PreTreatedData->Get_Energy(i));
-  }
+  /*   FillSpectra(family,name,PreTreatedData->Get_Energy(i)); */
+  /* } */
 
-  // Time
-  unsigned int sizeT = PreTreatedData->GetMultTime();
-  for (unsigned int i = 0; i < sizeT; i++) {
-    name = "Minos"+NPL::itoa(PreTreatedData->GetT_DetectorNbr(i))+"_TIME_CAL";
-    family = "Minos/CAL";
+  /* // Time */
+  /* unsigned int sizeT = PreTreatedData->GetMultTime(); */
+  /* for (unsigned int i = 0; i < sizeT; i++) { */
+  /*   name = "Minos"+NPL::itoa(PreTreatedData->GetT_DetectorNbr(i))+"_TIME_CAL"; */
+  /*   family = "Minos/CAL"; */
 
-    FillSpectra(family,name,PreTreatedData->Get_Time(i));
-  }
+  /*   FillSpectra(family,name,PreTreatedData->Get_Time(i)); */
+  /* } */
 }
 
 
@@ -164,11 +164,11 @@ void TMinosSpectra::FillPhysicsSpectra(TMinosPhysics* Physics) {
   static string family;
   family= "Minos/PHY";
 
-  // Energy vs time
-  unsigned int sizeE = Physics->Energy.size();
-  for(unsigned int i = 0 ; i < sizeE ; i++){
-    name = "Minos_ENERGY_TIME";
-    FillSpectra(family,name,Physics->Energy[i],Physics->Time[i]);
-  }
+  /* // Energy vs time */
+  /* unsigned int sizeE = Physics->Energy.size(); */
+  /* for(unsigned int i = 0 ; i < sizeE ; i++){ */
+  /*   name = "Minos_ENERGY_TIME"; */
+  /*   FillSpectra(family,name,Physics->Energy[i],Physics->Time[i]); */
+  /* } */
 }
 
