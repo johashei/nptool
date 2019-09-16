@@ -24,58 +24,65 @@
 
 // STL
 #include <vector>
-using namespace std;
 
 // ROOT
 #include "TObject.h"
+#include "TGraph.h"
+
+using namespace std;
 
 class TMinosData : public TObject {
   //////////////////////////////////////////////////////////////
   // data members are hold into vectors in order 
   // to allow multiplicity treatment
   private: 
-    // Energy
-    vector<UShort_t>   fMinos_E_DetectorNbr;
-    vector<Double_t>   fMinos_Energy;
-
-    // Time
-    vector<UShort_t>   fMinos_T_DetectorNbr;
-    vector<Double_t>   fMinos_Time;
-
+  
     // Pads
-    vector<UShort_t>   fMinos_Pad;
-    vector<Double_t>   fMinos_X;
-    vector<Double_t>   fMinos_Y;
-    vector<Double_t>   fMinos_Charge;
-    vector<Double_t>   fMinos_DriftTime;
+    vector<UShort_t>   fMinos_PadNumber;
+    vector<Double_t>   fMinos_PadX;
+    vector<Double_t>   fMinos_PadY;
+    /* vector<Double_t>   fMinos_PadCharge; */
+    /* vector<Double_t>   fMinos_Charge; */
+    /* vector<Double_t>   fMinos_Time; */
+    vector< vector<Double_t> >   fMinos_Charge;
+    vector< vector<Double_t> >   fMinos_Time;
+    /* vector<Double_t>   fMinos_DriftTime; */
+    /* vector<UShort_t>   fMinos_EventNumber; */
+/* //From Santamaria:*/
 
-    // maybe directions with angle varagles have to be added?
 
-//From Santamaria:
+/* //from simulation*/
+/*   vector<double> x_tpc,y_tpc,z_tpc,e_tpc;*/
+/*   vector<double> x_trigger,y_trigger,z_trigger,e_trigger;*/
+/* vector<double> x_tar,y_tar,z_tar,e_tar;*/
+/* vector<double> x_ch,y_ch,z_ch,e_ch;*/
+/* vector<double> x_win,y_win,z_win,e_win;*/
+/* vector<double> x_InRoh,y_InRoh,z_InRoh,e_InRoh;*/
+/* vector<double> x_OutRoh,y_OutRoh,z_OutRoh,e_OutRoh;*/
+/* vector<double> x_Kap,y_Kap,z_Kap,e_Kap;*/
+/* double Et_tpc_tot;*/
+/* vector<double> Et_tar,Et_ch,Et_tpc,Et_trigger,Et_win,Et_InnerRohacell, Et_OuterRohacell, Et_Kapton;*/
+/* vector<int> A, Z;*/
+/* vector<int> trackID, parentID;*/
 
-
-//from simulation
-  vector<double> x_tpc,y_tpc,z_tpc,e_tpc;
-  vector<double> x_trigger,y_trigger,z_trigger,e_trigger;
-vector<double> x_tar,y_tar,z_tar,e_tar;
-vector<double> x_ch,y_ch,z_ch,e_ch;
-vector<double> x_win,y_win,z_win,e_win;
-vector<double> x_InRoh,y_InRoh,z_InRoh,e_InRoh;
-vector<double> x_OutRoh,y_OutRoh,z_OutRoh,e_OutRoh;
-vector<double> x_Kap,y_Kap,z_Kap,e_Kap;
-double Et_tpc_tot;
-vector<double> Et_tar,Et_ch,Et_tpc,Et_trigger,Et_win,Et_InnerRohacell, Et_OuterRohacell, Et_Kapton;
-vector<int> A, Z;
-vector<int> trackID, parentID;
-
-    /*  //unuseful, cause nptool should make already that
-//initial conditions
-//double x0,y0,z0,theta0,phi0,energy0;
-vector<double> x0, y0, z0, theta0, phi0, energy0;
-vector<bool> detection;
-int event;
-*/
- vector<Double_t> MINOSx_0, MINOSy_0, MINOSz_0, MINOS_D_min, MINOS_Radius, MINOS_NumberTracks, theta0, phi0, energy0; //For take fitpar values
+/* */     //unuseful, cause nptool should make already that*/
+/* //initial conditions*/
+/* //double x0,y0,z0,theta0,phi0,energy0;*/
+/* vector<double> x0, y0, z0, theta0, phi0, energy0;*/
+/* vector<bool> detection;*/
+/* int event;*/
+/* */
+ vector<Double_t> MINOSx_0; //!
+ vector<Double_t> MINOSy_0; //!
+ vector<Double_t> MINOSz_0; //! 
+ vector<Double_t> MINOS_D_min; //! 
+ vector<Double_t> MINOS_Radius; //! 
+ vector<Double_t> MINOS_NumberTracks; //! 
+ vector<Double_t> theta0; //! 
+ vector<Double_t> phi0; //! 
+ vector<Double_t> energy0; //! 
+ 
+ //For take fitpar values
 
   //////////////////////////////////////////////////////////////
   // Constructor and destructor
@@ -89,7 +96,7 @@ int event;
   public:
     void Clear();
     void Clear(const Option_t*) {};
-    void Dump() const;
+    /* void Dump() const; */
 
 
   //////////////////////////////////////////////////////////////
@@ -99,34 +106,25 @@ int event;
   // add //! to avoid ROOT creating dictionnary for the methods
   public:
     //////////////////////    SETTERS    ////////////////////////
-    // Energy
-    inline void SetEnergy(const UShort_t& DetNbr,const Double_t& Energy){
-      fMinos_E_DetectorNbr.push_back(DetNbr);
-      fMinos_Energy.push_back(Energy);
-    };//!
-
-    // Time
-    inline void SetTime(const UShort_t& DetNbr,const Double_t& Time)	{
-      fMinos_T_DetectorNbr.push_back(DetNbr);     
-      fMinos_Time.push_back(Time);
-    };//!
-    // (E&T)
-    inline void SetEnergyAndTime(const UShort_t& DetNbr,const Double_t& Energy,const Double_t& Time){
-      fMinos_Energy.push_back(Energy);
-      fMinos_Time.push_back(Time);
-      fMinos_T_DetectorNbr.push_back(DetNbr);
-    };//!
 
      // Minos Pads
-    inline void SetCharge(const UShort_t& Pad,const Double_t& Charge, const Double_t& X,const Double_t& Y,const Double_t& DriftTime){
-      fMinos_Pad.push_back(Pad);
-      fMinos_X.push_back(X);
-      fMinos_Y.push_back(Y);
-      fMinos_DriftTime.push_back(DriftTime);
-      fMinos_Charge.push_back(Charge);
-   };//!
-  
-//
+    inline void SetCharge(const UShort_t& Pad,/*const vector<Double_t>& Charge,const vector<Double_t>& Time,*/  const Double_t& X,const Double_t& Y/*,const Double_t& PadCharge*/){
+      fMinos_PadNumber.push_back(Pad);
+      fMinos_PadX.push_back(X);
+      fMinos_PadY.push_back(Y);
+    };//!
+
+    inline void AddChargePoint(const vector< Double_t >& Q,const vector<Double_t>& T){
+      fMinos_Charge.push_back(Q);
+      fMinos_Time.push_back(T);
+    };//!
+
+    /* inline void AddChargePoint(const double& Q,const double& T){ */
+    /*   fMinos_Charge.push_back(Q); */
+    /*   fMinos_Time.push_back(); */
+    /* };//! */
+    
+   //
 
     //Setters for position vertex and obsv in experiment analysis
 
@@ -137,39 +135,53 @@ int event;
       MINOSz_0.push_back(z);     
     };//!
 
-// Min Distance
+    // Min Distance
     inline void SetD_min(const Double_t& dmin)     {
       MINOS_D_min.push_back(dmin);
     };//!
-   
 
     //////////////////////    GETTERS    ////////////////////////
-    // Energy
-    inline UShort_t GetMultEnergy() const
-      {return fMinos_E_DetectorNbr.size();}
-    inline UShort_t GetE_DetectorNbr(const unsigned int &i) const 
-      {return fMinos_E_DetectorNbr[i];}//!
-    inline Double_t Get_Energy(const unsigned int &i) const 
-      {return fMinos_Energy[i];}//!
 
-    // Time
-    inline UShort_t GetMultTime() const
-      {return fMinos_T_DetectorNbr.size();}
-    inline UShort_t GetT_DetectorNbr(const unsigned int &i) const 
-      {return fMinos_T_DetectorNbr[i];}//!
-    inline Double_t Get_Time(const unsigned int &i) const 
-      {return fMinos_Time[i];}//!
+      inline int GetPadNumberMult()
+        {return fMinos_PadNumber.size() ;}//!
+
+      /* inline int GetEventNumberMult() */
+      /*   {return fMinos_EventNumber.size() ;}//! */
+
+      inline double GetPadX(const unsigned int&i) const
+        {return fMinos_PadX[i] ;}//! 
+      inline double GetPadY(const unsigned int&i) const
+        {return fMinos_PadY[i] ;}//!
+      inline UShort_t GetPadNbr(const unsigned int&i) const
+        {return fMinos_PadNumber[i] ;}//!
+
+       /* inline double GetPadCharge(const unsigned int&i) const */
+       /*  {return fMinos_PadCharge[i] ;}//! */
+       
+       /* inline double GetPadTime(const unsigned int&i) const */
+        /* {return fMinos_DriftTime[i] ;}//! */
+       
+      inline vector<double>& GetCharge(const unsigned int&i)
+        {return fMinos_Charge[i] ;}//!
+      inline vector<double>& GetTime(const unsigned int&i)
+        {return fMinos_Time[i] ;}//!
+
+      /* TGraph* GetChargeAsGraph(const unsigned int&i) ; //! */      
+
+      /* inline vector<double> GetCharge() */
+      /*   {return fMinos_PadChar   TGraph* GetEnergyAsGraph();ge() ;}//! */
+
 
 
     // Position
     inline Double_t GetVertexPos() const
-    {return MINOSz_0[0] ; }//!
+    {return MINOSz_0[0] ;}//!
     inline Double_t GetVertexPosX() const
-    {return MINOSx_0[0] ; }//!
+    {return MINOSx_0[0] ;}//!
     inline Double_t GetVertexPosY() const
-    {return MINOSy_0[0] ; }//!
+    {return MINOSy_0[0] ;}//!
     inline Double_t GetVertexPosZ() const
-    {return MINOSz_0[0] ; }//!
+    {return MINOSz_0[0] ;}//!
 
     // Min Distance
     inline Double_t GetD_min() const
