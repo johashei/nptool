@@ -23,8 +23,8 @@
 using namespace CylinderTPCScorers;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-vector<CathodeData>::iterator CathodeDataVector::find(const unsigned int& Pad){
-  for(vector<CathodeData>::iterator it= m_Data.begin()  ; it !=m_Data.end() ; it++){
+vector<AnodeData>::iterator AnodeDataVector::find(const unsigned int& Pad){
+  for(vector<AnodeData>::iterator it= m_Data.begin()  ; it !=m_Data.end() ; it++){
     if((*it).GetPad()==Pad)
       return it;
   }
@@ -33,17 +33,17 @@ vector<CathodeData>::iterator CathodeDataVector::find(const unsigned int& Pad){
 
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-PS_TPCCathode::PS_TPCCathode(G4String name,vector<G4int> NestingLevel,G4int depth)
+PS_TPCAnode::PS_TPCAnode(G4String name,vector<G4int> NestingLevel,G4int depth)
 :G4VPrimitiveScorer(name, depth){
     m_NestingLevel = NestingLevel;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-PS_TPCCathode::~PS_TPCCathode(){
+PS_TPCAnode::~PS_TPCAnode(){
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-G4bool PS_TPCCathode::ProcessHits(G4Step* aStep, G4TouchableHistory*){
+G4bool PS_TPCAnode::ProcessHits(G4Step* aStep, G4TouchableHistory*){
 
     /* unsigned int mysize = m_NestingLevel.size(); */
     /* for (unsigned int i =0; i < mysize ; i++){ */
@@ -128,7 +128,7 @@ G4bool PS_TPCCathode::ProcessHits(G4Step* aStep, G4TouchableHistory*){
     t_X = R*cos(Phi);
     t_Y = R*sin(Phi);
 
-    vector<CathodeData>::iterator it;
+    vector<AnodeData>::iterator it;
     it = m_Data.find(t_Pad);
     if(it!= m_Data.end()){
       it->Add(t_Charge); 
@@ -140,25 +140,25 @@ G4bool PS_TPCCathode::ProcessHits(G4Step* aStep, G4TouchableHistory*){
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-void PS_TPCCathode::Initialize(G4HCofThisEvent*){
+void PS_TPCAnode::Initialize(G4HCofThisEvent*){
   m_Data.clear();
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-void PS_TPCCathode::EndOfEvent(G4HCofThisEvent*){
+void PS_TPCAnode::EndOfEvent(G4HCofThisEvent*){
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-void PS_TPCCathode::clear(){
+void PS_TPCAnode::clear(){
    m_Data.clear();
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-void PS_TPCCathode::DrawAll(){
+void PS_TPCAnode::DrawAll(){
     
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-void PS_TPCCathode::PrintAll(){
+void PS_TPCAnode::PrintAll(){
 }
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

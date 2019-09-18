@@ -645,16 +645,16 @@ void Minos::ConstructDetector(G4LogicalVolume* world){
         G4double OuterRadius =  (47.75+RingNbr*2.1)*mm;
         
         //Volume where are placed replica pads
-        G4VSolid* CathodeRing = new G4Tubs("ring",InnerRadius,OuterRadius,
+        G4VSolid* AnodeRing = new G4Tubs("ring",InnerRadius,OuterRadius,
                 0.01*mm,0.,360*deg);
-        G4LogicalVolume * CathodeRing_log = new G4LogicalVolume(CathodeRing, 
+        G4LogicalVolume * AnodeRing_log = new G4LogicalVolume(AnodeRing, 
                 TPCMaterial, "ringL", 0, 0, 0);
          
         {G4VisAttributes* atb= new G4VisAttributes(G4Colour(0.8, 0.4, 0.,0.4));
-        CathodeRing_log->SetVisAttributes(atb);}
+        AnodeRing_log->SetVisAttributes(atb);}
 
         new G4PVPlacement(0,G4ThreeVector(0,0,-ChamberLength/2+0.01*mm),
-                CathodeRing_log,"ring", logicTPC, false, RingNbr);
+                AnodeRing_log,"ring", logicTPC, false, RingNbr);
 
         G4double Pad_dPhi = (360./(PadsPerRing[RingNbr]+1))*deg; // longitudinal component of Pad
         G4double Pad_shift = (360./PadsPerRing[RingNbr])*deg; // dPhi between each Pads
@@ -670,7 +670,7 @@ void Minos::ConstructDetector(G4LogicalVolume* world){
         Pad_log->SetSensitiveDetector(m_MinosPadScorer);
         
         new G4PVReplica("div_ring_phys", Pad_log, 
-                CathodeRing_log, kPhi, PadsPerRing[RingNbr],Pad_shift ,0); 
+                AnodeRing_log, kPhi, PadsPerRing[RingNbr],Pad_shift ,0); 
     
     }
             
@@ -779,7 +779,7 @@ void Minos::ReadSensitive(const G4Event* ){
 
 ///////////
 // DriftElectron scorer
-  CylinderTPCScorers::PS_TPCCathode* Scorer2= (CylinderTPCScorers::PS_TPCCathode*) m_MinosPadScorer->GetPrimitive(0);
+  CylinderTPCScorers::PS_TPCAnode* Scorer2= (CylinderTPCScorers::PS_TPCAnode*) m_MinosPadScorer->GetPrimitive(0);
 
   unsigned int size2 = Scorer2->GetMult(); 
   for(unsigned int i = 0 ; i < size2 ; i++){
@@ -867,12 +867,12 @@ void Minos::SimulateGainAndDigitizer(vector<double> rawQ, vector<double> rawT){
     // Otherwise the scorer is initialised
     vector<int> level; level.push_back(0);
     
-    G4VPrimitiveScorer* DriftElectronMinosTPCScorer= new CylinderTPCScorers::PS_TPCCathode("DriftElectronsScore",level, 0) ;
+    G4VPrimitiveScorer* DriftElectronMinosTPCScorer= new CylinderTPCScorers::PS_TPCAnode("DriftElectronsScore",level, 0) ;
 
     //and register it to the multifunctionnal detector
     m_MinosPadScorer->RegisterPrimitive(DriftElectronMinosTPCScorer);
   
-  G4VPrimitiveScorer* PadScorer= new CylinderTPCScorers::PS_TPCCathode("MinosTPCCathode",level, 0);
+  G4VPrimitiveScorer* PadScorer= new CylinderTPCScorers::PS_TPCAnode("MinosTPCAnode",level, 0);
   m_MinosPadScorer->RegisterPrimitive(PadScorer);
   
   G4SDManager::GetSDMpointer()->AddNewDetector(m_MinosPadScorer) ;
