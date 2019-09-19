@@ -160,8 +160,10 @@ G4DETransport::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
       d_drift = step_length+d_long;
     }
     
-    G4ThreeVector trans(G4RandGauss::shoot(0,d_trans),0,0);
+    G4ThreeVector trans(d_trans,0,0);
+    /* G4ThreeVector trans(G4RandGauss::shoot(0,d_trans),0,0); */
     trans.rotateY(twopi*G4UniformRand());
+    /* trans.rotateZ(twopi*G4UniformRand()); // Change for Minos */
     G4ThreeVector d_Pos = (d_drift)*driftDir+trans;
     
     // Should be equal to delta length
