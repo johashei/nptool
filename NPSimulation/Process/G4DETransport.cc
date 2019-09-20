@@ -97,8 +97,7 @@ G4DETransport::~G4DETransport(){}
 // -------------
 //
 G4VParticleChange*
-G4DETransport::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
-{
+G4DETransport::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep){
     aParticleChange.Initialize(aTrack);
     
     G4StepPoint* pPreStepPoint  = aStep.GetPreStepPoint();
@@ -160,10 +159,22 @@ G4DETransport::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
       d_drift = step_length+d_long;
     }
     
-    G4ThreeVector trans(d_trans,0,0);
-    /* G4ThreeVector trans(G4RandGauss::shoot(0,d_trans),0,0); */
-    trans.rotateY(twopi*G4UniformRand());
-    /* trans.rotateZ(twopi*G4UniformRand()); // Change for Minos */
+    // The transverse component is perpendicular to the drift direction,
+    // to build an arbritary trans vector, we have to make a cross product with
+    // an arbritary, non parallel vector, and  driftDir
+    G4ThreeVector arbritary(1,0,0);
+    G4ThreeVector trans ;
+    if(driftDir.dot(arbritary)!=1) // not orthogonal (both are unitary)
+      trans=d_trans*(driftDir.cross(arbritary)).unit();
+    else{
+      arbritary=G4ThreeVector(0,1,0);
+      trans=d_trans*(driftDir.cross(arbritary)).unit();
+      }
+   
+    // Rotate randomly around driftDir for the Phi component
+    trans.rotate(driftDir,twopi*G4UniformRand()); 
+
+    // new position is drift length*driftDir + the transversal movement
     G4ThreeVector d_Pos = (d_drift)*driftDir+trans;
     
     // Should be equal to delta length
