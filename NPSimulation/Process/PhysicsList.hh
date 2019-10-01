@@ -89,7 +89,7 @@ class PhysicsList: public G4VUserPhysicsList{
     void AddIonGasModels();
     void AddPAIModel(const G4String& modname);
     void NewPAIModel(const G4ParticleDefinition* part, const G4String& modname,const G4String& procname);
-
+    void AddLevelData();
   private:
     std::map<std::string,G4VPhysicsConstructor*>  m_PhysList;
     G4EmConfigurator em_config;
