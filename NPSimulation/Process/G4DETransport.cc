@@ -177,6 +177,18 @@ G4DETransport::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep){
     // new position is drift length*driftDir + the transversal movement
     G4ThreeVector d_Pos = (d_drift)*driftDir+trans;
     
+    // Garanty that the electron does not jump outside the current volume
+    G4double safety = m_SafetyHelper->ComputeSafety(x0,d_Pos.mag());
+    
+    // If the distance travelled if above safety, the step is not taken
+    if(d_Pos.mag()>safety){
+       // return G4VDiscreteProcess::PostStepDoIt(aTrack, aStep);
+        d_drift = d_drift*2*safety/d_Pos.mag();
+        d_trans = d_trans*2*safety/d_Pos.mag();
+        trans=trans.unit()*d_trans;
+        d_Pos = (d_drift)*driftDir+trans;
+    }
+
     // Should be equal to delta length
     G4double step = (d_drift)/v_drift;
     
@@ -184,14 +196,7 @@ G4DETransport::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep){
     G4ThreeVector pos = x0 + d_Pos;
     G4double time = t0 + step;
     
-    // Garanty that the electron does not jump outside the current volume
-    G4double safety = m_SafetyHelper->ComputeSafety(x0,d_Pos.mag());
-    
-    // If the distance travelled if above safety, the step is not taken
-    if(d_Pos.mag()>safety){
-        return G4VDiscreteProcess::PostStepDoIt(aTrack, aStep);
-    }
-    
+   
     aParticleChange.ProposeMomentumDirection(d_Pos.unit());
     aParticleChange.ProposeEnergy(Energy);
     aParticleChange.ProposePosition(pos);
