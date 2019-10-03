@@ -105,6 +105,8 @@ private:
   // Solid and Logic Volume
   G4Tubs* m_TargetSolid;
   G4LogicalVolume* m_TargetLogic;
+  G4Tubs* m_TargetBackingSolid;
+  G4LogicalVolume* m_TargetBackingLogic;
   
   // Standard parameter
   G4double    m_TargetThickness;
@@ -112,6 +114,8 @@ private:
   G4double    m_TargetAngle;
   G4Material* m_TargetMaterial;
   G4int       m_TargetNbLayers;
+  G4Material* m_TargetBackingMaterial; 
+  G4double    m_TargetBackingThickness; 
   
   // For Cryo Target
   // this fonction generate a deformed target window shape

@@ -26,7 +26,6 @@
 
 #include "G4VUserPhysicsList.hh"
 #include "G4EmConfigurator.hh"
-#include "G4EmProcessOptions.hh"
 
 #include "globals.hh"
 #include <string>
@@ -40,7 +39,7 @@
 #include "G4RadioactiveDecayPhysics.hh"
 
 // EM
-#include "G4EmProcessOptions.hh"
+#include "G4EmParameters.hh"
 #include "G4EmStandardPhysics.hh"
 #include "G4EmLivermorePhysics.hh"
 #include "G4EmPenelopePhysics.hh"
@@ -92,8 +91,6 @@ class PhysicsList: public G4VUserPhysicsList{
     void AddLevelData();
   private:
     std::map<std::string,G4VPhysicsConstructor*>  m_PhysList;
-    G4EmConfigurator em_config;
-    G4EmProcessOptions em_option;
 
   private: // Physics List
     G4OpticalPhysics* opticalPhysicsList;
@@ -102,6 +99,7 @@ class PhysicsList: public G4VUserPhysicsList{
     G4VPhysicsConstructor* decay_List;
     G4VPhysicsConstructor* radioactiveDecay_List;
     G4EmConfigurator* emConfig;
+    G4EmParameters* em_parameters;
 
   private: // Physics option
     std::string m_EmList;

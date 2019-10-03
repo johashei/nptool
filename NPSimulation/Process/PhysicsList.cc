@@ -52,6 +52,7 @@
 #include "G4LevelManager.hh"
 #include "G4PAIModel.hh"
 #include "G4PAIPhotModel.hh"
+#include "G4RadioactiveDecay.hh"
 #include "menate_R.hh"
 
 /////////////////////////////////////////////////////////////////////////////
@@ -419,13 +420,14 @@ void PhysicsList::ConstructProcess(){
   for(it = m_PhysList.begin(); it!= m_PhysList.end(); it++){
     it->second -> ConstructProcess();
   }
+  
   BiasCrossSectionByFactor(m_IonBinaryCascadePhysics);
+  em_parameters=G4EmParameters::Instance();
 
-  em_option.SetBuildCSDARange(true);
-  em_option.SetDEDXBinningForCSDARange(10*10);
-  em_option.SetFluo(true);
-  em_option.SetAuger(true);
-
+  em_parameters->SetFluo(true);
+  em_parameters->SetAuger(true);
+  em_parameters->SetDeexActiveRegion ("DefaultRegionForTheWorld", true, true,true);
+  em_parameters->SetDeexcitationIgnoreCut(true);
   AddParametrisation();
   AddLevelData();
   return;
@@ -487,6 +489,8 @@ void PhysicsList::AddLevelData(){
     for(G4int j = 1; j < Nentries; j++){ // Excited states
          cout << " - Level " << j
              << " energy = " << levelManager->LevelEnergy(j)
+             << " MeV \t lifetime = " << levelManager->LifeTime(j)
+             << " ns \t half-life = " << levelManager->LifeTime(j)*log(2) << " ns" 
              << endl;
       G4ParticleDefinition* excitedState
         = ionTable->GetIon(Z,A,levelManager->LevelEnergy(j));

@@ -74,7 +74,8 @@ Target::Target(){
   m_TargetAngle        = 0   ;
   m_TargetRadius       = 0   ;
   m_TargetDensity      = 0   ;
-  m_TargetNbLayers     = 5;   // Number of steps by default
+  m_TargetNbLayers     = 5   ;   // Number of steps by default
+  m_TargetBackingThickness = 0   ;
   m_ReactionRegion=NULL;
 
   m_TargetDensity = 0 ;
@@ -98,6 +99,7 @@ Target::Target(){
   m_ShieldFrontRadius = 0 ; 
   m_ShieldBackRadius = 0 ;
   m_ShieldMaterial = 0 ;
+ 
   TargetInstance = this;
 }
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -141,8 +143,15 @@ void Target::ReadConfiguration(NPL::InputParser parser){
       cout << "ERROR: Target token list incomplete, check your input file" << endl;
       exit(1);
     }
+    
     if(starget[0]->HasToken("NBLAYERS"))
       m_TargetNbLayers = starget[0]->GetInt("NBLAYERS");
+    
+    if(starget[0]->HasToken("BackingMaterial")&& starget[0]->HasToken("BackingThickness")){
+      m_TargetBackingMaterial=GetMaterialFromLibrary(starget[0]->GetString("BackingMaterial")); 
+      m_TargetBackingThickness=starget[0]->GetDouble("BackingThickness","micrometer"); 
+      }
+
 
 
   }
@@ -229,13 +238,30 @@ void Target::ConstructDetector(G4LogicalVolume* world){
       m_TargetLogic = 
         new G4LogicalVolume(m_TargetSolid, m_TargetMaterial, "logicTarget");
 
+      if(m_TargetBackingThickness>0){
+        m_TargetBackingSolid = 
+          new G4Tubs("solidTargetBacking", 0, m_TargetRadius, 
+              0.5*m_TargetBackingThickness, 0*deg, 360*deg);
+        m_TargetBackingLogic = 
+          new G4LogicalVolume(m_TargetBackingSolid, m_TargetBackingMaterial, "logicTargetBacking");
+        }
+      
       // rotation of target
       G4RotationMatrix *rotation = new G4RotationMatrix();
       rotation->rotateY(m_TargetAngle);
+      
       new G4PVPlacement(rotation, G4ThreeVector(m_TargetX, m_TargetY, m_TargetZ), 
           m_TargetLogic, "Target", world, false, 0);
-      G4VisAttributes* TargetVisAtt = new G4VisAttributes(G4Colour(0., 0., 1.));
+
+      G4VisAttributes* TargetVisAtt = new G4VisAttributes(G4Colour(0.4, 0.4, 0.4));
       m_TargetLogic->SetVisAttributes(TargetVisAtt);
+
+      if(m_TargetBackingThickness>0){
+        new G4PVPlacement(rotation, G4ThreeVector(m_TargetX, m_TargetY, m_TargetZ+m_TargetThickness*0.5+m_TargetBackingThickness*0.5), 
+            m_TargetBackingLogic, "TargetBacking", world, false, 0);
+        G4VisAttributes* TargetBackingVisAtt = new G4VisAttributes(G4Colour(0.5, 0.5, 0));
+        m_TargetBackingLogic->SetVisAttributes(TargetBackingVisAtt);
+      }
     }
   }
 
