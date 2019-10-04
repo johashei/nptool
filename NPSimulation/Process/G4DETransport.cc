@@ -182,9 +182,9 @@ G4DETransport::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep){
     
     // If the distance travelled if above safety, the step is not taken
     if(d_Pos.mag()>safety){
-       // return G4VDiscreteProcess::PostStepDoIt(aTrack, aStep);
-        d_drift = d_drift*2*safety/d_Pos.mag();
-        d_trans = d_trans*2*safety/d_Pos.mag();
+        // multiply by 0.9 to take a 10% safety margin
+        d_drift = d_drift*0.9*safety/d_Pos.mag();
+        d_trans = d_trans*0.9*safety/d_Pos.mag();
         trans=trans.unit()*d_trans;
         d_Pos = (d_drift)*driftDir+trans;
     }
