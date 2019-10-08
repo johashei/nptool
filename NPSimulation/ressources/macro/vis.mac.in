@@ -42,8 +42,16 @@
 /vis/modeling/trajectories/DrawByParentID/Beam/setLineColourRGBA 0 0 1 1
 /vis/modeling/trajectories/DrawByParentID/addInterval Reaction 1 2
 /vis/modeling/trajectories/DrawByParentID/Reaction/setLineColourRGBA 0 1 0.5 1
-/vis/modeling/trajectories/DrawByParentID/addInterval Decay  2 10
+/vis/modeling/trajectories/DrawByParentID/addInterval Decay  2 3
 /vis/modeling/trajectories/DrawByParentID/Decay/setLineColourRGBA 1 0 1 1
+/vis/modeling/trajectories/DrawByParentID/addInterval Decay2  3 4
+/vis/modeling/trajectories/DrawByParentID/Decay2/setLineColourRGBA 1 1 0 1
+/vis/modeling/trajectories/DrawByParentID/addInterval Decay3  4 5
+/vis/modeling/trajectories/DrawByParentID/Decay3/setLineColourRGBA 1 0.75 0.75 0.5
+/vis/modeling/trajectories/DrawByParentID/addInterval Decay4  5 100
+/vis/modeling/trajectories/DrawByParentID/Decay4/setLineColourRGBA 1 1 1 1
+
+
 
 
 /vis/modeling/trajectories/select DrawByParentID
