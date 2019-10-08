@@ -407,8 +407,6 @@ void Reaction::ReadConfigurationFile(string Path){
 }
 ////////////////////////////////////////////////////////////////////////////////
 Nucleus Reaction::GetNucleus(string name, NPL::InputParser parser){
-
-
   vector<NPL::InputBlock*> blocks = parser.GetAllBlocksWithTokenAndValue("DefineNucleus",name);
   unsigned int size = blocks.size();
   if(size==0)
@@ -436,6 +434,8 @@ Nucleus Reaction::GetNucleus(string name, NPL::InputParser parser){
   else{
     NPL::SendErrorAndExit("NPL::Reaction","Too many nuclei define with the same name");
   }
+
+  return (NPL::Nucleus());
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
