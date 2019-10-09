@@ -43,6 +43,10 @@ TExogamData::~TExogamData()
 
 void TExogamData::Clear()
 {
+   fEXO_Clover.clear();
+   fEXO_Cristal.clear();
+   fEXO_Energy.clear();
+   fEXO_Time.clear();
    // ECC / E
    fEXO_ECC_E_Clover.clear();
    fEXO_ECC_E_Cristal.clear();
@@ -71,6 +75,14 @@ void TExogamData::Clear()
 void TExogamData::Dump() const
 {
    cout << "XXXXXXXXXXXXXXXXXXXXXXXX New Event XXXXXXXXXXXXXXXXX" << endl;
+
+   // RealValues (for simulation purposes)
+   cout << "EXO_Mult = " << fEXO_Clover.size() << endl;
+   for (UShort_t i = 0; i < fEXO_Clover.size(); i++) {
+      cout << "CloverE: " << fEXO_Clover[i] << " CristalE: " << fEXO_Cristal[i]; 
+      cout << " Energy: " << fEXO_Energy[i];
+      cout << " Time: " <<  fEXO_Energy[i] << endl;
+   }
 
    // ECC
    // Energy

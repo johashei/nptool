@@ -599,7 +599,6 @@ void TExogamPhysics::InitializeRootInputRaw()
   TList* outputList = RootOutput::getInstance()->GetList();
    clover_mult = new TH1F("clover_mult","clover_mult",20,0,20);
     outputList->Add(clover_mult);
-
   cristal_mult = new TH1F("cristal_mult","cristal_mult",20,0,20);
   outputList->Add(cristal_mult);
   */
@@ -689,4 +688,3 @@ class proxy_exogam{
 
 proxy_exogam p;
 }
-

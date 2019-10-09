@@ -11,13 +11,13 @@
  * Original Author: N. de Sereville  contact address: deserevi@ipno.in2p3.fr *
  *                                                                           *
  * Creation Date  : march 2009                                               *
- * Last update    :                                                          *
+ * Last update    : july 2019                                                         *
  *---------------------------------------------------------------------------*
  * Decription:                                                               *
  *  This class hold Exogam Raw data                                          *
  *                                                                           *
  *---------------------------------------------------------------------------*
- * Comment:                                                                  *
+ * Comment: Added vectors for real energy/time values (double) (T.Goigoux CEA)                                                                 *
  *                                                                           *
  *                                                                           *
  *****************************************************************************/
@@ -32,6 +32,11 @@ using namespace std;
 
 class TExogamData : public TObject {
  private:
+  // real energy value (for npsimulation)
+  vector<UShort_t>	fEXO_Clover;
+  vector<UShort_t>	fEXO_Cristal;
+  vector<double> 	fEXO_Energy;
+  vector<double> 	fEXO_Time;
   // ECC / Energy
   vector<UShort_t>	fEXO_ECC_E_Clover;
   vector<UShort_t>	fEXO_ECC_E_Cristal;
@@ -52,7 +57,6 @@ class TExogamData : public TObject {
   vector<UShort_t>	fEXO_GOCCE_T_Time;
   // GeFill
   UShort_t             fEXO_Fill;
-  int m_NumberOfClover;
  public:
   TExogamData();
   virtual ~TExogamData();
@@ -63,6 +67,10 @@ class TExogamData : public TObject {
 
 
   /////////////////////           SETTERS           ////////////////////////
+    void	SetClover(UShort_t clo)	{ fEXO_Clover.push_back(clo);}
+    void	SetCristal(UShort_t cris)	{ fEXO_Cristal.push_back(cris);}
+    void	SetEnergy(double ener)	{ fEXO_Energy.push_back(ener);}
+    void	SetTime(double time)	{ fEXO_Time.push_back(time);}
    // ECC / Energy
     void	SetECCEClover(UShort_t clov)	{ fEXO_ECC_E_Clover.push_back(clov);}
     void	SetECCECristal(UShort_t cris)	{ fEXO_ECC_E_Cristal.push_back(cris);}
@@ -85,6 +93,10 @@ class TExogamData : public TObject {
     void SetGeFill(UShort_t Fill)        {fEXO_Fill = Fill;}
 
     /////////////////////           GETTERS           ////////////////////////
+      UShort_t	GetClover(Int_t i)	{return fEXO_Clover[i];}
+      UShort_t	GetCristal(Int_t i)	{return fEXO_Cristal[i];}
+      UShort_t	GetEnergy(Int_t i)	{return fEXO_Energy[i];}
+      UShort_t	GetTime(Int_t i)	{return fEXO_Time[i];}
       // ECC / Energy
       // UShort_t	GetCloverMult()		{return fEXO_ECC_E_Clover.size();}       
       UShort_t	GetECCEMult()		{return fEXO_ECC_E_Clover.size();}             
