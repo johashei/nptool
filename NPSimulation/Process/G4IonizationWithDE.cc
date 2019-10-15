@@ -171,13 +171,17 @@ G4IonizationWithDE::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
     
     // Physical number of electron produced
     G4int number_electron = TotalEnergyDeposit/pair_energy;
+
     number_electron = G4Poisson(number_electron);
-    
+
     // Tracked electron produced
     // 100 per mm per step to have a good statistical accuracy
     
-    G4int tracked_electron = (aStep.GetStepLength()/mm)*5;
-    
+    G4int tracked_electron = (aStep.GetStepLength()/mm)*50;
+   
+    if(number_electron < tracked_electron)
+      tracked_electron = number_electron;
+   
     //if no electron leave
     if(tracked_electron<1){
         aParticleChange.SetNumberOfSecondaries(0);
@@ -219,12 +223,15 @@ G4IonizationWithDE::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
         G4double rand = G4UniformRand();
         G4ThreeVector pos = x0 + rand * delta;
         G4double time = t0 + rand* deltaT;
+      
+        G4double Energy= (0.5*((electron_mass_c2/joule)/(c_squared/((m*m)/(s*s))))*(v_drift/(m/s))*(v_drift/(m/s)))*joule;
         
-        G4DynamicParticle* particle = new G4DynamicParticle(DEDefinition,p, pair_energy);
+        G4DynamicParticle* particle = new G4DynamicParticle(DEDefinition,p, Energy);
         G4Track* aSecondaryTrack = new G4Track(particle,time,pos);
         aSecondaryTrack->SetVelocity(velocity);
         aSecondaryTrack->SetParentID(parentID);
         aSecondaryTrack->SetTouchableHandle(handle);
+        
         // Set the weight, ie, how many electron the track represents
         aSecondaryTrack->SetWeight(number_electron/tracked_electron);
         aParticleChange.AddSecondary(aSecondaryTrack);
