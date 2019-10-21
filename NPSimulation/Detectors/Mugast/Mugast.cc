@@ -26,6 +26,7 @@
 //G4 Geometry object
 #include "G4Tubs.hh"
 #include "G4Box.hh"
+#include "G4Trap.hh"
 
 //G4 sensitive
 #include "G4SDManager.hh"
@@ -56,15 +57,30 @@ using namespace CLHEP;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 namespace Mugast_NS{
-  // Energy and time Resolution
-  const double EnergyThreshold = 0.1*MeV;
-  const double ResoTime = 4.5*ns ;
-  const double ResoEnergy = 1.0*MeV ;
-  const double Radius = 50*mm ; 
-  const double Width = 100*mm ;
-  const double Thickness = 300*mm ;
-  const string Material = "BC400";
+  // Resolution
+  const G4double SigmaTime = 0.212765957    ;// = 500ps
+  const G4double SigmaEnergy    = 0.0149     ;// 0.0223 = 52keV of Resolution //   Unit is MeV/2.35  14.861996
+  const G4double TimeOffset   = 500         ;// 500 ns stop
+
+  // Threshold
+  const G4double ThresholdSi  = 500 * keV;
+
+  // Geometry
+  const G4double AluStripThickness = 0.4*micrometer ;
+  const G4double SiliconThickness  = 300*micrometer ;
+  const G4double SiliconFace       = 100.42*mm ;
+  // Square
+  const G4double SquareBase          = 91.716*mm;
+  const G4double SquareHeight        = 94.916*mm;
+  const G4double SquareLength        = 1*cm;
+  // Trapezoid 
+  const G4double TrapezoidBaseLarge     = 91.48*mm; 
+  const G4double TrapezoidBaseSmall     = 26*mm; 
+  const G4double TrapezoidHeight        = 104.688*mm;
+  const G4double TrapezoidLength        = 1*cm;
+
 }
+using namespace Mugast_NS;
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -86,26 +102,101 @@ Mugast::~Mugast(){
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-void Mugast::AddDetector(string Shape,G4ThreeVector PX1_Y1 ,G4ThreeVector PX1_Y128 ,G4ThreeVector PX128_Y1,G4ThreeVector PX128_Y128){
-   m_X1_Y1.push_back(PX1_Y1); // Top Left Corner Position Vector
-   m_X1_Y128.push_back(PX1_Y128); // Bottom Left Corner Position Vector
-   m_X128_Y1.push_back(PX128_Y1); // Bottom Right Corner Position Vector
-   m_X128_Y128.push_back(PX128_Y128); // Center Corner Position Vector
+void Mugast::AddDetector(int DetectorNumber,string Shape,G4ThreeVector PX1_Y1 ,G4ThreeVector PX1_Y128 ,G4ThreeVector PX128_Y1,G4ThreeVector PX128_Y128){
+  m_X1_Y1.push_back(PX1_Y1); // Top Left Corner Position Vector
+  m_X1_Y128.push_back(PX1_Y128); // Bottom Left Corner Position Vector
+  m_X128_Y1.push_back(PX128_Y1); // Bottom Right Corner Position Vector
+  m_X128_Y128.push_back(PX128_Y128); // Center Corner Position Vector
+  m_DetectorNumber.push_back(DetectorNumber);
+  m_Shape.push_back(Shape);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 G4LogicalVolume* Mugast::BuildSquareDetector(){
   if(!m_SquareDetector){
-    G4Box* box = new G4Box("Mugast_Box",Mugast_NS::Width*0.5,
-        Mugast_NS::Width*0.5,Mugast_NS::Thickness*0.5);
+    G4String Name = "MugastSquare";
 
-    G4Material* DetectorMaterial = MaterialManager::getInstance()->GetMaterialFromLibrary(Mugast_NS::Material);
-    m_SquareDetector = new G4LogicalVolume(box,DetectorMaterial,"logic_Mugast_Box",0,0,0);
-    m_SquareDetector->SetVisAttributes(m_VisSquare);
-    m_SquareDetector->SetSensitiveDetector(m_MugastScorer);
+    G4Box*           solidSquare = new G4Box(Name, 0.5*SquareHeight, 0.5*SquareHeight, 0.5*SquareLength);
+    G4LogicalVolume* logicSquare = new G4LogicalVolume(solidSquare,
+        MaterialManager::getInstance()->GetMaterialFromLibrary("Vacuum"), 
+        Name, 0, 0, 0);
+
+    G4VisAttributes* SquareVisAtt = new G4VisAttributes(G4Colour(0.90, 0.90, 0.90)); 
+    SquareVisAtt->SetForceWireframe(true); 
+    logicSquare->SetVisAttributes(SquareVisAtt);
+
+    // Silicon detector itself
+    G4ThreeVector  positionFirstStage = G4ThreeVector(0, 0, 0.5*cm);
+
+    G4Box*           solidFirstStage = new G4Box("solidFirstStage", 0.5*SquareBase, 0.5*SquareHeight, 0.5*SiliconThickness);
+    G4LogicalVolume* logicFirstStage = new G4LogicalVolume(solidFirstStage, 
+        MaterialManager::getInstance()->GetMaterialFromLibrary("Si"), 
+        "logicFirstStage", 
+        0, 0, 0);
+
+    new G4PVPlacement(0, positionFirstStage, logicFirstStage, Name + "_FirstStage", logicSquare, false, 0);
+    m_SquareDetector = logicSquare;
+    // Set First Stage sensible
+    //   logicFirstStage->SetSensitiveDetector(m_FirstStageScorer);
+
+    ///Visualisation of FirstStage Strip
+    G4VisAttributes* FirstStageVisAtt = new G4VisAttributes(G4Colour(0.3, 0.3, 0.3));   // blue
+    logicFirstStage->SetVisAttributes(FirstStageVisAtt);
   }
+
   return m_SquareDetector;
 }
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+G4LogicalVolume* Mugast::BuildTrapezoidDetector(){
+  if(!m_SquareDetector){
+    G4String Name = "MugastTrapezoid";
+    // Definition of the volume containing the sensitive detector
+    G4Trap* solidTrapezoid = new G4Trap(Name, 
+        TrapezoidLength*0.5, 0*deg, 0*deg, 
+        TrapezoidHeight*0.5,  TrapezoidBaseSmall*0.5,TrapezoidBaseLarge*0.5, 0*deg, 
+        TrapezoidHeight*0.5,  TrapezoidBaseSmall*0.5,TrapezoidBaseLarge*0.5, 0*deg);
+    G4LogicalVolume* logicTrapezoid = new G4LogicalVolume(solidTrapezoid, 
+      MaterialManager::getInstance()->GetMaterialFromLibrary("Vacuum"), 
+      Name, 
+      0, 0, 0);
+
+    G4VisAttributes* TrapezoideVisAtt = new G4VisAttributes(G4Colour(0.90, 0.90, 0.90));
+    TrapezoideVisAtt->SetForceWireframe(true); 
+    logicTrapezoid->SetVisAttributes(TrapezoideVisAtt);
+
+    // Silicon detector itself
+    G4ThreeVector  positionFirstStage = G4ThreeVector(0, 0, 0.5*SiliconThickness);
+
+    G4Trap* solidFirstStage = new G4Trap("solidFirstStage", 
+        0.5*SiliconThickness, 0*deg, 0*deg, 
+        TrapezoidHeight*0.5,  TrapezoidBaseSmall*0.5,TrapezoidBaseLarge*0.5, 0*deg, 
+        TrapezoidHeight*0.5,  TrapezoidBaseSmall*0.5,TrapezoidBaseLarge*0.5, 0*deg);
+    G4LogicalVolume* logicFirstStage = new G4LogicalVolume(solidFirstStage, 
+      MaterialManager::getInstance()->GetMaterialFromLibrary("Si"),
+      "logicFirstStage", 
+      0, 0, 0);
+
+    new G4PVPlacement(0,
+        positionFirstStage,
+        logicFirstStage,
+        Name + "_FirstStage",
+        logicTrapezoid,
+        false,
+        0);
+
+    // Set First Stage sensible
+    logicFirstStage->SetSensitiveDetector(m_MugastScorer);
+
+    ///Visualisation of FirstStage Strip
+    G4VisAttributes* FirstStageVisAtt = new G4VisAttributes(G4Colour(0.3, 0.3, 0.3));   // blue
+    logicFirstStage->SetVisAttributes(FirstStageVisAtt);
+
+    m_TrapezoidDetector=logicTrapezoid;
+  }
+
+  return m_TrapezoidDetector;
+}
+
 
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -119,31 +210,35 @@ void Mugast::ReadConfiguration(NPL::InputParser parser) {
   vector<NPL::InputBlock*> blocks = parser.GetAllBlocksWithToken("Mugast");
   if (NPOptionManager::getInstance()->GetVerboseLevel())
     cout << "//// " << blocks.size() << " detector found" << endl;
-    
+
   // Cartesian Case
-  vector<string> cart = {"X1_Y1", "X1_Y128", "X128_Y1", "X128_Y128"};
-  
+  vector<string> cart = {"DetectorNumber","X1_Y1", "X1_Y128", "X128_Y1", "X128_Y128"};
+
   for (unsigned int i = 0; i < blocks.size(); i++) {
-    if (NPOptionManager::getInstance()->GetVerboseLevel())
-      cout << endl << "//// Mugast detector " << i + 1 << endl;
-    
+
     string shape = blocks[i]->GetMainValue();
 
+    if (NPOptionManager::getInstance()->GetVerboseLevel())
+      cout << endl << "//// Mugast detector " << shape << endl;
+
     if (blocks[i]->HasTokenList(cart)&& (shape=="Square"|| shape=="Trapezoid")) {
+      int DetectorNumber = blocks[i]->GetInt("DetectorNumber");
       G4ThreeVector A
         = NPS::ConvertVector(blocks[i]->GetTVector3("X1_Y1", "mm"));
       G4ThreeVector B
-        = NPS::ConvertVector(blocks[i]->GetTVector3("X128_Y1", "mm"));
-      G4ThreeVector C
         = NPS::ConvertVector(blocks[i]->GetTVector3("X1_Y128", "mm"));
+      G4ThreeVector C
+        = NPS::ConvertVector(blocks[i]->GetTVector3("X128_Y1", "mm"));
       G4ThreeVector D
         = NPS::ConvertVector(blocks[i]->GetTVector3("X128_Y128", "mm"));
-      AddDetector(shape,A,B,C,D);
+
+      AddDetector(DetectorNumber,shape,A,B,C,D);
     }
     else if (blocks[i]->HasTokenList(cart)&& (shape=="Annular")) {
+      int DetectorNumber = blocks[i]->GetInt("DetectorNumber");
       G4ThreeVector A
         = NPS::ConvertVector(blocks[i]->GetTVector3("Center", "mm"));
-      AddDetector(shape,A);
+      AddDetector(DetectorNumber,shape,A);
     }
 
     else {
@@ -160,35 +255,65 @@ void Mugast::ReadConfiguration(NPL::InputParser parser) {
 // Construct detector and inialise sensitive part.
 // Called After DetecorConstruction::AddDetector Method
 void Mugast::ConstructDetector(G4LogicalVolume* world){
-/*  for (unsigned short i = 0 ; i < m_R.size() ; i++) {
 
-    G4double wX = m_R[i] * sin(m_Theta[i] ) * cos(m_Phi[i] ) ;
-    G4double wY = m_R[i] * sin(m_Theta[i] ) * sin(m_Phi[i] ) ;
-    G4double wZ = m_R[i] * cos(m_Theta[i] ) ;
-    G4ThreeVector Det_pos = G4ThreeVector(wX, wY, wZ) ;
-    // So the face of the detector is at R instead of the middle
-    Det_pos+=Det_pos.unit()*Mugast_NS::Thickness*0.5;
-    // Building Detector reference frame
-    G4double ii = cos(m_Theta[i]) * cos(m_Phi[i]);
-    G4double jj = cos(m_Theta[i]) * sin(m_Phi[i]);
-    G4double kk = -sin(m_Theta[i]);
-    G4ThreeVector Y(ii,jj,kk);
-    G4ThreeVector w = Det_pos.unit();
-    G4ThreeVector u = w.cross(Y);
-    G4ThreeVector v = w.cross(u);
-    v = v.unit();
-    u = u.unit();
+  for (unsigned short i = 0 ; i < m_DetectorNumber.size() ; i++) {
+    if(m_Shape[i]=="Square"){
+      G4RotationMatrix* rot    = NULL                   ;
+      G4ThreeVector     pos    = G4ThreeVector(0, 0, 0) ;
+      G4ThreeVector     u      = G4ThreeVector(0, 0, 0) ;
+      G4ThreeVector     v      = G4ThreeVector(0, 0, 0) ;
+      G4ThreeVector     w      = G4ThreeVector(0, 0, 0) ;
+      G4ThreeVector     Center = G4ThreeVector(0, 0, 0) ;
+      // (u,v,w) unitary vector associated to telescope referencial
+      // (u,v) // to silicon plan
+      // w perpendicular to (u,v) plan and pointing ThirdStage
+      u = m_X128_Y1[i] - m_X1_Y1[i];
+      u = u.unit();
 
-    G4RotationMatrix* Rot = new G4RotationMatrix(u,v,w);
+      v = m_X1_Y128[i] - m_X1_Y1[i];
+      v = v.unit();
 
-    if(m_Shape[i] == "Square"){
-      new G4PVPlacement(G4Transform3D(*Rot,Det_pos),
-          BuildSquareDetector(),
-          "Mugast",world,false,i+1);
+      w = u.cross(v);
+      w = w.unit();
+
+      Center = (m_X1_Y1[i] + m_X1_Y128[i] + m_X128_Y1[i] + m_X128_Y128[i]) / 4;
+
+      // Passage Matrix from Lab Referential to Telescope Referential
+      rot = new G4RotationMatrix(u, v, w);
+      // translation to place Telescope
+      pos = w * SquareLength * 0.5 + Center;
+      new G4PVPlacement(G4Transform3D(*rot, pos), BuildSquareDetector(), "MugastSquare", world, false, m_DetectorNumber[i]);
     }
-  }
+    else if(m_Shape[i]=="Trapezoid"){
+      G4RotationMatrix* rot    = NULL                   ;
+      G4ThreeVector     pos    = G4ThreeVector(0, 0, 0) ;
+      G4ThreeVector     u      = G4ThreeVector(0, 0, 0) ;
+      G4ThreeVector     v      = G4ThreeVector(0, 0, 0) ;
+      G4ThreeVector     w      = G4ThreeVector(0, 0, 0) ;
+      G4ThreeVector     Center = G4ThreeVector(0, 0, 0) ;
+      // (u,v,w) unitary vector associated to telescope referencial
+      // (u,v) // to silicon plan
+      // w perpendicular to (u,v) plan and pointing ThirdStage
+      u = m_X128_Y1[i] - m_X1_Y1[i];
+      u = u.unit();
 
-  */
+      v = (m_X1_Y128[i]  + m_X128_Y128[i]  - m_X1_Y1[i]  - m_X128_Y1[i] );
+      v = v.unit();
+      cout << u << " " << v << " " << u.dot(v) << endl;
+      w = u.cross(v);
+      w = w.unit();
+      
+      Center = (m_X1_Y1[i] + m_X1_Y128[i] + m_X128_Y1[i] + m_X128_Y128[i]) / 4;
+
+      // Passage Matrix from Lab Referential to Telescope Referential
+      rot = new G4RotationMatrix(u, v, w);
+      rot->rotate(180*deg,w);
+      // translation to place Telescope
+      pos = w * TrapezoidLength * 0.5 + Center;
+      new G4PVPlacement(G4Transform3D(*rot, pos), BuildTrapezoidDetector(), "MugastTrapezoid", world, false, m_DetectorNumber[i]);
+    }
+
+  }
 }
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 // Add Detector branch to the EventTree.
@@ -206,7 +331,7 @@ void Mugast::InitializeRootOutput(){
 // Read sensitive part and fill the Root tree.
 // Called at in the EventAction::EndOfEventAvtion
 void Mugast::ReadSensitive(const G4Event* ){
-  m_Event->Clear();
+/*  m_Event->Clear();
 
   ///////////
   // Calorimeter scorer
@@ -215,14 +340,14 @@ void Mugast::ReadSensitive(const G4Event* ){
   unsigned int size = Scorer->GetMult(); 
   for(unsigned int i = 0 ; i < size ; i++){
     vector<unsigned int> level = Scorer->GetLevel(i); 
-    double Energy = RandGauss::shoot(Scorer->GetEnergy(i),Mugast_NS::ResoEnergy);
-    if(Energy>Mugast_NS::EnergyThreshold){
-      double Time = RandGauss::shoot(Scorer->GetTime(i),Mugast_NS::ResoTime);
+    double Energy = RandGauss::shoot(Scorer->GetEnergy(i),Mugast_NS::SigmaEnergy);
+    if(Energy>Mugast_NS::ThresholdSi){
+      double Time = RandGauss::shoot(Scorer->GetTime(i),Mugast_NS::SigmaTime);
       int DetectorNbr = level[0];
-   //   m_Event->SetEnergy(DetectorNbr,Energy);
-   //   m_Event->SetTime(DetectorNbr,Time); 
+      //   m_Event->SetEnergy(DetectorNbr,Energy);
+      //   m_Event->SetTime(DetectorNbr,Time); 
     }
-  }
+  }*/
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
