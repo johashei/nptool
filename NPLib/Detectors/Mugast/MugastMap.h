@@ -1,6 +1,7 @@
 #ifndef MUGASTMAP
 #define MUGASTMAP
 
+#include "MugastReverseMap.h"
 
 namespace MUGAST_MAP{
 

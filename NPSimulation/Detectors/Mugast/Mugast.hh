@@ -91,7 +91,9 @@ class Mugast : public NPS::VDetector{
     void InitializeScorers() ;
 
     //   Associated Scorer
-    G4MultiFunctionalDetector* m_MugastScorer ;
+    G4MultiFunctionalDetector* m_SquareScorer;
+    G4MultiFunctionalDetector* m_TrapezoidScorer;
+    G4MultiFunctionalDetector* m_AnnularScorer;
     ////////////////////////////////////////////////////
     ///////////Event class to store Data////////////////
     ////////////////////////////////////////////////////

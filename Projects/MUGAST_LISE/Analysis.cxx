@@ -55,15 +55,15 @@ void Analysis::Init() {
   string WindowsMaterial = m_DetectorManager->GetWindowsMaterial();
 
   // energy losses
-  string light=NPL::ChangeNameToG4Standard(myReaction.GetNucleus3().GetName());
-  string beam=NPL::ChangeNameToG4Standard(myReaction.GetNucleus1().GetName());
+  string light=NPL::ChangeNameToG4Standard(myReaction.GetNucleus3()->GetName());
+  string beam=NPL::ChangeNameToG4Standard(myReaction.GetNucleus1()->GetName());
 
   LightTarget = NPL::EnergyLoss(light+"_"+TargetMaterial+".G4table","G4Table",100 );
   LightAl = NPL::EnergyLoss(light+"_Al.G4table","G4Table",100);
   LightSi = NPL::EnergyLoss(light+"_Si.G4table","G4Table",100);
   BeamCD2 = NPL::EnergyLoss(beam+"_"+TargetMaterial+".G4table","G4Table",100);
 
-  if(WindowsThickness){
+/*  if(WindowsThickness){
     BeamWindow= new NPL::EnergyLoss(beam+"_"+WindowsMaterial+".G4table","G4Table",100); 
     LightWindow=  new NPL::EnergyLoss(light+"_"+WindowsMaterial+".G4table","G4Table",100);  
   }
@@ -72,7 +72,7 @@ void Analysis::Init() {
     BeamWindow= NULL;
     LightWindow=NULL;
   }
-
+*/
   // initialize various parameters
   Rand = TRandom3();
   DetectorNumber = 0;
@@ -100,7 +100,7 @@ void Analysis::TreatEvent() {
   BeamImpact = TVector3(0,0,zImpact); 
   // determine beam energy for a randomized interaction point in target
   // 1% FWHM randominastion (E/100)/2.35
-  myReaction.SetBeamEnergy(Rand.Gaus(myInit->GetIncidentFinalKineticEnergy(),myInit->GetIncidentFinalKineticEnergy()/235));
+ // myReaction.SetBeamEnergy(Rand.Gaus(myInit->GetIncidentFinalKineticEnergy(),myInit->GetIncidentFinalKineticEnergy()/235));
   OriginalThetaLab = myInit->GetThetaLab_WorldFrame(0);
   OriginalELab = myInit->GetKineticEnergy(0);
 
@@ -118,8 +118,8 @@ void Analysis::TreatEvent() {
     X =  GD -> GetPositionOfInteraction().X();
     Y =  GD -> GetPositionOfInteraction().Y();
     Z =  GD -> GetPositionOfInteraction().Z();
-    cout << " -- " << endl;
-     cout << X-Coord->GetDetectedPositionX(0) << " " << Y-Coord->GetDetectedPositionY(0) << " " << Z << endl;
+    //cout << " -- " << endl;
+     //cout << X-Coord->GetDetectedPositionX(0) << " " << Y-Coord->GetDetectedPositionY(0) << " " << Z << endl;
     ThetaGDSurface = HitDirection.Angle( TVector3(0,0,1) ) ;
     ThetaNormalTarget = HitDirection.Angle( TVector3(0,0,1) ) ;
 

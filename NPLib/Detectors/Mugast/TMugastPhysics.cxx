@@ -6,13 +6,13 @@
  *****************************************************************************/
 
 /*****************************************************************************
- * Original Author: Adrien MATTA  contact address: a.matta@surrey.ac.uk      *
+ * Original Author: Adrien MATTA  contact address: matta@lpccaen.in2p3.fr    *
  *                                                                           *
- * Creation Date  : febuary 2009                                             *
- * Last update    : october 2010                                             *
+ * Creation Date  : novembre 2018                                            *
+ * Last update    :                                                          *
  *---------------------------------------------------------------------------*
  * Decription:                                                               *
- *  This class hold Mugast treated data                                       *
+ *  This class hold Mugast treated data                                      *
  *                                                                           *
  *---------------------------------------------------------------------------*
  * Comment:                                                                  *
@@ -544,7 +544,7 @@ void TMugastPhysics::ReadConfiguration(NPL::InputParser parser) {
       TVector3 C = blocks[i]->GetTVector3("X1_Y128", "mm");
       TVector3 D = blocks[i]->GetTVector3("X128_Y128", "mm");
 
-      AddTelescope(A, B, C, D);
+      AddTelescope(DetectorType[detectorNbr],A, B, C, D);
     }
 
     else if (blocks[i]->HasTokenList(annular)) {
@@ -561,7 +561,7 @@ void TMugastPhysics::ReadConfiguration(NPL::InputParser parser) {
       det = i+1;
       m_DetectorNumberIndex[detectorNbr]=det;
       TVector3 Center = blocks[i]->GetTVector3("Center", "mm");
-      AddTelescope(Center);
+      AddTelescope(DetectorType[detectorNbr],Center);
     }
 
 
@@ -583,7 +583,7 @@ void TMugastPhysics::ReadConfiguration(NPL::InputParser parser) {
       double         Phi   = blocks[i]->GetDouble("PHI", "deg");
       double         R     = blocks[i]->GetDouble("R", "mm");
       vector<double> beta  = blocks[i]->GetVectorDouble("BETA", "deg");
-      AddTelescope(Theta, Phi, R, beta[0], beta[1], beta[2]);
+      AddTelescope(DetectorType[detectorNbr],Theta, Phi, R, beta[0], beta[1], beta[2]);
     }
 
     else {
@@ -728,7 +728,7 @@ void TMugastPhysics::InitializeRootOutput() {
 }
 
 /////   Specific to MugastArray   ////
-void TMugastPhysics::AddTelescope(TVector3 C_X1_Y1, TVector3 C_X128_Y1,
+void TMugastPhysics::AddTelescope(MG_DetectorType type,TVector3 C_X1_Y1, TVector3 C_X128_Y1,
     TVector3 C_X1_Y128, TVector3 C_X128_Y128) {
   // To avoid warning
   C_X128_Y128 *= 1;
@@ -750,14 +750,16 @@ void TMugastPhysics::AddTelescope(TVector3 C_X1_Y1, TVector3 C_X128_Y1,
 
   //   Geometry Parameter
   double Base,Height;
-  if(DetectorType[m_NumberOfTelescope-1]==MG_TRAPEZE){
+  if(type==MG_TRAPEZE){
     Base          = 91.48; // mm
     Height        = 104.688; // mm
   }
     
-  if(DetectorType[m_NumberOfTelescope-1]==MG_SQUARE){
+  if(type==MG_SQUARE){
     Base          = 91.716; // mm
     Height        = 94.916; // mm
+//
+ //   Height        = 194.916; // mm
   }
     //double Face          = 98; // mm
   double NumberOfStrip = 128;
@@ -773,10 +775,13 @@ void TMugastPhysics::AddTelescope(TVector3 C_X1_Y1, TVector3 C_X128_Y1,
   vector<vector<double>> OneTelescopeStripPositionZ;
 
   //   Moving StripCenter to 1.1 corner:
-  //Strip_1_1 = C_X1_Y1 + (U + V) * (StripPitch / 2.);
-  Strip_1_1 = C_X1_Y1 + U  * (StripPitchBase / 2.) + V * (StripPitchHeight / 2.);
-  //Strip_1_1 += U + V ;
-
+ // Strip_1_1 = C_X1_Y1 + U  * (StripPitchBase / 2.) + V * (StripPitchHeight / 2.);
+  // This calculation recenter the strip around the detector center. 
+  // This account for cases where the provided corner coordinates
+  // does not match the detector size
+  TVector3 Center = 0.25*(C_X1_Y128 + C_X128_Y128 + C_X1_Y1 + C_X128_Y1);
+  Strip_1_1 = Center-(0.5*Base*U+0.5*Height*V) + U  * (StripPitchBase / 2.) + V * (StripPitchHeight / 2.);
+ 
   for (int i = 0; i < 128; ++i) {
     lineX.clear();
     lineY.clear();
@@ -834,7 +839,7 @@ void TMugastPhysics::InitializeStandardParameter() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-void TMugastPhysics::AddTelescope(TVector3 C_Center) {
+void TMugastPhysics::AddTelescope(MG_DetectorType type,TVector3 C_Center) {
   // To avoid warning
   m_NumberOfTelescope++;
   double Z = C_Center.Z();
@@ -938,7 +943,7 @@ void TMugastPhysics::AddTelescope(TVector3 C_Center) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-void TMugastPhysics::AddTelescope(double theta, double phi, double distance,
+void TMugastPhysics::AddTelescope(MG_DetectorType type,double theta, double phi, double distance,
     double beta_u, double beta_v, double beta_w) {
 
   m_NumberOfTelescope++;

@@ -41,13 +41,16 @@
 
 // NPTool header
 #include "Mugast.hh"
-#include "CalorimeterScorers.hh"
+#include "MugastReverseMap.h"
+#include "DSSDScorers.hh"
 #include "InteractionScorers.hh"
 #include "RootOutput.h"
 #include "MaterialManager.hh"
 #include "NPSDetectorFactory.hh"
 #include "NPOptionManager.h"
 #include "NPSHitsMap.hh"
+#include "NPCore.h"
+
 // CLHEP header
 #include "CLHEP/Random/RandGauss.h"
 
@@ -58,20 +61,25 @@ using namespace CLHEP;
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 namespace Mugast_NS{
   // Resolution
-  const G4double SigmaTime = 0.212765957    ;// = 500ps
-  const G4double SigmaEnergy    = 0.0149     ;// 0.0223 = 52keV of Resolution //   Unit is MeV/2.35  14.861996
+  const G4double SigmaTime    = 0.212765957 ;// = 500ps
+  const G4double SigmaEnergy  = 0.0149      ;// 0.0223 = 52keV of Resolution //   Unit is MeV/2.35  14.861996
   const G4double TimeOffset   = 500         ;// 500 ns stop
 
   // Threshold
-  const G4double ThresholdSi  = 500 * keV;
+  const G4double EnergyThreshold = 1 * MeV;
 
   // Geometry
   const G4double AluStripThickness = 0.4*micrometer ;
-  const G4double SiliconThickness  = 300*micrometer ;
-  const G4double SiliconFace       = 100.42*mm ;
+  const G4double SiliconThickness  = 3000*micrometer ;
+
   // Square
+  
+ // const G4double SquareBase          = 88*mm;
+//  const G4double SquareHeight        = 87*mm;
+  
   const G4double SquareBase          = 91.716*mm;
   const G4double SquareHeight        = 94.916*mm;
+ // const G4double SquareHeight        = 194.916*mm;
   const G4double SquareLength        = 1*cm;
   // Trapezoid 
   const G4double TrapezoidBaseLarge     = 91.48*mm; 
@@ -87,7 +95,9 @@ using namespace Mugast_NS;
 // Mugast Specific Method
 Mugast::Mugast(){
   m_Event = new TMugastData() ;
-  m_MugastScorer = 0;
+  m_SquareScorer= 0;
+  m_TrapezoidScorer= 0;
+  m_AnnularScorer= 0;
   m_SquareDetector = 0;
   m_TrapezoidDetector = 0;
   m_AnnularDetector = 0;
@@ -116,7 +126,7 @@ G4LogicalVolume* Mugast::BuildSquareDetector(){
   if(!m_SquareDetector){
     G4String Name = "MugastSquare";
 
-    G4Box*           solidSquare = new G4Box(Name, 0.5*SquareHeight, 0.5*SquareHeight, 0.5*SquareLength);
+    G4Box*           solidSquare = new G4Box(Name, 0.5*SquareBase, 0.5*SquareHeight, 0.5*SquareLength);
     G4LogicalVolume* logicSquare = new G4LogicalVolume(solidSquare,
         MaterialManager::getInstance()->GetMaterialFromLibrary("Vacuum"), 
         Name, 0, 0, 0);
@@ -126,7 +136,7 @@ G4LogicalVolume* Mugast::BuildSquareDetector(){
     logicSquare->SetVisAttributes(SquareVisAtt);
 
     // Silicon detector itself
-    G4ThreeVector  positionFirstStage = G4ThreeVector(0, 0, 0.5*cm);
+    G4ThreeVector  positionFirstStage = G4ThreeVector(0, 0, 0);
 
     G4Box*           solidFirstStage = new G4Box("solidFirstStage", 0.5*SquareBase, 0.5*SquareHeight, 0.5*SiliconThickness);
     G4LogicalVolume* logicFirstStage = new G4LogicalVolume(solidFirstStage, 
@@ -137,10 +147,10 @@ G4LogicalVolume* Mugast::BuildSquareDetector(){
     new G4PVPlacement(0, positionFirstStage, logicFirstStage, Name + "_FirstStage", logicSquare, false, 0);
     m_SquareDetector = logicSquare;
     // Set First Stage sensible
-    //   logicFirstStage->SetSensitiveDetector(m_FirstStageScorer);
+    logicFirstStage->SetSensitiveDetector(m_SquareScorer);
 
     ///Visualisation of FirstStage Strip
-    G4VisAttributes* FirstStageVisAtt = new G4VisAttributes(G4Colour(0.3, 0.3, 0.3));   // blue
+    G4VisAttributes* FirstStageVisAtt = new G4VisAttributes(G4Colour(0.3, 0.3, 0.3));   
     logicFirstStage->SetVisAttributes(FirstStageVisAtt);
   }
 
@@ -150,6 +160,7 @@ G4LogicalVolume* Mugast::BuildSquareDetector(){
 G4LogicalVolume* Mugast::BuildTrapezoidDetector(){
   if(!m_SquareDetector){
     G4String Name = "MugastTrapezoid";
+
     // Definition of the volume containing the sensitive detector
     G4Trap* solidTrapezoid = new G4Trap(Name, 
         TrapezoidLength*0.5, 0*deg, 0*deg, 
@@ -165,7 +176,7 @@ G4LogicalVolume* Mugast::BuildTrapezoidDetector(){
     logicTrapezoid->SetVisAttributes(TrapezoideVisAtt);
 
     // Silicon detector itself
-    G4ThreeVector  positionFirstStage = G4ThreeVector(0, 0, 0.5*SiliconThickness);
+    G4ThreeVector  positionFirstStage = G4ThreeVector(0, 0, 0);
 
     G4Trap* solidFirstStage = new G4Trap("solidFirstStage", 
         0.5*SiliconThickness, 0*deg, 0*deg, 
@@ -185,10 +196,10 @@ G4LogicalVolume* Mugast::BuildTrapezoidDetector(){
         0);
 
     // Set First Stage sensible
-    logicFirstStage->SetSensitiveDetector(m_MugastScorer);
+    logicFirstStage->SetSensitiveDetector(m_TrapezoidScorer);
 
     ///Visualisation of FirstStage Strip
-    G4VisAttributes* FirstStageVisAtt = new G4VisAttributes(G4Colour(0.3, 0.3, 0.3));   // blue
+    G4VisAttributes* FirstStageVisAtt = new G4VisAttributes(G4Colour(0.3, 0.3, 0.3));  
     logicFirstStage->SetVisAttributes(FirstStageVisAtt);
 
     m_TrapezoidDetector=logicTrapezoid;
@@ -270,7 +281,7 @@ void Mugast::ConstructDetector(G4LogicalVolume* world){
       u = m_X128_Y1[i] - m_X1_Y1[i];
       u = u.unit();
 
-      v = m_X1_Y128[i] - m_X1_Y1[i];
+      v = (m_X1_Y128[i] + m_X128_Y128[i] - m_X1_Y1[i] - m_X128_Y1[i]);
       v = v.unit();
 
       w = u.cross(v);
@@ -281,7 +292,7 @@ void Mugast::ConstructDetector(G4LogicalVolume* world){
       // Passage Matrix from Lab Referential to Telescope Referential
       rot = new G4RotationMatrix(u, v, w);
       // translation to place Telescope
-      pos = w * SquareLength * 0.5 + Center;
+      pos = w * SiliconThickness* 0.5 + Center;
       new G4PVPlacement(G4Transform3D(*rot, pos), BuildSquareDetector(), "MugastSquare", world, false, m_DetectorNumber[i]);
     }
     else if(m_Shape[i]=="Trapezoid"){
@@ -297,9 +308,9 @@ void Mugast::ConstructDetector(G4LogicalVolume* world){
       u = m_X128_Y1[i] - m_X1_Y1[i];
       u = u.unit();
 
-      v = (m_X1_Y128[i]  + m_X128_Y128[i]  - m_X1_Y1[i]  - m_X128_Y1[i] );
+      v = (m_X1_Y128[i] + m_X128_Y128[i] - m_X1_Y1[i] - m_X128_Y1[i] );
       v = v.unit();
-      cout << u << " " << v << " " << u.dot(v) << endl;
+
       w = u.cross(v);
       w = w.unit();
       
@@ -309,7 +320,7 @@ void Mugast::ConstructDetector(G4LogicalVolume* world){
       rot = new G4RotationMatrix(u, v, w);
       rot->rotate(180*deg,w);
       // translation to place Telescope
-      pos = w * TrapezoidLength * 0.5 + Center;
+      pos = w * SiliconThickness* 0.5 + Center;
       new G4PVPlacement(G4Transform3D(*rot, pos), BuildTrapezoidDetector(), "MugastTrapezoid", world, false, m_DetectorNumber[i]);
     }
 
@@ -331,23 +342,108 @@ void Mugast::InitializeRootOutput(){
 // Read sensitive part and fill the Root tree.
 // Called at in the EventAction::EndOfEventAvtion
 void Mugast::ReadSensitive(const G4Event* ){
-/*  m_Event->Clear();
+  m_Event->Clear();
 
   ///////////
-  // Calorimeter scorer
-  CalorimeterScorers::PS_Calorimeter* Scorer= (CalorimeterScorers::PS_Calorimeter*) m_MugastScorer->GetPrimitive(0);
+  // Square
+  DSSDScorers::PS_Rectangle* SquareScorer = (DSSDScorers::PS_Rectangle*) m_SquareScorer->GetPrimitive(0);
 
-  unsigned int size = Scorer->GetMult(); 
-  for(unsigned int i = 0 ; i < size ; i++){
-    vector<unsigned int> level = Scorer->GetLevel(i); 
-    double Energy = RandGauss::shoot(Scorer->GetEnergy(i),Mugast_NS::SigmaEnergy);
-    if(Energy>Mugast_NS::ThresholdSi){
-      double Time = RandGauss::shoot(Scorer->GetTime(i),Mugast_NS::SigmaTime);
-      int DetectorNbr = level[0];
-      //   m_Event->SetEnergy(DetectorNbr,Energy);
-      //   m_Event->SetTime(DetectorNbr,Time); 
+
+  // Loop on the Square map
+  unsigned int sizeFront= SquareScorer->GetLengthMult();
+
+  for (unsigned int i=0 ; i<sizeFront ; i++){
+
+    double Energy = RandGauss::shoot(SquareScorer->GetEnergyLength(i), SigmaEnergy);
+
+    if(Energy>EnergyThreshold){
+      double Time       = RandGauss::shoot(SquareScorer->GetTimeLength(i), SigmaTime);
+      int DetNbr        = SquareScorer->GetDetectorLength(i);
+      int StripFront    = SquareScorer->GetStripLength(i);
+       
+      m_Event->SetDSSDXE(MG_DetectorType::MG_NOCHANGE,DetNbr,
+      MUGAST_MAP::ReverseSquareX[StripFront-1],
+      NPL::EnergyToADC(Energy, 0, 63, 8192, 16384));
+      
+      m_Event->SetDSSDXT(MG_DetectorType::MG_NOCHANGE,DetNbr,
+      MUGAST_MAP::ReverseSquareX[StripFront-1],
+      NPL::EnergyToADC(Time, 0, 1000, 8192, 16384));
+
     }
-  }*/
+  } 
+
+  unsigned int sizeBack= SquareScorer->GetWidthMult();
+  for (unsigned int i=0 ; i<sizeBack ; i++){
+    double Energy = RandGauss::shoot(SquareScorer->GetEnergyWidth(i), SigmaEnergy);
+
+    if(Energy>EnergyThreshold){
+      double Time       = RandGauss::shoot(SquareScorer->GetTimeWidth(i), SigmaTime);
+      int DetNbr        = SquareScorer->GetDetectorWidth(i);
+      int StripBack     = SquareScorer->GetStripWidth(i);
+
+      m_Event->SetDSSDYE(MG_DetectorType::MG_NOCHANGE,DetNbr,
+      MUGAST_MAP::ReverseSquareY[StripBack-1],
+      NPL::EnergyToADC(Energy, 0, 63, 8192, 0));
+      
+      m_Event->SetDSSDYT(MG_DetectorType::MG_NOCHANGE,DetNbr,
+      MUGAST_MAP::ReverseSquareY[StripBack-1],
+      NPL::EnergyToADC(Time, 0, 1000, 8192, 16384));
+    }
+  }
+  // clear map for next event
+  SquareScorer->clear();
+
+  ///////////
+  // Trapezoid
+  DSSDScorers::PS_Rectangle* TrapezoidScorer = (DSSDScorers::PS_Rectangle*) m_TrapezoidScorer->GetPrimitive(0);
+
+
+  // Loop on the Trapezoid map
+  sizeFront= TrapezoidScorer->GetLengthMult();
+
+  for (unsigned int i=0 ; i<sizeFront ; i++){
+
+    double Energy = RandGauss::shoot(TrapezoidScorer->GetEnergyLength(i), SigmaEnergy);
+
+    if(Energy>EnergyThreshold){
+      double Time       = RandGauss::shoot(TrapezoidScorer->GetTimeLength(i), SigmaTime);
+      int DetNbr        = TrapezoidScorer->GetDetectorLength(i);
+      int StripFront    = TrapezoidScorer->GetStripLength(i);
+      
+      m_Event->SetDSSDXE(MG_DetectorType::MG_NOCHANGE,DetNbr,
+      MUGAST_MAP::ReverseTrapezeX[StripFront-1],
+      NPL::EnergyToADC(Energy, 0, 63, 8192, 16384));
+      
+      m_Event->SetDSSDXT(MG_DetectorType::MG_NOCHANGE,DetNbr,
+      MUGAST_MAP::ReverseTrapezeX[StripFront-1],
+      NPL::EnergyToADC(Time, 0, 1000, 8192, 16384));
+
+    }
+  } 
+
+  sizeBack= TrapezoidScorer->GetWidthMult();
+  for (unsigned int i=0 ; i<sizeBack ; i++){
+
+    double Energy = RandGauss::shoot(TrapezoidScorer->GetEnergyWidth(i), SigmaEnergy);
+
+    if(Energy>EnergyThreshold){
+      double Time       = RandGauss::shoot(TrapezoidScorer->GetTimeWidth(i), SigmaTime);
+      int DetNbr        = TrapezoidScorer->GetDetectorWidth(i);
+      int StripBack     = 128-TrapezoidScorer->GetStripWidth(i)+1;
+
+      m_Event->SetDSSDYE(MG_DetectorType::MG_NOCHANGE,DetNbr,
+      MUGAST_MAP::ReverseTrapezeY[StripBack-1],
+      NPL::EnergyToADC(Energy, 0, 63, 8192, 0));
+      
+      m_Event->SetDSSDYT(MG_DetectorType::MG_NOCHANGE,DetNbr,
+      MUGAST_MAP::ReverseTrapezeY[StripBack-1],
+      NPL::EnergyToADC(Time, 0, 1000, 8192, 16384));
+    }
+  }
+  // clear map for next event
+  TrapezoidScorer->clear();
+
+
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -355,19 +451,41 @@ void Mugast::ReadSensitive(const G4Event* ){
 void Mugast::InitializeScorers() { 
   // This check is necessary in case the geometry is reloaded
   bool already_exist = false; 
-  m_MugastScorer = CheckScorer("MugastScorer",already_exist) ;
+  m_SquareScorer= CheckScorer("ScorerSquare",already_exist) ;
+  m_TrapezoidScorer= CheckScorer("ScorerTrapezoid",already_exist) ;
+  m_AnnularScorer= CheckScorer("MugastScorerAnnular",already_exist) ;
 
   if(already_exist) 
     return ;
 
   // Otherwise the scorer is initialised
-  vector<int> level; level.push_back(0);
-  G4VPrimitiveScorer* Calorimeter= new CalorimeterScorers::PS_Calorimeter("Calorimeter",level, 0) ;
-  G4VPrimitiveScorer* Interaction= new InteractionScorers::PS_Interactions("Interaction",ms_InterCoord, 0) ;
+  G4VPrimitiveScorer* SquareScorer     = new DSSDScorers::PS_Rectangle("MugastSquareScorer",1,
+                                               SquareBase,
+                                               SquareHeight,
+                                               128,
+                                               128);
+
+
+  G4VPrimitiveScorer* TrapezoidScorer  = new DSSDScorers::PS_Rectangle("MugastTrapezoidScorer",1,
+                                               TrapezoidBaseLarge,
+                                               TrapezoidHeight,
+                                               128,
+                                               128);
+
+  G4VPrimitiveScorer* InteractionS= new InteractionScorers::PS_Interactions("InteractionS",ms_InterCoord, 0) ;
+  G4VPrimitiveScorer* InteractionT= new InteractionScorers::PS_Interactions("InteractionT",ms_InterCoord, 0) ;
+  G4VPrimitiveScorer* InteractionA= new InteractionScorers::PS_Interactions("InteractionA",ms_InterCoord, 0) ;
   //and register it to the multifunctionnal detector
-  m_MugastScorer->RegisterPrimitive(Calorimeter);
-  m_MugastScorer->RegisterPrimitive(Interaction);
-  G4SDManager::GetSDMpointer()->AddNewDetector(m_MugastScorer) ;
+  m_SquareScorer->RegisterPrimitive(SquareScorer);
+  m_SquareScorer->RegisterPrimitive(InteractionS);
+  m_TrapezoidScorer->RegisterPrimitive(TrapezoidScorer);
+  m_TrapezoidScorer->RegisterPrimitive(InteractionT);
+//  m_AnnularScorer->RegisterPrimitive(AnnularScorer);
+//  m_AnnularScorer->RegisterPrimitive(Interaction);
+
+  G4SDManager::GetSDMpointer()->AddNewDetector(m_SquareScorer) ;
+  G4SDManager::GetSDMpointer()->AddNewDetector(m_TrapezoidScorer) ;
+//  G4SDManager::GetSDMpointer()->AddNewDetector(m_MugastScorerAnnular) ;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

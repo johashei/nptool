@@ -486,6 +486,7 @@ void PhysicsList::AddLevelData(){
     levelData->AddPrivateData(Z, A, level_path);
     const G4LevelManager* levelManager = levelData->GetLevelManager(Z, A);
     G4int Nentries = levelManager->NumberOfTransitions()+1;
+    cout << " Found " << Nentries << " states including g.s." << endl; 
     for(G4int j = 1; j < Nentries; j++){ // Excited states
          cout << " - Level " << j
              << " energy = " << levelManager->LevelEnergy(j)
