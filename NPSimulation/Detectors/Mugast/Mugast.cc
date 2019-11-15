@@ -38,7 +38,9 @@
 #include "G4PVPlacement.hh"
 #include "G4VisAttributes.hh"
 #include "G4Colour.hh"
-
+#include "G4TwoVector.hh"
+#include "G4ExtrudedSolid.hh"
+#include "G4SubtractionSolid.hh"
 // NPTool header
 #include "Mugast.hh"
 #include "MugastReverseMap.h"
@@ -73,19 +75,36 @@ namespace Mugast_NS{
   const G4double SiliconThickness  = 3000*micrometer ;
 
   // Square
-  
- // const G4double SquareBase          = 88*mm;
-//  const G4double SquareHeight        = 87*mm;
-  
+
+  // const G4double SquareBase          = 88*mm;
+  //  const G4double SquareHeight        = 87*mm;
+
   const G4double SquareBase          = 91.716*mm;
   const G4double SquareHeight        = 94.916*mm;
- // const G4double SquareHeight        = 194.916*mm;
+  // const G4double SquareHeight        = 194.916*mm;
   const G4double SquareLength        = 1*cm;
   // Trapezoid 
   const G4double TrapezoidBaseLarge     = 91.48*mm; 
   const G4double TrapezoidBaseSmall     = 26*mm; 
   const G4double TrapezoidHeight        = 104.688*mm;
   const G4double TrapezoidLength        = 1*cm;
+  //Annular 
+   const G4int NbrRingStrips  = 16;
+   const G4int NbrSectorStrips = 16;
+   const G4int NbQuadrant      = 4;
+   const G4double WaferOutterRadius = 50*mm;
+   const G4double WaferInnerRadius  = 23*mm;
+   const G4double WaferThickness    = 500*micrometer;
+   const G4double WaferRCut         = 45.5*mm; 
+   const G4double ActiveWaferOutterRadius = 48*mm;
+   const G4double ActiveWaferInnerRadius  = 24*mm;
+   const G4double ActiveWaferRCut     = 44.5*mm; 
+   const G4double PCBPointsX[8]={-40,40,60,60,40,-40,-60,-60};
+   const G4double PCBPointsY[8]={60,60,40,-40,-60,-60,-40,40};
+   const G4double PCBThickness=3.2*mm;
+   const G4double PCBInnerRadius=0*mm;
+
+
 
 }
 using namespace Mugast_NS;
@@ -158,7 +177,7 @@ G4LogicalVolume* Mugast::BuildSquareDetector(){
 }
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 G4LogicalVolume* Mugast::BuildTrapezoidDetector(){
-  if(!m_SquareDetector){
+  if(!m_TrapezoidDetector){
     G4String Name = "MugastTrapezoid";
 
     // Definition of the volume containing the sensitive detector
@@ -167,9 +186,9 @@ G4LogicalVolume* Mugast::BuildTrapezoidDetector(){
         TrapezoidHeight*0.5,  TrapezoidBaseSmall*0.5,TrapezoidBaseLarge*0.5, 0*deg, 
         TrapezoidHeight*0.5,  TrapezoidBaseSmall*0.5,TrapezoidBaseLarge*0.5, 0*deg);
     G4LogicalVolume* logicTrapezoid = new G4LogicalVolume(solidTrapezoid, 
-      MaterialManager::getInstance()->GetMaterialFromLibrary("Vacuum"), 
-      Name, 
-      0, 0, 0);
+        MaterialManager::getInstance()->GetMaterialFromLibrary("Vacuum"), 
+        Name, 
+        0, 0, 0);
 
     G4VisAttributes* TrapezoideVisAtt = new G4VisAttributes(G4Colour(0.90, 0.90, 0.90));
     TrapezoideVisAtt->SetForceWireframe(true); 
@@ -183,9 +202,9 @@ G4LogicalVolume* Mugast::BuildTrapezoidDetector(){
         TrapezoidHeight*0.5,  TrapezoidBaseSmall*0.5,TrapezoidBaseLarge*0.5, 0*deg, 
         TrapezoidHeight*0.5,  TrapezoidBaseSmall*0.5,TrapezoidBaseLarge*0.5, 0*deg);
     G4LogicalVolume* logicFirstStage = new G4LogicalVolume(solidFirstStage, 
-      MaterialManager::getInstance()->GetMaterialFromLibrary("Si"),
-      "logicFirstStage", 
-      0, 0, 0);
+        MaterialManager::getInstance()->GetMaterialFromLibrary("Si"),
+        "logicFirstStage", 
+        0, 0, 0);
 
     new G4PVPlacement(0,
         positionFirstStage,
@@ -209,6 +228,167 @@ G4LogicalVolume* Mugast::BuildTrapezoidDetector(){
 }
 
 
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+G4LogicalVolume* Mugast::BuildAnnularDetector(){
+  if(!m_AnnularDetector){
+    G4Material* Silicon = MaterialManager::getInstance()->GetMaterialFromLibrary("Si");
+    G4Material* Vacuum  = MaterialManager::getInstance()->GetMaterialFromLibrary("Vacuum");
+    G4Material* PCB     = MaterialManager::getInstance()->GetMaterialFromLibrary("PCB");
+    ////////////////////////////////////////////////////////////////
+    ////////////// Starting Volume Definition //////////////////////
+    ////////////////////////////////////////////////////////////////
+    // Name of the module
+    G4String Name = "MugastAnnular";
+
+    // Building the PCB
+    // The PCB is a simple extruded volume from 8 reference points
+    vector<G4TwoVector> polygon;
+    for(unsigned int i = 0 ; i < 8 ; i++){
+      G4TwoVector Point(PCBPointsX[i],PCBPointsY[i]);
+      polygon.push_back(Point);
+    }
+
+    // Master volume containing all the detector
+    G4ExtrudedSolid* solidAnnularS1 = new G4ExtrudedSolid(Name,
+        polygon,
+        PCBThickness*0.5,
+        G4TwoVector(0,0),1,
+        G4TwoVector(0,0),1);
+
+    // Definition of the volume containing the sensitive detector
+    m_AnnularDetector= new G4LogicalVolume(solidAnnularS1, Vacuum, Name, 0, 0, 0);
+    m_AnnularDetector->SetVisAttributes(G4VisAttributes::Invisible);
+
+    // PCB Base
+    G4ExtrudedSolid* solidPCBBase = new G4ExtrudedSolid("PCBBase",
+        polygon,
+        PCBThickness*0.5,
+        G4TwoVector(0,0),1,
+        G4TwoVector(0,0),1);   
+
+    // Wafer Shape to be substracted to the PCB
+    G4Tubs* solidWaferShapeBase = new G4Tubs("WaferShape", 
+        0,
+        WaferOutterRadius,
+        PCBThickness,
+        0*deg, 
+        360*deg); 
+
+    // A no rotation matrix is always handy ;)
+    G4RotationMatrix* norotation = new  G4RotationMatrix(); 
+    // Rotation of the box that make the Si cut                       
+    G4RotationMatrix* cutrotation = new  G4RotationMatrix(G4ThreeVector(0,0,1),45*deg);                        
+    G4ThreeVector cutposition1(80*mm+WaferRCut,0,0); cutposition1.setPhi(45*deg);
+    G4Transform3D transform1(*cutrotation,cutposition1);
+
+    G4Box* solidCutout = new G4Box("cuttout",80*mm,80*mm,80*mm); 
+
+    G4SubtractionSolid* solidWaferShape1 = new G4SubtractionSolid("WaferShape1",
+        solidWaferShapeBase,
+        solidCutout,
+        transform1);
+
+
+    G4ThreeVector cutposition2(-80*mm-WaferRCut,0,0); cutposition2.setPhi(-135*deg);
+    G4Transform3D transform2(*cutrotation,cutposition2);
+    G4SubtractionSolid* solidWaferShape = new G4SubtractionSolid("WaferShape",
+        solidWaferShape1,
+        solidCutout,
+        transform2);
+
+
+    // PCB final
+    G4SubtractionSolid* solidPCB = new G4SubtractionSolid("MugastAnnular_PCB1",
+        solidPCBBase,
+        solidWaferShape);
+
+    G4LogicalVolume* logicPCB = new G4LogicalVolume(solidPCB, PCB, "MugastAnnular_PCB", 0, 0, 0);
+
+    new G4PVPlacement(G4Transform3D(*norotation, G4ThreeVector()),
+        logicPCB,
+        "MugastAnnular_PCB",
+        m_AnnularDetector,
+        false,
+        0);
+
+    G4VisAttributes* PCBVisAtt = new G4VisAttributes(G4Colour(0.2, 0.5, 0.2)) ;
+    logicPCB->SetVisAttributes(PCBVisAtt);
+
+
+    // Wafer itself
+    G4Tubs* solidWaferBase = new G4Tubs("Wafer", 
+        WaferInnerRadius,
+        WaferOutterRadius,
+        0.5*WaferThickness,
+        0*deg, 
+        360*deg); 
+
+    G4SubtractionSolid* solidWafer1 = new G4SubtractionSolid("Wafer1",
+        solidWaferBase,
+        solidCutout,
+        transform1);
+
+    G4SubtractionSolid* solidWafer = new G4SubtractionSolid("Wafer",
+        solidWafer1,
+        solidCutout,
+        transform2);
+
+    G4LogicalVolume* logicWafer = new G4LogicalVolume(solidWafer, Silicon, "MugastAnnular_Wafer", 0, 0, 0);
+    new G4PVPlacement(G4Transform3D(*norotation, G4ThreeVector()),
+        logicWafer,
+        "MugastAnnular_Wafer",
+        m_AnnularDetector,
+        false,
+        0);
+
+    G4VisAttributes* SiVisAtt = new G4VisAttributes(G4Colour(0.3, 0.3, 0.3)) ;
+    logicWafer->SetVisAttributes(SiVisAtt); 
+
+    // Active Wafer
+    G4Tubs* solidActiveWaferBase = new G4Tubs("ActiveWafer", 
+        ActiveWaferInnerRadius,
+        ActiveWaferOutterRadius,
+        0.5*WaferThickness,
+        0*deg, 
+        360*deg); 
+
+
+    G4ThreeVector activecutposition1(80*mm+ActiveWaferRCut,0,0); activecutposition1.setPhi(45*deg);
+    G4Transform3D activetransform1(*cutrotation,activecutposition1);
+
+    G4SubtractionSolid* solidActiveWafer1 = new G4SubtractionSolid("ActiveWafer1",
+        solidActiveWaferBase,
+        solidCutout,
+        activetransform1);
+
+    G4ThreeVector activecutposition2(-80*mm-ActiveWaferRCut,0,0); activecutposition2.setPhi(-135*deg);
+    G4Transform3D activetransform2(*cutrotation,activecutposition2);
+
+    G4SubtractionSolid* solidActiveWafer = new G4SubtractionSolid("ActiveWafer",
+        solidActiveWafer1,
+        solidCutout,
+        activetransform2);
+
+    G4LogicalVolume* logicActiveWafer = new G4LogicalVolume(solidActiveWafer, Silicon, "MugastAnnular_ActiveWafer", 0, 0, 0);
+    new G4PVPlacement(G4Transform3D(*norotation, G4ThreeVector()),
+        logicActiveWafer,
+        "MugastAnnular_ActiveWafer",
+        logicWafer,
+        false,
+        0);
+
+    logicActiveWafer->SetVisAttributes(SiVisAtt);
+
+    // Set Silicon strip sensible
+    logicActiveWafer->SetSensitiveDetector(m_AnnularScorer);
+  }
+
+  return m_AnnularDetector;
+}
+
+
+
+
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -224,6 +404,7 @@ void Mugast::ReadConfiguration(NPL::InputParser parser) {
 
   // Cartesian Case
   vector<string> cart = {"DetectorNumber","X1_Y1", "X1_Y128", "X128_Y1", "X128_Y128"};
+  vector<string> annular = {"DetectorNumber","Center"};
 
   for (unsigned int i = 0; i < blocks.size(); i++) {
 
@@ -245,7 +426,7 @@ void Mugast::ReadConfiguration(NPL::InputParser parser) {
 
       AddDetector(DetectorNumber,shape,A,B,C,D);
     }
-    else if (blocks[i]->HasTokenList(cart)&& (shape=="Annular")) {
+    else if (blocks[i]->HasTokenList(annular)&& (shape=="Annular")) {
       int DetectorNumber = blocks[i]->GetInt("DetectorNumber");
       G4ThreeVector A
         = NPS::ConvertVector(blocks[i]->GetTVector3("Center", "mm"));
@@ -264,7 +445,8 @@ void Mugast::ReadConfiguration(NPL::InputParser parser) {
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 // Construct detector and inialise sensitive part.
-// Called After DetecorConstruction::AddDetector Method
+// Called After Detecor
+// onstruction::AddDetector Method
 void Mugast::ConstructDetector(G4LogicalVolume* world){
 
   for (unsigned short i = 0 ; i < m_DetectorNumber.size() ; i++) {
@@ -313,7 +495,7 @@ void Mugast::ConstructDetector(G4LogicalVolume* world){
 
       w = u.cross(v);
       w = w.unit();
-      
+
       Center = (m_X1_Y1[i] + m_X1_Y128[i] + m_X128_Y1[i] + m_X128_Y128[i]) / 4;
 
       // Passage Matrix from Lab Referential to Telescope Referential
@@ -324,6 +506,10 @@ void Mugast::ConstructDetector(G4LogicalVolume* world){
       new G4PVPlacement(G4Transform3D(*rot, pos), BuildTrapezoidDetector(), "MugastTrapezoid", world, false, m_DetectorNumber[i]);
     }
 
+    else if(m_Shape[i]=="Annular"){
+      G4RotationMatrix* rot = new G4RotationMatrix();
+      new G4PVPlacement(G4Transform3D(*rot,m_X1_Y1[i]), BuildAnnularDetector(), "MugastAnnular", world, false, m_DetectorNumber[i]);
+      }
   }
 }
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -360,14 +546,14 @@ void Mugast::ReadSensitive(const G4Event* ){
       double Time       = RandGauss::shoot(SquareScorer->GetTimeLength(i), SigmaTime);
       int DetNbr        = SquareScorer->GetDetectorLength(i);
       int StripFront    = SquareScorer->GetStripLength(i);
-       
+
       m_Event->SetDSSDXE(MG_DetectorType::MG_NOCHANGE,DetNbr,
-      MUGAST_MAP::ReverseSquareX[StripFront-1],
-      NPL::EnergyToADC(Energy, 0, 63, 8192, 16384));
-      
+          MUGAST_MAP::ReverseSquareX[StripFront-1],
+          NPL::EnergyToADC(Energy, 0, 63, 8192, 16384));
+
       m_Event->SetDSSDXT(MG_DetectorType::MG_NOCHANGE,DetNbr,
-      MUGAST_MAP::ReverseSquareX[StripFront-1],
-      NPL::EnergyToADC(Time, 0, 1000, 8192, 16384));
+          MUGAST_MAP::ReverseSquareX[StripFront-1],
+          NPL::EnergyToADC(Time, 0, 1000, 8192, 16384));
 
     }
   } 
@@ -382,12 +568,12 @@ void Mugast::ReadSensitive(const G4Event* ){
       int StripBack     = SquareScorer->GetStripWidth(i);
 
       m_Event->SetDSSDYE(MG_DetectorType::MG_NOCHANGE,DetNbr,
-      MUGAST_MAP::ReverseSquareY[StripBack-1],
-      NPL::EnergyToADC(Energy, 0, 63, 8192, 0));
-      
+          MUGAST_MAP::ReverseSquareY[StripBack-1],
+          NPL::EnergyToADC(Energy, 0, 63, 8192, 0));
+
       m_Event->SetDSSDYT(MG_DetectorType::MG_NOCHANGE,DetNbr,
-      MUGAST_MAP::ReverseSquareY[StripBack-1],
-      NPL::EnergyToADC(Time, 0, 1000, 8192, 16384));
+          MUGAST_MAP::ReverseSquareY[StripBack-1],
+          NPL::EnergyToADC(Time, 0, 1000, 8192, 16384));
     }
   }
   // clear map for next event
@@ -409,14 +595,14 @@ void Mugast::ReadSensitive(const G4Event* ){
       double Time       = RandGauss::shoot(TrapezoidScorer->GetTimeLength(i), SigmaTime);
       int DetNbr        = TrapezoidScorer->GetDetectorLength(i);
       int StripFront    = TrapezoidScorer->GetStripLength(i);
-      
+
       m_Event->SetDSSDXE(MG_DetectorType::MG_NOCHANGE,DetNbr,
-      MUGAST_MAP::ReverseTrapezeX[StripFront-1],
-      NPL::EnergyToADC(Energy, 0, 63, 8192, 16384));
-      
+          MUGAST_MAP::ReverseTrapezeX[StripFront-1],
+          NPL::EnergyToADC(Energy, 0, 63, 8192, 16384));
+
       m_Event->SetDSSDXT(MG_DetectorType::MG_NOCHANGE,DetNbr,
-      MUGAST_MAP::ReverseTrapezeX[StripFront-1],
-      NPL::EnergyToADC(Time, 0, 1000, 8192, 16384));
+          MUGAST_MAP::ReverseTrapezeX[StripFront-1],
+          NPL::EnergyToADC(Time, 0, 1000, 8192, 16384));
 
     }
   } 
@@ -432,16 +618,75 @@ void Mugast::ReadSensitive(const G4Event* ){
       int StripBack     = 128-TrapezoidScorer->GetStripWidth(i)+1;
 
       m_Event->SetDSSDYE(MG_DetectorType::MG_NOCHANGE,DetNbr,
-      MUGAST_MAP::ReverseTrapezeY[StripBack-1],
-      NPL::EnergyToADC(Energy, 0, 63, 8192, 0));
-      
+          MUGAST_MAP::ReverseTrapezeY[StripBack-1],
+          NPL::EnergyToADC(Energy, 0, 63, 8192, 0));
+
       m_Event->SetDSSDYT(MG_DetectorType::MG_NOCHANGE,DetNbr,
-      MUGAST_MAP::ReverseTrapezeY[StripBack-1],
-      NPL::EnergyToADC(Time, 0, 1000, 8192, 16384));
+          MUGAST_MAP::ReverseTrapezeY[StripBack-1],
+          NPL::EnergyToADC(Time, 0, 1000, 8192, 16384));
     }
   }
   // clear map for next event
   TrapezoidScorer->clear();
+
+  ///////////
+  // Annular
+  DSSDScorers::PS_Annular* AnnularScorer = (DSSDScorers::PS_Annular*) m_AnnularScorer->GetPrimitive(0);
+
+
+  // Loop on the Annular map
+  sizeFront= AnnularScorer->GetRingMult();
+  unsigned int sizeQuadrant= AnnularScorer->GetQuadrantMult();
+
+  for (unsigned int i=0 ; i<sizeFront ; i++){
+
+    double Energy = RandGauss::shoot(AnnularScorer->GetEnergyRing(i), SigmaEnergy);
+
+    if(Energy>EnergyThreshold){
+      double Time       = RandGauss::shoot(AnnularScorer->GetTimeRing(i), SigmaTime);
+      int DetNbr        = AnnularScorer->GetDetectorRing(i);
+      int StripFront    = AnnularScorer->GetStripRing(i);
+   
+      // Check for associated Quadrant strip
+      int StripQuadrant = 0;
+      for(unsigned int q = 0 ; q < sizeQuadrant ; q++){
+        if(AnnularScorer->GetDetectorQuadrant(q)==DetNbr){
+          StripQuadrant = AnnularScorer->GetStripQuadrant(q)-1;
+          break;
+          }
+      }
+      StripFront=StripFront+StripQuadrant*NbrRingStrips;
+      m_Event->SetDSSDXE(MG_DetectorType::MG_NOCHANGE,DetNbr,
+          MUGAST_MAP::ReverseAnnularX[StripFront-1],
+          NPL::EnergyToADC(Energy, 0, 63, 8192, 16384));
+
+      m_Event->SetDSSDXT(MG_DetectorType::MG_NOCHANGE,DetNbr,
+          MUGAST_MAP::ReverseAnnularX[StripFront-1],
+          NPL::EnergyToADC(Time, 0, 1000, 8192, 16384));
+
+    }
+  } 
+
+  sizeBack= AnnularScorer->GetSectorMult();
+  for (unsigned int i=0 ; i<sizeBack ; i++){
+
+    double Energy = RandGauss::shoot(AnnularScorer->GetEnergySector(i), SigmaEnergy);
+
+    if(Energy>EnergyThreshold){
+      double Time       = RandGauss::shoot(AnnularScorer->GetTimeSector(i), SigmaTime);
+      int DetNbr        = AnnularScorer->GetDetectorSector(i);
+      int StripBack     = AnnularScorer->GetStripSector(i);
+      m_Event->SetDSSDYE(MG_DetectorType::MG_NOCHANGE,DetNbr,
+          MUGAST_MAP::ReverseAnnularY[StripBack-1],
+          NPL::EnergyToADC(Energy, 0, 63, 8192, 0));
+
+      m_Event->SetDSSDYT(MG_DetectorType::MG_NOCHANGE,DetNbr,
+          MUGAST_MAP::ReverseAnnularY[StripBack-1],
+          NPL::EnergyToADC(Time, 0, 1000, 8192, 16384));
+    }
+  }
+  // clear map for next event
+  AnnularScorer->clear();
 
 
 }
@@ -451,26 +696,37 @@ void Mugast::ReadSensitive(const G4Event* ){
 void Mugast::InitializeScorers() { 
   // This check is necessary in case the geometry is reloaded
   bool already_exist = false; 
-  m_SquareScorer= CheckScorer("ScorerSquare",already_exist) ;
-  m_TrapezoidScorer= CheckScorer("ScorerTrapezoid",already_exist) ;
-  m_AnnularScorer= CheckScorer("MugastScorerAnnular",already_exist) ;
+  m_SquareScorer= CheckScorer("SquareScorer",already_exist) ;
+  m_TrapezoidScorer= CheckScorer("TrapezoidScorer",already_exist) ;
+  m_AnnularScorer= CheckScorer("AnnularScorer",already_exist) ;
 
   if(already_exist) 
     return ;
 
   // Otherwise the scorer is initialised
   G4VPrimitiveScorer* SquareScorer     = new DSSDScorers::PS_Rectangle("MugastSquareScorer",1,
-                                               SquareBase,
-                                               SquareHeight,
-                                               128,
-                                               128);
+      SquareBase,
+      SquareHeight,
+      128,
+      128);
 
 
   G4VPrimitiveScorer* TrapezoidScorer  = new DSSDScorers::PS_Rectangle("MugastTrapezoidScorer",1,
-                                               TrapezoidBaseLarge,
-                                               TrapezoidHeight,
-                                               128,
-                                               128);
+      TrapezoidBaseLarge,
+      TrapezoidHeight,
+      128,
+      128);
+
+  G4VPrimitiveScorer* AnnularScorer = new  DSSDScorers::PS_Annular("MugastAnnularScorer",
+        2,
+        ActiveWaferInnerRadius,
+        ActiveWaferOutterRadius,
+        -8*22.5*deg, //MUST2 campaign 2009, See: Phd Sandra Giron
+        +8*22.5*deg,
+        NbrRingStrips,
+        NbrSectorStrips,
+        NbQuadrant);
+
 
   G4VPrimitiveScorer* InteractionS= new InteractionScorers::PS_Interactions("InteractionS",ms_InterCoord, 0) ;
   G4VPrimitiveScorer* InteractionT= new InteractionScorers::PS_Interactions("InteractionT",ms_InterCoord, 0) ;
@@ -480,12 +736,12 @@ void Mugast::InitializeScorers() {
   m_SquareScorer->RegisterPrimitive(InteractionS);
   m_TrapezoidScorer->RegisterPrimitive(TrapezoidScorer);
   m_TrapezoidScorer->RegisterPrimitive(InteractionT);
-//  m_AnnularScorer->RegisterPrimitive(AnnularScorer);
-//  m_AnnularScorer->RegisterPrimitive(Interaction);
+  m_AnnularScorer->RegisterPrimitive(AnnularScorer);
+  m_AnnularScorer->RegisterPrimitive(InteractionA);
 
   G4SDManager::GetSDMpointer()->AddNewDetector(m_SquareScorer) ;
   G4SDManager::GetSDMpointer()->AddNewDetector(m_TrapezoidScorer) ;
-//  G4SDManager::GetSDMpointer()->AddNewDetector(m_MugastScorerAnnular) ;
+  G4SDManager::GetSDMpointer()->AddNewDetector(m_AnnularScorer) ;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

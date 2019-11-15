@@ -74,8 +74,10 @@ void ReverseMap(){
   // build the array
   int ReverseAX[128]={128};
   for(unsigned int i = 0 ; i < size ; i++){
-    if(MUGAST_MAP::AnnularX[i]-1<16)
+    if(MUGAST_MAP::AnnularX[i]-1<64)
       ReverseAX[MUGAST_MAP::AnnularX[i]-1]=i+1; 
+    else 
+      ReverseAX[MUGAST_MAP::AnnularX[i]-1]=128;
   }   
   // write array 
   f << "\tconst int ReverseAnnularX[128] ={" << endl;
@@ -91,6 +93,9 @@ void ReverseMap(){
   for(unsigned int i = 0 ; i < size ; i++){
     if(MUGAST_MAP::AnnularY[i]-1<16)
       ReverseAY[MUGAST_MAP::AnnularY[i]-1]=i+1; 
+    else 
+      ReverseAY[MUGAST_MAP::AnnularY[i]-1]=128;
+
   }   
   // write array 
   f << "\tconst int ReverseAnnularY[128] ={" << endl;

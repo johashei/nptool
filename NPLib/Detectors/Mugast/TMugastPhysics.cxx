@@ -868,19 +868,6 @@ void TMugastPhysics::AddTelescope(MG_DetectorType type,TVector3 C_Center) {
   vector<vector<double>> OneStripPositionY;
   vector<vector<double>> OneStripPositionZ;
 
-  /* The logic behind the strip numbering of S1 in NPTOOL: 
-     The number of rings goes from 1->64, the number of sectors goes from 1->16 
-     (4 per quadrant). There's a redundancy in the fact that 1->64 already contain 
-     the information about the quadrant and the majority of these positions are 
-     indeed not physical. Example: 
-     A hit combining Ring 17 (first ring in Quadrant 2) and 
-     Sector 4 (last sector in Quadrant 1) is not possible due to physical mismatch 
-     of the detector frontside-backside layout. 
-     The three loops however takes all the possible combintation that an analysis
-     can produce. This works perfectly for cases where the detector does not have 
-     "Quadrants", e.g. S3 type. For the S1 an extra condition is added to flag the
-     non physical hit combinations. 
-     */
 
   for(int iQuad = 0; iQuad < NumberOfQuadrant ; iQuad++){
     for(int iRing = 0 ; iRing < NumberofRing; iRing++){
@@ -894,26 +881,6 @@ void TMugastPhysics::AddTelescope(MG_DetectorType type,TVector3 C_Center) {
         //Build vector
         StripCenter = TVector3(C_Center.X()+R_Min+(iRing+0.5)*StripPitchRing,C_Center.Y(), Z);
         StripCenter.RotateZ((Phi_0 + (iSector+0.5)*StripPitchSector) *M_PI/180.);
-
-        // if the hit is not "allowed" (see comment above) use a default value
-        if(iQuad == 2){
-          if(!(iSector == 0 || iSector == 1 || iSector == 14 || iSector == 15)) {
-            StripCenter.SetXYZ(-1000,-1000, Z-1000);
-          }
-        } else if(iQuad == 3){
-          if(!(iSector > 1 && iSector < 6)){
-            StripCenter.SetXYZ(-1000,-1000, Z-1000);
-          }
-        } else if(iQuad == 1){
-          if(!(iSector > 5 && iSector < 10)){
-            StripCenter.SetXYZ(-1000,-1000, Z-1000);
-          }
-        }
-        else if(iQuad == 0){
-          if(!(iSector > 9 && iSector < 14)){
-            StripCenter.SetXYZ(-1000,-1000, Z-1000);
-          }
-        }
 
         // these vectors will contain 16x4 = 64 elements
         lineX.push_back( StripCenter.X() );
