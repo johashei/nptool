@@ -1,0 +1,23 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Target
+ THICKNESS= 10 micrometer
+ RADIUS=	20 mm
+ MATERIAL= CD2
+ ANGLE= 0 deg
+ X= 0 mm
+ Y= 0 mm
+ Z= 0 mm
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Nebula
+ POS= 0 0 5 m
+ NumberOfModule= 30
+ Veto= 1
+ Frame= 1
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Nebula
+ POS= 0 0 5.15 m
+ NumberOfModule= 30
+ Veto= 0
+ Frame= 0
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+

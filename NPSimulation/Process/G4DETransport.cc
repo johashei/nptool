@@ -102,7 +102,7 @@ G4DETransport::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep){
   aParticleChange.Initialize(aTrack);
   
   G4StepPoint* pPreStepPoint  = aStep.GetPreStepPoint();
-  G4StepPoint* pPostStepPoint  = aStep.GetPostStepPoint();
+  //G4StepPoint* pPostStepPoint  = aStep.GetPostStepPoint();
   
   G4ThreeVector x0 = pPreStepPoint->GetPosition();
   G4ThreeVector p0 = aStep.GetDeltaPosition().unit();
@@ -110,7 +110,8 @@ G4DETransport::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep){
   
   // The time scale is imposed by the distance travelled
   G4double step_length = aStep.GetDeltaPosition().mag();
-  
+  G4double delta_time = aStep.GetDeltaTime();
+
   // allow internal relocation of the track by the kernel taking a 0 length intermediate step
   // suppress also parasite infinetismal step that slow down the tracking
   if(step_length<100*micrometer){
@@ -149,8 +150,8 @@ G4DETransport::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep){
   G4double v_drift = aMaterialPropertiesTable->GetConstProperty("DE_DRIFTSPEED");
   // Speed sigma in transversal and longitudinal direction based on the 
   // step length, drift speed and long/trans spread parameters
-  G4double sigmaTrans  = sqrt(2*step_length*aMaterialPropertiesTable->GetConstProperty("DE_TRANSVERSALSPREAD")/v_drift)/(aStep.GetDeltaTime());
-  G4double sigmaLong   = sqrt(2*step_length*aMaterialPropertiesTable->GetConstProperty("DE_LONGITUDINALSPREAD")/v_drift)/(aStep.GetDeltaTime());
+  G4double sigmaTrans  = sqrt(2*step_length*aMaterialPropertiesTable->GetConstProperty("DE_TRANSVERSALSPREAD")/v_drift)/delta_time;
+  G4double sigmaLong   = sqrt(2*step_length*aMaterialPropertiesTable->GetConstProperty("DE_LONGITUDINALSPREAD")/v_drift)/delta_time;
    
   // Building the modified drift vector
   // i.e. the speed vector of the particle at the end of the step
@@ -202,5 +203,4 @@ G4double G4DETransport::GetMeanFreePath(const G4Track& track,
     return d;
   else
     return 1*pc;
-  /* return 1.5*mm; */
 }
