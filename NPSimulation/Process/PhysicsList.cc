@@ -426,8 +426,14 @@ void PhysicsList::ConstructProcess(){
 
   em_parameters->SetFluo(true);
   em_parameters->SetAuger(true);
+
+#if NPS_GEANT4_VERSION_MAJOR > 10
+#if NPS_GEANT4_VERSION_MINOR > 2
   em_parameters->SetDeexActiveRegion ("DefaultRegionForTheWorld", true, true,true);
   em_parameters->SetDeexcitationIgnoreCut(true);
+#endif
+#endif
+
   AddParametrisation();
   AddLevelData();
   return;
