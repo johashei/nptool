@@ -74,7 +74,6 @@ G4bool Decay::IsApplicable( const G4ParticleDefinition& particleType) {
   else
     m_ExcitationEnergy=0;
 
-
   // Strip name from excitation energy
   m_CurrentName = m_CurrentName.substr(0,m_CurrentName.find("["));
   // If the decay exist
@@ -172,4 +171,5 @@ void Decay::DoIt(const G4FastTrack& fastTrack,G4FastStep& fastStep){
     fastStep.KillPrimaryTrack();
     fastStep.SetPrimaryTrackPathLength(0.0);
     }
+    
 }

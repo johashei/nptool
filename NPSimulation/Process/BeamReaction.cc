@@ -195,7 +195,7 @@ void NPS::BeamReaction::DoIt(const G4FastTrack& fastTrack,
     else
       LightName = IonTable->GetIon(LightZ, LightA);
   }
-
+  
   // Nucleus 4
   G4int HeavyZ = m_Reaction.GetNucleus4()->GetZ();
   G4int HeavyA = m_Reaction.GetNucleus4()->GetA();
@@ -240,6 +240,7 @@ void NPS::BeamReaction::DoIt(const G4FastTrack& fastTrack,
       PrimaryTrack->GetMomentumDirection().angle(U) / deg);
   m_ReactionConditions->SetBeamEmittancePhiY(
       PrimaryTrack->GetMomentumDirection().angle(V) / deg);
+ 
   //////////////////////////////////////////////////////////
   ///// Build rotation matrix to go from the incident //////
   ///// beam frame to the "world" frame               //////

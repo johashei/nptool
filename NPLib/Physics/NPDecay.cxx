@@ -241,8 +241,9 @@ void NPL::Decay::ReadConfiguration(std::string MotherName,std::string path){
 bool NPL::Decay::AnyAboveThreshold(double MEx){
   unsigned int size = m_SingleDecay.size();
   for(unsigned int i = 0 ; i < size ; i++){
-    if(MEx >=  m_SingleDecay[i].GetThreshold())
+    if(MEx >=  m_SingleDecay[i].GetThreshold()){
       return true;
+      }
   }
   return false;
 }
@@ -328,14 +329,22 @@ bool NPL::Decay::GenerateEvent(double MEx,double MEK,double MPx,double MPy,doubl
   // Limit the number of attempt
   unsigned int count =0;
   while (!worked){
-    if(count++ > 1000)
+    if(count++ > 1000){
       break;
-    double rand = m_BRTotal*gRandom->Uniform();
+      }
+    
     unsigned int size = m_BranchingRatio.size();
     unsigned int ChoosenDecay = 0;
-    for (unsigned int i = 1; i < size; i++) {
-      if(rand > m_BranchingRatio[i-1] && rand< m_BranchingRatio[i])
-        ChoosenDecay = i;
+    if(size==1){
+      ChoosenDecay=0;
+      }
+
+    else{
+    double rand = m_BRTotal*gRandom->Uniform();
+      for (unsigned int i = 1; i < size; i++) {
+        if(rand > m_BranchingRatio[i-1] && rand< m_BranchingRatio[i])
+          ChoosenDecay = i;
+      }
     }
 
     // Generate the event
@@ -391,8 +400,7 @@ void NPL::DecayStore::GenerateEvent(std::string MotherName, double MEx,
 ////////////////////////////////////////////////////////////////////////////////
 bool NPL::DecayStore::AnyAboveThreshold(std::string MotherName, double MEx){
   if(m_Store.find(MotherName)!=m_Store.end()){
-    m_Store[MotherName].AnyAboveThreshold(MEx);
-    return true;
+    return m_Store[MotherName].AnyAboveThreshold(MEx);
   }
     
   return false;

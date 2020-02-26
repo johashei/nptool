@@ -88,7 +88,6 @@ ClassImp(Reaction)
     fshoot4=true;
     fUseExInGeant4=true;
     RandGen=new TRandom3();
-    fUseExInGeant4=true;
 
     fLabCrossSection=false; // flag if the provided cross-section is in the lab or not
 
