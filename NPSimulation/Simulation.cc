@@ -10,6 +10,7 @@
 
 #include "G4UIterminal.hh"
 #include "G4UItcsh.hh"
+#include "G4VisManager.hh"
 
 #ifdef G4VIS_USE
 #include "G4VisExecutive.hh"
