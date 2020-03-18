@@ -65,21 +65,12 @@ class Minos : public NPS::VDetector{
     void DefineMaterials();
   
   public:
-    void SetTargetMaterial(G4String materialChoice);
-    void SetChamberMaterial(G4String materialChoice);
-    void SetTPCMaterial(G4String materialChoice);
-    void SetWindowMaterial(G4String materialChoice);
-    void SetInnerRohacellMaterial(G4String materialChoice);
-    void SetOuterRohacellMaterial(G4String materialChoice);
-    void SetKaptonMaterial(G4String materialChoice);
-
     G4LogicalVolume* BuildSquareDetector();
     G4LogicalVolume* BuildCylindricalDetector();
     G4LogicalVolume* BuildTarget();
     G4LogicalVolume* BuildChamber();
     G4LogicalVolume* BuildInnerRohacell();
     G4LogicalVolume* BuildOuterRohacell();
-    G4LogicalVolume* BuildOuterOuterRohacell();
     G4LogicalVolume* BuildKapton();
     G4LogicalVolume* BuildOuterKapton();
     G4LogicalVolume* BuildTPC();
@@ -97,12 +88,13 @@ class Minos : public NPS::VDetector{
      G4Material*        TargetMaterial;
      G4Material*        WindowMaterial;
      G4Material*        ChamberMaterial;
-     G4Material*        InnerRohacellMaterial;
-     G4Material*        OuterRohacellMaterial;
+     G4Material*        RohacellMaterial;
      G4Material*        KaptonMaterial;
      G4Material*        TPCMaterial;
      G4Material*        defaultMaterial;
-  
+     G4Material*        Mylar;
+
+
     G4LogicalVolume* m_SquareDetector;
     G4LogicalVolume* m_CylindricalDetector;
 
@@ -123,21 +115,13 @@ class Minos : public NPS::VDetector{
      G4LogicalVolume*   logicWindow0; 
   // G4VPhysicalVolume* physiWindow0; 
      
-     G4Tubs*             solidWindow1; 
-     G4LogicalVolume*   logicWindow1; 
-  // G4VPhysicalVolume* physiWindow1; 
-
-     G4Tubs*             solidWindow2; 
-     G4LogicalVolume*   logicWindow2; 
-  // G4VPhysicalVolume* physiWindow2; 
-    
-     G4Tubs*             solidInnerRohacell;   
-     G4LogicalVolume*   logicInnerRohacell;   
+     G4Tubs*             solidRohacell;   
+     G4LogicalVolume*   logicRohacell;   
   // G4VPhysicalVolume* physiInnerRohacell;   
-     
-     G4Tubs*             solidOuterRohacell;   
-     G4LogicalVolume*   logicOuterRohacell;   
-  // G4VPhysicalVolume* physiOuterRohacell;   
+      
+     /* G4Tubs*             solidOuterRohacell; */   
+     /* G4LogicalVolume*   logicOuterRohacell; */   
+  /* // G4VPhysicalVolume* physiOuterRohacell; */   
      
      G4Tubs*             solidKapton;   
      G4LogicalVolume*   logicKapton;   
@@ -203,9 +187,7 @@ class Minos : public NPS::VDetector{
   G4VisAttributes* m_VisTarget;
   G4VisAttributes* m_VissimpleBox;
   G4VisAttributes* m_VisTPC;
-  G4VisAttributes* m_VisInnerRohacell;
-  G4VisAttributes* m_VisOuterRohacell;
-  G4VisAttributes* m_VisOuterOuterRohacell;
+  G4VisAttributes* m_VisRohacell;
   G4VisAttributes* m_VisKapton;
   G4VisAttributes* m_VisTargetCell;
   G4VisAttributes* m_VisOuterKapton;
