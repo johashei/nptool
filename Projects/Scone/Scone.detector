@@ -9,17 +9,11 @@ Target
  Z= 0 mm
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 Scone
- POS= 0 0 350 mm
+ POS= 0 0 0 mm
  Shape= Square
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-Scone
- POS = 35 35 35 cm
- Shape= Square
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-Scone
- R= 350 mm
- THETA= 90 deg
- PHI= 63 deg
- Shape= Cylindrical
+%Scone
+% POS = 35 35 35 cm
+% Shape= Square
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

@@ -60,10 +60,10 @@ namespace Scone_NS{
   const double EnergyThreshold = 0.1*MeV;
   const double ResoTime = 4.5*ns ;
   const double ResoEnergy = 1.0*MeV ;
-  const double Radius = 50*mm ; 
-  const double Width = 100*mm ;
-  const double Thickness = 300*mm ;
-  const string Material = "BC400";
+  const double XSection = 25.1*mm ; 
+  const double YSection = 25.6*mm ;
+  const double Length = 1000*mm ;
+  const string Material = "CH2";
 }
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -73,12 +73,12 @@ Scone::Scone(){
   m_Event = new TSconeData() ;
   m_SconeScorer = 0;
   m_SquareDetector = 0;
-  m_CylindricalDetector = 0;
+  //m_CylindricalDetector = 0;
 
 
   // RGB Color + Transparency
   m_VisSquare = new G4VisAttributes(G4Colour(0, 1, 0, 0.5));   
-  m_VisCylinder = new G4VisAttributes(G4Colour(0, 0, 1, 0.5));   
+  //m_VisCylinder = new G4VisAttributes(G4Colour(0, 0, 1, 0.5));   
 
 }
 
@@ -103,10 +103,36 @@ void Scone::AddDetector(double  R, double  Theta, double  Phi, string  Shape){
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+G4AssemblyVolume* Scone::Build6x6Assembly(){
+  if(!m_SquareDetector){
+    m_6x6Assembly = new G4AssemblyVolume();
+    G4RotationMatrix *Rv = new G4RotationMatrix(0,0,0);
+    G4ThreeVector Tv;
+    Tv.setX(0); Tv.setY(0); Tv.setZ(0);
+
+    // One bar definitation
+    G4Box* box = new G4Box("Scone_Box",Scone_NS::XSection*0.5,
+        Scone_NS::YSection*0.5,Scone_NS::Length*0.5);
+    G4Material* DetectorMaterial = MaterialManager::getInstance()->GetMaterialFromLibrary(Scone_NS::Material);
+    m_SquareDetector = new G4LogicalVolume(box,DetectorMaterial,"logic_Scone_Box",0,0,0);
+    m_SquareDetector->SetVisAttributes(m_VisSquare);
+    m_SquareDetector->SetSensitiveDetector(m_SconeScorer);
+    
+    Tv.setX(0);
+    m_6x6Assembly->AddPlacedVolume(m_SquareDetector, Tv, Rv);
+    Tv.setX(Scone_NS::XSection);
+    m_6x6Assembly->AddPlacedVolume(m_SquareDetector, Tv, Rv);
+  }
+
+  return m_6x6Assembly;
+}
+
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 G4LogicalVolume* Scone::BuildSquareDetector(){
   if(!m_SquareDetector){
-    G4Box* box = new G4Box("Scone_Box",Scone_NS::Width*0.5,
-        Scone_NS::Width*0.5,Scone_NS::Thickness*0.5);
+    G4Box* box = new G4Box("Scone_Box",Scone_NS::XSection*0.5,
+        Scone_NS::YSection*0.5,Scone_NS::Length*0.5);
 
     G4Material* DetectorMaterial = MaterialManager::getInstance()->GetMaterialFromLibrary(Scone_NS::Material);
     m_SquareDetector = new G4LogicalVolume(box,DetectorMaterial,"logic_Scone_Box",0,0,0);
@@ -117,26 +143,12 @@ G4LogicalVolume* Scone::BuildSquareDetector(){
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-G4LogicalVolume* Scone::BuildCylindricalDetector(){
-  if(!m_CylindricalDetector){
-    G4Tubs* tub = new G4Tubs("Scone_Cyl",0,Scone_NS::Radius,Scone_NS::Thickness*0.5,0,360*deg);
-
-    G4Material* DetectorMaterial = MaterialManager::getInstance()->GetMaterialFromLibrary(Scone_NS::Material);
-    m_CylindricalDetector = new G4LogicalVolume(tub,DetectorMaterial,"logic_Scone_tub",0,0,0);
-    m_CylindricalDetector->SetVisAttributes(m_VisSquare);
-    m_CylindricalDetector->SetSensitiveDetector(m_SconeScorer);
-
-  }
-  return m_CylindricalDetector;
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 // Virtual Method of NPS::VDetector class
 
 // Read stream at Configfile to pick-up parameters of detector (Position,...)
-// Called in DetecorConstruction::ReadDetextorConfiguration Method
+// Called in Detecor
 void Scone::ReadConfiguration(NPL::InputParser parser){
   vector<NPL::InputBlock*> blocks = parser.GetAllBlocksWithToken("Scone");
   if(NPOptionManager::getInstance()->GetVerboseLevel())
@@ -183,7 +195,7 @@ void Scone::ConstructDetector(G4LogicalVolume* world){
     G4double wZ = m_R[i] * cos(m_Theta[i] ) ;
     G4ThreeVector Det_pos = G4ThreeVector(wX, wY, wZ) ;
     // So the face of the detector is at R instead of the middle
-    Det_pos+=Det_pos.unit()*Scone_NS::Thickness*0.5;
+    Det_pos+=Det_pos.unit()*Scone_NS::Length*0.5;
     // Building Detector reference frame
     G4double ii = cos(m_Theta[i]) * cos(m_Phi[i]);
     G4double jj = cos(m_Theta[i]) * sin(m_Phi[i]);
@@ -197,17 +209,12 @@ void Scone::ConstructDetector(G4LogicalVolume* world){
 
     G4RotationMatrix* Rot = new G4RotationMatrix(u,v,w);
 
-    if(m_Shape[i] == "Cylindrical"){
-      new G4PVPlacement(G4Transform3D(*Rot,Det_pos),
-          BuildCylindricalDetector(),
-          "Scone",world,false,i+1);
-    }
+    Build6x6Assembly()->MakeImprint(world,Det_pos,Rot,i);
 
-    else if(m_Shape[i] == "Square"){
-      new G4PVPlacement(G4Transform3D(*Rot,Det_pos),
-          BuildSquareDetector(),
-          "Scone",world,false,i+1);
-    }
+    //new G4PVPlacement(G4Transform3D(*Rot,Det_pos),
+    //      BuildSquareDetector(),
+    //      "Scone",world,false,i+1);
+    
   }
 }
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

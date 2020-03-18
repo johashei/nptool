@@ -30,6 +30,7 @@ using namespace std;
 #include "G4ThreeVector.hh"
 #include "G4RotationMatrix.hh"
 #include "G4LogicalVolume.hh"
+#include "G4AssemblyVolume.hh"
 #include "G4MultiFunctionalDetector.hh"
 
 // NPTool header
@@ -55,12 +56,14 @@ class Scone : public NPS::VDetector{
     void AddDetector(double R,double Theta,double Phi,string Shape);  
 
 
+    G4AssemblyVolume* Build4x4Assembly();
+    G4AssemblyVolume* Build6x6Assembly();
     G4LogicalVolume* BuildSquareDetector();
-    G4LogicalVolume* BuildCylindricalDetector();
   
   private:
+    G4AssemblyVolume* m_4x4Assembly;
+    G4AssemblyVolume* m_6x6Assembly;
     G4LogicalVolume* m_SquareDetector;
-    G4LogicalVolume* m_CylindricalDetector;
     
     ////////////////////////////////////////////////////
     //////  Inherite from NPS::VDetector class /////////
