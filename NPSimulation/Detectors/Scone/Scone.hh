@@ -50,18 +50,18 @@ class Scone : public NPS::VDetector{
     /////// Specific Function of this Class ///////////
     ////////////////////////////////////////////////////
   public:
-    // Cartesian
-    void AddDetector(G4ThreeVector POS, string Shape);
-    // Spherical
-    void AddDetector(double R,double Theta,double Phi,string Shape);  
+    void AddDetector(G4ThreeVector POS);
 
-
-    G4AssemblyVolume* Build4x4Assembly();
-    G4AssemblyVolume* Build6x6Assembly();
+    G4AssemblyVolume* Build2x2Assembly();
+    G4AssemblyVolume* Build6x6Assembly(double plastic_length);
     G4LogicalVolume* BuildSquareDetector();
+
+    void Build2x2Block(G4LogicalVolume* world);
+    void BuildRing1(G4LogicalVolume* world);
+    void BuildRing2(G4LogicalVolume* world);
   
   private:
-    G4AssemblyVolume* m_4x4Assembly;
+    G4AssemblyVolume* m_2x2Assembly;
     G4AssemblyVolume* m_6x6Assembly;
     G4LogicalVolume* m_SquareDetector;
     
@@ -106,12 +106,18 @@ class Scone : public NPS::VDetector{
     vector<double>  m_Theta;
     vector<double>  m_Phi; 
     
+    int m_BuildRing1;
+    int m_BuildRing2;
+    int m_Assembly;
+
     //   Shape type
     vector<string> m_Shape ;
    
     // Visualisation Attribute
     G4VisAttributes* m_VisSquare;
-    G4VisAttributes* m_VisCylinder;
+    G4VisAttributes* m_Vis2x2;
+    G4VisAttributes* m_Vis6x6;
+    G4VisAttributes* m_Vis6x6R2;
 
   // Needed for dynamic loading of the library
   public:
