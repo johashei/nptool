@@ -51,34 +51,32 @@ class Dali : public NPS::VDetector{
     ////////////////////////////////////////////////////
   public:
     // Cartesian
-    void AddDetector(G4ThreeVector POS, string Shape);
+    void AddDetector(G4ThreeVector POS);
     // Spherical
-    void AddDetector(double R,double Theta,double Phi,string Shape);  
+    void AddDetector(double R,double Theta,double Phi);  
     //Cylindrical
-  void AddDetector2(double R,double Alpha,double Zeta,string Shape);
+  void AddDetector(double R,double Alpha,double Zeta, int Ring);
 
     G4LogicalVolume* BuildSquareDetector();
     G4LogicalVolume* BuildCylindricalDetector();
   
   private:
+  
     G4LogicalVolume* m_SquareDetector;
-    G4LogicalVolume* m_SquareDetector_Can;
-    G4LogicalVolume* m_Square2Detector_Can;
-    G4LogicalVolume* m_CylindricalDetector;
-    G4LogicalVolume*  m_SquareDetector_CanMgO;
-    G4LogicalVolume*  m_SquareDetector_Crystal;
+    G4LogicalVolume* Log_Dali_box;
+    G4LogicalVolume* Log_Al_Cryst_can;
+    G4LogicalVolume* Log_MgO_Cryst_can;
+    G4LogicalVolume*  Log_Crystal;
     G4LogicalVolume* lAlPMT;
+    G4LogicalVolume* Log_Dali_1Volume;
+    G4LogicalVolume* Log_Dali_3Volume;
+    G4LogicalVolume* m_CylindricalDetector;
     G4LogicalVolume* lMuPMT;
     G4LogicalVolume* lTopPlatePMT;
     G4LogicalVolume* lGlassPMT;
     G4LogicalVolume* AriaExtrude;
-    G4LogicalVolume* Logic_ArrayDali_1;
 
-    G4Material* MgO;
     G4Material* NaI_Tl;
-
-
-  
 
     ////////////////////////////////////////////////////
     //////  Inherite from NPS::VDetector class /////////
@@ -91,7 +89,6 @@ class Dali : public NPS::VDetector{
     // Definition of materials
     // Called in ConstructDetector()
     void DefinitionMaterials();
-
   
     // Construct detector and inialise sensitive part.
     // Called After DetecorConstruction::AddDetector Method
@@ -125,13 +122,10 @@ class Dali : public NPS::VDetector{
     vector<double>  m_Zeta;
     vector<double>  m_R; 
     vector<double>  m_Alpha; 
+    vector<int>  m_Ring; 
     
-    //   Shape type
-    vector<string> m_Shape ;
-   
     // Visualisation Attribute
     G4VisAttributes* m_VisSquare;
-    G4VisAttributes* m_VisCylinder;
 
   // Needed for dynamic loading of the library
   public:
