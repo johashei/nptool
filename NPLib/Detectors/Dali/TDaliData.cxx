@@ -52,7 +52,10 @@ void TDaliData::Clear() {
   fDali_T_DetectorNbr.clear();
   fDali_TDC.clear();
   fDali_Time.clear();
+  
+  /* fDali_ParticleID.clear(); */
 }
+
 
 
 

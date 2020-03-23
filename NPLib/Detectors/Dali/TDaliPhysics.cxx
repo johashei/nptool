@@ -75,8 +75,6 @@ void TDaliPhysics::BuildSimplePhysicalEvent() {
   BuildPhysicalEvent();
 }
 
-
-
 ///////////////////////////////////////////////////////////////////////////
 void TDaliPhysics::BuildPhysicalEvent() {
   // apply thresholds and calibration
@@ -94,6 +92,8 @@ void TDaliPhysics::BuildPhysicalEvent() {
       }
     }
   }
+  
+
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -110,6 +110,8 @@ void TDaliPhysics::PreTreat() {
   // Energy
   unsigned int mysize = m_EventData->GetMultEnergy();
   for (UShort_t i = 0; i < mysize ; ++i) {
+    
+  /* ParticleID.push_back(m_EventData->GetParticleID(i)); */
     if (m_EventData->Get_Energy(i) > m_E_RAW_Threshold) {
       Double_t Energy = Cal->ApplyCalibration("Dali/ENERGY"+NPL::itoa(m_EventData->GetE_DetectorNbr(i)),m_EventData->Get_Energy(i));
       if (Energy > m_E_Threshold) {
@@ -124,9 +126,10 @@ void TDaliPhysics::PreTreat() {
     Double_t Time= Cal->ApplyCalibration("Dali/TIME"+NPL::itoa(m_EventData->GetT_DetectorNbr(i)),m_EventData->Get_Time(i));
     m_PreTreatedData->SetTime(m_EventData->GetT_DetectorNbr(i), Time);
   }
+
+
+
 }
-
-
 
 ///////////////////////////////////////////////////////////////////////////
 void TDaliPhysics::ReadAnalysisConfig() {
@@ -190,13 +193,12 @@ void TDaliPhysics::ReadAnalysisConfig() {
   }
 }
 
-
-
 ///////////////////////////////////////////////////////////////////////////
 void TDaliPhysics::Clear() {
   DetectorNumber.clear();
   Energy.clear();
   Time.clear();
+  /* ParticleID.clear(); */
 }
 
 
@@ -207,32 +209,32 @@ void TDaliPhysics::ReadConfiguration(NPL::InputParser parser) {
   if(NPOptionManager::getInstance()->GetVerboseLevel())
     cout << "//// " << blocks.size() << " detectors found " << endl; 
 
-  vector<string> cart = {"POS","Shape"};
-  vector<string> sphe = {"R","Theta","Phi","Shape"};
+  /* vector<string> cart = {"POS","Shape"}; */
+  /* vector<string> sphe = {"R","Theta","Phi","Shape"}; */
 
-  for(unsigned int i = 0 ; i < blocks.size() ; i++){
-    if(blocks[i]->HasTokenList(cart)){
-      if(NPOptionManager::getInstance()->GetVerboseLevel())
-        cout << endl << "////  Dali " << i+1 <<  endl;
+  /* for(unsigned int i = 0 ; i < blocks.size() ; i++){ */
+  /*   if(blocks[i]->HasTokenList(cart)){ */
+  /*     if(NPOptionManager::getInstance()->GetVerboseLevel()) */
+  /*       cout << endl << "////  Dali " << i+1 <<  endl; */
     
-      TVector3 Pos = blocks[i]->GetTVector3("POS","mm");
-      string Shape = blocks[i]->GetString("Shape");
-      AddDetector(Pos,Shape);
-    }
-    else if(blocks[i]->HasTokenList(sphe)){
-      if(NPOptionManager::getInstance()->GetVerboseLevel())
-        cout << endl << "////  Dali " << i+1 <<  endl;
-      double R = blocks[i]->GetDouble("R","mm");
-      double Theta = blocks[i]->GetDouble("Theta","deg");
-      double Phi = blocks[i]->GetDouble("Phi","deg");
-      string Shape = blocks[i]->GetString("Shape");
-      AddDetector(R,Theta,Phi,Shape);
-    }
-    else{
-      cout << "ERROR: check your input file formatting " << endl;
-      exit(1);
-    }
-  }
+  /*     TVector3 Pos = blocks[i]->GetTVector3("POS","mm"); */
+  /*     string Shape = blocks[i]->GetString("Shape"); */
+  /*     AddDetector(Pos,Shape); */
+  /*   } */
+  /*   else if(blocks[i]->HasTokenList(sphe)){ */
+  /*     if(NPOptionManager::getInstance()->GetVerboseLevel()) */
+  /*       cout << endl << "////  Dali " << i+1 <<  endl; */
+  /*     double R = blocks[i]->GetDouble("R","mm"); */
+  /*     double Theta = blocks[i]->GetDouble("Theta","deg"); */
+  /*     double Phi = blocks[i]->GetDouble("Phi","deg"); */
+  /*     string Shape = blocks[i]->GetString("Shape"); */
+  /*     AddDetector(R,Theta,Phi,Shape); */
+  /*   } */
+  /*   else{ */
+  /*     cout << "ERROR: check your input file formatting " << endl; */
+  /*     exit(1); */
+  /*   } */
+  /* } */
 }
 
 ///////////////////////////////////////////////////////////////////////////

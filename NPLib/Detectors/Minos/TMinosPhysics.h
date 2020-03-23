@@ -63,8 +63,6 @@ class TMinosPhysics : public TObject, public NPL::VDetector {
 
     void Clear(const Option_t*) {};
     
-    /* static  void SumDistance(int &, double *, double & sum, double * par,  int); */
-  
     //////////////////////////////////////////////////////////////
   // data obtained after BuildPhysicalEvent() and stored in
   // output ROOT file
@@ -116,12 +114,10 @@ class TMinosPhysics : public TObject, public NPL::VDetector {
     
     NPL::Tracking*      Tracking_functions; //!
     
-    /* int NclusterFit; //! */ 
     // fit function for the Q(t) signals at each pad
     static  double conv_fit(double *x, double *p);
     static double distance2(double x,double y,double z, double *p);
     static void SumDistance(int &, double *, double & sum, double * par,  int);
-
     
     // remove bad channels, calibrate the data and apply thresholds
     void PreTreat();
@@ -164,16 +160,22 @@ TMinosResult *minosdata_result;//!
     vector<double> GetPad_X()  {return X_Pad;} 
     vector<double> GetPad_Y()  {return Y_Pad;} 
     vector<double> GetPad_Z()  {return Z_Pad;} 
+    vector<double> GetPad_T()  {return T_Pad;} 
     vector<double> GetParFit1()  {return parFit1;} 
     vector<double> GetParFit2()  {return parFit2;} 
     vector<double> GetParFit3()  {return parFit3;} 
     vector<double> GetParFit4()  {return parFit4;} 
-    double GetVertexZ()  {return Zvertex[0];} 
+    double GetVertexZ()  {return Zvertex;} 
+    double GetVertexX()  {return Xvertex;} 
+    double GetVertexY()  {return Yvertex;} 
 
-    /* TClonesArray fitdata; */
-  
-  /* fitdata.SetClass("TMinosClust"); */
-  
+    double GetTheta1() {return Theta1 ;}
+    double GetTheta2() {return Theta2 ;}
+    double GetTheta_1() {return Theta_1 ;}
+    double GetTheta_2() {return Theta_2 ;}
+ 
+    double GetPhi1(){return Phi1;}
+    double GetPhi2(){return Phi2;}
   // parameters used in the analysis
   private:
    
@@ -256,13 +258,19 @@ TMinosResult *minosdata_result;//!
     vector<double> TOTzoutprime;
     vector<double> TOTqout;
  
-    vector<double> Xvertex;
-    vector<double> Yvertex;
-    vector<double> Zvertex;
+    double Xvertex;
+    double Yvertex;
+    double Zvertex;
+    double Dmin;
     
-    vector<double> sumTheta;
-    vector<double> Theta1;
-    vector<double> Theta2;
+    double sumTheta;
+    double Theta1;
+    double Theta2;
+    double Theta_1;
+    double Theta_2;
+
+    double Phi1;
+    double Phi2;
 
     vector<int> trackclusternbr;//!
     vector<int> tracknbr;//!
@@ -302,12 +310,11 @@ TMinosResult *minosdata_result;//!
     vector<double> errFit3_local;
     vector<double> errFit4_local;
   
-
     double xv;//!
     double yv;//!
     double zv;//!
     
-    double Dist_min;//!
+    double Dist_min;
     double Theta_tr1;//!
     double Theta_tr2;//!
   // number of detectors
