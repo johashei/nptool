@@ -27,6 +27,7 @@
 #include "G4VFastSimulationModel.hh"
 #include "PhysicsList.hh"
 #include "NPReaction.h"
+#include "NPQFS.h"
 #include "TReactionConditions.h"
 class G4VPhysicalVolume;
 namespace NPS{
@@ -44,7 +45,9 @@ namespace NPS{
  
     private:
       NPL::Reaction m_Reaction;
+      NPL::QFS m_QFS;
       string m_BeamName;
+      string m_ReactionType;
       double m_PreviousEnergy;
       double m_PreviousLength;
       bool   m_active;// is the process active
