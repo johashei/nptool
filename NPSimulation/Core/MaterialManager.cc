@@ -245,6 +245,16 @@ G4Material* MaterialManager::GetMaterialFromLibrary(string Name,
       return material;
     }
 
+    else if (Name == "EJ309") {
+      if (!density)
+        density            = 0.964 * g / cm3;
+      G4Material* material = new G4Material("NPS_" + Name, density, 2);
+      material->AddElement(GetElementFromLibrary("C"), 5);
+      material->AddElement(GetElementFromLibrary("H"), 4);
+      m_Material[Name] = material;
+      return material;
+    }
+
 
     else if (Name == "Cu") {
       if (!density)
@@ -831,7 +841,32 @@ G4Material* MaterialManager::GetMaterialFromLibrary(string Name,
       return material;
     }
 
+    else if (Name == "PMMA") {
+      if (!density)
+        density            = 1.18 * mg / cm3;
+      G4Material* material = new G4Material("NPS_" + Name, density, 3);
+      material->AddElement(GetElementFromLibrary("C"), 5);
+      material->AddElement(GetElementFromLibrary("O"), 2);
+      material->AddElement(GetElementFromLibrary("H"), 8);
+      m_Material[Name] = material;
+      return material;
+    }
+
+
     else if (Name == "Pyrex") {
+      if (!density)
+        density            = 2.23 * g / cm3;
+      G4Material* material = new G4Material("NPS_" + Name, density, 5);
+      material->AddElement(GetElementFromLibrary("Si"), 25);
+      material->AddElement(GetElementFromLibrary("O"), 65);
+      material->AddElement(GetElementFromLibrary("B"), 7);
+      material->AddElement(GetElementFromLibrary("Na"), 2);
+      material->AddElement(GetElementFromLibrary("Al"), 1);
+      m_Material[Name] = material;
+      return material;
+    }
+ 
+    else if (Name == "Pyrex_optical") {
       if (!density)
         density            = 2.23 * g / cm3;
       G4Material* material = new G4Material("NPS_" + Name, density, 5);
