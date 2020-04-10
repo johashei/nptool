@@ -148,11 +148,12 @@ G4Material* MaterialManager::GetMaterialFromLibrary(string Name,
 
     else if (Name == "Kapton") {
       if (!density)
-        density            = 1.39 * g / cm3;
-      G4Material* material = new G4Material("NPS_" + Name, density, 3);
-      material->AddElement(GetElementFromLibrary("H"), 4);
-      material->AddElement(GetElementFromLibrary("C"), 10);
-      material->AddElement(GetElementFromLibrary("O"), 2);
+        density            = 1.42 * g / cm3;
+      G4Material* material = new G4Material("NPS_" + Name, density, 4);
+      material->AddElement(GetElementFromLibrary("H"), 0.026);
+      material->AddElement(GetElementFromLibrary("C"), 0.69);
+      material->AddElement(GetElementFromLibrary("O"), 0.21);
+      material->AddElement(GetElementFromLibrary("N"), 0.074);
       m_Material[Name] = material;
       return material;
     }
@@ -358,6 +359,57 @@ G4Material* MaterialManager::GetMaterialFromLibrary(string Name,
       m_Material[Name] = material;
       return material;
     }
+
+    else if (Name=="MgO"){ //cyril
+      if (!density)
+        density            = 3.6* g / cm3;
+      G4Material* material = new G4Material("NPS_" + Name, density, 2);
+      material->AddElement(GetElementFromLibrary("Mg"), 1);
+      material->AddElement(GetElementFromLibrary("O"), 1);
+      m_Material[Name] = material;
+      return material;
+    } 
+    else if (Name=="mixMINOS"){ //cyril
+      if (!density)
+        density            = 0.0019836* g / cm3;
+      G4Material* material = new G4Material("NPS_" + Name, density, 3);
+      material->AddMaterial(GetMaterialFromLibrary("CF4"), .15);
+      material->AddMaterial(GetMaterialFromLibrary("isobutane"), .03);
+      material->AddElement(GetElementFromLibrary("Ar"), .82);
+      m_Material[Name] = material;
+      return material;
+    } 
+    else if (Name=="mumetal"){ //cyril
+      if (!density)
+        density            = 8.7* g / cm3;
+      G4Material* material = new G4Material("NPS_" + Name, density, 3);
+      material->AddElement(GetElementFromLibrary("Ni"), .8);
+      material->AddElement(GetElementFromLibrary("Fe"), .15);
+      material->AddElement(GetElementFromLibrary("Mo"), .05);
+      m_Material[Name] = material;
+      return material;
+    } 
+    else if (Name=="LH2"){ //cyril
+      if (!density)
+        density            = 0.07293* g / cm3;
+      G4Material* material = new G4Material("NPS_" + Name, density, 1);
+      material->AddElement(GetElementFromLibrary("H"), 2);
+      m_Material[Name] = material;
+      return material;
+    } 
+    else if (Name=="Rohacell"){ //cyril
+      if (!density)
+        density            = 0.075* g / cm3;
+      G4Material* material = new G4Material("NPS_" + Name, density, 4);
+      material->AddElement(GetElementFromLibrary("H"), 0.0805);
+      material->AddElement(GetElementFromLibrary("C"), 0.6014);
+      material->AddElement(GetElementFromLibrary("O"), 0.3154);
+      material->AddElement(GetElementFromLibrary("N"), 0.00276);
+      m_Material[Name] = material;
+      return material;
+    } 
+
+
     // Usual detector material
     else if (Name == "Si") {
       if (!density)
@@ -747,6 +799,15 @@ G4Material* MaterialManager::GetMaterialFromLibrary(string Name,
       return material;
     }
 
+    else  if(Name == "iC4H10" || Name == "Isobutane" || Name == "isobutane"){
+      density	= 0.002506*g/cm3;
+      G4Material* material = new G4Material("NPS_"+Name,density,2);
+      material->AddElement(GetElementFromLibrary("C"), 4);
+      material->AddElement(GetElementFromLibrary("H"), 10);
+      m_Material[Name]=material;
+      return material;
+    }
+
     else if (Name == "CF4") { // 52 torr
       if (!density)
         density            = 3.78 * mg / cm3;
@@ -754,6 +815,7 @@ G4Material* MaterialManager::GetMaterialFromLibrary(string Name,
           kStateGas, 300, 0.0693276 * bar);
       material->AddElement(GetElementFromLibrary("C"), 1);
       material->AddElement(GetElementFromLibrary("F"), 4);
+      material->GetIonisation()->SetMeanExcitationEnergy(20.0*eV);
       m_Material[Name] = material;
       return material;
     }
@@ -989,6 +1051,15 @@ G4Material* MaterialManager::GetGasFromLibrary(string Name, double Pressure, dou
       m_Material[newName]=material;
       return material;
     }
+
+    /* if(Name == "mixMINOS"){ */
+    /*     density	= (2*2.0140/Vm)*mg/cm3; */
+    /*     G4Material* material = new G4Material("NPS_"+newName,density,1,kStateGas,Temperature,Pressure); */
+    /*     material->AddElement(GetElementFromLibrary("D"), 2); */
+    /*     //material->AddElement(GetElementFromLibrary("D"), 1); */
+    /*     m_Material[newName]=material; */
+    /*     return material; */
+    /* } */
 
 
     else{

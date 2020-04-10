@@ -115,29 +115,29 @@ int main(int argc, char** argv){
     
     
     G4VisManager* visManager=NULL;
-    if(!OptionManager->GetG4BatchMode()){
+
 #ifdef G4UI_USE
+    if(!OptionManager->GetG4BatchMode()){
         string Path_Macro = getenv("NPTOOL");
         Path_Macro+="/NPSimulation/ressources/macro/";
         UImanager->ApplyCommand("/control/execute " +Path_Macro+"verbose.mac");
 
-#ifdef G4VIS_USE
+  #ifdef G4VIS_USE
         UImanager->ApplyCommand("/control/execute " +Path_Macro+"aliases.mac");
         visManager = new G4VisExecutive("Quiet");
         visManager->Initialize();
         UImanager->ApplyCommand("/control/execute " +Path_Macro+"vis.mac");
-#endif
+  #endif
         if (ui->IsGUI()){
             UImanager->ApplyCommand("/control/execute " +Path_Macro+"gui.mac");
         }
-#ifdef __APPLE__
+  #ifdef __APPLE__
         string command= "osascript ";
         command+= getenv("NPTOOL");
         command+="/NPSimulation/ressources/scripts/bringtofront.osa & ";
         int res =system(command.c_str());
         res =0;
-        
-#endif
+  #endif
     }
     else{// if batch mode do not accumulate any track
        UImanager->ApplyCommand("/vis/scene/endOfEventAction accumulate 0");
