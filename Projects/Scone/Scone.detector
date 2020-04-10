@@ -1,19 +1,16 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-Target
- THICKNESS= 10 micrometer
- RADIUS=	20 mm
- MATERIAL= CD2
- ANGLE= 0 deg
- X= 0 mm
- Y= 0 mm
- Z= 0 mm
+%Target
+% THICKNESS= 10 micrometer
+% RADIUS= 10 mm
+% MATERIAL= CD2
+% ANGLE= 0 deg
+% X= 0 mm
+% Y= 0 mm
+% Z= 0 mm
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 Scone
  POS= 0 0 0 mm
- Shape= Square
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%Scone
-% POS = 35 35 35 cm
-% Shape= Square
+ Ring1= 1
+ Ring2= 1
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
