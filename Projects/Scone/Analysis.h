@@ -23,6 +23,9 @@
 
 #include"NPVAnalysis.h"
 #include"TSconePhysics.h"
+#include"TInitialConditions.h"
+#include"TInteractionCoordinates.h"
+
 class Analysis: public NPL::VAnalysis{
   public:
     Analysis();
@@ -32,11 +35,32 @@ class Analysis: public NPL::VAnalysis{
     void Init();
     void TreatEvent();
     void End();
+    void InitInputBranch();
+    void InitOutputBranch();
+    void ReInitValue();
 
-   static NPL::VAnalysis* Construct();
+    static NPL::VAnalysis* Construct();
 
   private:
-   TSconePhysics* Scone;
+    double Time_max;
+    double E_init;
+    double E_max;
+    double E_sum;
+  
+  private:
+    TSconePhysics* Scone;
+    TInitialConditions* InitialConditions;
+
+  private:
+    double m_DetectedNeutron;
+    int m_entries;
+    vector<double> vDetectedNeutron;
+
+  private:
+    bool new_energy;
+    double E_new;
+    vector<double> vE_init;
 
 };
+
 #endif

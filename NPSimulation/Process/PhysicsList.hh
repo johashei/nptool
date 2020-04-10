@@ -66,6 +66,7 @@
 #include "G4IonINCLXXPhysics.hh"
 #if NPS_GEANT4_VERSION_MAJOR > 9
 #include "G4HadronPhysicsQGSP_BIC_HP.hh"
+#include "G4HadronPhysicsQGSP_BERT_HP.hh"
 #endif
 #include "G4HadronPhysicsQGSP_BIC.hh"
 #include "G4HadronPhysicsQGSP_BERT.hh"
@@ -112,12 +113,14 @@ class PhysicsList: public G4VUserPhysicsList{
     double m_OpticalPhysics;
     double m_DriftElectronPhysics;
     double m_HadronPhysicsQGSP_BIC_HP;
+    double m_HadronPhysicsQGSP_BERT_HP;
     double m_HadronPhysicsINCLXX;
     double m_Decay;
     double m_IonGasModels;
     double m_pai;
     double m_pai_photon;
-  	double m_Menate_R;
+    double m_Menate_R;
+    double m_NeutronHP;
 };
 
 

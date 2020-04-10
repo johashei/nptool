@@ -23,6 +23,8 @@
 #include <sstream>
 #include <cmath>
 #include <limits>
+#include <iostream>
+#include <string>
 //G4 Geometry object
 #include "G4Tubs.hh"
 #include "G4Box.hh"
@@ -58,37 +60,44 @@ using namespace CLHEP;
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 namespace Scone_NS{
   // Energy and time Resolution
-  const double EnergyThreshold = 0.1*MeV;
-  const double ResoTime = 4.5*ns ;
-  const double ResoEnergy = 1.0*MeV ;
+  const double EnergyThreshold = 0.*MeV;
+  const double ResoTime = 0.5*ns ;
+  const double ResoEnergy = 0.001*MeV ;
   const double XSection = 25.1*mm ; 
   const double YSection = 25.6*mm ;
   const double LengthR1 = 1000*mm ;
   const double LengthR2 = 500*mm ;
   const double Length2x2 = 400*mm ;
-  const string Material = "CH2";
+  const double GdThickness = 25*um ;
+  const double DistanceBetweenBar = 1*mm ;
+  const string Material = "EJ200";
 }
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 // Scone Specific Method
 Scone::Scone(){
+  InitializeMaterial();
   m_Event = new TSconeData() ;
   m_SconeScorer = 0;
-  
+
   m_SquareDetector = 0;
 
   m_BuildRing1 = 1;
   m_BuildRing2 = 1;
+
+  m_NumberOfInnerDetector = 16;
+  m_NumberOfRing1Detector = 8;
+  m_NumberOfRing2Detector = 16;
 
   m_Assembly = 0;
 
   // RGB Color + Transparency
   m_VisSquare = new G4VisAttributes(G4Colour(0, 1, 0, 0.5));   
   m_Vis2x2 = new G4VisAttributes(G4Colour(0, 0.5, 0.6, 1.0));   
-  m_Vis6x6 = new G4VisAttributes(G4Colour(0.2, 1, 1, 1));   
-  m_Vis6x6R2 = new G4VisAttributes(G4Colour(0.2, 0.8, 0.6, 0.8));   
-
+  m_Vis6x6R1 = new G4VisAttributes(G4Colour(0.2, 1, 1, 1));   
+  m_Vis6x6R2 = new G4VisAttributes(G4Colour(0.2, 0.8, 0.6, 1));   
+  m_VisGd = new G4VisAttributes(G4Colour(0.5, 0.5, 0.5, 1));   
 }
 
 Scone::~Scone(){
@@ -102,68 +111,135 @@ void Scone::AddDetector(G4ThreeVector POS){
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-G4AssemblyVolume* Scone::Build2x2Assembly(){
-  if(!m_SquareDetector){
-    m_2x2Assembly = new G4AssemblyVolume();
-    G4RotationMatrix *Rv = new G4RotationMatrix(0,0,0);
-    G4ThreeVector Tv;
-    Tv.setX(0); Tv.setY(0); Tv.setZ(0);
+G4LogicalVolume* Scone::Build2x2Assembly(int DetNumber){
+  
+  G4String Name = "2x2block_" + to_string(DetNumber);
 
-    // One bar definitation
-    G4Box* box = new G4Box("Scone_Box",Scone_NS::XSection*0.5,
-        Scone_NS::YSection*0.5,Scone_NS::Length2x2*0.5);
-    G4Material* DetectorMaterial = MaterialManager::getInstance()->GetMaterialFromLibrary(Scone_NS::Material);
-    m_SquareDetector = new G4LogicalVolume(box,DetectorMaterial,"logic_Scone_Box",0,0,0);
-    m_SquareDetector->SetVisAttributes(m_Vis2x2);
-    m_SquareDetector->SetSensitiveDetector(m_SconeScorer);
-    
-    double posX = 0;
-    double posY = 0;
-    for(int i=0; i<2; i++){
-      for(int j=0; j<2; j++){
-        posX = i*Scone_NS::XSection;
-        posY = j*Scone_NS::YSection;
-        Tv.setX(posX);
-        Tv.setY(posY);
-        m_2x2Assembly->AddPlacedVolume(m_SquareDetector, Tv, Rv);
-      }
+  //--- Full assembly definition ---//
+  double Xsize = 2*Scone_NS::XSection + 2*2*Scone_NS::GdThickness + Scone_NS::DistanceBetweenBar;
+  double Ysize = 2*Scone_NS::YSection + 2*2*Scone_NS::GdThickness + Scone_NS::DistanceBetweenBar;
+  double Zsize = Scone_NS::Length2x2;
+
+  G4Box* solidMotherVolume = new G4Box("2x2block", 0.5*Xsize, 0.5*Ysize, 0.5*Zsize);
+  m_2x2Assembly = new G4LogicalVolume(solidMotherVolume, m_MaterialVaccuum, Name, 0, 0, 0);
+
+  G4VisAttributes * MotherVolumeVisAtt = new G4VisAttributes(G4Colour(0.9, 0.9, 0.9));
+  MotherVolumeVisAtt->SetForceWireframe(true);
+  //m_2x2Assembly->SetVisAttributes(G4VisAttributes::Invisible);
+  m_2x2Assembly->SetVisAttributes(MotherVolumeVisAtt);
+
+  //--- One bar definitation ---//
+  G4Box* box = new G4Box("Scone_Box",Scone_NS::XSection*0.5,
+      Scone_NS::YSection*0.5,Scone_NS::Length2x2*0.5);
+  G4Material* DetectorMaterial = MaterialManager::getInstance()->GetMaterialFromLibrary(Scone_NS::Material);
+
+  m_SquareDetector = new G4LogicalVolume(box,DetectorMaterial,"logic_Scone_Box_",0,0,0);
+  m_SquareDetector->SetVisAttributes(m_Vis2x2);
+  m_SquareDetector->SetSensitiveDetector(m_SconeScorer);
+
+  //--- Gd Layer around the plastic bar ---//
+  G4Material* Gd_Material = MaterialManager::getInstance()->GetMaterialFromLibrary("Gd");
+  G4Box* box_tmp = new G4Box("Box_tmp",(Scone_NS::XSection+Scone_NS::GdThickness)*0.5, (Scone_NS::YSection+Scone_NS::GdThickness)*0.5, Scone_NS::Length2x2*0.49);
+  G4VSolid* Gd_layer = (G4VSolid*) new G4SubtractionSolid("Gd_layer", box_tmp, box,0,G4ThreeVector(0,0,0));
+
+  G4LogicalVolume* Gd_layer_volume = new G4LogicalVolume(Gd_layer, Gd_Material,"Gd_layer_volume",0,0,0);
+  Gd_layer_volume->SetVisAttributes(m_VisGd);
+
+  double posX = 0;
+  double posY = 0;
+  double posX_orig = -0.5*(Scone_NS::XSection + Scone_NS::GdThickness + Scone_NS::DistanceBetweenBar);
+  double posY_orig = -0.5*(Scone_NS::YSection + Scone_NS::GdThickness + Scone_NS::DistanceBetweenBar);
+  double BarNumber = 0;
+  G4ThreeVector Tv;
+  Tv.setX(0); Tv.setY(0); Tv.setZ(0);
+  for(int i=0; i<2; i++){
+    for(int j=0; j<2; j++){
+      BarNumber++;
+
+      posX= posX_orig+i*(Scone_NS::XSection + 2*Scone_NS::GdThickness + Scone_NS::DistanceBetweenBar);
+      posY= posY_orig+j*(Scone_NS::YSection + 2*Scone_NS::GdThickness + Scone_NS::DistanceBetweenBar);
+      Tv.setX(posX);
+      Tv.setY(posY);
+      
+      new G4PVPlacement(new G4RotationMatrix(0,0,0),
+          Tv,
+          m_SquareDetector,"PlasticBar",
+          m_2x2Assembly, false, BarNumber);
+      
+      new G4PVPlacement(new G4RotationMatrix(0,0,0),
+          Tv,
+          Gd_layer_volume,"GdLayer",
+          m_2x2Assembly, false, 0);
     }
   }
-
   return m_2x2Assembly;
 }
 
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-G4AssemblyVolume* Scone::Build6x6Assembly(double plastic_length){
-  m_6x6Assembly = new G4AssemblyVolume();
-  G4RotationMatrix *Rv = new G4RotationMatrix(0,0,0);
-  G4ThreeVector Tv;
-  Tv.setX(0); Tv.setY(0); Tv.setZ(0);
+G4LogicalVolume* Scone::Build6x6Assembly(int DetNumber, double plastic_length){
 
-  // One bar definitation
+  G4String Name = "6x6block_" + to_string(DetNumber);
+  
+  //--- Full assembly definition ---//
+  double Xsize = 6*Scone_NS::XSection + 6*2*Scone_NS::GdThickness + 5*Scone_NS::DistanceBetweenBar;
+  double Ysize = 6*Scone_NS::YSection + 6*2*Scone_NS::GdThickness + 5*Scone_NS::DistanceBetweenBar;
+  double Zsize = plastic_length;
+
+  G4Box* solidMotherVolume = new G4Box("6x6block", 0.5*Xsize, 0.5*Ysize, 0.5*Zsize);
+  m_6x6Assembly = new G4LogicalVolume(solidMotherVolume, m_MaterialVaccuum, Name, 0, 0, 0);
+
+  G4VisAttributes * MotherVolumeVisAtt = new G4VisAttributes(G4Colour(0.9, 0.9, 0.9));
+  MotherVolumeVisAtt->SetForceWireframe(true);
+  m_6x6Assembly->SetVisAttributes(MotherVolumeVisAtt);
+
+  //--- One bar definitation ---//
   G4Box* box = new G4Box("Scone_Box",Scone_NS::XSection*0.5,
-       Scone_NS::YSection*0.5,plastic_length*0.5);
+      Scone_NS::YSection*0.5,plastic_length*0.5);
   G4Material* DetectorMaterial = MaterialManager::getInstance()->GetMaterialFromLibrary(Scone_NS::Material);
   m_SquareDetector = new G4LogicalVolume(box,DetectorMaterial,"logic_Scone_Box",0,0,0);
   if(plastic_length == Scone_NS::LengthR2)
     m_SquareDetector->SetVisAttributes(m_Vis6x6R2);
   else 
-    m_SquareDetector->SetVisAttributes(m_Vis6x6);
+    m_SquareDetector->SetVisAttributes(m_Vis6x6R1);
   m_SquareDetector->SetSensitiveDetector(m_SconeScorer);
-    
+
+  //--- Gd Layer around the plastic bar ---//
+  G4Material* Gd_Material = MaterialManager::getInstance()->GetMaterialFromLibrary("Gd");
+  G4Box* box_tmp = new G4Box("Box_tmp",(Scone_NS::XSection+Scone_NS::GdThickness)*0.5, (Scone_NS::YSection+Scone_NS::GdThickness)*0.5, plastic_length*0.49);
+  G4VSolid* Gd_layer = (G4VSolid*) new G4SubtractionSolid("Gd_layer",box_tmp,box,0,G4ThreeVector(0,0,0));
+
+  G4LogicalVolume* Gd_layer_volume = new G4LogicalVolume(Gd_layer, Gd_Material,"Gd_layer_volume",0,0,0);
+  Gd_layer_volume->SetVisAttributes(m_VisGd);
+
+
   double posX = 0;
   double posY = 0;
+  double posX_orig=-2.5*Scone_NS::XSection-4.5*Scone_NS::GdThickness-2.5*Scone_NS::DistanceBetweenBar;
+  double posY_orig=-2.5*Scone_NS::YSection-4.5*Scone_NS::GdThickness-2.5*Scone_NS::DistanceBetweenBar;
+  double BarNumber = 0;
+  G4ThreeVector Tv;
+  Tv.setX(0); Tv.setY(0); Tv.setZ(0);
   for(int i=0; i<6; i++){
     for(int j=0; j<6; j++){
-      posX = i*Scone_NS::XSection;
-      posY = j*Scone_NS::YSection;
+      BarNumber++;
+
+      posX= posX_orig+i*(Scone_NS::XSection + 2*Scone_NS::GdThickness + Scone_NS::DistanceBetweenBar);
+      posY= posY_orig+j*(Scone_NS::YSection + 2*Scone_NS::GdThickness + Scone_NS::DistanceBetweenBar);  
       Tv.setX(posX);
       Tv.setY(posY);
-      m_6x6Assembly->AddPlacedVolume(m_SquareDetector, Tv, Rv);
+      
+      new G4PVPlacement(new G4RotationMatrix(0,0,0),
+          Tv,
+          m_SquareDetector,"PlasticBar",
+          m_6x6Assembly, false, BarNumber);
+ 
+      new G4PVPlacement(new G4RotationMatrix(0,0,0),
+          Tv,
+          Gd_layer_volume,"GdLayer",
+          m_6x6Assembly, false, 0);
     }
   }
-
   return m_6x6Assembly;
 }
 
@@ -200,7 +276,7 @@ void Scone::ReadConfiguration(NPL::InputParser parser){
     if(blocks[i]->HasTokenList(cart)){
       if(NPOptionManager::getInstance()->GetVerboseLevel())
         cout << endl << "////  Scone " << i+1 <<  endl;
-    
+
       G4ThreeVector Pos = NPS::ConvertVector(blocks[i]->GetTVector3("POS","mm"));
       m_BuildRing1 = blocks[i]->GetInt("Ring1");
       m_BuildRing2 = blocks[i]->GetInt("Ring2");
@@ -230,109 +306,122 @@ void Scone::ConstructDetector(G4LogicalVolume* world){
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 void Scone::Build2x2Block(G4LogicalVolume* world){
 
-    G4RotationMatrix* Rot = new G4RotationMatrix(0,0,0);
-    double posX_orig = -0.5*Scone_NS::XSection;
-    double posX_neg = posX_orig - 2*Scone_NS::XSection;
-    double posX_pos = posX_orig + 2*Scone_NS::XSection;
-    double posY_orig = -0.5*Scone_NS::YSection;
-    double posY_neg = posY_orig - 2*Scone_NS::YSection;
-    double posY_pos = posY_orig + 2*Scone_NS::YSection;
-    
-    double posX[16] = {posX_orig, posX_orig, posX_neg, posX_neg, posX_neg, posX_pos, posX_pos, posX_pos, posX_orig, posX_orig, posX_neg, posX_neg, posX_neg, posX_pos, posX_pos, posX_pos};
-    double posY[16] = {posY_neg, posY_pos, posY_neg, posY_orig, posY_pos, posY_neg, posY_orig, posY_pos, posY_neg, posY_pos, posY_neg, posY_orig, posY_pos, posY_neg, posY_orig, posY_pos};
-    double posZ[16] = {-300,-300,-300,-300,-300,-300,-300,-300,300,300,300,300,300,300,300,300};
+  G4RotationMatrix* Rot = new G4RotationMatrix(0,0,0);
+  double posX_orig = 0;
+  double posX_neg = posX_orig - 2*(Scone_NS::XSection + Scone_NS::DistanceBetweenBar + 2*Scone_NS::GdThickness);
+  double posX_pos = posX_orig + 2*(Scone_NS::XSection + Scone_NS::DistanceBetweenBar + 2*Scone_NS::GdThickness);
+  double posY_orig = 0;
+  double posY_neg = posY_orig - 2*(Scone_NS::YSection + Scone_NS::DistanceBetweenBar + 2*Scone_NS::GdThickness);
+  double posY_pos = posY_orig + 2*(Scone_NS::YSection + Scone_NS::DistanceBetweenBar + 2*Scone_NS::GdThickness);
 
-    G4ThreeVector Det_pos;
+  double posX[16] = {posX_orig, posX_orig, posX_neg, posX_neg, posX_neg, posX_pos, posX_pos, posX_pos, posX_orig, posX_orig, posX_neg, posX_neg, posX_neg, posX_pos, posX_pos, posX_pos};
+  double posY[16] = {posY_neg, posY_pos, posY_neg, posY_orig, posY_pos, posY_neg, posY_orig, posY_pos, posY_neg, posY_pos, posY_neg, posY_orig, posY_pos, posY_neg, posY_orig, posY_pos};
+  double posZ[16] = {-300,-300,-300,-300,-300,-300,-300,-300,300,300,300,300,300,300,300,300};
 
-    for(int i=0; i<16; i++)
-    {
-      Det_pos = G4ThreeVector(posX[i], posY[i], posZ[i]);
-      Build2x2Assembly()->MakeImprint(world, Det_pos, Rot, m_Assembly);
-      m_Assembly++;
-    }
+  G4ThreeVector Det_pos;
+
+  for(int i=0; i<m_NumberOfInnerDetector; i++){
+    m_Assembly++;
+    G4String Name = "2x2block_" + to_string(m_Assembly);
+    Det_pos = G4ThreeVector(posX[i], posY[i], posZ[i]);
+
+    new G4PVPlacement(G4Transform3D(*Rot, Det_pos), 
+        Build2x2Assembly(m_Assembly), 
+        Name, world, 
+        false, m_Assembly);
+  }
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 void Scone::BuildRing1(G4LogicalVolume* world){
-    G4RotationMatrix* Rot = new G4RotationMatrix(0,0,0);
-    double posX_orig = -2.5*Scone_NS::XSection;
-    double posX_neg = posX_orig - 6*Scone_NS::XSection;
-    double posX_pos = posX_orig + 6*Scone_NS::XSection;
-    double posY_orig = -2.5*Scone_NS::YSection;
-    double posY_neg = posY_orig - 6*Scone_NS::YSection;
-    double posY_pos = posY_orig + 6*Scone_NS::YSection;
+  G4RotationMatrix* Rot = new G4RotationMatrix(0,0,0);
+  double posX_orig = 0;
+  double posX_neg = posX_orig - 6*(Scone_NS::XSection + Scone_NS::DistanceBetweenBar + 2*Scone_NS::GdThickness);
+  double posX_pos = posX_orig + 6*(Scone_NS::XSection + Scone_NS::DistanceBetweenBar + 2*Scone_NS::GdThickness);
+  double posY_orig = 0;
+  double posY_neg = posY_orig - 6*(Scone_NS::YSection + Scone_NS::DistanceBetweenBar + 2*Scone_NS::GdThickness);
+  double posY_pos = posY_orig + 6*(Scone_NS::YSection + Scone_NS::DistanceBetweenBar + 2*Scone_NS::GdThickness);
+
+  double posX[8] = {posX_orig, posX_orig, posX_neg, posX_neg, posX_neg, posX_pos, posX_pos, posX_pos};
+  double posY[8] = {posY_neg, posY_pos, posY_neg, posY_orig, posY_pos, posY_neg, posY_orig, posY_pos};
+  double posZ[8] = {0,0,0,0,0,0,0,0};
+
+  G4ThreeVector Det_pos;
+
+  for(int i=0; i<m_NumberOfRing1Detector; i++)
+  {
+    m_Assembly++;
+    G4String Name = "6x6block_Ring1_" + to_string(m_Assembly);
+    Det_pos = G4ThreeVector(posX[i], posY[i], posZ[i]);
     
-    double posX[8] = {posX_orig, posX_orig, posX_neg, posX_neg, posX_neg, posX_pos, posX_pos, posX_pos};
-    double posY[8] = {posY_neg, posY_pos, posY_neg, posY_orig, posY_pos, posY_neg, posY_orig, posY_pos};
-    double posZ[8] = {0,0,0,0,0,0,0,0};
-
-    G4ThreeVector Det_pos;
-
-    for(int i=0; i<8; i++)
-    {
-      Det_pos = G4ThreeVector(posX[i], posY[i], posZ[i]);
-      Build6x6Assembly(Scone_NS::LengthR1)->MakeImprint(world, Det_pos, Rot, m_Assembly);
-      m_Assembly++;
-    }
-
+    new G4PVPlacement(G4Transform3D(*Rot, Det_pos),
+        Build6x6Assembly(m_Assembly, Scone_NS::LengthR1),
+        Name, world,
+        false, m_Assembly);
+  }
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 void Scone::BuildRing2(G4LogicalVolume* world){
-    G4RotationMatrix* Rot = new G4RotationMatrix(0,0,0);
-    double posX_orig = -2.5*Scone_NS::XSection;
-    double posX_left = posX_orig - 12*Scone_NS::XSection;
-    double posX_right = posX_orig + 12*Scone_NS::XSection;
-    double posY_orig = -2.5*Scone_NS::YSection;
-    double posY_down = posY_orig - 12*Scone_NS::YSection;
-    double posY_up = posY_orig + 12*Scone_NS::YSection;
+  G4RotationMatrix* Rot = new G4RotationMatrix(0,0,0);
+  double shiftX = Scone_NS::XSection + 2*Scone_NS::GdThickness + Scone_NS::DistanceBetweenBar;
+  double shiftY = Scone_NS::YSection + 2*Scone_NS::GdThickness + Scone_NS::DistanceBetweenBar;
+  double posX_orig = 0;
+  double posX_left = posX_orig - 12*shiftX;
+  double posX_right = posX_orig + 12*shiftX;
+  double posY_orig = 0;
+  double posY_down = posY_orig - 12*shiftY;
+  double posY_up = posY_orig + 12*shiftY;
+
+  double posX[16];
+  posX[0]= posX_left;
+  posX[1]= posX_left;
+  posX[2]= posX_left;
+  posX[3]= posX_left;
+  posX[4]= posX_left;
+  posX[5]= posX_right;
+  posX[6]= posX_right;
+  posX[7]= posX_right;
+  posX[8]= posX_right;
+  posX[9]= posX_right;
+  posX[10]= posX_left+6*shiftX;
+  posX[11]= posX_left+12*shiftX;
+  posX[12]= posX_left+18*shiftX;
+  posX[13]= posX_left+6*shiftX;
+  posX[14]= posX_left+12*shiftX;
+  posX[15]= posX_left+18*shiftX;
+
+  double posY[16];
+  posY[0]= posY_down;
+  posY[1]= posY_down+6*shiftY;
+  posY[2]= posY_down+12*shiftY;
+  posY[3]= posY_down+18*shiftY;
+  posY[4]= posY_down+24*shiftY;
+  posY[5]= posY_down;
+  posY[6]= posY_down+6*shiftY;
+  posY[7]= posY_down+12*shiftY;
+  posY[8]= posY_down+18*shiftY;
+  posY[9]= posY_down+24*shiftY; 
+  posY[10]= posY_down;
+  posY[11]= posY_down;
+  posY[12]= posY_down;
+  posY[13]= posY_up;
+  posY[14]= posY_up;
+  posY[15]= posY_up;
+
+  G4ThreeVector Det_pos;
+  G4String Name;
+  for(int i=0; i<m_NumberOfRing2Detector; i++)
+  {
+    m_Assembly++;
+    Name = "6x6block_Ring2_" + to_string(m_Assembly);
+    Det_pos = G4ThreeVector(posX[i], posY[i], 0);
   
-    //double posX[16] = {posX_left, posX_left, posX_left, posX_left, posX_left};
-    //double posY[16] = {posY_down};
-    //double posZ[16] = {0};
-
-    G4ThreeVector Det_pos;
-
-    for(int i=0; i<5; i++)
-    {
-      double posX = posX_left;
-      double posY = posY_down + 6*i*Scone_NS::YSection;
-      Det_pos = G4ThreeVector(posX, posY, 0);
-      Build6x6Assembly(Scone_NS::LengthR2)->MakeImprint(world, Det_pos, Rot, m_Assembly);
-      m_Assembly++;
-    }
-    for(int i=0; i<5; i++)
-    {
-      double posX = posX_right;
-      double posY = posY_down + 6*i*Scone_NS::YSection;
-      Det_pos = G4ThreeVector(posX, posY, 0);
-      Build6x6Assembly(Scone_NS::LengthR2)->MakeImprint(world, Det_pos, Rot, m_Assembly);
-      m_Assembly++;
-    }
-
-    Det_pos = G4ThreeVector(posX_left + 6*Scone_NS::XSection, posY_down, 0);
-    Build6x6Assembly(Scone_NS::LengthR2)->MakeImprint(world, Det_pos, Rot, m_Assembly);
-    m_Assembly++;
-    Det_pos = G4ThreeVector(posX_left + 12*Scone_NS::XSection, posY_down, 0);
-    Build6x6Assembly(Scone_NS::LengthR2)->MakeImprint(world, Det_pos, Rot, m_Assembly);
-    m_Assembly++;
-    Det_pos = G4ThreeVector(posX_left + 18*Scone_NS::XSection, posY_down, 0);
-    Build6x6Assembly(Scone_NS::LengthR2)->MakeImprint(world, Det_pos, Rot, m_Assembly);
-    m_Assembly++;
-
-    Det_pos = G4ThreeVector(posX_left + 6*Scone_NS::XSection, posY_up, 0);
-    Build6x6Assembly(Scone_NS::LengthR2)->MakeImprint(world, Det_pos, Rot, m_Assembly);
-    m_Assembly++;
-    Det_pos = G4ThreeVector(posX_left + 12*Scone_NS::XSection, posY_up, 0);
-    Build6x6Assembly(Scone_NS::LengthR2)->MakeImprint(world, Det_pos, Rot, m_Assembly);
-    m_Assembly++;
-    Det_pos = G4ThreeVector(posX_left + 18*Scone_NS::XSection, posY_up, 0);
-    Build6x6Assembly(Scone_NS::LengthR2)->MakeImprint(world, Det_pos, Rot, m_Assembly);
-    m_Assembly++;
-
-
-
-
+    new G4PVPlacement(G4Transform3D(*Rot, Det_pos),
+        Build6x6Assembly(m_Assembly, Scone_NS::LengthR2),
+        Name, world,
+        false, m_Assembly);
+  }
 }
 
 
@@ -365,8 +454,9 @@ void Scone::ReadSensitive(const G4Event* ){
     if(Energy>Scone_NS::EnergyThreshold){
       double Time = RandGauss::shoot(Scorer->GetTime(i),Scone_NS::ResoTime);
       int DetectorNbr = level[0];
-      m_Event->SetEnergy(DetectorNbr,Energy);
-      m_Event->SetTime(DetectorNbr,Time); 
+      int PlasticNbr = level[1];
+      m_Event->SetEnergy(DetectorNbr,PlasticNbr,Energy);
+      m_Event->SetTime(DetectorNbr,PlasticNbr,Time); 
     }
   }
 }
@@ -382,8 +472,11 @@ void Scone::InitializeScorers() {
     return ;
 
   // Otherwise the scorer is initialised
-  vector<int> level; level.push_back(0);
-  G4VPrimitiveScorer* Calorimeter= new CalorimeterScorers::PS_Calorimeter("Calorimeter",level, 0) ;
+  vector<int> level; 
+  level.push_back(1);
+  level.push_back(0);
+  //G4VPrimitiveScorer* Calorimeter= new CalorimeterScorers::PS_Calorimeter("Calorimeter",level, 0) ;
+  G4VPrimitiveScorer* Calorimeter= new CalorimeterScorers::PS_Calorimeter("Calorimeter",level) ;
   G4VPrimitiveScorer* Interaction= new InteractionScorers::PS_Interactions("Interaction",ms_InterCoord, 0) ;
   //and register it to the multifunctionnal detector
   m_SconeScorer->RegisterPrimitive(Calorimeter);
@@ -392,6 +485,10 @@ void Scone::InitializeScorers() {
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+void Scone::InitializeMaterial(){
+  m_MaterialVaccuum = MaterialManager::getInstance()->GetMaterialFromLibrary("Vacuum");
+}
+
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 ////////////////////////////////////////////////////////////////////////////////

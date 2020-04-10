@@ -36,10 +36,12 @@ class TSconeData : public TObject {
   private: 
     // Energy
     vector<UShort_t>   fScone_E_DetectorNbr;
+    vector<UShort_t>   fScone_E_PlasticNbr;
     vector<Double_t>   fScone_Energy;
 
     // Time
     vector<UShort_t>   fScone_T_DetectorNbr;
+    vector<UShort_t>   fScone_T_PlasticNbr;
     vector<Double_t>   fScone_Time;
 
 
@@ -66,14 +68,16 @@ class TSconeData : public TObject {
   public:
     //////////////////////    SETTERS    ////////////////////////
     // Energy
-    inline void SetEnergy(const UShort_t& DetNbr,const Double_t& Energy){
+    inline void SetEnergy(const UShort_t& DetNbr,const UShort_t& PlasticNbr, const Double_t& Energy){
       fScone_E_DetectorNbr.push_back(DetNbr);
+      fScone_E_PlasticNbr.push_back(PlasticNbr);
       fScone_Energy.push_back(Energy);
     };//!
 
     // Time
-    inline void SetTime(const UShort_t& DetNbr,const Double_t& Time)	{
+    inline void SetTime(const UShort_t& DetNbr,const UShort_t& PlasticNbr, const Double_t& Time)	{
       fScone_T_DetectorNbr.push_back(DetNbr);     
+      fScone_T_PlasticNbr.push_back(PlasticNbr);     
       fScone_Time.push_back(Time);
     };//!
 
@@ -84,6 +88,8 @@ class TSconeData : public TObject {
       {return fScone_E_DetectorNbr.size();}
     inline UShort_t GetE_DetectorNbr(const unsigned int &i) const 
       {return fScone_E_DetectorNbr[i];}//!
+    inline UShort_t GetE_PlasticNbr(const unsigned int &i) const 
+      {return fScone_E_PlasticNbr[i];}//!
     inline Double_t Get_Energy(const unsigned int &i) const 
       {return fScone_Energy[i];}//!
 
@@ -92,6 +98,8 @@ class TSconeData : public TObject {
       {return fScone_T_DetectorNbr.size();}
     inline UShort_t GetT_DetectorNbr(const unsigned int &i) const 
       {return fScone_T_DetectorNbr[i];}//!
+    inline UShort_t GetT_PlasticNbr(const unsigned int &i) const 
+      {return fScone_T_PlasticNbr[i];}//!
     inline Double_t Get_Time(const unsigned int &i) const 
       {return fScone_Time[i];}//!
 

@@ -52,8 +52,8 @@ class Scone : public NPS::VDetector{
   public:
     void AddDetector(G4ThreeVector POS);
 
-    G4AssemblyVolume* Build2x2Assembly();
-    G4AssemblyVolume* Build6x6Assembly(double plastic_length);
+    G4LogicalVolume* Build2x2Assembly(int DetNumber);
+    G4LogicalVolume* Build6x6Assembly(int DetNumber, double plastic_length);
     G4LogicalVolume* BuildSquareDetector();
 
     void Build2x2Block(G4LogicalVolume* world);
@@ -61,8 +61,8 @@ class Scone : public NPS::VDetector{
     void BuildRing2(G4LogicalVolume* world);
   
   private:
-    G4AssemblyVolume* m_2x2Assembly;
-    G4AssemblyVolume* m_6x6Assembly;
+    G4LogicalVolume* m_2x2Assembly;
+    G4LogicalVolume* m_6x6Assembly;
     G4LogicalVolume* m_SquareDetector;
     
     ////////////////////////////////////////////////////
@@ -108,7 +108,15 @@ class Scone : public NPS::VDetector{
     
     int m_BuildRing1;
     int m_BuildRing2;
+    int m_NumberOfInnerDetector;
+    int m_NumberOfRing1Detector;
+    int m_NumberOfRing2Detector;
     int m_Assembly;
+
+  private: // Initalise material used in detector definition
+    void InitializeMaterial();
+    G4Material* m_MaterialVaccuum;
+
 
     //   Shape type
     vector<string> m_Shape ;
@@ -116,8 +124,9 @@ class Scone : public NPS::VDetector{
     // Visualisation Attribute
     G4VisAttributes* m_VisSquare;
     G4VisAttributes* m_Vis2x2;
-    G4VisAttributes* m_Vis6x6;
+    G4VisAttributes* m_Vis6x6R1;
     G4VisAttributes* m_Vis6x6R2;
+    G4VisAttributes* m_VisGd;
 
   // Needed for dynamic loading of the library
   public:

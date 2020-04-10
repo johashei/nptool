@@ -38,10 +38,11 @@
 #include "NPOptionManager.h"
 using namespace CLHEP;
 
+
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 EventGeneratorIsotropic::EventGeneratorIsotropic(){
   m_ParticleStack = ParticleStack::getInstance();
-    event_ID=0;
+  event_ID=0;
 }
 
 
@@ -55,6 +56,7 @@ EventGeneratorIsotropic::~EventGeneratorIsotropic(){
 EventGeneratorIsotropic::SourceParameters::SourceParameters(){
   m_EnergyLow    =  0  ;
   m_EnergyHigh   =  0  ;
+  m_EnergyDistribution = "flat";
   m_x0           =  0  ;
   m_y0           =  0  ;
   m_z0           =  0  ;
@@ -66,18 +68,20 @@ EventGeneratorIsotropic::SourceParameters::SourceParameters(){
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 void EventGeneratorIsotropic::ReadConfiguration(NPL::InputParser parser){
   vector<NPL::InputBlock*> blocks = parser.GetAllBlocksWithToken("Isotropic");
-	m_Parameters.reserve(blocks.size());
+  m_Parameters.reserve(blocks.size());
   if(NPOptionManager::getInstance()->GetVerboseLevel())
     cout << endl << "\033[1;35m//// Isotropic reaction found " << endl; 
-	
+
   vector<string> token = {"EnergyLow","EnergyHigh","HalfOpenAngleMin","HalfOpenAngleMax","x0","y0","z0","Particle"};
   for(unsigned int i = 0 ; i < blocks.size() ; i++){
     if(blocks[i]->HasTokenList(token)){
-			m_Parameters.push_back(SourceParameters());
-			const vector<SourceParameters>::reverse_iterator it = m_Parameters.rbegin();
-			
+      m_Parameters.push_back(SourceParameters());
+      const vector<SourceParameters>::reverse_iterator it = m_Parameters.rbegin();
+
       it->m_EnergyLow         =blocks[i]->GetDouble("EnergyLow","MeV");
       it->m_EnergyHigh        =blocks[i]->GetDouble("EnergyHigh","MeV");
+      if(blocks[i]->HasToken("EnergyDistribution"))
+        it->m_EnergyDistribution=blocks[i]->GetString("EnergyDistribution");
       it->m_HalfOpenAngleMin  =blocks[i]->GetDouble("HalfOpenAngleMin","deg");
       it->m_HalfOpenAngleMax  =blocks[i]->GetDouble("HalfOpenAngleMax","deg");
       it->m_x0                =blocks[i]->GetDouble("x0","mm");
@@ -94,13 +98,12 @@ void EventGeneratorIsotropic::ReadConfiguration(NPL::InputParser parser){
         else if(particleName[j]=="mu+") { it->m_particleName.push_back("mu+") ;}
         else if(particleName[j]=="mu-") { it->m_particleName.push_back("mu-") ;}
         else if(particleName[j]=="neutron") {it->m_particleName.push_back("neutron") ;}
-        else if(particleName[j]=="electron" || particleName[j]=="e-") {it->m_particleName.push_back("e-") ;}
         else it->m_particleName.push_back(particleName[j]);
       }
 
       if(blocks[i]->HasToken("ExcitationEnergy"))
         it->m_ExcitationEnergy =blocks[i]->GetVectorDouble("ExcitationEnergy","MeV");
-        
+
       if(blocks[i]->HasToken("SigmaX"))
         it->m_SigmaX=blocks[i]->GetDouble("SigmaX","mm");
       if(blocks[i]->HasToken("SigmaY"))
@@ -112,27 +115,35 @@ void EventGeneratorIsotropic::ReadConfiguration(NPL::InputParser parser){
       cout << "ERROR: check your input file formatting \033[0m" << endl; 
       exit(1);
     }
-	}
+  }
+  for(auto& par : m_Parameters) {
+    if(par.m_ExcitationEnergy.size()==0)
+      par.m_ExcitationEnergy.resize(par.m_particleName.size(),0);
+    if(par.m_Multiplicty.size()==0)
+      par.m_Multiplicty.resize(par.m_particleName.size(),1);
 
-	for(auto& par : m_Parameters) {
-		if(par.m_ExcitationEnergy.size()==0)
-			par.m_ExcitationEnergy.resize(par.m_particleName.size(),0);
-		if(par.m_Multiplicty.size()==0)
-			par.m_Multiplicty.resize(par.m_particleName.size(),1);
-	}
+    if(par.m_EnergyDistribution!="flat"){
+      if(par.m_EnergyDistribution=="Watt"){
+        fEnergyDist = new TF1("fWatt","0.4865*TMath::SinH(sqrt(2*x))*TMath::Exp(-x)",par.m_EnergyLow,par.m_EnergyHigh);
+      }
+      else{
+        fEnergyDist = new TF1("fDist", par.m_EnergyDistribution, par.m_EnergyLow, par.m_EnergyHigh);
+      }
+
+    }	
+  }
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 void EventGeneratorIsotropic::GenerateEvent(G4Event*){
 
-	for(auto& par : m_Parameters) {
+  for(auto& par : m_Parameters) {
     for(unsigned int p=0; p<par.m_particleName.size(); p++){
       for(int i=0; i<par.m_Multiplicty[p]; i++){
         par.m_particle=NULL;
         if(par.m_particle==NULL){
 
-          if(par.m_particleName[p]=="gamma" || par.m_particleName[p]=="neutron" ||  par.m_particleName[p]=="opticalphoton"  ||  par.m_particleName[p]=="mu+" 
-              ||  par.m_particleName[p]=="mu-" || par.m_particleName[p]=="e-"){
+          if(par.m_particleName[p]=="gamma" || par.m_particleName[p]=="neutron" ||  par.m_particleName[p]=="opticalphoton"  ||  par.m_particleName[p]=="mu+" ||  par.m_particleName[p]=="mu-"){
             par.m_particle =  G4ParticleTable::GetParticleTable()->FindParticle(par.m_particleName[p].c_str());
           }
           else{
@@ -148,9 +159,18 @@ void EventGeneratorIsotropic::GenerateEvent(G4Event*){
         G4double cos_theta       = cos_theta_min + (cos_theta_max - cos_theta_min) * RandFlat::shoot();
         G4double theta           = acos(cos_theta)                                                   ;
         G4double phi             = RandFlat::shoot() * 2 * pi                                        ;
-        G4double particle_energy = par.m_EnergyLow + RandFlat::shoot() * (par.m_EnergyHigh - par.m_EnergyLow)    ;
+        G4double particle_energy;
+        if(par.m_EnergyDistribution=="flat"){
+          particle_energy = par.m_EnergyLow + RandFlat::shoot() * (par.m_EnergyHigh - par.m_EnergyLow)    ;
           event_ID++;
-          
+        }
+        else if(par.m_EnergyDistribution=="Watt"){
+          particle_energy = fEnergyDist->GetRandom();
+        }
+        else{
+          particle_energy = fEnergyDist->GetRandom();
+        }
+
 
         // Direction of particle, energy and laboratory angle
         G4double momentum_x = sin(theta) * cos(phi)  ;
@@ -167,11 +187,11 @@ void EventGeneratorIsotropic::GenerateEvent(G4Event*){
       }
     }
   }
-	
+
 }
 
 
-  //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-  void EventGeneratorIsotropic::InitializeRootOutput(){
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+void EventGeneratorIsotropic::InitializeRootOutput(){
 
-  }
+}

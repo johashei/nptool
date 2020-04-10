@@ -67,8 +67,7 @@ class TSconePhysics : public TObject, public NPL::VDetector {
     vector<double>   Time;
 
   /// A usefull method to bundle all operation to add a detector
-  void AddDetector(TVector3 POS, string shape); 
-  void AddDetector(double R, double Theta, double Phi, string shape); 
+  void AddDetector(TVector3 POS); 
   
   //////////////////////////////////////////////////////////////
   // methods inherited from the VDetector ABC class
@@ -162,7 +161,8 @@ class TSconePhysics : public TObject, public NPL::VDetector {
   // number of detectors
   private:
     int m_NumberOfDetectors;  //!
-
+    int m_BuildRing1;         //!
+    int m_BuildRing2;         //!
   // spectra class
   private:
     TSconeSpectra* m_Spectra; // !

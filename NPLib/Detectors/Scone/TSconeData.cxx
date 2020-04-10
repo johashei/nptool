@@ -46,9 +46,11 @@ TSconeData::~TSconeData() {
 void TSconeData::Clear() {
   // Energy
   fScone_E_DetectorNbr.clear();
+  fScone_E_PlasticNbr.clear();
   fScone_Energy.clear();
   // Time
   fScone_T_DetectorNbr.clear();
+  fScone_T_PlasticNbr.clear();
   fScone_Time.clear();
 }
 

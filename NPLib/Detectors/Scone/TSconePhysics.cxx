@@ -55,20 +55,13 @@ TSconePhysics::TSconePhysics()
 
 ///////////////////////////////////////////////////////////////////////////
 /// A usefull method to bundle all operation to add a detector
-void TSconePhysics::AddDetector(TVector3 , string ){
+void TSconePhysics::AddDetector(TVector3 ){
   // In That simple case nothing is done
   // Typically for more complex detector one would calculate the relevant 
   // positions (stripped silicon) or angles (gamma array)
   m_NumberOfDetectors++;
 } 
 
-///////////////////////////////////////////////////////////////////////////
-void TSconePhysics::AddDetector(double R, double Theta, double Phi, string shape){
-  // Compute the TVector3 corresponding
-  TVector3 Pos(R*sin(Theta)*cos(Phi),R*sin(Theta)*sin(Phi),R*cos(Theta));
-  // Call the cartesian method
-  AddDetector(Pos,shape);
-} 
   
 ///////////////////////////////////////////////////////////////////////////
 void TSconePhysics::BuildSimplePhysicalEvent() {
@@ -82,16 +75,40 @@ void TSconePhysics::BuildPhysicalEvent() {
   // apply thresholds and calibration
   PreTreat();
 
+  double Energy_det[40];
+  double Time_det[40];
+  int iTime[40];
+
+  for(int i=0; i<40; i++){
+    Energy_det[i] = 0;
+    Time_det[i] = 0;
+    iTime[i] = 0;
+  }
   // match energy and time together
   unsigned int mysizeE = m_PreTreatedData->GetMultEnergy();
   unsigned int mysizeT = m_PreTreatedData->GetMultTime();
   for (UShort_t e = 0; e < mysizeE ; e++) {
     for (UShort_t t = 0; t < mysizeT ; t++) {
       if (m_PreTreatedData->GetE_DetectorNbr(e) == m_PreTreatedData->GetT_DetectorNbr(t)) {
-        DetectorNumber.push_back(m_PreTreatedData->GetE_DetectorNbr(e));
-        Energy.push_back(m_PreTreatedData->Get_Energy(e));
-        Time.push_back(m_PreTreatedData->Get_Time(t));
+        int det = m_PreTreatedData->GetE_DetectorNbr(e);
+        Energy_det[det-1] += m_PreTreatedData->Get_Energy(e);
+        if(m_PreTreatedData->Get_Time(t)>Time_det[det-1]){
+          Time_det[det-1] = m_PreTreatedData->Get_Time(t);
+        }
+        iTime[det-1]++;
+        //DetectorNumber.push_back(m_PreTreatedData->GetE_DetectorNbr(e));
+        //Energy.push_back(m_PreTreatedData->Get_Energy(e));
+        //Time.push_back(m_PreTreatedData->Get_Time(t));
       }
+    }
+  }
+
+  for(int i=0; i<40; i++){
+    //Time_det[i] = Time_det[i]/iTime[i];
+    if(Energy_det[i]>m_E_Threshold && Time_det[i]>0){
+      DetectorNumber.push_back(i+1);
+      Energy.push_back(Energy_det[i]);
+      Time.push_back(Time_det[i]);
     }
   }
 }
@@ -113,7 +130,7 @@ void TSconePhysics::PreTreat() {
     if (m_EventData->Get_Energy(i) > m_E_RAW_Threshold) {
       Double_t Energy = Cal->ApplyCalibration("Scone/ENERGY"+NPL::itoa(m_EventData->GetE_DetectorNbr(i)),m_EventData->Get_Energy(i));
       if (Energy > m_E_Threshold) {
-        m_PreTreatedData->SetEnergy(m_EventData->GetE_DetectorNbr(i), Energy);
+        m_PreTreatedData->SetEnergy(m_EventData->GetE_DetectorNbr(i), m_EventData->GetE_PlasticNbr(i),Energy);
       }
     }
   }
@@ -122,7 +139,7 @@ void TSconePhysics::PreTreat() {
   mysize = m_EventData->GetMultTime();
   for (UShort_t i = 0; i < mysize; ++i) {
     Double_t Time= Cal->ApplyCalibration("Scone/TIME"+NPL::itoa(m_EventData->GetT_DetectorNbr(i)),m_EventData->Get_Time(i));
-    m_PreTreatedData->SetTime(m_EventData->GetT_DetectorNbr(i), Time);
+    m_PreTreatedData->SetTime(m_EventData->GetT_DetectorNbr(i), m_EventData->GetT_PlasticNbr(i), Time);
   }
 }
 
@@ -207,8 +224,7 @@ void TSconePhysics::ReadConfiguration(NPL::InputParser parser) {
   if(NPOptionManager::getInstance()->GetVerboseLevel())
     cout << "//// " << blocks.size() << " detectors found " << endl; 
 
-  vector<string> cart = {"POS","Shape"};
-  vector<string> sphe = {"R","Theta","Phi","Shape"};
+  vector<string> cart = {"POS","Ring1","Ring2"};
 
   for(unsigned int i = 0 ; i < blocks.size() ; i++){
     if(blocks[i]->HasTokenList(cart)){
@@ -216,17 +232,9 @@ void TSconePhysics::ReadConfiguration(NPL::InputParser parser) {
         cout << endl << "////  Scone " << i+1 <<  endl;
     
       TVector3 Pos = blocks[i]->GetTVector3("POS","mm");
-      string Shape = blocks[i]->GetString("Shape");
-      AddDetector(Pos,Shape);
-    }
-    else if(blocks[i]->HasTokenList(sphe)){
-      if(NPOptionManager::getInstance()->GetVerboseLevel())
-        cout << endl << "////  Scone " << i+1 <<  endl;
-      double R = blocks[i]->GetDouble("R","mm");
-      double Theta = blocks[i]->GetDouble("Theta","deg");
-      double Phi = blocks[i]->GetDouble("Phi","deg");
-      string Shape = blocks[i]->GetString("Shape");
-      AddDetector(R,Theta,Phi,Shape);
+      m_BuildRing1 = blocks[i]->GetInt("Ring1");
+      m_BuildRing2 = blocks[i]->GetInt("Ring2");
+      AddDetector(Pos);
     }
     else{
       cout << "ERROR: check your input file formatting " << endl;
