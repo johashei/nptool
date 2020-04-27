@@ -127,6 +127,11 @@ G4bool NPS::BeamReaction::ModelTrigger(const G4FastTrack& fastTrack) {
   double out   = solid->DistanceToOut(P, -V);
   double ratio = in / (out + in);
 
+  m_Parent_ID = PrimaryTrack->GetParentID();
+  // process reserved to the beam
+  if(m_Parent_ID!=0)
+    return false;
+
   //cout<< "in:"<<in<<std::scientific<<endl;
   //cout<< "ou:"<<out<<std::scientific<<endl;
   //cout<< "ratio:"<<ratio<<std::scientific<<endl;
@@ -141,7 +146,7 @@ G4bool NPS::BeamReaction::ModelTrigger(const G4FastTrack& fastTrack) {
     m_ReactionConditions->Clear();
     shoot = true;
   }
-  else if ((in-m_StepSize) <= 1E-9) { // last step
+  else if (((in-m_StepSize) <= 1E-9) && shoot) { // last step
     //cout<< "LAST"<<endl;
     return true;
   }
@@ -161,7 +166,9 @@ G4bool NPS::BeamReaction::ModelTrigger(const G4FastTrack& fastTrack) {
         } else {
             return false;
         }
-    }else if(m_ReactionType=="TwoBodyReaction"){
+    }
+   
+    else if(m_ReactionType=="TwoBodyReaction"){
         if ( shoot && m_Reaction.IsAllowed(PrimaryTrack->GetKineticEnergy()) ) {
             shoot = false;
             return true;

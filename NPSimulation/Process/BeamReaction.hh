@@ -52,6 +52,7 @@ namespace NPS{
       double m_PreviousLength;
       bool   m_active;// is the process active
       double m_StepSize;
+      int    m_Parent_ID;
    
    private:
      TReactionConditions* m_ReactionConditions;

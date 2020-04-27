@@ -1,6 +1,6 @@
 if(DEFINED ENV{ROOTSYS})
-add_custom_command(OUTPUT TMayaDataDict.cxx COMMAND ../../scripts/build_dict.sh TMayaData.h TMayaDataDict.cxx TMayaData.rootmap libNPMaya.dylib DEPENDS TMayaData.h)
-add_custom_command(OUTPUT TMayaHistoDict.cxx COMMAND ../../scripts/build_dict.sh TMayaHisto.h TMayaHistoDict.cxx TMayaHisto.rootmap libNPMaya.dylib DEPENDS TMayaHisto.h)
+add_custom_command(OUTPUT TMayaDataDict.cxx COMMAND ${CMAKE_BINARY_DIR}/scripts/build_dict.sh TMayaData.h TMayaDataDict.cxx TMayaData.rootmap libNPMaya.dylib DEPENDS TMayaData.h)
+add_custom_command(OUTPUT TMayaHistoDict.cxx COMMAND ${CMAKE_BINARY_DIR}/scripts/build_dict.sh TMayaHisto.h TMayaHistoDict.cxx TMayaHisto.rootmap libNPMaya.dylib DEPENDS TMayaHisto.h)
 
 
 add_library(NPMaya SHARED TMayaData.cxx TMayaHisto.cxx TMayaDataDict.cxx TMayaHistoDict.cxx ConfigReader.cxx)
