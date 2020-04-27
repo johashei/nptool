@@ -96,9 +96,11 @@ namespace NPL{
     void ReadConfigurationFile(string Path);
     void ReadConfigurationFile(NPL::InputParser);
     void CalculateVariables();
+    void TestR3B();
     void KineRelativistic(double &ThetaLab1, double &PhiLab1, double &KineticEnergyLab1, double &ThetaLab2, double &PhiLab2, double &KineticEnergyLab2);
     double ShootRandomThetaCM();
     bool IsAllowed();
+    void Dump();
 
     private: // intern precompute variable
     double mA;
@@ -109,7 +111,7 @@ namespace NPL{
     double m1;
     double m2;
 
-    TVector3 Pa, PB;
+    TVector3 Pa, PB, Pa_lab, PB_lab;
     double Ea_lab,EB_lab;
 
     // Lorentz Vector
@@ -121,6 +123,8 @@ namespace NPL{
     TLorentzVector fEnergyImpulsionLab_2;
     TLorentzVector fTotalEnergyImpulsionLab;
 
+    TLorentzVector fEnergyImpulsionCM_A;
+    TLorentzVector fEnergyImpulsionCM_B;
     TLorentzVector fEnergyImpulsionCM_a;
     TLorentzVector fEnergyImpulsionCM_T;
     TLorentzVector fEnergyImpulsionCM_1;
@@ -159,6 +163,7 @@ namespace NPL{
     void SetBeamEnergy(const double& eBeam) {fBeamEnergy = eBeam;}
     void SetThetaCM(const double& angle) {fThetaCM = angle;}
     void SetPhiCM(const double& angle) {fPhiCM = angle;}
+    void SetMomentumSigma(const double& sigma) {fMomentumSigma = sigma;}
 
     //GETTERS
     Nucleus*  GetNucleusA()               {return &fNucleiA;}
@@ -169,14 +174,28 @@ namespace NPL{
     bool     GetShoot1()         const        {return fshoot1;}
     bool     GetShoot2()         const        {return fshoot2;}
     bool     GetShootB()         const        {return fshootB;}
+    double   GetThetaCM()        const        {return fThetaCM;}
  
+    TLorentzVector*  GetEnergyImpulsionLab_A() {return &fEnergyImpulsionLab_A;}
+    TLorentzVector*  GetEnergyImpulsionLab_T() {return &fEnergyImpulsionLab_T;}
+    TLorentzVector*  GetEnergyImpulsionLab_a() {return &fEnergyImpulsionLab_a;}
+    TLorentzVector*  GetEnergyImpulsionLab_1() {return &fEnergyImpulsionLab_1;}
+    TLorentzVector*  GetEnergyImpulsionLab_2() {return &fEnergyImpulsionLab_2;}
     TLorentzVector*  GetEnergyImpulsionLab_B() {return &fEnergyImpulsionLab_B;}
+
+    TLorentzVector*  GetEnergyImpulsionCM_A() {return &fEnergyImpulsionCM_A;}
+    TLorentzVector*  GetEnergyImpulsionCM_T() {return &fEnergyImpulsionCM_T;}
+    TLorentzVector*  GetEnergyImpulsionCM_a() {return &fEnergyImpulsionCM_a;}
+    TLorentzVector*  GetEnergyImpulsionCM_1() {return &fEnergyImpulsionCM_1;}
+    TLorentzVector*  GetEnergyImpulsionCM_2() {return &fEnergyImpulsionCM_2;}
+    TLorentzVector*  GetEnergyImpulsionCM_B() {return &fEnergyImpulsionCM_B;}
+ 
     TGraph* GetTheta2VsTheta1(double AngleStep_CM=1);
     TGraph* GetPhi2VsPhi1(double AngleStep_CM=1);
 
 
 
-    /*
+    
     //TO REMOVE AT SOME POINT WHEN CLASS IS ROBUSTLY TESTED
     private:
     // R3B Methods and Variables used as a starting point for this class (useful for checks)
@@ -193,7 +212,7 @@ namespace NPL{
     double theta_scat;
     bool good;
     double T;
-    */
+    
 
     ClassDef(QFS,0)
   };

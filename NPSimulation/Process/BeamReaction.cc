@@ -86,6 +86,10 @@ void NPS::BeamReaction::ReadConfiguration() {
       m_BeamName = NPL::ChangeNameToG4Standard(m_QFS.GetNucleusA()->GetName());
       m_active             = true;
       m_ReactionConditions = new TReactionConditions();
+      AttachReactionConditions();
+      if (!RootOutput::getInstance()->GetTree()->FindBranch("ReactionConditions"))
+          RootOutput::getInstance()->GetTree()->Branch(
+                  "ReactionConditions", "TReactionConditions", &m_ReactionConditions);
   }
   else {
       m_active = false;
@@ -443,7 +447,7 @@ void NPS::BeamReaction::DoIt(const G4FastTrack& fastTrack,
         //m_QFS.ShootRandomThetaCM();
         //m_QFS.ShootRandomPhiCM();
         double theta = RandFlat::shoot() *  pi;
-        double phi = RandFlat::shoot() * 2. * pi;
+        double phi = RandFlat::shoot() * 2. * pi - pi; //rand in [-pi,pi]
 
         m_QFS.SetThetaCM(theta);
         m_QFS.SetPhiCM(phi);
@@ -452,7 +456,7 @@ void NPS::BeamReaction::DoIt(const G4FastTrack& fastTrack,
         /////  Momentum and angles from  kinematics  /////
         //////////////////////////////////////////////////
         // Variable where to store results
-        double Theta1, Phi1, Energy1, Theta2, Phi2, Energy2;
+        double Theta1, Phi1, Energy1, Theta2, Phi2, Energy2, ThetaB, PhiB, EnergyB;
 
         // Compute Kinematic using previously defined ThetaCM
         m_QFS.KineRelativistic(Theta1, Phi1, Energy1, Theta2, Phi2, Energy2);
@@ -483,14 +487,21 @@ void NPS::BeamReaction::DoIt(const G4FastTrack& fastTrack,
         //momentum_kineB_world.rotate(Beam_theta, V); // rotation of Beam_theta on Y axis
         //momentum_kineB_world.rotate(Beam_phi, ZZ); // rotation of Beam_phi on Z axis
         
+        TLorentzVector* P_A = m_QFS.GetEnergyImpulsionLab_A();
         TLorentzVector* P_B = m_QFS.GetEnergyImpulsionLab_B();
         
         G4ThreeVector momentum_kineB_beam( P_B->Px(), P_B->Py(), P_B->Pz() );
         momentum_kineB_beam = momentum_kineB_beam.unit();
-        double EnergyB = m_QFS.GetEnergyImpulsionLab_B()->Energy();
+        EnergyB = m_QFS.GetEnergyImpulsionLab_B()->Energy();
         G4ThreeVector momentum_kineB_world =  momentum_kineB_beam;
         momentum_kineB_world.rotate(Beam_theta, V); // rotation of Beam_theta on Y axis
         momentum_kineB_world.rotate(Beam_phi, ZZ); // rotation of Beam_phi on Z axis
+
+        ThetaB = P_B->Angle(P_A->Vect());
+        if (ThetaB < 0) ThetaB += M_PI;
+        PhiB = M_PI + P_B->Vect().Phi(); 
+        if (fabs(PhiB) < 1e-6) PhiB = 0;
+ 
   
         // Emitt secondary
         if (m_QFS.GetShoot1()) {
@@ -507,10 +518,60 @@ void NPS::BeamReaction::DoIt(const G4FastTrack& fastTrack,
             fastStep.CreateSecondaryTrack(particleB, localPosition, time);
         }
 
-
         // Reinit for next event
         m_PreviousEnergy = 0;
         m_PreviousLength = 0;
+
+
+        ///////////////////////////////////
+        ///// Reaction Condition Save /////
+        ///////////////////////////////////
+        m_ReactionConditions->SetBeamParticleName(
+                PrimaryTrack->GetParticleDefinition()->GetParticleName());
+        m_ReactionConditions->SetBeamReactionEnergy(energy);
+        m_ReactionConditions->SetVertexPositionX(localPosition.x());
+        m_ReactionConditions->SetVertexPositionY(localPosition.y());
+        m_ReactionConditions->SetVertexPositionZ(localPosition.z());
+        m_ReactionConditions->SetBeamEmittanceTheta(
+                PrimaryTrack->GetMomentumDirection().theta() / deg);
+        m_ReactionConditions->SetBeamEmittancePhi(
+                PrimaryTrack->GetMomentumDirection().phi() / deg);
+        m_ReactionConditions->SetBeamEmittanceThetaX(
+                PrimaryTrack->GetMomentumDirection().angle(U) / deg);
+        m_ReactionConditions->SetBeamEmittancePhiY(
+                PrimaryTrack->GetMomentumDirection().angle(V) / deg);
+
+        // Names 1,2 and B//
+        m_ReactionConditions->SetParticleName(Light1Name->GetParticleName());
+        m_ReactionConditions->SetParticleName(Light2Name->GetParticleName());
+        m_ReactionConditions->SetParticleName(HeavyName->GetParticleName());
+        // Angle 1,2 and B //
+        m_ReactionConditions->SetTheta(Theta1 / deg);
+        m_ReactionConditions->SetTheta(Theta2 / deg);
+        m_ReactionConditions->SetTheta(ThetaB / deg);
+        m_ReactionConditions->SetPhi(Phi1 / deg);
+        m_ReactionConditions->SetPhi(Phi2 / deg);
+        m_ReactionConditions->SetPhi(PhiB / deg);
+        // Energy 1,2 and B //
+        m_ReactionConditions->SetKineticEnergy(Energy1);
+        m_ReactionConditions->SetKineticEnergy(Energy2);
+        m_ReactionConditions->SetKineticEnergy(EnergyB);
+        // ThetaCM and Ex//
+        m_ReactionConditions->SetThetaCM(m_QFS.GetThetaCM() / deg);
+        //m_ReactionConditions->SetExcitationEnergy3(m_QFS.GetExcitation3());
+        //m_ReactionConditions->SetExcitationEnergy4(m_QFS.GetExcitation4());
+        // Momuntum X 3 and 4 //
+        m_ReactionConditions->SetMomentumDirectionX(momentum_kine1_world.x());
+        m_ReactionConditions->SetMomentumDirectionX(momentum_kine2_world.x());
+        m_ReactionConditions->SetMomentumDirectionX(momentum_kineB_world.x());
+        // Momuntum Y 3 and 4 //
+        m_ReactionConditions->SetMomentumDirectionY(momentum_kine1_world.y());
+        m_ReactionConditions->SetMomentumDirectionY(momentum_kine2_world.y());
+        m_ReactionConditions->SetMomentumDirectionY(momentum_kineB_world.y());
+        // Momuntum Z 3 and 4 //
+        m_ReactionConditions->SetMomentumDirectionZ(momentum_kine1_world.z());
+        m_ReactionConditions->SetMomentumDirectionZ(momentum_kine2_world.z());
+        m_ReactionConditions->SetMomentumDirectionZ(momentum_kineB_world.z());
 
 
 

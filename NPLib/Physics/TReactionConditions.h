@@ -136,14 +136,20 @@ public:
     double GetThetaLab_WorldFrame(const int i) const{
       return (GetParticleDirection(i).Theta())/deg;
     }
-    
-    double GetPhiLab_WorldFrame (const int i) const {
-      return (GetParticleDirection(i).Phi())/deg;
-    }
-    
     double GetThetaLab_BeamFrame (const int i) const{
       return (GetParticleDirection(i).Angle(GetBeamDirection()))/deg;
     } 
+ 
+    double GetPhiLab_WorldFrame (const int i) const {
+      return (M_PI + GetParticleDirection(i).Phi())/deg;
+      // to have Phi in [0,2pi]] and not [-pi,pi]]
+    }
+   double GetPhiLab_BeamFrame (const int i) const{  
+      TVector3 rot = GetParticleDirection(i);
+      rot.RotateUz(GetBeamDirection());
+      return (M_PI + rot.Phi())/deg;
+    } 
+ 
     
     unsigned int GetEmittedMult() const {return fRC_Particle_Name.size();} 
     

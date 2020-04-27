@@ -220,14 +220,9 @@ void QFS::CalculateVariables(){
     Pa.SetY(r.Gaus(0.,fMomentumSigma));
     Pa.SetZ(r.Gaus(0.,fMomentumSigma));
 
+
     //Internal momentum of heavy recoil after removal
     PB.SetXYZ( (-Pa.X()) , (-Pa.Y()) , (-Pa.Z()) );
-
-    //cout<<"Pa_cm=\t("<<Pa.Px()<<","<<Pa.Py()<<","<<Pa.Pz()<<")"<<endl;
-    //cout<<"||Pa||^2=\t("<<Pa.Mag2()<<endl;
-    //cout<<"mA^2=\t"<<mA*mA<<endl;
-    //cout<<"mB^2=\t"<<mB*mB<<endl;
- 
 
     // Off-shell mass of the bound nucleon from E conservation
     // in virtual dissociation of A -> B + a
@@ -239,9 +234,8 @@ void QFS::CalculateVariables(){
     double Ea = sqrt(ma_off*ma_off + Pa.Mag2());
     double EB = sqrt(mB*mB + PB.Mag2());
 
-    //cout<<"ma_off^2=\t"<<buffer<<endl;
-    //cout<<"Ea=\t"<<Ea<<endl;
-    //cout<<"EB=\t"<<EB<<endl;
+    fEnergyImpulsionCM_a = TLorentzVector(Pa,Ea);
+    fEnergyImpulsionCM_B = TLorentzVector(PB,EB);
 
     fEnergyImpulsionLab_a = TLorentzVector(Pa,Ea);
     fEnergyImpulsionLab_B = TLorentzVector(PB,EB);
@@ -249,8 +243,8 @@ void QFS::CalculateVariables(){
     fEnergyImpulsionLab_B.Boost(0,0,fEnergyImpulsionLab_A.Beta());
     Ea_lab = fEnergyImpulsionLab_a.E();
     EB_lab = fEnergyImpulsionLab_B.E();
-    Pa = fEnergyImpulsionLab_a.Vect();
-    PB = fEnergyImpulsionLab_B.Vect();
+    Pa_lab = fEnergyImpulsionLab_a.Vect();
+    PB_lab = fEnergyImpulsionLab_B.Vect();
    
     // Scattering part (2-body kinematics)
     // virtual cluster of mass "ma_off" scattering on target T
@@ -262,7 +256,7 @@ void QFS::CalculateVariables(){
     s = ma_off*ma_off + mT*mT + 2*mT*Ea_lab ; 
     fTotalEnergyImpulsionCM = TLorentzVector(0,0,0,sqrt(s));
     fEcm = sqrt(s) - m1 -m2;
-    if(fEcm<=0) { cout<<"ERROR Ecm negative =\t"<<fEcm<<endl; return;}
+    if(fEcm<=0) { cout<<"ERROR Ecm negative =\t"<<fEcm<<endl;Dump(); return;}
 
     ECM_a = (s + ma_off*ma_off - mT*mT)/(2*sqrt(s));
     ECM_T = (s + mT*mT - ma_off*ma_off)/(2*sqrt(s));
@@ -274,29 +268,7 @@ void QFS::CalculateVariables(){
     pCM_1 = sqrt(ECM_1*ECM_1 - m1*m1);
     pCM_2 = sqrt(ECM_2*ECM_2 - m2*m2);
 
-    BetaCM = Pa.Mag() / (Ea_lab + mT);
 
-    //if(ECM_a<0 || ECM_T<0 || ECM_1<0 || ECM_2<0 ) { 
-    /*
-    if(pCM_a<0 || pCM_T<0 || pCM_1<0 || pCM_2<0 ) { 
-    cout<<"--LAB after Boost--"<<endl; 
-    cout<<"Pa_lab=\t("<<Pa.Px()<<","<<Pa.Py()<<","<<Pa.Pz()<<")"<<endl;
-    cout<<"PB_lab=\t("<<PB.Px()<<","<<PB.Py()<<","<<PB.Pz()<<")"<<endl;
-    cout<<"Ea_lab=\t"<<Ea_lab<<endl;
-    cout<<"EB_lab=\t"<<EB_lab<<endl;
-    cout<<"--Back to CM--"<<endl; 
-    cout<<"fQValue=\t"<<fQValue<<endl;
-    cout<<"s=\t"<<s<<endl;
-    cout<<"Ecm=\t"<<fEcm<<endl;
-    cout<<"ea*=\t"<<ECM_a<<endl;
-    cout<<"eT*=\t"<<ECM_T<<endl;
-    cout<<"e1*=\t"<<ECM_1<<endl;
-    cout<<"p1*=\t"<<pCM_1<<endl;
-    cout<<"e2*=\t"<<ECM_2<<endl;
-    cout<<"p2*=\t"<<pCM_2<<endl;
-    cout<<"beta_cm=\t"<<BetaCM<<endl;
-    }
-    */
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////
@@ -305,33 +277,46 @@ void QFS::KineRelativistic(double& ThetaLab1, double& PhiLab1, double& KineticEn
 
     CalculateVariables();
 
-    //double thetaCM_1 = fThetaCM*TMath::Pi()/180.;
     double thetaCM_1 = fThetaCM;
     double thetaCM_2 =  M_PI - thetaCM_1;
-    //double phiCM_1 = fPhiCM*TMath::Pi()/180.;
-    double phiCM_1 = fPhiCM;
-    double phiCM_2 =  2*M_PI - phiCM_1;
+    double phiCM_2 = fPhiCM;
 
     TVector3 z_axis(0.,0.,1.);
 
+/*  // OTHER WAY of doing
+    TVector3 pCM_2_temp(0.,0.,1.);
+    pCM_2_temp.SetMag(pCM_2);
+    pCM_2_temp.SetTheta(thetaCM_2);
+    pCM_2_temp.SetPhi(phiCM_2);
+    fEnergyImpulsionCM_2	= TLorentzVector(pCM_2_temp,ECM_2);
+    fEnergyImpulsionCM_1	= TLorentzVector(-1*pCM_2_temp,ECM_1);
+*/
     fEnergyImpulsionCM_2	= TLorentzVector(
                                         pCM_2*sin(thetaCM_2)*cos(phiCM_2),
-                                        pCM_2*cos(thetaCM_2)*sin(phiCM_2),
+                                        pCM_2*sin(thetaCM_2)*sin(phiCM_2),
                                         pCM_2*cos(thetaCM_2),
                                         ECM_2);
+
     fEnergyImpulsionCM_1	= fTotalEnergyImpulsionCM - fEnergyImpulsionCM_2;
 
+    //-- Boost in the direction of the moving cluster "a" --//
+    BetaCM = Pa_lab.Mag() / (Ea_lab + mT);
     fEnergyImpulsionLab_1 = fEnergyImpulsionCM_1;
     fEnergyImpulsionLab_1.Boost(0,0,BetaCM);
     fEnergyImpulsionLab_2 = fEnergyImpulsionCM_2;
     fEnergyImpulsionLab_2.Boost(0,0,BetaCM);
 
-    // Angle in the lab frame
-    //ThetaLab1 = fEnergyImpulsionLab_1.Angle(fEnergyImpulsionLab_A.Vect());
-    ThetaLab1 = fEnergyImpulsionLab_1.Angle(z_axis);
+    //-- Rotation to go from cluster frame to beam frame --//
+    TVector3 direction = Pa_lab.Unit();
+    fEnergyImpulsionLab_1.RotateUz(direction);
+    fEnergyImpulsionLab_2.RotateUz(direction);
+
+    // Angle in the Lab frame
+    ThetaLab1 = fEnergyImpulsionLab_1.Angle(fEnergyImpulsionLab_A.Vect());
+    //ThetaLab1 = fEnergyImpulsionLab_1.Angle(z_axis);
     if (ThetaLab1 < 0) ThetaLab1 += M_PI;
-    //ThetaLab2 = fEnergyImpulsionLab_4.Angle(fEnergyImpulsionLab_A.Vect());
-    ThetaLab2 = fEnergyImpulsionLab_2.Angle(z_axis);
+    ThetaLab2 = fEnergyImpulsionLab_2.Angle(fEnergyImpulsionLab_A.Vect());
+    //ThetaLab2 = fEnergyImpulsionLab_2.Angle(z_axis);
     if (fabs(ThetaLab1) < 1e-6) ThetaLab1 = 0;
     ThetaLab2 = fabs(ThetaLab2);
     if (fabs(ThetaLab2) < 1e-6) ThetaLab2 = 0;
@@ -348,72 +333,77 @@ void QFS::KineRelativistic(double& ThetaLab1, double& PhiLab1, double& KineticEn
     // test for total energy conversion
     //if (fabs(fTotalEnergyImpulsionLab.E() - (fEnergyImpulsionLab_1.E()+fEnergyImpulsionLab_2.E())) > 1e-6)
     //    cout << "Problem for energy conservation" << endl;
-
-/*
-    cout<<"--KINE RELATIVISTIC--"<<endl;
-    cout<<"theta_cm:"<<fThetaCM*180./TMath::Pi()<<endl;
-    cout<<"phi_cm:"<<fPhiCM*180./TMath::Pi()<<endl;
-    cout<<"P1_CM=\t("<<fEnergyImpulsionCM_1.Px()<<","<<fEnergyImpulsionCM_1.Py()<<","<<fEnergyImpulsionCM_1.Pz()<<")"<<endl;
-    cout<<"P2_CM=\t("<<fEnergyImpulsionCM_2.Px()<<","<<fEnergyImpulsionCM_2.Py()<<","<<fEnergyImpulsionCM_2.Pz()<<")"<<endl;
-    cout<<"P1_lab=\t("<<fEnergyImpulsionLab_1.Px()<<","<<fEnergyImpulsionLab_1.Py()<<","<<fEnergyImpulsionLab_1.Pz()<<")"<<endl;
-    cout<<"P2_lab=\t("<<fEnergyImpulsionLab_2.Px()<<","<<fEnergyImpulsionLab_2.Py()<<","<<fEnergyImpulsionLab_2.Pz()<<")"<<endl;
-    cout<<"Theta1:\t"<<fEnergyImpulsionLab_1.Vect().Theta()*180./TMath::Pi()<<endl;
-    cout<<"Theta2:\t"<<fEnergyImpulsionLab_2.Vect().Theta()*180./TMath::Pi()<<endl;
-    cout<<"Phi1:\t"<<M_PI+fEnergyImpulsionLab_1.Vect().Phi()*180./TMath::Pi()<<endl;
-    cout<<"Phi2:\t"<<M_PI+fEnergyImpulsionLab_2.Vect().Phi()*180./TMath::Pi()<<endl;
-*/
+    
+    //Dump();
 
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////
+void QFS::Dump(){
+
+
+    cout<<endl;
+    cout<<"------------------------------------"<<endl;
+    cout<<"------------ DUMP QFS --------------"<<endl;
+    cout<<"------------------------------------"<<endl;
+    cout<<endl;
+    cout<<"Cluster/recoil momentum (in the beam nucleus frame):"<<endl; 
+    cout<<"Pa=\t("<<Pa.Px()<<","<<Pa.Py()<<","<<Pa.Pz()<<") MeV/c"<<endl;
+    cout<<"PB=\t("<<PB.Px()<<","<<PB.Py()<<","<<PB.Pz()<<") MeV/c"<<endl;
+    cout<<endl;
+    cout<<"Off-shell mass of the bound nucleon from E conservation "<<endl;
+    cout<<" in virtual dissociation of A -> B + a"<<endl;
+    cout<<"ma=\t"<<ma<<endl;
+    cout<<"ma_off=\t"<<ma_off<<endl;
+    cout<<"mB=\t"<<mB<<endl;
+    cout<<"Deduced total energies of a and B in restframe of A"<<endl;
+    cout<<"Ea=\t"<<fEnergyImpulsionCM_a.E()<<"\tMeV"<<endl;
+    cout<<"EB=\t"<<fEnergyImpulsionCM_B.E()<<"\tMeV"<<endl;
+    cout<<endl;
+    cout<<"-- Boosted in lab frame with beam on Z axis --"<<endl; 
+    cout<<"Beta_z=\t"<<fEnergyImpulsionLab_A.Beta()<<endl;
+    cout<<"Pa_lab=\t("<<Pa_lab.Px()<<","<<Pa_lab.Py()<<","<<Pa_lab.Pz()<<") MeV/c"<<endl;
+    cout<<"PB_lab=\t("<<PB_lab.Px()<<","<<PB_lab.Py()<<","<<PB_lab.Pz()<<") MeV/c"<<endl;
+    cout<<"Ea_lab=\t"<<Ea_lab<<"\tMeV"<<endl;
+    cout<<"EB_lab=\t"<<EB_lab<<"\tMeV"<<endl;
+    cout<<endl; 
+    cout<<"-- Scattering off virtual cluster a of virtual mass --"<<endl; 
+    cout<<"-- ma_off and energy Ea_lab on target T at rest ------"<<endl;
+    cout<<"fQValue=\t"<<fQValue<<endl;
+    cout<<"s=\t"<<s<<endl;
+    cout<<"Ecm=\t"<<fEcm<<endl;
+    cout<<"ea*=\t"<<ECM_a<<endl;
+    cout<<"pa*=\t"<<pCM_a<<endl;
+    cout<<"eT*=\t"<<ECM_T<<endl;
+    cout<<"pT*=\t"<<pCM_T<<endl;
+    cout<<"e1*=\t"<<ECM_1<<endl;
+    cout<<"p1*=\t"<<pCM_1<<endl;
+    cout<<"e2*=\t"<<ECM_2<<endl;
+    cout<<"p2*=\t"<<pCM_2<<endl;
+    cout<<"beta_cm=\t"<<BetaCM<<endl;
+    cout<<endl;
+    cout<<"-- Emitted Particles --"<<endl;
+    cout<<"Theta_cm:"<<fThetaCM*180./TMath::Pi()<<endl;
+    cout<<"Phi_cm:"<<fPhiCM*180./TMath::Pi()<<endl;
+    cout<<"P1_CM=\t("<<fEnergyImpulsionCM_1.Px()<<","<<fEnergyImpulsionCM_1.Py()<<","<<fEnergyImpulsionCM_1.Pz()<<")"<<endl;
+    cout<<"P2_CM=\t("<<fEnergyImpulsionCM_2.Px()<<","<<fEnergyImpulsionCM_2.Py()<<","<<fEnergyImpulsionCM_2.Pz()<<")"<<endl;
+    cout<<"E1_lab=\t"<<fEnergyImpulsionLab_1.E()<<endl;
+    cout<<"E2_lab=\t"<<fEnergyImpulsionLab_2.E()<<endl;
+    cout<<"P1_lab=\t("<<fEnergyImpulsionLab_1.Px()<<","<<fEnergyImpulsionLab_1.Py()<<","<<fEnergyImpulsionLab_1.Pz()<<")"<<endl;
+    cout<<"P2_lab=\t("<<fEnergyImpulsionLab_2.Px()<<","<<fEnergyImpulsionLab_2.Py()<<","<<fEnergyImpulsionLab_2.Pz()<<")"<<endl;
+    cout<<"Theta1:\t"<<fEnergyImpulsionLab_1.Vect().Theta()*180./TMath::Pi()<<endl;
+    cout<<"Theta2:\t"<<fEnergyImpulsionLab_2.Vect().Theta()*180./TMath::Pi()<<endl;
+    cout<<"Phi1:\t"<<fEnergyImpulsionLab_1.Vect().Phi()*180./TMath::Pi()<<endl;
+    cout<<"Phi2:\t"<<fEnergyImpulsionLab_2.Vect().Phi()*180./TMath::Pi()<<endl;
+
+
+
+}
+////////////////////////////////////////////////////////////////////////////////////////////
 
 double QFS::ShootRandomThetaCM(){
-
-  double theta; // CM
-/*
-  if(fDoubleDifferentialCrossSectionHist){
-    // Take a slice in energy
-    TAxis* Y = fDoubleDifferentialCrossSectionHist->GetYaxis();
-    int binY;
-
-    // Those test are there for the tail event of the energy distribution
-    // In case the energy is outside the range of the 2D histo we take the
-    // closest available CS
-    if(Y->FindBin(fBeamEnergy) > Y->GetLast())
-      binY = Y->GetLast()-1;
-
-    else if(Y->FindBin(fBeamEnergy) < Y->GetFirst())
-      binY = Y->GetFirst()+1;
-
-    else
-      binY = Y->FindBin(fBeamEnergy);
-
-    TH1D* Proj = fDoubleDifferentialCrossSectionHist->ProjectionX("proj",binY,binY);
-    SetThetaCM( theta=Proj->GetRandom()*deg );
-  }
-  else if (fLabCrossSection){
-    double thetalab=-1;
-    double energylab=-1;
-    while(energylab<0){
-      thetalab=fCrossSectionHist->GetRandom()*deg; //shoot in lab
-      energylab=EnergyLabFromThetaLab(thetalab);   //get corresponding energy
-    }
-    theta = EnergyLabToThetaCM(energylab, thetalab); //transform to theta CM
-    SetThetaCM( theta );
-  }
-  else{
-    // When root perform a Spline interpolation to shoot random number out of
-    // the distribution, it can over shoot and output a number larger that 180
-    // this lead to an additional signal at 0-4 deg Lab, especially when using a
-    // flat distribution.
-    // This fix it.
-    theta=181;
-    if(theta/deg>180)
-      theta=fCrossSectionHist->GetRandom();
-    //cout << " Shooting Random ThetaCM "  << theta << endl;
-    SetThetaCM( theta*deg );
-  }
-*/
+  // TO DO //
+  double theta =0;
   return theta;
 }
 
@@ -476,10 +466,81 @@ bool QFS::IsAllowed(){//double Energy){
 ///////////////// Old R3B method not using TLorentz Vector  ////////////////////////////////
 /////////////////// (used as a reference)///////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////
-/*
+
+void QFS::TestR3B()
+{
+CalculateVariablesOld();
+}
 void QFS::CalculateVariablesOld(){
 
-    initializePrecomputeVariable();
+  if(fBeamEnergy < 0)
+    fBeamEnergy = 0 ; 
+
+    //cout<<"---- COMPUTE ------"<<endl;
+   // cout<<"--CM--"<<endl; 
+
+    mA = fNucleiA.Mass();            // Beam mass in MeV
+    mT =  fNucleiT.Mass();           // Target mass in MeV 
+    mB =  fNucleiB.Mass();           // Heavy residual mass in MeV 
+    m1 =  mT;                        // scattered target nucleon (same mass);
+    m2 =  fNuclei2.Mass();           // knocked out cluster mass in MeV 
+    ma =  m2;                        // intermediate cluster mass in MeV (same);
+ 
+    double TA = fBeamEnergy;                 // Beam kinetic energy
+    double PA = sqrt(TA*(TA+2*mA));          // Beam momentum (norm)
+    double EA = sqrt(mA*mA + PA*PA);         // Beam total energy
+    fEnergyImpulsionLab_A = TLorentzVector(0.,0.,PA,EA);
+    
+    //Internal momentum of removed cluster/nucleon
+    static TRandom3 r;
+    //r.SetSeed(0);
+    //double mom_sigma = 0; // MeV/c
+    //Pa.SetX(r.Gaus(0.,fMomentumSigma));
+    //Pa.SetY(r.Gaus(0.,fMomentumSigma));
+    //Pa.SetZ(r.Gaus(0.,fMomentumSigma));
+    Pa.SetX(50);
+    Pa.SetY(50);
+    Pa.SetZ(50);
+
+
+
+    //Internal momentum of heavy recoil after removal
+    PB.SetXYZ( (-Pa.X()) , (-Pa.Y()) , (-Pa.Z()) );
+
+    // Off-shell mass of the bound nucleon from E conservation
+    // in virtual dissociation of A -> B + a
+    double buffer = mA*mA + mB*mB - 2*mA*sqrt(mB*mB+Pa.Mag2()) ; 
+    if(buffer<=0) { cout<<"ERROR off shell mass ma_off=\t"<<buffer<<endl; return;}
+    ma_off = sqrt(buffer);
+
+    //deduced total energies of "a" and "B" in restframe of A
+    double Ea = sqrt(ma_off*ma_off + Pa.Mag2());
+    double EB = sqrt(mB*mB + PB.Mag2());
+
+    fEnergyImpulsionCM_a = TLorentzVector(Pa,Ea);
+    fEnergyImpulsionCM_B = TLorentzVector(PB,EB);
+
+    fEnergyImpulsionLab_a = TLorentzVector(Pa,Ea);
+    fEnergyImpulsionLab_B = TLorentzVector(PB,EB);
+    fEnergyImpulsionLab_a.Boost(0,0,fEnergyImpulsionLab_A.Beta());
+    fEnergyImpulsionLab_B.Boost(0,0,fEnergyImpulsionLab_A.Beta());
+    Ea_lab = fEnergyImpulsionLab_a.E();
+    EB_lab = fEnergyImpulsionLab_B.E();
+    Pa_lab = fEnergyImpulsionLab_a.Vect();
+    PB_lab = fEnergyImpulsionLab_B.Vect();
+
+   
+    // Scattering part (2-body kinematics)
+    // virtual cluster of mass "ma_off" scattering on target T
+    // to give scattered  cluster with real mass (ma=m2)
+    // and scattered target (mT=m1)
+
+    fQValue =ma_off+mT-m1-m2;
+
+    s = ma_off*ma_off + mT*mT + 2*mT*Ea_lab ; 
+    fTotalEnergyImpulsionCM = TLorentzVector(0,0,0,sqrt(s));
+    fEcm = sqrt(s) - m1 -m2;
+    if(fEcm<=0) { cout<<"ERROR Ecm negative =\t"<<fEcm<<endl;Dump(); return;}
 
     vector<double> theta1;
     vector<double> theta2;
@@ -487,28 +548,60 @@ void QFS::CalculateVariablesOld(){
     vector<double> phi2;
 
     //for(int i=0; i<=180; i++){
-    int i = 29;
+    int i = 30;
         KineR3B(s, ma_off, mT, ma, (double)i);
         if(!good) { cout<<"ERROR CM calculations!!!"<<endl; return;}
+
+        cout<<endl;
+        cout<<"------------------------------------"<<endl;
+        cout<<"------------ DUMP R3B --------------"<<endl;
+        cout<<"------------------------------------"<<endl;
+        cout<<endl;
+        cout<<"Cluster/recoil momentum (in the beam nucleus frame):"<<endl; 
+        cout<<"Pa=\t("<<Pa.Px()<<","<<Pa.Py()<<","<<Pa.Pz()<<") MeV/c"<<endl;
+        cout<<"PB=\t("<<PB.Px()<<","<<PB.Py()<<","<<PB.Pz()<<") MeV/c"<<endl;
+        cout<<endl;
+        cout<<"Off-shell mass of the bound nucleon from E conservation "<<endl;
+        cout<<" in virtual dissociation of A -> B + a"<<endl;
+        cout<<"ma=\t"<<ma<<endl;
+        cout<<"ma_off=\t"<<ma_off<<endl;
+        cout<<"mB=\t"<<mB<<endl;
+        cout<<"Deduced total energies of a and B in restframe of A"<<endl;
+        cout<<"Ea=\t"<<fEnergyImpulsionCM_a.E()<<"\tMeV"<<endl;
+        cout<<"EB=\t"<<fEnergyImpulsionCM_B.E()<<"\tMeV"<<endl;
+        cout<<endl;
+        cout<<"-- Boosted in lab frame with beam on Z axis --"<<endl; 
+        cout<<"Beta_z=\t"<<fEnergyImpulsionLab_A.Beta()<<endl;
+        cout<<"Pa_lab=\t("<<Pa_lab.Px()<<","<<Pa_lab.Py()<<","<<Pa_lab.Pz()<<") MeV/c"<<endl;
+        cout<<"PB_lab=\t("<<PB_lab.Px()<<","<<PB_lab.Py()<<","<<PB_lab.Pz()<<") MeV/c"<<endl;
+        cout<<"Ea_lab=\t"<<Ea_lab<<"\tMeV"<<endl;
+        cout<<"EB_lab=\t"<<EB_lab<<"\tMeV"<<endl;
+        cout<<endl; 
+        cout<<"-- Scattering off virtual cluster a of virtual mass --"<<endl; 
+        cout<<"-- ma_off and energy Ea_lab on target T at rest ------"<<endl;
+        cout<<"fQValue=\t"<<fQValue<<endl;
+        cout<<"s=\t"<<s<<endl;
+        cout<<"Ecm=\t"<<fEcm<<endl;
+        cout<<endl;
+
 
         TVector3 P1_cm(0.,0.,1.), P2_cm(0.,0.,1.);
         P2_cm.SetMag(p_clust);
         P2_cm.SetTheta(theta_clust);
-        TRandom3 ra;
-        ra.SetSeed(0);
+        //TRandom3 ra;
+        //ra.SetSeed(0);
         //P2_cm.SetPhi(ra.Uniform(-1*TMath::Pi(),+1*TMath::Pi()));
-        P2_cm.SetPhi(0.);
+        P2_cm.SetPhi(20.*TMath::Pi()/180.);
         P1_cm.SetX(-P2_cm.X());
         P1_cm.SetY(-P2_cm.Y());
         P1_cm.SetZ(-P2_cm.Z());
-        cout<<"FFFFFFFFFFFFFFFFF"<<endl;
+
         cout<<"P1_CM=\t("<<P1_cm.X()<<","<<P1_cm.Y()<<","<<P1_cm.Z()<<")"<<endl;
         cout<<"P2_CM=\t("<<P2_cm.X()<<","<<P2_cm.Y()<<","<<P2_cm.Z()<<")"<<endl;
  
-
         // Calculate relative to direction of quasi-particle (cluster)
-
-        double beta_cm = -Pa.Mag() / (Ea_lab + mT);
+        
+        double beta_cm = -Pa_lab.Mag() / (Ea_lab + mT);
         double gamma_cm = 1/sqrt(1-beta_cm*beta_cm);
 
         pair<double,double> lor_a1 = Lorentz(gamma_cm,beta_cm,e_scat,P1_cm.Z());
@@ -518,12 +611,12 @@ void QFS::CalculateVariablesOld(){
         P2_cm.SetZ(lor_a2.second);
 
         //Rotating back to beam direction
-        //TVector3 P1_L = Rotations(P1_cm, Pa);
-        //TVector3 P2_L = Rotations(P2_cm, Pa);
+        TVector3 P1_L = Rotations(P1_cm, Pa_lab);
+        TVector3 P2_L = Rotations(P2_cm, Pa_lab);
         
-        TVector3 P1_L = P1_cm;
-        TVector3 P2_L = P2_cm;
-        TVector3 direction = Pa.Unit();
+        //TVector3 P1_L = P1_cm;
+        //TVector3 P2_L = P2_cm;
+        //TVector3 direction = Pa.Unit();
         //P1_L.RotateUz(direction);
         //P1_L.RotateUz(direction);
 
@@ -546,6 +639,9 @@ void QFS::CalculateVariablesOld(){
         cout<<"Theta2:\t"<<P2_cm.Theta()*180./TMath::Pi()<<endl;
 
         cout<<"--LAB--"<<endl;
+        cout<<"Pa_lab=\t("<<Pa_lab.X()<<","<<Pa_lab.Y()<<","<<Pa_lab.Z()<<")"<<endl;
+        cout<<"P1_L=\t("<<P1_L.X()<<","<<P1_L.Y()<<","<<P1_L.Z()<<")"<<endl;
+        cout<<"P2_L=\t("<<P2_L.X()<<","<<P2_L.Y()<<","<<P2_L.Z()<<")"<<endl;
         cout<<"Theta1L:\t"<<P1_L.Theta()*180./TMath::Pi()<<endl;
         cout<<"Theta2L:\t"<<P2_L.Theta()*180./TMath::Pi()<<endl;
         cout<<"Phi1L:\t"<<P1_L.Phi()*180./TMath::Pi()<<endl;
@@ -668,6 +764,15 @@ TVector3 QFS::Rotations(TVector3 v1,TVector3 v2)
 	double _v3y =  v1.X()*CT*SF + v1.Y()*CF + v1.Z()*ST*SF;
 	double _v3z = -v1.X()*ST   +  v1.Z()*CT;
 	v3.SetXYZ(_v3x,_v3y,_v3z);
+
+    cout<<"--- ROTATION---"<<endl;
+    cout<<"CT=\t"<<CT<<endl;
+    cout<<"ST=\t"<<ST<<endl;
+    cout<<"CF=\t"<<CF<<endl;
+    cout<<"SF=\t"<<SF<<endl;
+    cout<<"v3x=\t"<<_v3x<<endl;
+    cout<<"v3y=\t"<<_v3y<<endl;
+    cout<<"v3z=\t"<<_v3z<<endl;
 	return v3;
 }
 
@@ -679,4 +784,4 @@ pair<double, double> QFS::Lorentz(double gamma,double beta,double e,double p)
 	double pL = gamma*p - gamma*beta*e;
 	return make_pair(eL, pL);
 }
-*/
+
