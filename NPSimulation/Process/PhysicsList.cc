@@ -54,8 +54,9 @@
 #include "G4PAIPhotModel.hh"
 #include "G4RadioactiveDecay.hh"
 #include "menate_R.hh"
+#ifdef USE_NEUTRONHP
 #include "NeutronHPphysics.hh"
-
+#endif
 /////////////////////////////////////////////////////////////////////////////
 PhysicsList::PhysicsList() : G4VUserPhysicsList(){
 
@@ -142,11 +143,12 @@ PhysicsList::PhysicsList() : G4VUserPhysicsList(){
     cout << "//// Using NPIonIonInelasticPhysic Physics List ////" << endl;
   }
 
+#ifdef USE_NEUTRONHP
   if(m_NeutronHP){
     m_PhysList["NeutronHPphysics"] = new NeutronHPphysics("neutronHP");
     cout << "//// Using NeutronHPPhysics ////" << endl;
   }
-
+#endif
   if(m_StoppingPhysics){
     m_PhysList["StoppingPhysics"]=new G4StoppingPhysics();
     cout << "//// Using G4StoppingPhysics Physics List ////" << endl;
@@ -238,6 +240,7 @@ void PhysicsList::ReadConfiguration(std::string filename){
   m_pai= 0;
   m_pai_photon= 0;
   m_Menate_R = 0;
+
   m_NeutronHP = 0;
 
   std::ifstream file(filename.c_str());
