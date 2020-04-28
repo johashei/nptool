@@ -120,14 +120,12 @@ namespace DriftChamberScorers {
 
         private:
             vector<G4int> m_NestingLevel;
-            G4int         m_Index;
 
 
         private: // Needed for intermediate calculation (avoid multiple instantiation
             // in Processing Hit)
             DCDataVector m_Data;
             vector<unsigned int> t_Level;
-            unsigned int         t_Detector;
             G4ThreeVector        m_Dir;
             double               m_DriftSpeed;
             double               t_preout;

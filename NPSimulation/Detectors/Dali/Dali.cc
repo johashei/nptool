@@ -75,7 +75,7 @@ namespace Dali_NS{
   const double ResoTime = 0.0*ns; //4.5*ns ;
   const double ResoEnergy = 0.122;  //Relative resolution DeltaE = 0.122*Sqrt(E) 
   /* const double ResoEnergy = 1.36*MeV ; // mean Resolution(FWHM) 1.7% of 80MeV from slides 20170214-SAMURAI34-setup-DALI.pdf if 1.7% of 30MeV = 0.51 MeV // 0.001*MeV ; */
-  const double Radius = 50*mm ; 
+  //const double Radius = 50*mm ; 
   const double Width = 49.76*mm ;
   const double Hight = 84.81*mm ;
   const double Thickness = 164.82*mm ;
@@ -155,9 +155,9 @@ G4LogicalVolume* Dali::BuildSquareDetector(){
     G4Material* Aria = MaterialManager::getInstance()->GetMaterialFromLibrary("Air");
     G4Material* Al = MaterialManager::getInstance()->GetMaterialFromLibrary("Al");
     G4Material* MgO = MaterialManager::getInstance()->GetMaterialFromLibrary("MgO");
-    G4Material* muMetal = MaterialManager::getInstance()->GetMaterialFromLibrary("mumetal");
+    //G4Material* muMetal = MaterialManager::getInstance()->GetMaterialFromLibrary("mumetal");
     G4Material* Vacuum = MaterialManager::getInstance()->GetMaterialFromLibrary("Vacuum");
-    G4Material* BoroSili_Glass = MaterialManager::getInstance()->GetMaterialFromLibrary("Borosillicate_Glass");
+    //G4Material* BoroSili_Glass = MaterialManager::getInstance()->GetMaterialFromLibrary("Borosillicate_Glass");
     
     ///// CONTENAIR VOLUMES 
     G4Box* Dali_3Volume = new G4Box("Dali_3Volume", 
@@ -256,7 +256,7 @@ G4LogicalVolume* Dali::BuildSquareDetector(){
     G4VisAttributes* MgO_Color = new G4VisAttributes(G4Colour(1,1,1, .4));
     G4VisAttributes* Al_Color = new G4VisAttributes(G4Colour(0.5,0.5,0.5, .3));
     G4VisAttributes* Crystal_Color = new G4VisAttributes(G4Colour(0, 1, 1));   
-    G4VisAttributes* mumetal_Color = new G4VisAttributes(G4Colour(0, 0.5, 1, .3));   
+    //G4VisAttributes* mumetal_Color = new G4VisAttributes(G4Colour(0, 0.5, 1, .3));   
 
 
     Log_Dali_3Volume->SetVisAttributes(G4VisAttributes(G4Colour(1,1,1, 0)));

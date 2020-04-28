@@ -125,7 +125,6 @@ namespace CylinderTPCScorers{
     private: // Needed for intermediate calculation (avoid multiple instantiation in Processing Hit)
      
       vector<G4int> m_NestingLevel;
-      unsigned int m_Level;
       double t_Charge;
       double t_DriftTime;
       unsigned int t_Pad;

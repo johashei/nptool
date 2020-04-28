@@ -78,7 +78,7 @@ using namespace CLHEP;
 namespace Actar_NS{
     // Energy and time Resolution
     const double ChargeThreshold = 0;
-    const double ResoTime = 0.1*ns ;
+    //const double ResoTime = 0.1*ns ;
     const double ResoCharge = 5./100 ;
     const double ChamberThickness = 376*mm ;
     const double ChamberWidth = 376*mm ;
@@ -117,7 +117,7 @@ namespace Actar_NS{
     const double CsIWidth = 2.5*cm;
     const double DistInterCsI = 1.*mm;
     const double CsI_PosZ = 16.*cm;
-    const double ResoCsI = 0.200/2.35;
+    //const double ResoCsI = 0.200/2.35;
 
     const double BeamDumpRadius = 30*mm;
     const double BeamDumpThickness = 5*mm;

@@ -60,7 +60,7 @@ namespace AGATA_NS{
   const double EnergyThreshold = 1*keV;
   const double ResoTime = 4.5*ns ;
   const double ResoEnergy = 2*keV ;
-  const double ResoAngle = 5*deg;
+  //const double ResoAngle = 5*deg;
 }
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

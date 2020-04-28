@@ -582,8 +582,8 @@ G4Material* MaterialManager::GetMaterialFromLibrary(string Name,
       MPT->AddProperty("RINDEX", energy_r, rindex, NumberOfPoints); // check
       MPT->AddProperty("ABSLENGTH", energy_r, absorption,
           NumberOfPoints); // check
-      MPT->AddProperty("FASTCOMPONENT", energy_e, fast, 2.1); // good
-      MPT->AddProperty("SLOWCOMPONENT", energy_e, slow, 22.6); // good
+      MPT->AddProperty("FASTCOMPONENT", energy_e, fast, 5); // good
+      MPT->AddProperty("SLOWCOMPONENT", energy_e, slow, 5); // good
       MPT->AddConstProperty("RESOLUTIONSCALE", 1.0); // check
       MPT->AddConstProperty("FASTTIMECONSTANT", 1000 * ns); // check
       MPT->AddConstProperty("SLOWTIMECONSTANT", 1000 * ns); // check

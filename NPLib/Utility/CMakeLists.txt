@@ -8,4 +8,4 @@ add_executable(npspectra_test npspectra_test.cxx)
 target_link_libraries(npspectra_test ${ROOT_LIBRARIES} NPCore NPOnline) 
 
 install(PROGRAMS nptool-installer npanalysis nponline DESTINATION ${CMAKE_BINARY_OUTPUT_DIRECTORY})
-install(SCRIPT ../scripts/post_install.cmake ${DETLIST})
+install(SCRIPT ${CMAKE_BINARY_DIR}/scripts/post_install.cmake ${DETLIST})

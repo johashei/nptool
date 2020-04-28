@@ -1,18 +1,18 @@
 /*****************************************************************************
- * Copyright (C) 2009-2019   this file is part of the NPTool Project       *
+ * Copyright (C) 2009-2019   this file is part of the NPTool Project         *
  *                                                                           *
  * For the licensing terms see $NPTOOL/Licence/NPTool_Licence                *
  * For the list of contributors see $NPTOOL/Licence/Contributors             *
  *****************************************************************************/
 
 /*****************************************************************************
- * Original Author: Thomas Goigoux  contact address: thomas.goigoux@cea.fr                        *
+ * Original Author: Thomas Goigoux  contact address: thomas.goigoux@cea.fr   *
  *                                                                           *
- * Creation Date  : july 2019                                           *
+ * Creation Date  : july 2019                                                *
  * Last update    :                                                          *
  *---------------------------------------------------------------------------*
  * Decription:                                                               *
- *  This class describe  Exogam simulation                             *
+ *  This class describe  Exogam simulation                                   *
  *                                                                           *
  *---------------------------------------------------------------------------*
  * Comment:                                                                  *
@@ -72,7 +72,7 @@ using namespace CLHEP;
 namespace Exogam_NS{
   // Energy and time Resolution
   const double EnergyThreshold = 10*keV;
-  const double ResoTime = 4.5*ns ;  //not used
+  //const double ResoTime = 4.5*ns ;  //not used
   const double ResoEnergy = 2.*keV ;
 }
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -628,7 +628,7 @@ void Exogam::InitializeRootOutput(){
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 // Read sensitive part and fill the Root tree.
 // Called at in the EventAction::EndOfEventAvtion
-void Exogam::ReadSensitive(const G4Event* event){
+void Exogam::ReadSensitive(const G4Event*){
   m_Event->Clear();
 
   ///////////

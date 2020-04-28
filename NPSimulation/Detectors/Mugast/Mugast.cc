@@ -65,13 +65,13 @@ namespace Mugast_NS{
   // Resolution
   const G4double SigmaTime    = 0.212765957 ;// = 500ps
   const G4double SigmaEnergy  = 0.0149      ;// 0.0223 = 52keV of Resolution //   Unit is MeV/2.35  14.861996
-  const G4double TimeOffset   = 500         ;// 500 ns stop
+//  const G4double TimeOffset   = 500         ;// 500 ns stop
 
   // Threshold
   const G4double EnergyThreshold = 1 * MeV;
 
   // Geometry
-  const G4double AluStripThickness = 0.4*micrometer ;
+  //const G4double AluStripThickness = 0.4*micrometer ;
   const G4double SiliconThickness  = 3000*micrometer ;
 
   // Square
@@ -102,7 +102,7 @@ namespace Mugast_NS{
    const G4double PCBPointsX[8]={-40,40,60,60,40,-40,-60,-60};
    const G4double PCBPointsY[8]={60,60,40,-40,-60,-60,-40,40};
    const G4double PCBThickness=3.2*mm;
-   const G4double PCBInnerRadius=0*mm;
+   //const G4double PCBInnerRadius=0*mm;
 
 
 
@@ -644,8 +644,8 @@ void Mugast::ReadSensitive(const G4Event* ){
 
     if(Energy>EnergyThreshold){
       double Time       = RandGauss::shoot(AnnularScorer->GetTimeRing(i), SigmaTime);
-      int DetNbr        = AnnularScorer->GetDetectorRing(i);
-      int StripFront    = AnnularScorer->GetStripRing(i);
+      unsigned int DetNbr        = AnnularScorer->GetDetectorRing(i);
+      unsigned int StripFront    = AnnularScorer->GetStripRing(i);
    
       // Check for associated Quadrant strip
       int StripQuadrant = 0;

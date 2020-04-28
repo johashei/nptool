@@ -187,7 +187,9 @@ Nucleus QFS::GetNucleus(string name, NPL::InputParser parser){
   }
   else{
     NPL::SendErrorAndExit("NPL::QFS","Too many nuclei define with the same name");
+    return NPL::Nucleus();
   }
+  return NPL::Nucleus();
 }
 
 
