@@ -739,6 +739,15 @@ G4Material* MaterialManager::GetMaterialFromLibrary(string Name,
     }
 
     // Misc
+    else if (Name == "Be") {
+      if (!density)
+        density            = 1.848 * g / cm3;
+      G4Material* material = new G4Material("NPS_" + Name, density, 1);
+      material->AddElement(GetElementFromLibrary("Be"), 1);
+      m_Material[Name] = material;
+      return material;
+    }
+
     else if (Name == "Al") {
       if (!density)
         density            = 2.702 * g / cm3;
