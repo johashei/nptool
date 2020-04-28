@@ -1,20 +1,20 @@
 #ifndef LightPipe_h
 #define LightPipe_h 1
 /*****************************************************************************
- * Copyright (C) 2009-2018   this file is part of the NPTool Project       *
+ * Copyright (C) 2009-2018   this file is part of the NPTool Project         *
  *                                                                           *
  * For the licensing terms see $NPTOOL/Licence/NPTool_Licence                *
  * For the list of contributors see $NPTOOL/Licence/Contributors             *
  *****************************************************************************/
 
 /*****************************************************************************
- * Original Author: Greg Christian  contact address: gchristian@tamu.edu                        *
+ * Original Author: Greg Christian  contact address: gchristian@tamu.edu     *
  *                                                                           *
- * Creation Date  : July 2018                                           *
+ * Creation Date  : July 2018                                                *
  * Last update    :                                                          *
  *---------------------------------------------------------------------------*
  * Decription:                                                               *
- *  This class describe  LightPipe simulation                             *
+ *  This class describe  LightPipe simulation                                *
  *                                                                           *
  *---------------------------------------------------------------------------*
  * Comment:                                                                  *
@@ -78,7 +78,7 @@ public:
 private:
 	G4Material* m_ScintillatorMaterial;
 	G4Material* m_PipeMaterial;
-	G4Material* m_WrappingMaterial;
+	//G4Material* m_WrappingMaterial;
 	G4OpticalSurface* m_ReflectiveSurface;
 
 	G4Material* CreateScintillatorMaterial() const;

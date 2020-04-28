@@ -83,7 +83,7 @@ namespace Minos_NS{
 // TPC
 const G4double  ChamberInnerRadius      = 37.*mm; 
 /* const G4double  ChamberInnerRadius      = 29*mm; */ //big TPC
-const G4double  ChamberThickness        = 2.*mm; 
+//const G4double  ChamberThickness        = 2.*mm; 
 const G4double  ChamberLength           = 300.*mm;
 const G4double  KaptonThickness         = 0.125*mm; 
 const G4double  RohacellThickness  = 2.*mm;

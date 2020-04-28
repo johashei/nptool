@@ -92,7 +92,7 @@ namespace ChiNu_NS{
   // Fission Chamber
   const string FCWall_Material = "CH2";
   const double Cu_Thickness = 17*micrometer;
-  const double Al_Thickness = 12*micrometer;
+ // const double Al_Thickness = 12*micrometer;
   const double Kapton_Thickness = 50*micrometer;
 }
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

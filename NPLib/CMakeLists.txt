@@ -7,7 +7,8 @@ set(CMAKE_BUILD_TYPE Release)
 cmake_policy(VERSION ${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION})
 
 # include the nptool standard CMake preamble 
-include("ressources/CMake/NPTool_CMake_Preamble.cmake")
+include("${CMAKE_BINARY_DIR}/ressources/CMake/NPTool_CMake_Preamble.cmake")
+
 
 # Major change in the Core/Physics (affecting the detector/analysis/simulation)
 set(NPLIB_VERSION_MAJOR 2)
