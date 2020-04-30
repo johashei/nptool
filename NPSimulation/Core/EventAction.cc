@@ -87,6 +87,8 @@ void EventAction::SaveRandomGeneratorInitialState(){
 
     CLHEP::HepRandom::saveFullState(m_Geant4RandomFullState);
     m_G4State=m_Geant4RandomFullState.str();
+    m_Geant4RandomFullState.str("");
+    m_Geant4RandomFullState.clear();
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
