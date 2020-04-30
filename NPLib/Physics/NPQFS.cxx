@@ -58,7 +58,6 @@ using namespace NPUNITS;
 
 // ROOT
 #include"TF1.h"
-#include"TRandom3.h"
 
 ClassImp(QFS)
 
@@ -215,12 +214,11 @@ void QFS::CalculateVariables(){
     fEnergyImpulsionLab_A = TLorentzVector(0.,0.,PA,EA);
     
     //Internal momentum of removed cluster/nucleon
-    static TRandom3 r;
-    //r.SetSeed(0);
+    //gRandom->SetSeed(0);
     //double mom_sigma = 0; // MeV/c
-    Pa.SetX(r.Gaus(0.,fMomentumSigma));
-    Pa.SetY(r.Gaus(0.,fMomentumSigma));
-    Pa.SetZ(r.Gaus(0.,fMomentumSigma));
+    Pa.SetX(gRandom->Gaus(0.,fMomentumSigma));
+    Pa.SetY(gRandom->Gaus(0.,fMomentumSigma));
+    Pa.SetZ(gRandom->Gaus(0.,fMomentumSigma));
 
 
     //Internal momentum of heavy recoil after removal
@@ -494,12 +492,11 @@ void QFS::CalculateVariablesOld(){
     fEnergyImpulsionLab_A = TLorentzVector(0.,0.,PA,EA);
     
     //Internal momentum of removed cluster/nucleon
-    static TRandom3 r;
-    //r.SetSeed(0);
+    //gRandom->SetSeed(0);
     //double mom_sigma = 0; // MeV/c
-    //Pa.SetX(r.Gaus(0.,fMomentumSigma));
-    //Pa.SetY(r.Gaus(0.,fMomentumSigma));
-    //Pa.SetZ(r.Gaus(0.,fMomentumSigma));
+    //Pa.SetX(gRandom->Gaus(0.,fMomentumSigma));
+    //Pa.SetY(gRandom->Gaus(0.,fMomentumSigma));
+    //Pa.SetZ(gRandom->Gaus(0.,fMomentumSigma));
     Pa.SetX(50);
     Pa.SetY(50);
     Pa.SetZ(50);

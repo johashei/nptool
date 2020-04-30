@@ -28,6 +28,10 @@
 // G4 General Source
 #include "SteppingVerbose.hh"
 #include "Randomize.hh"
+
+// Root
+#include "TRandom.h"
+
 // NPS headers
 #include "EventAction.hh"
 #include "RunAction.hh"
@@ -59,6 +63,16 @@ int main(int argc, char** argv){
     // case when input files are here
     G4String EventGeneratorFileName = OptionManager->GetReactionFile();
     G4String DetectorFileName       = OptionManager->GetDetectorFile();
+    
+    
+    // initialize the state of the root and geant4 random generator
+    if(OptionManager->GetRandomSeed()>0){
+      gRandom->SetSeed(OptionManager->GetRandomSeed()); 
+      CLHEP::HepRandom::setTheSeed(OptionManager->GetRandomSeed(),3);
+    }
+    
+    
+    
     // my Verbose output class
     G4VSteppingVerbose::SetInstance(new SteppingVerbose);
     

@@ -87,7 +87,7 @@ ClassImp(Reaction)
     fshoot3=true;
     fshoot4=true;
     fUseExInGeant4=true;
-    RandGen=new TRandom3();
+    RandGen=gRandom;
 
     fLabCrossSection=false; // flag if the provided cross-section is in the lab or not
 
@@ -156,7 +156,7 @@ Reaction::Reaction(string reaction){
 
   fshoot3=true;
   fshoot4=true;
-  RandGen=new TRandom3();
+  RandGen=gRandom;
 
   fLabCrossSection=false;
 

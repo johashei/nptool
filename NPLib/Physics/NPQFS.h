@@ -54,7 +54,6 @@ using namespace NPL;
 #include "TGraph.h"
 #include "TCanvas.h"
 #include "TH1F.h"
-#include "TRandom3.h"
 
 using namespace std;
 

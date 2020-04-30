@@ -45,8 +45,8 @@ EventAction::EventAction(){
     mean_rate=0;
     displayed=0;
 
-    m_tree =  RootOutput::getInstance()->GetTree();
-    m_tree->Branch("Geant4RandomState",&m_G4State );
+     m_tree =  RootOutput::getInstance()->GetTree();
+  //  m_tree->Branch("Geant4RandomState",&m_G4State );
  
 }
 
@@ -58,7 +58,7 @@ EventAction::~EventAction(){
 void EventAction::BeginOfEventAction(const G4Event* event){
     treated= event->GetEventID()+1;
     ProgressDisplay();
-    SaveRandomGeneratorInitialState();
+//    SaveRandomGeneratorInitialState();
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
