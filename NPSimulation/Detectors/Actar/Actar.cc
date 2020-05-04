@@ -149,7 +149,7 @@ Actar::Actar(){
     m_build_Silicon=1;
     m_build_Vamos_Silicon=0;
     m_build_CsI=1;
-
+    m_ReactionRegion=NULL;
     // Lookup table //
    // bool ReadingLookupTable = false;
     string LT_FileName = "./Detectors/Actar/LT.dat";
@@ -573,6 +573,7 @@ void Actar::ReadConfiguration(NPL::InputParser parser){
 // Construct detector and inialise sensitive part.
 // Called After DetecorConstruction::AddDetector Method
 void Actar::ConstructDetector(G4LogicalVolume* world){
+  std::cout << ">>>>>>>>>> DEBUG : " << 0 << std::endl;
     for (unsigned short i = 0 ; i < m_R.size() ; i++) {
 
         G4double wX = m_R[i] * sin(m_Theta[i] ) * cos(m_Phi[i] ) ;
@@ -598,8 +599,9 @@ void Actar::ConstructDetector(G4LogicalVolume* world){
                           BuildDetector(),
                           "Actar",world,false,i+1);
     }
-
+    std::cout << ">>>>>>>>>> DEBUG : " << 1 << std::endl;
     if(!m_ReactionRegion){
+      std::cout << ">>>>>>>>>> DEBUG : " << 6 << std::endl;
         G4ProductionCuts* ecut = new G4ProductionCuts();
         ecut->SetProductionCut(1000,"e-");
 
@@ -612,21 +614,21 @@ void Actar::ConstructDetector(G4LogicalVolume* world){
         Region_cut->SetProductionCuts(ecut);
         Region_cut->AddRootLogicalVolume(m_SquareDetector);
     }
-
+    std::cout << ">>>>>>>>>> DEBUG : " << 2 << std::endl;
     G4FastSimulationManager* mng = m_ReactionRegion->GetFastSimulationManager();
-
+    std::cout << ">>>>>>>>>> DEBUG : " << 3 << std::endl;
     unsigned int size = m_ReactionModel.size();
     for(unsigned int i = 0 ; i < size ; i++){
         mng->RemoveFastSimulationModel(m_ReactionModel[i]);
     }
-
+    std::cout << ">>>>>>>>>> DEBUG : " << 4 << std::endl;
     m_ReactionModel.clear();
     G4VFastSimulationModel* fsm;
     fsm = new NPS::BeamReaction("BeamReaction",m_ReactionRegion);
     m_ReactionModel.push_back(fsm);
     fsm = new NPS::Decay("Decay",m_ReactionRegion);
     m_ReactionModel.push_back(fsm);
-
+    std::cout << ">>>>>>>>>> DEBUG : " << 5 << std::endl;
 }
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 // Add Detector branch to the EventTree.
