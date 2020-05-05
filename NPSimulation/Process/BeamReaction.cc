@@ -463,10 +463,10 @@ void NPS::BeamReaction::DoIt(const G4FastTrack& fastTrack,
         /////  Momentum and angles from  kinematics  /////
         //////////////////////////////////////////////////
         // Variable where to store results
-        double Theta1, Phi1, Energy1, Theta2, Phi2, Energy2, ThetaB, PhiB, EnergyB;
+        double Theta1, Phi1, TKE1, Theta2, Phi2, TKE2, ThetaB, PhiB, TKEB;
 
         // Compute Kinematic using previously defined ThetaCM
-        m_QFS.KineRelativistic(Theta1, Phi1, Energy1, Theta2, Phi2, Energy2);
+        m_QFS.KineRelativistic(Theta1, Phi1, TKE1, Theta2, Phi2, TKE2);
 
         G4ThreeVector U(1, 0, 0);
         G4ThreeVector V(0, 1, 0);
@@ -499,7 +499,7 @@ void NPS::BeamReaction::DoIt(const G4FastTrack& fastTrack,
         
         G4ThreeVector momentum_kineB_beam( P_B->Px(), P_B->Py(), P_B->Pz() );
         momentum_kineB_beam = momentum_kineB_beam.unit();
-        EnergyB = m_QFS.GetEnergyImpulsionLab_B()->Energy();
+        TKEB = m_QFS.GetEnergyImpulsionLab_B()->Energy() - m_QFS.GetNucleusB()->Mass();
         G4ThreeVector momentum_kineB_world =  momentum_kineB_beam;
         momentum_kineB_world.rotate(Beam_theta, V); // rotation of Beam_theta on Y axis
         momentum_kineB_world.rotate(Beam_phi, ZZ); // rotation of Beam_phi on Z axis
@@ -512,16 +512,16 @@ void NPS::BeamReaction::DoIt(const G4FastTrack& fastTrack,
   
         // Emitt secondary
         if (m_QFS.GetShoot1()) {
-            G4DynamicParticle particle1(Light1Name, momentum_kine1_world, Energy1);
+            G4DynamicParticle particle1(Light1Name, momentum_kine1_world, TKE1);
             fastStep.CreateSecondaryTrack(particle1, localPosition, time);
         }
 
         if (m_QFS.GetShoot2()) {
-            G4DynamicParticle particle2(Light2Name, momentum_kine2_world, Energy2);
+            G4DynamicParticle particle2(Light2Name, momentum_kine2_world, TKE2);
             fastStep.CreateSecondaryTrack(particle2, localPosition, time);
         }
         if (m_QFS.GetShootB()) {
-            G4DynamicParticle particleB(HeavyName, momentum_kineB_world, EnergyB);
+            G4DynamicParticle particleB(HeavyName, momentum_kineB_world, TKEB);
             fastStep.CreateSecondaryTrack(particleB, localPosition, time);
         }
 
@@ -560,9 +560,9 @@ void NPS::BeamReaction::DoIt(const G4FastTrack& fastTrack,
         m_ReactionConditions->SetPhi(Phi2 / deg);
         m_ReactionConditions->SetPhi(PhiB / deg);
         // Energy 1,2 and B //
-        m_ReactionConditions->SetKineticEnergy(Energy1);
-        m_ReactionConditions->SetKineticEnergy(Energy2);
-        m_ReactionConditions->SetKineticEnergy(EnergyB);
+        m_ReactionConditions->SetKineticEnergy(TKE1);
+        m_ReactionConditions->SetKineticEnergy(TKE2);
+        m_ReactionConditions->SetKineticEnergy(TKEB);
         // ThetaCM and Ex//
         m_ReactionConditions->SetThetaCM(m_QFS.GetThetaCM() / deg);
         //m_ReactionConditions->SetExcitationEnergy3(m_QFS.GetExcitation3());
