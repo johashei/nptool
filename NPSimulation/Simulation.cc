@@ -27,6 +27,10 @@
 
 // G4 General Source
 #include "SteppingVerbose.hh"
+#include "Randomize.hh"
+
+// Root
+#include "TRandom.h"
 
 // NPS headers
 #include "EventAction.hh"
@@ -59,6 +63,16 @@ int main(int argc, char** argv){
     // case when input files are here
     G4String EventGeneratorFileName = OptionManager->GetReactionFile();
     G4String DetectorFileName       = OptionManager->GetDetectorFile();
+    
+    
+    // initialize the state of the root and geant4 random generator
+    if(OptionManager->GetRandomSeed()>0){
+      gRandom->SetSeed(OptionManager->GetRandomSeed()); 
+      CLHEP::HepRandom::setTheSeed(OptionManager->GetRandomSeed(),3);
+    }
+    
+    
+    
     // my Verbose output class
     G4VSteppingVerbose::SetInstance(new SteppingVerbose);
     
@@ -163,9 +177,22 @@ int main(int argc, char** argv){
     ///////////////////////////////////////////////////////////////
     ////////////////////// Job termination ////////////////////////
     ///////////////////////////////////////////////////////////////
+    // Save the Geant4 random generator internal generator state in a TASCII 
+    // file store with the root output
+    std::ofstream file(".geant4_random_state");
+    CLHEP::HepRandom::saveFullState(file);  
+    file.close(); 
+    TAsciiFile* aFile = new TAsciiFile();
+    aFile->SetNameTitle("G4RandomFinalState",".geant4_random_state");
+    aFile->Append(".geant4_random_state");
+    RootOutput::getInstance()->GetFile()->cd();
+    aFile->Write(0,TAsciiFile::kOverwrite);
+    int dummy=0;
+    dummy= system("rm .geant4_random_state");
     // delete primary; delete detector;
     
     delete runManager;
+    
     RootOutput::getInstance()->Destroy();
     return 0;
 }

@@ -73,6 +73,7 @@ void NPOptionManager::ReadTheInputArgument(int argc, char** argv){
   fNumberOfEntryToAnalyse     = -1;
 	fFirstEntryToAnalyse        = 0;
   fSpectraServerPort          = 9092;
+  fRandomSeed                 = -1;
   fDisableAllBranchOption = false;
   fInputPhysicalTreeOption = false;
   fGenerateHistoOption = false ;
@@ -150,6 +151,8 @@ void NPOptionManager::ReadTheInputArgument(int argc, char** argv){
     else if (argument == "--proof")                               fPROOFMode = true ;
 
     else if (argument == "-L")                                    fNumberOfEntryToAnalyse = atoi(argv[++i]) ;
+
+    else if (argument == "--random-seed")                         fRandomSeed = atoi(argv[++i]) ;
 
 		else if (argument == "-F")                                    fFirstEntryToAnalyse = atoi(argv[++i]);
 
@@ -419,7 +422,7 @@ void NPOptionManager::DisplayHelp(){
   std::cout << std::endl << "NPSimulation only:"<<std::endl;
   std::cout << "\t-M <arg>\t\t\tExecute Geant4 macro <arg> at startup" << std::endl ;
   std::cout << "\t-B <arg>\t\t\tExecute in batch mode (no ui) with Geant4 macro <arg> at startup" << std::endl ;
-
+  std::cout << "\t--random-seed <arg>\t\tSet the random generator seed to <arg> (unsigned int)" << std::endl ;
   std::cout << std::endl << std::endl ;
 
   // exit current program

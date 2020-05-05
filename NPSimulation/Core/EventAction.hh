@@ -27,11 +27,16 @@
 // G4 header
 #include "G4UserEventAction.hh"
 
+//Root
+#include "TTree.h"
+
 // NPTool header
 #include "DetectorConstruction.hh"
 
 // STL
 #include<time.h>
+#include<iostream>
+#include<string>
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 class EventAction : public G4UserEventAction{
   public:
@@ -43,7 +48,12 @@ class EventAction : public G4UserEventAction{
     void EndOfEventAction(const G4Event*);
     void SetDetector(DetectorConstruction* detector);
     void ProgressDisplay();
+    void SaveRandomGeneratorInitialState();
     void SetRunLength(int);
+
+  private: // tree
+    TTree* m_tree;
+  
   private: // Progress Display
     clock_t begin;
     clock_t end;
@@ -52,6 +62,10 @@ class EventAction : public G4UserEventAction{
     unsigned int total;
     double mean_rate;
     int displayed;
+
+  private: // Random state
+    std::ostringstream m_Geant4RandomFullState; 
+    std::string  m_G4State;  
 
   private:
     DetectorConstruction*  m_detector;
