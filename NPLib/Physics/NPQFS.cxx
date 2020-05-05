@@ -418,8 +418,6 @@ TGraph* QFS::GetTheta2VsTheta1(double AngleStep_CM){
   for (double angle=0 ; angle <= 180 ; angle+=AngleStep_CM){
     SetThetaCM(angle*TMath::Pi()/180.);
     KineRelativistic(theta1, phi1, E1, theta2, phi2, E2);
-    Dump();
-
     vx.push_back(theta1*180./M_PI);
     vy.push_back(theta2*180./M_PI);
   }
