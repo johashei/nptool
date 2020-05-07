@@ -320,7 +320,7 @@ void NPS::BeamReaction::DoIt(const G4FastTrack& fastTrack,
         // Angles
         // Shoot and Set a Random ThetaCM
         m_Reaction.ShootRandomThetaCM();
-        double phi = RandFlat::shoot() * 2. * pi;
+        double phi = G4RandFlat::shoot() * 2. * pi;
 
         //////////////////////////////////////////////////
         /////  Momentum and angles from  kinematics  /////
@@ -453,8 +453,8 @@ void NPS::BeamReaction::DoIt(const G4FastTrack& fastTrack,
         // Shoot and Set a Random ThetaCM
         //m_QFS.ShootRandomThetaCM();
         //m_QFS.ShootRandomPhiCM();
-        double theta = RandFlat::shoot() *  pi;
-        double phi = RandFlat::shoot() * 2. * pi - pi; //rand in [-pi,pi]
+        double theta = G4RandFlat::shoot() *  pi;
+        double phi = G4RandFlat::shoot() * 2. * pi - pi; //rand in [-pi,pi]
 
         m_QFS.SetThetaCM(theta);
         m_QFS.SetPhiCM(phi);
