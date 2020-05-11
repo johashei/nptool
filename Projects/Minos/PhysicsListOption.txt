@@ -1,5 +1,5 @@
 EmPhysicsList Option4
-DriftElectronPhysics 1
+DriftElectronPhysics 0
 DefaultCutOff 1e9
 IonBinaryCascadePhysics 0
 NPIonInelasticPhysics 0
