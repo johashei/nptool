@@ -67,6 +67,7 @@ int main(int argc, char** argv){
     
     // initialize the state of the root and geant4 random generator
     if(OptionManager->GetRandomSeed()>0){
+      std::cout << " Seeds for random generators set to: " << OptionManager->GetRandomSeed() << std::endl;
       gRandom->SetSeed(OptionManager->GetRandomSeed()); 
       CLHEP::HepRandom::setTheSeed(OptionManager->GetRandomSeed(),3);
     }

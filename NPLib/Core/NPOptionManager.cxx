@@ -1,4 +1,4 @@
-/*****************************************************************************
+;/*****************************************************************************
  * Copyright (C) 2009-2016   this file is part of the NPTool Project         *
  *                                                                           *
  * For the licensing terms see $NPTOOL/Licence/NPTool_Licence                *
@@ -96,7 +96,7 @@ void NPOptionManager::ReadTheInputArgument(int argc, char** argv){
 
 
 
-  for (int i = 0; i < argc; i++) {
+  for (int i = 1; i < argc; i++) {
     std::string argument = argv[i];
     if (argument == "-H" || argument == "-h" || argument == "--help") DisplayHelp();
 
@@ -168,8 +168,9 @@ void NPOptionManager::ReadTheInputArgument(int argc, char** argv){
 
     else if (argument == "--circular")                            {fCircularTree = true;}
 
-
-    //else ;
+    else{
+    SendErrorAndExit(argument.c_str()); 
+    }
   }
   CheckArguments();
   if(argc!=0)
@@ -384,7 +385,8 @@ void NPOptionManager::SendErrorAndExit(const char* type) const{
   }
 
   else {
-    std::cout << "NPOptionManager::SendErrorAndExit() unkwown keyword" << std::endl;
+    std::cout << "NPOptionManager::SendErrorAndExit() unkwown program argument: " << type << std::endl;
+    exit(1);
   }
 }
 

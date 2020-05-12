@@ -87,7 +87,6 @@ ClassImp(Reaction)
     fshoot3=true;
     fshoot4=true;
     fUseExInGeant4=true;
-    RandGen=gRandom;
 
     fLabCrossSection=false; // flag if the provided cross-section is in the lab or not
 
@@ -156,7 +155,6 @@ Reaction::Reaction(string reaction){
 
   fshoot3=true;
   fshoot4=true;
-  RandGen=gRandom;
 
   fLabCrossSection=false;
 
@@ -357,7 +355,7 @@ double  Reaction::EnergyLabFromThetaLab(double ThetaLab){
  
   if(B>D) {
     ThetaLabMax = asin(sqrt(D/B));
-    if(RandGen->Rndm()<0.5) sign=-1;
+    if(gRandom->Rndm()<0.5) sign=-1;
   }
   if(ThetaLab>ThetaLabMax) return -1;
 
