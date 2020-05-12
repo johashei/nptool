@@ -86,7 +86,7 @@ void Analysis::TreatEvent(){
   }
 
   //if(Time_max>50) m_DetectedNeutron++;
-  if(Time_max>40 && E_sum>0.2) m_DetectedNeutron++;
+  if(Time_max>40 && E_sum>2) m_DetectedNeutron++;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -125,7 +125,7 @@ void Analysis::End(){
   cout << "DetectedNeutron: " << endl;
 
   ofstream ofile;
-  ofile.open("macro/eff_scone_natGd25um.txt");
+  ofile.open("macro/eff_scone_natGd25um_Esum2MeV.txt");
   //ofile.open("macro/eff_scone_menate.txt");
   for(int i=0; i< vDetectedNeutron.size(); i++){
     cout << "* " << vE_init[i] << " / " << vDetectedNeutron[i]/1e5*100 << endl;

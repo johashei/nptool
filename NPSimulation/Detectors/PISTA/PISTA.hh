@@ -50,17 +50,15 @@ class PISTA : public NPS::VDetector{
     ////////////////////////////////////////////////////
   public:
     // Cartesian
-    void AddDetector(G4ThreeVector POS, string Shape);
+    void AddDetector(G4ThreeVector POS);
     // Spherical
-    void AddDetector(double R,double Theta,double Phi,string Shape);  
+    void AddDetector(double R,double Theta,double Phi);  
 
 
-    G4LogicalVolume* BuildSquareDetector();
-    G4LogicalVolume* BuildCylindricalDetector();
+    G4LogicalVolume* BuildTrapezoidDetector();
   
   private:
-    G4LogicalVolume* m_SquareDetector;
-    G4LogicalVolume* m_CylindricalDetector;
+    G4LogicalVolume* m_TrapezoidDetector;
     
     ////////////////////////////////////////////////////
     //////  Inherite from NPS::VDetector class /////////
@@ -87,7 +85,8 @@ class PISTA : public NPS::VDetector{
     void InitializeScorers() ;
 
     //   Associated Scorer
-    G4MultiFunctionalDetector* m_PISTAScorer ;
+    G4MultiFunctionalDetector* m_FirstStageScorer ;
+    G4MultiFunctionalDetector* m_SecondStageScorer ;
     ////////////////////////////////////////////////////
     ///////////Event class to store Data////////////////
     ////////////////////////////////////////////////////
@@ -103,12 +102,8 @@ class PISTA : public NPS::VDetector{
     vector<double>  m_Theta;
     vector<double>  m_Phi; 
     
-    //   Shape type
-    vector<string> m_Shape ;
-   
     // Visualisation Attribute
-    G4VisAttributes* m_VisSquare;
-    G4VisAttributes* m_VisCylinder;
+    G4VisAttributes* m_VisTrap;
 
   // Needed for dynamic loading of the library
   public:

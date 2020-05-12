@@ -21,8 +21,13 @@
  *                                                                           *
  *****************************************************************************/
 
-#include"NPVAnalysis.h"
-#include"TPISTAPhysics.h"
+#include "NPVAnalysis.h"
+#include "TPISTAPhysics.h"
+#include "TInitialConditions.h"
+#include "TReactionConditions.h"
+#include "NPEnergyLoss.h"
+#include "NPReaction.h"
+#include "TRandom3.h"
 class Analysis: public NPL::VAnalysis{
   public:
     Analysis();
@@ -32,11 +37,39 @@ class Analysis: public NPL::VAnalysis{
     void Init();
     void TreatEvent();
     void End();
+    void InitOutputBranch();
+    void InitInputBranch();
+    void ReInitValue();
 
-   static NPL::VAnalysis* Construct();
+    static NPL::VAnalysis* Construct();
 
   private:
-   TPISTAPhysics* PISTA;
+    double OriginalBeamEnergy;
+    double BeamEnergy;
+    double XTarget;
+    double YTarget;
+    double ZTarget;
+    double OriginalElab;
+    double Elab;
+    double ThetaLab;
+    double ThetaCM;
+    double OptimumEx;
+    double Ex;
+    double OriginalThetaLab;
+    NPL::Reaction* Transfer;
+
+    TRandom3 Rand;
+    double ThetaNormalTarget;
+    double ThetaDetectorSurface;
+    double TargetThickness;
+
+    NPL::EnergyLoss Be10C;
+    NPL::EnergyLoss U238C;
+
+  private:
+    TPISTAPhysics* PISTA;
+    TInitialConditions* InitialConditions;
+    TReactionConditions* ReactionConditions;
 
 };
 #endif

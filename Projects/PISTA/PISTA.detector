@@ -1,25 +1,51 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 Target
- THICKNESS= 10 micrometer
- RADIUS=	20 mm
- MATERIAL= CD2
+ THICKNESS= 0.44 micrometer
+ RADIUS= 20 mm
+ MATERIAL= C
  ANGLE= 0 deg
  X= 0 mm
  Y= 0 mm
  Z= 0 mm
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+PISTA
+ R= 100 mm
+ THETA= 60 deg
+ PHI= 315 deg
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+PISTA
+ R= 100 mm
+ THETA= 60 deg
+ PHI= 270 deg
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+PISTA
+ R= 100 mm
+ THETA= 60 deg
+ PHI= 225 deg
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+PISTA
+ R= 100 mm
+ THETA= 60 deg
+ PHI= 180 deg
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+PISTA
+ R= 100 mm
+ THETA= 60 deg
+ PHI= 135 deg
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+PISTA
+ R= 100 mm
+ THETA= 60 deg
+ PHI= 90 deg
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 PISTA
- POS= 0 0 350 mm
- Shape= Square
+ R= 100 mm
+ THETA= 60 deg
+ PHI= 45 deg
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 PISTA
- POS = 35 35 35 cm
- Shape= Square
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-PISTA
- R= 350 mm
- THETA= 90 deg
- PHI= 63 deg
- Shape= Cylindrical
+ R= 100 mm
+ THETA= 60 deg
+ PHI= 0 deg
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

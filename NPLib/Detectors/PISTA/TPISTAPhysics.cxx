@@ -40,22 +40,23 @@ using namespace std;
 #include "TChain.h"
 
 ClassImp(TPISTAPhysics)
-
-
-///////////////////////////////////////////////////////////////////////////
-TPISTAPhysics::TPISTAPhysics()
-   : m_EventData(new TPISTAData),
-     m_PreTreatedData(new TPISTAData),
-     m_EventPhysics(this),
-     m_Spectra(0),
-     m_E_RAW_Threshold(0), // adc channels
-     m_E_Threshold(0),     // MeV
-     m_NumberOfDetectors(0) {
-}
+  ///////////////////////////////////////////////////////////////////////////
+  TPISTAPhysics::TPISTAPhysics(){
+    EventMultiplicity = 0;
+    m_EventData = new TPISTAData;
+    m_PreTreatedData = new TPISTAData;
+    m_EventPhysics = this;
+    m_Spectra = NULL;
+    m_E_RAW_Threshold = 0; // adc channels
+    m_E_Threshold = 0;     // MeV
+    m_NumberOfDetectors = 0;
+    m_MaximumStripMultiplicityAllowed = 10;
+    m_StripEnergyMatching = 0.050;
+  }
 
 ///////////////////////////////////////////////////////////////////////////
 /// A usefull method to bundle all operation to add a detector
-void TPISTAPhysics::AddDetector(TVector3 , string ){
+void TPISTAPhysics::AddDetector(TVector3){
   // In That simple case nothing is done
   // Typically for more complex detector one would calculate the relevant 
   // positions (stripped silicon) or angles (gamma array)
@@ -63,13 +64,106 @@ void TPISTAPhysics::AddDetector(TVector3 , string ){
 } 
 
 ///////////////////////////////////////////////////////////////////////////
-void TPISTAPhysics::AddDetector(double R, double Theta, double Phi, string shape){
-  // Compute the TVector3 corresponding
-  TVector3 Pos(R*sin(Theta)*cos(Phi),R*sin(Theta)*sin(Phi),R*cos(Theta));
-  // Call the cartesian method
-  AddDetector(Pos,shape);
+void TPISTAPhysics::AddDetector(double R, double Theta, double Phi){
+  m_NumberOfDetectors++;
+
+  // Vector U on detector face (parallel to Y strips) Y strips are along X axis
+  TVector3 U;
+  // Vector V on detector face (parallel to X strips)
+  TVector3 V;
+  // Vector W normal to detector face (pointing to the back)
+  TVector3 W;
+  // Vector C position of detector face center
+  TVector3 C;
+
+  C = TVector3(R*sin(Theta)*cos(Phi),
+        R*sin(Theta)*sin(Phi),
+        R*cos(Theta));
+
+  TVector3 P = TVector3(cos(Theta)*cos(Phi),
+      cos(Theta)*sin(Phi),
+      -sin(Theta));
+
+  W = C.Unit();
+  U = W.Cross(P);
+  V = W.Cross(U);
+
+  U = U.Unit();
+  V = V.Unit();
+
+  double Height = 118; // mm
+  double Base = 95; // mm
+  double NumberOfStrips = 128;
+  double StripPitchHeight = Height / NumberOfStrips; // mm
+  double StripPitchBase = Base / NumberOfStrips; // mm
+
+  vector<double> lineX;
+  vector<double> lineY;
+  vector<double> lineZ;
+
+  vector<vector<double>> OneDetectorStripPositionX;
+  vector<vector<double>> OneDetectorStripPositionY;
+  vector<vector<double>> OneDetectorStripPositionZ;
+
+  double X, Y, Z;
+
+  // Moving C to the 1.1 Corner;
+  TVector3 Strip_1_1;
+  Strip_1_1 = C - (0.5*Base*U + 0.5*Height*V) + U*(StripPitchBase / 2.) + V*(StripPitchHeight / 2.);
+
+  TVector3 StripPos;
+  for(int i=0; i<NumberOfStrips; i++){
+    lineX.clear();
+    lineY.clear();
+    lineZ.clear();
+    for(int j=0; j<NumberOfStrips; j++){
+      StripPos = Strip_1_1 + i*U*StripPitchBase + j*V*StripPitchHeight;
+      lineX.push_back(StripPos.X());
+      lineY.push_back(StripPos.Y());
+      lineZ.push_back(StripPos.Z());
+    }
+
+    OneDetectorStripPositionX.push_back(lineX);
+    OneDetectorStripPositionY.push_back(lineY);
+    OneDetectorStripPositionZ.push_back(lineZ);
+  }
+
+  m_StripPositionX.push_back(OneDetectorStripPositionX);
+  m_StripPositionY.push_back(OneDetectorStripPositionY);
+  m_StripPositionZ.push_back(OneDetectorStripPositionZ);
 } 
-  
+
+///////////////////////////////////////////////////////////////////////////
+TVector3 TPISTAPhysics::GetPositionOfInteraction(const int i){
+  TVector3 Position = TVector3(GetStripPositionX(DetectorNumber[i], StripX[i], StripY[i]),
+      GetStripPositionY(DetectorNumber[i], StripX[i], StripY[i]),
+      GetStripPositionZ(DetectorNumber[i], StripX[i], StripY[i]));
+
+  return Position;
+}
+
+///////////////////////////////////////////////////////////////////////////
+TVector3 TPISTAPhysics::GetDetectorNormal(const int i){
+  TVector3 U = TVector3(GetStripPositionX(DetectorNumber[i],128,1),
+      GetStripPositionY(DetectorNumber[i],128,1),
+      GetStripPositionZ(DetectorNumber[i],128,1))
+
+    -TVector3(GetStripPositionX(DetectorNumber[i],1,1),
+      GetStripPositionY(DetectorNumber[i],1,1),
+      GetStripPositionZ(DetectorNumber[i],1,1));
+
+  TVector3 V = TVector3(GetStripPositionX(DetectorNumber[i],128,128),
+      GetStripPositionY(DetectorNumber[i],128,128),
+      GetStripPositionZ(DetectorNumber[i],128,128))
+
+    -TVector3(GetStripPositionX(DetectorNumber[i],128,1),
+      GetStripPositionY(DetectorNumber[i],128,1),
+      GetStripPositionZ(DetectorNumber[i],128,1));
+
+  TVector3 Normal = U.Cross(V);
+
+  return (Normal.Unit());
+}
 ///////////////////////////////////////////////////////////////////////////
 void TPISTAPhysics::BuildSimplePhysicalEvent() {
   BuildPhysicalEvent();
@@ -82,19 +176,87 @@ void TPISTAPhysics::BuildPhysicalEvent() {
   // apply thresholds and calibration
   PreTreat();
 
-  // match energy and time together
-  unsigned int mysizeE = m_PreTreatedData->GetMultEnergy();
-  unsigned int mysizeT = m_PreTreatedData->GetMultTime();
-  for (UShort_t e = 0; e < mysizeE ; e++) {
-    for (UShort_t t = 0; t < mysizeT ; t++) {
-      if (m_PreTreatedData->GetE_DetectorNbr(e) == m_PreTreatedData->GetT_DetectorNbr(t)) {
-        DetectorNumber.push_back(m_PreTreatedData->GetE_DetectorNbr(e));
-        Energy.push_back(m_PreTreatedData->Get_Energy(e));
-        Time.push_back(m_PreTreatedData->Get_Time(t));
+  if(1 /*CheckEvent() == 1*/){
+    vector<TVector2> couple = Match_X_Y();
+
+    EventMultiplicity = couple.size();
+    for(unsigned int i=0; i<couple.size(); i++){
+      int N = m_PreTreatedData->GetFirstStage_XE_DetectorNbr(couple[i].X());
+      int X = m_PreTreatedData->GetFirstStage_XE_StripNbr(couple[i].X());
+      int Y = m_PreTreatedData->GetFirstStage_YE_StripNbr(couple[i].Y());
+
+      double XE = m_PreTreatedData->GetFirstStage_XE_Energy(couple[i].X());
+      double YE = m_PreTreatedData->GetFirstStage_YE_Energy(couple[i].Y());
+      DetectorNumber.push_back(N);
+      StripX.push_back(X);
+      StripY.push_back(Y);
+      DE.push_back(XE);
+      
+      PosX.push_back(GetPositionOfInteraction(i).x());
+      PosY.push_back(GetPositionOfInteraction(i).y());
+      PosZ.push_back(GetPositionOfInteraction(i).z());
+
+      int SecondStageMult = m_PreTreatedData->GetSecondStageMultXEnergy();
+      for(unsigned int j=0; j<SecondStageMult; j++){
+        if(m_PreTreatedData->GetSecondStage_XE_DetectorNbr(j)==N){
+          double XDE = m_PreTreatedData->GetSecondStage_XE_Energy(j);
+          double YDE = m_PreTreatedData->GetSecondStage_YE_Energy(j);
+
+          E.push_back(XDE);
+        }
       }
     }
   }
 }
+
+///////////////////////////////////////////////////////////////////////////
+vector<TVector2> TPISTAPhysics::Match_X_Y(){
+  vector<TVector2> ArrayOfGoodCouple;
+
+  static unsigned int m_XEMult, m_YEMult;
+  m_XEMult = m_PreTreatedData->GetFirstStageMultXEnergy();
+  m_YEMult = m_PreTreatedData->GetFirstStageMultYEnergy();
+
+  if(m_XEMult>m_MaximumStripMultiplicityAllowed || m_YEMult>m_MaximumStripMultiplicityAllowed){
+    return ArrayOfGoodCouple;
+  }
+
+  for(unsigned int i=0; i<m_XEMult; i++){
+    for(unsigned int j=0; j<m_YEMult; j++){
+
+      // Declaration of variable for clarity
+      int XDetNbr = m_PreTreatedData->GetFirstStage_XE_DetectorNbr(i);
+      int YDetNbr = m_PreTreatedData->GetFirstStage_YE_DetectorNbr(j);
+
+      // if same detector check energy
+      if(XDetNbr == YDetNbr){
+        // Declaration of variable for clarity
+        double XE = m_PreTreatedData->GetFirstStage_XE_Energy(i);
+        double YE = m_PreTreatedData->GetFirstStage_YE_Energy(i);
+        double XStripNbr = m_PreTreatedData->GetFirstStage_XE_StripNbr(i);
+        double YStripNbr = m_PreTreatedData->GetFirstStage_YE_StripNbr(i);
+
+        // look if energy matches
+        if(abs(XE-YE)/2.<m_StripEnergyMatching){
+          ArrayOfGoodCouple.push_back(TVector2(i,j));
+        }
+      }
+    }
+  }
+
+  return ArrayOfGoodCouple;
+}
+
+///////////////////////////////////////////////////////////////////////////
+int TPISTAPhysics::CheckEvent(){
+  // Check the size of the different elements
+  if(m_PreTreatedData->GetFirstStageMultXEnergy() == m_PreTreatedData->GetFirstStageMultYEnergy() )
+    return 1;
+
+  else
+    return -1;
+}
+
 
 ///////////////////////////////////////////////////////////////////////////
 void TPISTAPhysics::PreTreat() {
@@ -107,23 +269,58 @@ void TPISTAPhysics::PreTreat() {
   // instantiate CalibrationManager
   static CalibrationManager* Cal = CalibrationManager::getInstance();
 
-  // Energy
-  unsigned int mysize = m_EventData->GetMultEnergy();
-  for (UShort_t i = 0; i < mysize ; ++i) {
-    if (m_EventData->Get_Energy(i) > m_E_RAW_Threshold) {
-      Double_t Energy = Cal->ApplyCalibration("PISTA/ENERGY"+NPL::itoa(m_EventData->GetE_DetectorNbr(i)),m_EventData->Get_Energy(i));
+  //////
+  // First Stage Energy
+  unsigned int sizeFront = m_EventData->GetFirstStageMultXEnergy();
+  for (UShort_t i = 0; i < sizeFront ; ++i) {
+    if (m_EventData->GetFirstStage_XE_Energy(i) > m_E_RAW_Threshold) {
+      Double_t Energy = m_EventData->GetFirstStage_XE_Energy(i);
+      //Double_t Energy = Cal->ApplyCalibration("PISTA/ENERGY"+NPL::itoa(m_EventData->GetFirstStage_XE_DetectorNbr(i)),m_EventData->GetFirstStage_XE_Energy(i));
       if (Energy > m_E_Threshold) {
-        m_PreTreatedData->SetEnergy(m_EventData->GetE_DetectorNbr(i), Energy);
+        m_PreTreatedData->SetFirstStageXE(m_EventData->GetFirstStage_XE_DetectorNbr(i), m_EventData->GetFirstStage_XE_StripNbr(i), Energy);
+      }
+    }
+  }
+  unsigned int sizeBack = m_EventData->GetFirstStageMultXEnergy();
+  for (UShort_t i = 0; i < sizeBack ; ++i) {
+    if (m_EventData->GetFirstStage_YE_Energy(i) > m_E_RAW_Threshold) {
+      Double_t Energy = m_EventData->GetFirstStage_YE_Energy(i);
+      //Double_t Energy = Cal->ApplyCalibration("PISTA/ENERGY"+NPL::itoa(m_EventData->GetFirstStage_YE_DetectorNbr(i)),m_EventData->GetFirstStage_YE_Energy(i));
+      if (Energy > m_E_Threshold) {
+        m_PreTreatedData->SetFirstStageYE(m_EventData->GetFirstStage_YE_DetectorNbr(i), m_EventData->GetFirstStage_YE_StripNbr(i), Energy);
+      }
+    }
+  }
+  // First Stage Time 
+  unsigned int mysize = m_EventData->GetFirstStageMultXTime();
+  for (UShort_t i = 0; i < mysize; ++i) {
+    Double_t Time= Cal->ApplyCalibration("PISTA/TIME"+NPL::itoa(m_EventData->GetFirstStage_XT_DetectorNbr(i)),m_EventData->GetFirstStage_XT_Time(i));
+    m_PreTreatedData->SetFirstStageXT(m_EventData->GetFirstStage_XT_DetectorNbr(i), m_EventData->GetFirstStage_XT_StripNbr(i), Time);
+  }
+
+  //////
+  // Second Stage Energy
+  sizeFront = m_EventData->GetSecondStageMultXEnergy();
+  for (UShort_t i = 0; i < sizeFront ; ++i) {
+    if (m_EventData->GetSecondStage_XE_Energy(i) > m_E_RAW_Threshold) {
+      Double_t Energy = m_EventData->GetSecondStage_XE_Energy(i);
+      //Double_t Energy = Cal->ApplyCalibration("PISTA/ENERGY"+NPL::itoa(m_EventData->GetSecondStage_XE_DetectorNbr(i)),m_EventData->GetSecondStage_XE_Energy(i));
+      if (Energy > m_E_Threshold) {
+        m_PreTreatedData->SetSecondStageXE(m_EventData->GetSecondStage_XE_DetectorNbr(i), m_EventData->GetSecondStage_XE_StripNbr(i), Energy);
+      }
+    }
+  }
+  sizeBack = m_EventData->GetSecondStageMultXEnergy();
+  for (UShort_t i = 0; i < sizeBack ; ++i) {
+    if (m_EventData->GetSecondStage_YE_Energy(i) > m_E_RAW_Threshold) {
+      Double_t Energy = m_EventData->GetSecondStage_YE_Energy(i);
+      //Double_t Energy = Cal->ApplyCalibration("PISTA/ENERGY"+NPL::itoa(m_EventData->GetSecondStage_YE_DetectorNbr(i)),m_EventData->GetSecondStage_YE_Energy(i));
+      if (Energy > m_E_Threshold) {
+        m_PreTreatedData->SetSecondStageYE(m_EventData->GetSecondStage_YE_DetectorNbr(i), m_EventData->GetSecondStage_YE_StripNbr(i), Energy);
       }
     }
   }
 
-  // Time 
-  mysize = m_EventData->GetMultTime();
-  for (UShort_t i = 0; i < mysize; ++i) {
-    Double_t Time= Cal->ApplyCalibration("PISTA/TIME"+NPL::itoa(m_EventData->GetT_DetectorNbr(i)),m_EventData->Get_Time(i));
-    m_PreTreatedData->SetTime(m_EventData->GetT_DetectorNbr(i), Time);
-  }
 }
 
 
@@ -194,9 +391,20 @@ void TPISTAPhysics::ReadAnalysisConfig() {
 
 ///////////////////////////////////////////////////////////////////////////
 void TPISTAPhysics::Clear() {
+  EventMultiplicity = 0;
+
+  // Position Information
+  PosX.clear();
+  PosY.clear();
+  PosZ.clear();
+
+  // DSSD
   DetectorNumber.clear();
-  Energy.clear();
+  E.clear();
+  StripX.clear();
+  StripY.clear();
   Time.clear();
+  DE.clear();
 }
 
 
@@ -207,17 +415,17 @@ void TPISTAPhysics::ReadConfiguration(NPL::InputParser parser) {
   if(NPOptionManager::getInstance()->GetVerboseLevel())
     cout << "//// " << blocks.size() << " detectors found " << endl; 
 
-  vector<string> cart = {"POS","Shape"};
-  vector<string> sphe = {"R","Theta","Phi","Shape"};
+  vector<string> cart = {"POS"};
+  vector<string> sphe = {"R","Theta","Phi"};
 
   for(unsigned int i = 0 ; i < blocks.size() ; i++){
     if(blocks[i]->HasTokenList(cart)){
       if(NPOptionManager::getInstance()->GetVerboseLevel())
         cout << endl << "////  PISTA " << i+1 <<  endl;
-    
+
       TVector3 Pos = blocks[i]->GetTVector3("POS","mm");
-      string Shape = blocks[i]->GetString("Shape");
-      AddDetector(Pos,Shape);
+
+      AddDetector(Pos);
     }
     else if(blocks[i]->HasTokenList(sphe)){
       if(NPOptionManager::getInstance()->GetVerboseLevel())
@@ -225,8 +433,8 @@ void TPISTAPhysics::ReadConfiguration(NPL::InputParser parser) {
       double R = blocks[i]->GetDouble("R","mm");
       double Theta = blocks[i]->GetDouble("Theta","deg");
       double Phi = blocks[i]->GetDouble("Phi","deg");
-      string Shape = blocks[i]->GetString("Shape");
-      AddDetector(R,Theta,Phi,Shape);
+
+      AddDetector(R, Theta, Phi);
     }
     else{
       cout << "ERROR: check your input file formatting " << endl;
@@ -331,14 +539,14 @@ NPL::VDetector* TPISTAPhysics::Construct() {
 //            Registering the construct method to the factory                 //
 ////////////////////////////////////////////////////////////////////////////////
 extern "C"{
-class proxy_PISTA{
-  public:
-    proxy_PISTA(){
-      NPL::DetectorFactory::getInstance()->AddToken("PISTA","PISTA");
-      NPL::DetectorFactory::getInstance()->AddDetector("PISTA",TPISTAPhysics::Construct);
-    }
-};
+  class proxy_PISTA{
+    public:
+      proxy_PISTA(){
+        NPL::DetectorFactory::getInstance()->AddToken("PISTA","PISTA");
+        NPL::DetectorFactory::getInstance()->AddDetector("PISTA",TPISTAPhysics::Construct);
+      }
+  };
 
-proxy_PISTA p_PISTA;
+  proxy_PISTA p_PISTA;
 }
 

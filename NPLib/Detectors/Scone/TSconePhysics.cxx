@@ -87,11 +87,13 @@ void TSconePhysics::BuildPhysicalEvent() {
   // match energy and time together
   unsigned int mysizeE = m_PreTreatedData->GetMultEnergy();
   unsigned int mysizeT = m_PreTreatedData->GetMultTime();
-  for (UShort_t e = 0; e < mysizeE ; e++) {
+  //for (UShort_t e = 0; e < mysizeE ; e++) {
+  if (mysizeE == mysizeT) {
     for (UShort_t t = 0; t < mysizeT ; t++) {
-      if (m_PreTreatedData->GetE_DetectorNbr(e) == m_PreTreatedData->GetT_DetectorNbr(t)) {
-        int det = m_PreTreatedData->GetE_DetectorNbr(e);
-        Energy_det[det-1] += m_PreTreatedData->Get_Energy(e);
+      if (m_PreTreatedData->GetE_DetectorNbr(t) == m_PreTreatedData->GetT_DetectorNbr(t)) {
+        int det = m_PreTreatedData->GetE_DetectorNbr(t);
+        Energy_det[det-1] += m_PreTreatedData->Get_Energy(t);
+        //cout << det << " " << Energy_det[det-1] << " " << m_PreTreatedData->GetE_PlasticNbr(t) << endl;
         if(m_PreTreatedData->Get_Time(t)>Time_det[det-1]){
           Time_det[det-1] = m_PreTreatedData->Get_Time(t);
         }

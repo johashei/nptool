@@ -57,18 +57,26 @@ class TPISTAPhysics : public TObject, public NPL::VDetector {
     void Clear();   
     void Clear(const Option_t*) {};
 
+  public:
+    vector<TVector2> Match_X_Y();
+    int CheckEvent();
 
   //////////////////////////////////////////////////////////////
   // data obtained after BuildPhysicalEvent() and stored in
   // output ROOT file
   public:
-    vector<int>      DetectorNumber;
-    vector<double>   Energy;
-    vector<double>   Time;
+    Int_t EventMultiplicity;
+    vector<int>     DetectorNumber;
+    vector<double>  E;
+    vector<double>  DE;
+    vector<int>     StripX;
+    vector<int>     StripY;
+    vector<double>  Time;
 
-  /// A usefull method to bundle all operation to add a detector
-  void AddDetector(TVector3 POS, string shape); 
-  void AddDetector(double R, double Theta, double Phi, string shape); 
+    vector<double> PosX;
+    vector<double> PosY;
+    vector<double> PosZ;
+
   
   //////////////////////////////////////////////////////////////
   // methods inherited from the VDetector ABC class
@@ -76,6 +84,10 @@ class TPISTAPhysics : public TObject, public NPL::VDetector {
     // read stream from ConfigFile to pick-up detector parameters
     void ReadConfiguration(NPL::InputParser);
 
+    /// A usefull method to bundle all operation to add a detector
+    void AddDetector(TVector3 POS); 
+    void AddDetector(double R, double Theta, double Phi); 
+ 
     // add parameters to the CalibrationManger
     void AddParameterToCalibrationManager();
 
@@ -141,6 +153,23 @@ class TPISTAPhysics : public TObject, public NPL::VDetector {
     // give and external TPISTAData object to TPISTAPhysics. 
     // needed for online analysis for example
     void SetRawDataPointer(TPISTAData* rawDataPointer) {m_EventData = rawDataPointer;}
+ 
+    double GetNumberOfTelescope() const {return m_NumberOfDetectors;}
+    int GetEventMultiplicity() const {return EventMultiplicity;}
+
+    double GetStripPositionX(const int N, const int X, const int Y){
+      return m_StripPositionX[N-1][X-1][Y-1];
+    };
+    double GetStripPositionY(const int N, const int X, const int Y){
+      return m_StripPositionY[N-1][X-1][Y-1];
+    };
+    double GetStripPositionZ(const int N, const int X, const int Y){
+      return m_StripPositionZ[N-1][X-1][Y-1];
+    };
+
+
+    TVector3 GetPositionOfInteraction(const int i);
+    TVector3 GetDetectorNormal(const int i);
     
   // objects are not written in the TTree
   private:
@@ -155,13 +184,20 @@ class TPISTAPhysics : public TObject, public NPL::VDetector {
 
   // parameters used in the analysis
   private:
+    int m_NumberOfDetectors; //!
+
+    vector<vector<vector<double>>> m_StripPositionX; //!
+    vector<vector<vector<double>>> m_StripPositionY; //!
+    vector<vector<vector<double>>> m_StripPositionZ; //!
+
     // thresholds
     double m_E_RAW_Threshold; //!
     double m_E_Threshold;     //!
 
-  // number of detectors
-  private:
-    int m_NumberOfDetectors;  //!
+ private:
+    unsigned int m_MaximumStripMultiplicityAllowed;//
+    double m_StripEnergyMatching;//
+
 
   // spectra class
   private:
