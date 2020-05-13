@@ -135,6 +135,19 @@ G4Material* MaterialManager::GetMaterialFromLibrary(string Name,
       return material;
     }
 
+    else if (Name == "Rogers4003C") {
+      if (!density)
+        density            = 1.79 * g / cm3;
+      G4Material* material = new G4Material("NPS_" + Name, density, 4);
+      material->AddElement(GetElementFromLibrary("H"), 2);
+      material->AddElement(GetElementFromLibrary("C"), 50);
+      material->AddElement(GetElementFromLibrary("O"), 38);
+      material->AddElement(GetElementFromLibrary("Si"), 10);
+      m_Material[Name] = material;
+      return material;
+    }
+
+ 
     else if (Name == "Mylar") {
       if (!density)
         density            = 1.397 * g / cm3;

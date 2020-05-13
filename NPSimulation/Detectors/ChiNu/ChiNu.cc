@@ -444,10 +444,10 @@ void ChiNu::ConstructDetector(G4LogicalVolume* world){
     BuildDetector()->MakeImprint(world,Det_pos,Rot,i);
   }
 
-  /*G4RotationMatrix* Rot_FC = new G4RotationMatrix(0,0,0);
+  G4RotationMatrix* Rot_FC = new G4RotationMatrix(0,0,0);
   G4ThreeVector Pos_FC = G4ThreeVector(0,0,0) ;
   BuildFissionChamber()->MakeImprint(world,Pos_FC,Rot_FC,0);
-*/
+
 
 }
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
