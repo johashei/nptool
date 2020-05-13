@@ -1192,6 +1192,7 @@ void MaterialManager::WriteCrossSectionTable(G4ParticleDefinition* Particle, G4d
       G4String path1;
       G4String path2;
       G4String path3;
+      G4String path4;
       G4String ParticleName = Particle->GetParticleName();
       G4String MaterialName = it->second->GetName();
       G4String ElementName = it->second->GetElement(i)->GetName();
@@ -1199,13 +1200,16 @@ void MaterialManager::WriteCrossSectionTable(G4ParticleDefinition* Particle, G4d
       path1 = GlobalPath + "/Inputs/CrossSection/" + "G4XS_elastic_" + ParticleName + "_" + ElementName + ".dat";
       path2 = GlobalPath + "/Inputs/CrossSection/" + "G4XS_inelastic_" + ParticleName + "_" + ElementName + ".dat";
       path3 = GlobalPath + "/Inputs/CrossSection/" + "G4XS_capture_" + ParticleName + "_" + ElementName + ".dat";
+      path4 = GlobalPath + "/Inputs/CrossSection/" + "G4XS_fission_" + ParticleName + "_" + ElementName + ".dat";
       
       ofstream ofile_elastic;
       ofstream ofile_inelastic;
       ofstream ofile_capture;
+      ofstream ofile_fission;
       ofile_elastic.open(path1);
       ofile_inelastic.open(path2);
       ofile_capture.open(path3);
+      ofile_fission.open(path4);
       //std::cout << path << std::endl;
       double xs;
       double step_keV = 1*keV;
@@ -1230,12 +1234,16 @@ void MaterialManager::WriteCrossSectionTable(G4ParticleDefinition* Particle, G4d
         // Capture Cross Section  
         xs = store->GetCaptureCrossSectionPerAtom(Particle, E, it->second->GetElement(i), it->second);
         ofile_capture << E/MeV << " " << xs/barn << G4endl;
-        
+       
+        // Fission Cross Section
+        xs = store->GetFissionCrossSectionPerAtom(Particle, E, it->second->GetElement(i), it->second);
+        ofile_fission << E/MeV << " " << xs/barn << G4endl;
       }
 
       ofile_elastic.close();
       ofile_inelastic.close();
       ofile_capture.close();
+      ofile_fission.close();
     }
   }
 }

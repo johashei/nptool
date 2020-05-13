@@ -1,6 +1,6 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 Target
- THICKNESS= 0.44 micrometer
+ THICKNESS= 0.22 micrometer
  RADIUS= 20 mm
  MATERIAL= C
  ANGLE= 0 deg
