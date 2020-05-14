@@ -455,9 +455,14 @@ void NPS::BeamReaction::DoIt(const G4FastTrack& fastTrack,
         //m_QFS.ShootRandomPhiCM();
         double theta = RandFlat::shoot() *  pi;
         double phi = RandFlat::shoot() * 2. * pi - pi; //rand in [-pi,pi]
+        double momX = gRandom->Gaus(0.,m_QFS.GetMomentumSigma());
+        double momY = gRandom->Gaus(0.,m_QFS.GetMomentumSigma());
+        double momZ = gRandom->Gaus(0.,m_QFS.GetMomentumSigma());
+        TVector3 mom(momX, momY, momZ);
 
         m_QFS.SetThetaCM(theta);
         m_QFS.SetPhiCM(phi);
+        m_QFS.SetInternalMomentum(mom);
 
         //////////////////////////////////////////////////
         /////  Momentum and angles from  kinematics  /////
@@ -563,8 +568,9 @@ void NPS::BeamReaction::DoIt(const G4FastTrack& fastTrack,
         m_ReactionConditions->SetKineticEnergy(TKE1);
         m_ReactionConditions->SetKineticEnergy(TKE2);
         m_ReactionConditions->SetKineticEnergy(TKEB);
-        // ThetaCM and Ex//
+        // ThetaCM, Ex and Internal Momentum of removed cluster//
         m_ReactionConditions->SetThetaCM(m_QFS.GetThetaCM() / deg);
+        m_ReactionConditions->SetInternalMomentum(m_QFS.GetInternalMomentum());
         //m_ReactionConditions->SetExcitationEnergy3(m_QFS.GetExcitation3());
         //m_ReactionConditions->SetExcitationEnergy4(m_QFS.GetExcitation4());
         // Momuntum X 3 and 4 //

@@ -49,6 +49,7 @@ void TReactionConditions::Clear(){
     fRC_Vertex_Position_Z = -1;
     
     fRC_ThetaCM = -1;
+    fRC_Internal_Momentum = {-1, -1; -1};
     
     // emmitted particles
     fRC_Particle_Name.clear();
@@ -81,6 +82,11 @@ void TReactionConditions::Dump() const{
     << fRC_Vertex_Position_X << " ; "
     << fRC_Vertex_Position_Y << " ; "
     << fRC_Vertex_Position_Z << ")" << endl;
+    cout << "\t If QFS, internal momentum, otherwise unused (-1) : ( "
+    << fRC_Internal_Momentum.X() << " ; "
+    << fRC_Internal_Momentum.Y() << " ; "
+    << fRC_Internal_Momentum.Z() << ")" << endl;
+ 
     
     // emmitted particle
     unsigned int size = fRC_Particle_Name.size();

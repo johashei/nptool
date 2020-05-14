@@ -74,6 +74,7 @@ QFS::QFS(){
     fExcitationA          = 0;
     fExcitationB          = 0;
     fMomentumSigma        = 0;
+    fInternalMomentum     = {0., 0.,0. };
     fshootB=false;
     fshoot1=true;
     fshoot2=true;
@@ -215,11 +216,12 @@ void QFS::CalculateVariables(){
     
     //Internal momentum of removed cluster/nucleon
     //gRandom->SetSeed(0);
-    //double mom_sigma = 0; // MeV/c
-    Pa.SetX(gRandom->Gaus(0.,fMomentumSigma));
-    Pa.SetY(gRandom->Gaus(0.,fMomentumSigma));
-    Pa.SetZ(gRandom->Gaus(0.,fMomentumSigma));
-
+    //Pa.SetX(gRandom->Gaus(0.,fMomentumSigma));
+    //Pa.SetY(gRandom->Gaus(0.,fMomentumSigma));
+    //Pa.SetZ(gRandom->Gaus(0.,fMomentumSigma));
+    Pa.SetX(fInternalMomentum.X());
+    Pa.SetY(fInternalMomentum.Y());
+    Pa.SetZ(fInternalMomentum.Z());
 
     //Internal momentum of heavy recoil after removal
     PB.SetXYZ( (-Pa.X()) , (-Pa.Y()) , (-Pa.Z()) );
@@ -341,7 +343,6 @@ void QFS::KineRelativistic(double& ThetaLab1, double& PhiLab1, double& KineticEn
 ////////////////////////////////////////////////////////////////////////////////////////////
 void QFS::Dump(){
 
-
     cout<<endl;
     cout<<"------------------------------------"<<endl;
     cout<<"------------ DUMP QFS --------------"<<endl;
@@ -396,8 +397,6 @@ void QFS::Dump(){
     cout<<"Phi1:\t"<<fEnergyImpulsionLab_1.Vect().Phi()*180./TMath::Pi()<<endl;
     cout<<"Phi2:\t"<<fEnergyImpulsionLab_2.Vect().Phi()*180./TMath::Pi()<<endl;
 
-
-
 }
 ////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -414,6 +413,7 @@ TGraph* QFS::GetTheta2VsTheta1(double AngleStep_CM){
   vector<double> vx;
   vector<double> vy;
   double theta1,phi1,E1,theta2,phi2,E2;
+  SetPhiCM(20.*TMath::Pi()/180.);
 
   for (double angle=0 ; angle <= 180 ; angle+=AngleStep_CM){
     SetThetaCM(angle*TMath::Pi()/180.);
@@ -433,15 +433,13 @@ TGraph* QFS::GetPhi2VsPhi1(double AngleStep_CM){
   vector<double> vx;
   vector<double> vy;
   double theta1,phi1,E1,theta2,phi2,E2;
+  SetThetaCM(20.*TMath::Pi()/180.);
 
-  for (double theta=0 ; theta <= 180 ; theta+=AngleStep_CM){
-      for (double angle=-180 ; angle <= 180 ; angle+=AngleStep_CM){
-          SetThetaCM(theta*TMath::Pi()/180.);
-          SetPhiCM(angle*TMath::Pi()/180.);
-          KineRelativistic(theta1, phi1, E1, theta2, phi2, E2);
-          vx.push_back(phi1*180./M_PI);
-          vy.push_back(phi2*180./M_PI);
-      }
+  for (double angle=-180 ; angle <= 180 ; angle+=AngleStep_CM){
+      SetPhiCM(angle*TMath::Pi()/180.);
+      KineRelativistic(theta1, phi1, E1, theta2, phi2, E2);
+      vx.push_back(phi1*180./M_PI);
+      vy.push_back(phi2*180./M_PI);
   }
   fPhi2VsPhi1 = new TGraph(vx.size(),&vx[0],&vy[0]);
 
@@ -538,7 +536,7 @@ void QFS::CalculateVariablesOld(){
     s = ma_off*ma_off + mT*mT + 2*mT*Ea_lab ; 
     fTotalEnergyImpulsionCM = TLorentzVector(0,0,0,sqrt(s));
     fEcm = sqrt(s) - m1 -m2;
-    if(fEcm<=0) { cout<<"ERROR Ecm negative =\t"<<fEcm<<endl;Dump(); return;}
+    if(fEcm<=0) { cout<<"ERROR Ecm negative =\t"<<fEcm<<endl;DumpFormatted(); return;}
 
     vector<double> theta1;
     vector<double> theta2;
