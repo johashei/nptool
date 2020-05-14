@@ -413,7 +413,7 @@ TGraph* QFS::GetTheta2VsTheta1(double AngleStep_CM){
   vector<double> vx;
   vector<double> vy;
   double theta1,phi1,E1,theta2,phi2,E2;
-  SetPhiCM(20.*TMath::Pi()/180.);
+  SetPhiCM(0.*TMath::Pi()/180.);
 
   for (double angle=0 ; angle <= 180 ; angle+=AngleStep_CM){
     SetThetaCM(angle*TMath::Pi()/180.);
@@ -433,7 +433,7 @@ TGraph* QFS::GetPhi2VsPhi1(double AngleStep_CM){
   vector<double> vx;
   vector<double> vy;
   double theta1,phi1,E1,theta2,phi2,E2;
-  SetThetaCM(20.*TMath::Pi()/180.);
+  SetThetaCM(0.*TMath::Pi()/180.);
 
   for (double angle=-180 ; angle <= 180 ; angle+=AngleStep_CM){
       SetPhiCM(angle*TMath::Pi()/180.);
@@ -536,7 +536,7 @@ void QFS::CalculateVariablesOld(){
     s = ma_off*ma_off + mT*mT + 2*mT*Ea_lab ; 
     fTotalEnergyImpulsionCM = TLorentzVector(0,0,0,sqrt(s));
     fEcm = sqrt(s) - m1 -m2;
-    if(fEcm<=0) { cout<<"ERROR Ecm negative =\t"<<fEcm<<endl;DumpFormatted(); return;}
+    if(fEcm<=0) { cout<<"ERROR Ecm negative =\t"<<fEcm<<endl;Dump(); return;}
 
     vector<double> theta1;
     vector<double> theta2;

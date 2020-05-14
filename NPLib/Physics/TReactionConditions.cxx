@@ -49,7 +49,7 @@ void TReactionConditions::Clear(){
     fRC_Vertex_Position_Z = -1;
     
     fRC_ThetaCM = -1;
-    fRC_Internal_Momentum = {-1, -1; -1};
+    fRC_Internal_Momentum = {-1, -1, -1};
     
     // emmitted particles
     fRC_Particle_Name.clear();

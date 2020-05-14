@@ -120,7 +120,7 @@ public:
     double GetExcitation3         () const {return fRC_ExcitationEnergy3     ;}//!       
     double GetExcitation4         () const {return fRC_ExcitationEnergy4     ;}//!       
     double GetThetaCM             () const {return fRC_ThetaCM;}//!
-    TVector3 GetInternalMomentum  () const {return fRC_InternalMomentum;}//!
+    TVector3 GetInternalMomentum  () const {return fRC_Internal_Momentum;}//!
     
     // emmitted particles
     int GetParticleMultiplicity()                const {return fRC_Kinetic_Energy.size();}//!
