@@ -103,7 +103,7 @@ class PISTA : public NPS::VDetector{
     vector<double>  m_Phi; 
     
     // Visualisation Attribute
-    G4VisAttributes* m_VisTrap;
+    //G4VisAttributes* m_VisTrap;
 
   // Needed for dynamic loading of the library
   public:
