@@ -39,6 +39,7 @@ void Analysis::Init(){
   PISTA= (TPISTAPhysics*) m_DetectorManager->GetDetector("PISTA");
   InitialConditions = new TInitialConditions();
   ReactionConditions = new TReactionConditions();
+  InteractionCoordinates = new TInteractionCoordinates();
   InitOutputBranch();
   InitInputBranch();
   Rand = TRandom3();
@@ -60,14 +61,25 @@ void Analysis::TreatEvent(){
   OriginalElab = ReactionConditions->GetKineticEnergy(0);
   OriginalBeamEnergy = ReactionConditions->GetBeamEnergy();
 
+  int mult = InteractionCoordinates->GetDetectedMultiplicity();
+  if(mult>0){
+    for(int i=0; i<mult; i++){
+      double Xpista = InteractionCoordinates->GetDetectedPositionX(i);
+      double Ypista = InteractionCoordinates->GetDetectedPositionY(i);
+      double Zpista = InteractionCoordinates->GetDetectedPositionZ(i);
+      R = sqrt(Xpista*Xpista + Ypista*Ypista + Zpista*Zpista);
+    }
+  }
   XTarget = InitialConditions->GetIncidentPositionX();
   YTarget = InitialConditions->GetIncidentPositionY();
   ZTarget = InitialConditions->GetIncidentPositionZ();
 
   TVector3 BeamDirection = InitialConditions->GetBeamDirection();
   TVector3 BeamPosition(XTarget,YTarget,ZTarget);
+  //TVector3 PositionOnTarget(0,0,0);
+  TVector3 PositionOnTarget(Rand.Gaus(XTarget, 0.6/2.35), Rand.Gaus(YTarget, 0.6/2.35), 0);
 
-  BeamEnergy = InitialConditions->GetIncidentInitialKineticEnergy();
+  BeamEnergy = 1428.;//InitialConditions->GetIncidentInitialKineticEnergy();
   BeamEnergy = U238C.Slow(BeamEnergy,TargetThickness*0.5,0);
 
   Transfer->SetBeamEnergy(BeamEnergy);
@@ -75,8 +87,7 @@ void Analysis::TreatEvent(){
   for(unsigned int i = 0; i<PISTA->EventMultiplicity; i++){
     if(PISTA->E.size()>0){
       double Energy = PISTA->DE[i] + PISTA->E[i];
-
-      TVector3 HitDirection = PISTA->GetPositionOfInteraction(i);
+      TVector3 HitDirection = PISTA->GetPositionOfInteraction(i)-PositionOnTarget;
       //ThetaLab = HitDirection.Angle(BeamDirection);
       ThetaLab = HitDirection.Angle(TVector3(0,0,1));
 
@@ -107,6 +118,7 @@ void Analysis::InitOutputBranch(){
   RootOutput::getInstance()->GetTree()->Branch("ThetaLab",&ThetaLab,"ThetaLab/D");
   RootOutput::getInstance()->GetTree()->Branch("OriginalThetaLab",&OriginalThetaLab,"OriginalThetaLab/D");
   RootOutput::getInstance()->GetTree()->Branch("ThetaCM",&ThetaCM,"ThetaCM/D");
+  RootOutput::getInstance()->GetTree()->Branch("R",&R,"R/D");
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -117,6 +129,9 @@ void Analysis::InitInputBranch(){
   RootInput::getInstance()->GetChain()->SetBranchStatus("ReactionConditions",true);
   RootInput::getInstance()->GetChain()->SetBranchStatus("fRC_*",true);
   RootInput::getInstance()->GetChain()->SetBranchAddress("ReactionConditions",&ReactionConditions);
+  RootInput::getInstance()->GetChain()->SetBranchStatus("InteractionCoordinates",true);
+  RootInput::getInstance()->GetChain()->SetBranchStatus("fDetected_*",true);
+  RootInput::getInstance()->GetChain()->SetBranchAddress("InteractionCoordinates",&InteractionCoordinates);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -134,6 +149,7 @@ void Analysis::ReInitValue(){
   YTarget = -1000;
   ZTarget = -1000;
   OriginalThetaLab = -1000;
+  R = -1000;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

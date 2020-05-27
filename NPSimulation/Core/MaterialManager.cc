@@ -278,6 +278,35 @@ G4Material* MaterialManager::GetMaterialFromLibrary(string Name,
       return material;
     }
 
+    else if(Name == "235U"){
+      if(!density)
+        density = 19.1 * g / cm3;
+      G4Element* U235 = new G4Element("U235","U235",1);
+      
+      G4Isotope* isotope = new G4Isotope("235U",92,235);
+      U235->AddIsotope(isotope,1);
+
+      G4Material* material = new G4Material("NPS_" + Name, density, 1, kStateSolid, 293.15*kelvin);
+      material->AddElement(U235,1);
+      m_Material[Name] = material;
+      return material;
+    }
+
+    else if(Name == "238U"){
+      if(!density)
+        density = 19.1 * g / cm3;
+      G4Element* U238 = new G4Element("U238","U238",1);
+      
+      G4Isotope* isotope = new G4Isotope("238U",92,238);
+      U238->AddIsotope(isotope,1);
+
+      G4Material* material = new G4Material("NPS_" + Name, density, 1, kStateSolid, 293.15*kelvin);
+      material->AddElement(U238,1);
+      m_Material[Name] = material;
+      return material;
+    }
+
+
     else if (Name == "Gd") {
       if (!density)
         density            = 7.90 * g / cm3;

@@ -67,6 +67,15 @@ void TPISTAPhysics::AddDetector(TVector3){
 void TPISTAPhysics::AddDetector(double R, double Theta, double Phi){
   m_NumberOfDetectors++;
 
+  //double Height = 118; // mm
+  double Height = 61.8; // mm
+  //double Base = 95; // mm
+  double Base = 78.1; // mm
+  double NumberOfStrips = 128;
+  double StripPitchHeight = Height / NumberOfStrips; // mm
+  double StripPitchBase = Base / NumberOfStrips; // mm
+
+
   // Vector U on detector face (parallel to Y strips) Y strips are along X axis
   TVector3 U;
   // Vector V on detector face (parallel to X strips)
@@ -78,7 +87,7 @@ void TPISTAPhysics::AddDetector(double R, double Theta, double Phi){
 
   C = TVector3(R*sin(Theta)*cos(Phi),
         R*sin(Theta)*sin(Phi),
-        R*cos(Theta));
+        Height*0.5+R*cos(Theta));
 
   TVector3 P = TVector3(cos(Theta)*cos(Phi),
       cos(Theta)*sin(Phi),
@@ -90,12 +99,6 @@ void TPISTAPhysics::AddDetector(double R, double Theta, double Phi){
 
   U = U.Unit();
   V = V.Unit();
-
-  double Height = 118; // mm
-  double Base = 95; // mm
-  double NumberOfStrips = 128;
-  double StripPitchHeight = Height / NumberOfStrips; // mm
-  double StripPitchBase = Base / NumberOfStrips; // mm
 
   vector<double> lineX;
   vector<double> lineY;
