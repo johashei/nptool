@@ -58,6 +58,9 @@ void CheckSimu(const char * fname = "Example5"){
   // Declare histograms
   // for emitted particle
   TH1F *hEmThetaCM = new TH1F("hEmThetaCM", "Light Ejectile Theta CM",180, 0, 180);
+  TH1F *hEmInternalMomX = new TH1F("hEmInternalMomX", "Internal Momentum (X) of removed cluster",500, -500, 500);
+  TH1F *hEmInternalMomY = new TH1F("hEmInternalMomY", "Internal Momentum (Y) of removed cluster",500, -500, 500);
+  TH1F *hEmInternalMomZ = new TH1F("hEmInternalMomZ", "Internal Momentum (Z) of removed cluster",500, -500, 500);
   TH1F *hEmTheta1IF = new TH1F("hEmTheta1IF", "Ejectile1 Theta (reaction frame)", 180, 0, 180);
   TH1F *hEmPhi1IF   = new TH1F("hEmPhi1IF",   "Ejectile1 Phi (reaction frame)",   360, 0, 360);
   TH1F *hEmTheta1WF = new TH1F("hEmTheta1WF", "Ejectile1 Theta (world frame)", 180, 0, 180);
@@ -94,6 +97,9 @@ void CheckSimu(const char * fname = "Example5"){
     // Fill histos
     // ejected particles
     hEmThetaCM  -> Fill(reacCond->GetThetaCM());
+    hEmInternalMomX  -> Fill(reacCond->GetInternalMomentum().X());
+    hEmInternalMomY  -> Fill(reacCond->GetInternalMomentum().Y());
+    hEmInternalMomZ  -> Fill(reacCond->GetInternalMomentum().Z());
 
     hEmTheta1IF -> Fill(reacCond->GetThetaLab_BeamFrame(0));
     hEmTheta1WF  -> Fill(reacCond->GetThetaLab_WorldFrame(0));
@@ -122,8 +128,8 @@ void CheckSimu(const char * fname = "Example5"){
 
 
   // Display emmitted paricles histograms
-  canvas2 = new TCanvas("canvas2", "Emmited particles properties in reaction frame",1000,600);
-  canvas2->Divide(3,2);
+  canvas2 = new TCanvas("canvas2", "Emmited particles properties in reaction frame",1000,1000);
+  canvas2->Divide(3,3);
 
   canvas2->cd(1);
   hEmThetaCM->SetXTitle("#theta_{c.m.}");
@@ -154,16 +160,47 @@ void CheckSimu(const char * fname = "Example5"){
   Kine->SetLineColor(kRed);
   Kine->SetLineStyle(2);
   Kine->Draw("csame");
+  TGraph* Kine2 = qfs.GetTheta2VsTheta1(10);
+  Kine2->SetLineColor(kRed);
+  Kine2->SetMarkerColor(kRed);
+  Kine2->SetMarkerStyle(20);
+  Kine2->SetMarkerSize(1.3);
+  Kine2->Draw("Psame");
+
+
+
 
   canvas2->cd(5);
   hEmPhi1VsPhi2->Draw("colz");
   hEmPhi1VsPhi2->SetXTitle("#phi_{1} (deg)");
   hEmPhi1VsPhi2->SetYTitle("#phi_{2} (deg)");
+  TGraph* KinePhi = qfs.GetPhi2VsPhi1(1);
+  KinePhi->SetMarkerColor(kRed);
+  KinePhi->SetMarkerSize(0.4);
+  KinePhi->Draw("Psame");
+
 
   canvas2->cd(6);
   hEmOpAngle->Draw();
   hEmOpAngle->SetXTitle("Opening angle (1-2)  (deg)");
   hEmOpAngle->SetYTitle("Counts");
+
+  canvas2->cd(7);
+  hEmInternalMomX->Draw();
+  hEmInternalMomX->SetXTitle("P_{x} (MeV/c)");
+  hEmInternalMomX->SetYTitle("Counts");
+
+  canvas2->cd(8);
+  hEmInternalMomY->Draw();
+  hEmInternalMomY->SetXTitle("P_{y} (MeV/c)");
+  hEmInternalMomY->SetYTitle("Counts");
+
+  canvas2->cd(9);
+  hEmInternalMomZ->Draw();
+  hEmInternalMomZ->SetXTitle("P_{z} (MeV/c)");
+  hEmInternalMomZ->SetYTitle("Counts");
+
+
 
 }
 

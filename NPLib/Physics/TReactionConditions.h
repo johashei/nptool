@@ -59,6 +59,7 @@ private:
     double fRC_ExcitationEnergy3;
     double fRC_ExcitationEnergy4;
     double fRC_ThetaCM;
+    TVector3 fRC_Internal_Momentum;
     // emmitted particles
     vector<string> fRC_Particle_Name;
     vector<double> fRC_Theta;
@@ -92,6 +93,7 @@ public:
     void SetExcitationEnergy3  (const double& Ex) {fRC_ExcitationEnergy3=Ex;};//!
     void SetExcitationEnergy4  (const double& Ex) {fRC_ExcitationEnergy4=Ex;};//!
     void SetThetaCM            (const double & ThetaCM)               {fRC_ThetaCM = ThetaCM;}//!
+    void SetInternalMomentum   (const TVector3& IntMom)               {fRC_Internal_Momentum = IntMom;}//!
     
     // emmitted particles
     void SetParticleName       (const string & Particle_Name)         {fRC_Particle_Name.push_back(Particle_Name);}//!
@@ -118,6 +120,7 @@ public:
     double GetExcitation3         () const {return fRC_ExcitationEnergy3     ;}//!       
     double GetExcitation4         () const {return fRC_ExcitationEnergy4     ;}//!       
     double GetThetaCM             () const {return fRC_ThetaCM;}//!
+    TVector3 GetInternalMomentum  () const {return fRC_Internal_Momentum;}//!
     
     // emmitted particles
     int GetParticleMultiplicity()                const {return fRC_Kinetic_Energy.size();}//!

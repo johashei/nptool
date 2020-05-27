@@ -79,7 +79,8 @@ namespace NPL{
     double   fBeamEnergy;              // Beam energy in MeV
     double   fExcitationA;             // Excitation energy in MeV of the beam, useful for isomers 
     double   fExcitationB;             // Excitation energy in MeV of beam-like ejectile
-    double   fMomentumSigma;          // Width of the momentum distribution of the removed cluster (sigma)             
+    double   fMomentumSigma;           // Width of the momentum distribution  (sigma)             
+    TVector3 fInternalMomentum;        // Internal momentum of the removed cluster            
     double   fisotropic;               
 
     TGraph* fTheta2VsTheta1;
@@ -162,6 +163,7 @@ namespace NPL{
     void SetBeamEnergy(const double& eBeam) {fBeamEnergy = eBeam;}
     void SetThetaCM(const double& angle) {fThetaCM = angle;}
     void SetPhiCM(const double& angle) {fPhiCM = angle;}
+    void SetInternalMomentum(const TVector3& mom) {fInternalMomentum = mom;}
     void SetMomentumSigma(const double& sigma) {fMomentumSigma = sigma;}
 
     //GETTERS
@@ -174,6 +176,8 @@ namespace NPL{
     bool     GetShoot2()         const        {return fshoot2;}
     bool     GetShootB()         const        {return fshootB;}
     double   GetThetaCM()        const        {return fThetaCM;}
+    double   GetMomentumSigma()  const        {return fMomentumSigma;}
+    TVector3 GetInternalMomentum() const   {return fInternalMomentum;}
  
     TLorentzVector*  GetEnergyImpulsionLab_A() {return &fEnergyImpulsionLab_A;}
     TLorentzVector*  GetEnergyImpulsionLab_T() {return &fEnergyImpulsionLab_T;}
