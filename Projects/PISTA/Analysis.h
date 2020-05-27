@@ -25,6 +25,7 @@
 #include "TPISTAPhysics.h"
 #include "TInitialConditions.h"
 #include "TReactionConditions.h"
+#include "TInteractionCoordinates.h"
 #include "NPEnergyLoss.h"
 #include "NPReaction.h"
 #include "TRandom3.h"
@@ -46,6 +47,7 @@ class Analysis: public NPL::VAnalysis{
   private:
     double OriginalBeamEnergy;
     double BeamEnergy;
+    double R;
     double XTarget;
     double YTarget;
     double ZTarget;
@@ -68,6 +70,7 @@ class Analysis: public NPL::VAnalysis{
 
   private:
     TPISTAPhysics* PISTA;
+    TInteractionCoordinates* InteractionCoordinates;
     TInitialConditions* InitialConditions;
     TReactionConditions* ReactionConditions;
 

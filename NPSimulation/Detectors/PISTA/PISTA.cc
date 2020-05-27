@@ -63,9 +63,12 @@ namespace PISTA_NS{
   const double ResoEnergy = 0.015*MeV ;
 
   // Trapezoid dimension
-  const double TrapezoidBaseLarge = 95*mm;
-  const double TrapezoidBaseSmall = 45*mm;
-  const double TrapezoidHeight = 118*mm;
+  //const double TrapezoidBaseLarge = 95*mm;
+  const double TrapezoidBaseLarge = 78.1*mm;
+  //const double TrapezoidBaseSmall = 45*mm;
+  const double TrapezoidBaseSmall = 43.3*mm;
+  //const double TrapezoidHeight = 118*mm;
+  const double TrapezoidHeight = 61.8*mm;
   const double TrapezoidLength = 1*cm;
   const double FirstStageThickness = 100*um;
   const double SecondStageThickness = 1*mm;
@@ -226,7 +229,7 @@ void PISTA::ConstructDetector(G4LogicalVolume* world){
 
     G4double wX = m_R[i] * sin(m_Theta[i] ) * cos(m_Phi[i] ) ;
     G4double wY = m_R[i] * sin(m_Theta[i] ) * sin(m_Phi[i] ) ;
-    G4double wZ = m_R[i] * cos(m_Theta[i] ) ;
+    G4double wZ = TrapezoidHeight*0.5 + m_R[i] * cos(m_Theta[i] ) ;
     G4ThreeVector Det_pos = G4ThreeVector(wX, wY, wZ) ;
     // So the face of the detector is at R instead of the middle
     Det_pos+=Det_pos.unit()*PISTA_NS::TrapezoidLength*0.5;
