@@ -113,7 +113,7 @@ NPS::BeamReaction::IsApplicable(const G4ParticleDefinition& particleType) {
 ////////////////////////////////////////////////////////////////////////////////
 G4bool NPS::BeamReaction::ModelTrigger(const G4FastTrack& fastTrack) {
 
-  //cout<< "MODEL TRIG"<<endl;
+  //cout<< "--------- MODEL TRIG ---------"<<endl;
   static bool    shoot        = false;
   static double  rand         = 0;
   const G4Track* PrimaryTrack = fastTrack.GetPrimaryTrack();
@@ -132,13 +132,8 @@ G4bool NPS::BeamReaction::ModelTrigger(const G4FastTrack& fastTrack) {
   if(m_Parent_ID!=0)
     return false;
 
-  //cout<< "in:"<<in<<std::scientific<<endl;
-  //cout<< "ou:"<<out<<std::scientific<<endl;
-  //cout<< "ratio:"<<ratio<<std::scientific<<endl;
-  // m_StepSize = m_StepSize/100000.;
-
   if (out == 0) { // first step of current event
-    //cout<< "FIRST"<<endl;
+    //cout<< "FIRST/////////////////"<<endl;
     rand             = G4RandFlat::shoot();
     m_PreviousLength = m_StepSize;
     m_PreviousEnergy = PrimaryTrack->GetKineticEnergy();
@@ -211,10 +206,11 @@ void NPS::BeamReaction::DoIt(const G4FastTrack& fastTrack,
     // Assume no scattering
     double rand   = G4RandFlat::shoot();
     double length = rand * (m_PreviousLength);
-    energy -= (1 - rand) * (m_PreviousEnergy - energy);
+    double reac_energy = m_PreviousEnergy - (1 - rand) * (m_PreviousEnergy - energy);
     G4ThreeVector ldir = pdirection;
     ldir *= length;
     localPosition = localPosition - ldir;
+
     // Set the end of the step conditions
     fastStep.SetPrimaryTrackFinalKineticEnergyAndDirection(0, pdirection);
     fastStep.SetPrimaryTrackFinalPosition(worldPosition);
@@ -267,7 +263,7 @@ void NPS::BeamReaction::DoIt(const G4FastTrack& fastTrack,
             HeavyName = IonTable->GetIon(HeavyZ, HeavyA);
 
         // Set the Energy of the reaction
-        m_Reaction.SetBeamEnergy(energy);
+        m_Reaction.SetBeamEnergy(reac_energy);
 
         double Beam_theta = pdirection.theta();
         double Beam_phi   = pdirection.phi();
@@ -278,7 +274,7 @@ void NPS::BeamReaction::DoIt(const G4FastTrack& fastTrack,
         m_ReactionConditions->SetBeamParticleName(
                 PrimaryTrack->GetParticleDefinition()->GetParticleName());
 
-        m_ReactionConditions->SetBeamReactionEnergy(energy);
+        m_ReactionConditions->SetBeamReactionEnergy(reac_energy);
         m_ReactionConditions->SetVertexPositionX(localPosition.x());
         m_ReactionConditions->SetVertexPositionY(localPosition.y());
         m_ReactionConditions->SetVertexPositionZ(localPosition.z());
@@ -438,7 +434,7 @@ void NPS::BeamReaction::DoIt(const G4FastTrack& fastTrack,
         HeavyName = IonTable->GetIon(Heavy_Z, Heavy_A);
 
         // Set the Energy of the reaction
-        m_QFS.SetBeamEnergy(energy);
+        m_QFS.SetBeamEnergy(reac_energy);
 
         double Beam_theta = pdirection.theta();
         double Beam_phi   = pdirection.phi();
@@ -449,20 +445,16 @@ void NPS::BeamReaction::DoIt(const G4FastTrack& fastTrack,
         ///// Angles are in the beam frame                         //////
         /////////////////////////////////////////////////////////////////
 
-        // Angles
         // Shoot and Set a Random ThetaCM
-        //m_QFS.ShootRandomThetaCM();
-        //m_QFS.ShootRandomPhiCM();
         double theta = G4RandFlat::shoot() *  pi;
         double phi = G4RandFlat::shoot() * 2. * pi - pi; //rand in [-pi,pi]
-        double momX = gRandom->Gaus(0.,m_QFS.GetMomentumSigma());
-        double momY = gRandom->Gaus(0.,m_QFS.GetMomentumSigma());
-        double momZ = gRandom->Gaus(0.,m_QFS.GetMomentumSigma());
-        TVector3 mom(momX, momY, momZ);
-
         m_QFS.SetThetaCM(theta);
         m_QFS.SetPhiCM(phi);
-        m_QFS.SetInternalMomentum(mom);
+
+        // Shoot and set internal momentum for the removed cluster
+        // if a momentum Sigma is given then shoot in 3 indep. Gaussians
+        // if input files are given for distributions use them instead
+        m_QFS.ShootInternalMomentum();
 
         //////////////////////////////////////////////////
         /////  Momentum and angles from  kinematics  /////
@@ -540,7 +532,7 @@ void NPS::BeamReaction::DoIt(const G4FastTrack& fastTrack,
         ///////////////////////////////////
         m_ReactionConditions->SetBeamParticleName(
                 PrimaryTrack->GetParticleDefinition()->GetParticleName());
-        m_ReactionConditions->SetBeamReactionEnergy(energy);
+        m_ReactionConditions->SetBeamReactionEnergy(reac_energy);
         m_ReactionConditions->SetVertexPositionX(localPosition.x());
         m_ReactionConditions->SetVertexPositionY(localPosition.y());
         m_ReactionConditions->SetVertexPositionZ(localPosition.z());
