@@ -81,6 +81,8 @@ namespace NPL{
     double   fExcitationB;             // Excitation energy in MeV of beam-like ejectile
     double   fMomentumSigma;           // Width of the momentum distribution  (sigma)             
     TVector3 fInternalMomentum;        // Internal momentum of the removed cluster            
+    TH1F*    fPerpMomentumHist;        // Perpendicular momentum distribution in beam at rest frame
+    TH1F*    fParMomentumHist;         // Parallel momentum distribution in beam at rest frame
     double   fisotropic;               
 
     TGraph* fTheta2VsTheta1;
@@ -98,7 +100,7 @@ namespace NPL{
     void CalculateVariables();
     void TestR3B();
     void KineRelativistic(double &ThetaLab1, double &PhiLab1, double &KineticEnergyLab1, double &ThetaLab2, double &PhiLab2, double &KineticEnergyLab2);
-    double ShootRandomThetaCM();
+    TVector3 ShootInternalMomentum();
     bool IsAllowed();
     void Dump();
 
@@ -165,6 +167,10 @@ namespace NPL{
     void SetPhiCM(const double& angle) {fPhiCM = angle;}
     void SetInternalMomentum(const TVector3& mom) {fInternalMomentum = mom;}
     void SetMomentumSigma(const double& sigma) {fMomentumSigma = sigma;}
+    void SetPerpMomentumHist  (TH1F*  PerpMomentumHist)
+        {delete fPerpMomentumHist; fPerpMomentumHist   = PerpMomentumHist;}
+    void SetParMomentumHist  (TH1F*  ParMomentumHist)
+        {delete fParMomentumHist; fParMomentumHist   = ParMomentumHist;}
 
     //GETTERS
     Nucleus*  GetNucleusA()               {return &fNucleiA;}

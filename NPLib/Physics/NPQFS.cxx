@@ -83,6 +83,9 @@ QFS::QFS(){
     fTheta2VsTheta1 = 0;
     fPhi2VsPhi1 = 0;
 
+    fPerpMomentumHist = NULL;
+    fParMomentumHist = NULL;
+
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -153,6 +156,16 @@ void QFS::ReadConfigurationFile(NPL::InputParser parser){
           fshoot1 = blocks[i]->GetInt("ShootLight");
           fshoot2 = blocks[i]->GetInt("ShootLight");
       }
+      if(blocks[i]->HasToken("PerpMomentumPath")){
+          vector<string> file_perp = blocks[i]->GetVectorString("PerpMomentumPath");
+          TH1F* Perptemp = Read1DProfile(file_perp[0], file_perp[1]);
+          SetPerpMomentumHist(Perptemp);
+      }
+      if(blocks[i]->HasToken("ParMomentumPath")){
+          vector<string> file_par = blocks[i]->GetVectorString("ParMomentumPath");
+          TH1F* Partemp = Read1DProfile(file_par[0], file_par[1]);
+          SetParMomentumHist(Partemp);
+      }
   }
 
   cout << "\033[0m" ;
@@ -215,14 +228,10 @@ void QFS::CalculateVariables(){
     fEnergyImpulsionLab_A = TLorentzVector(0.,0.,PA,EA);
     
     //Internal momentum of removed cluster/nucleon
-    //gRandom->SetSeed(0);
-    //Pa.SetX(gRandom->Gaus(0.,fMomentumSigma));
-    //Pa.SetY(gRandom->Gaus(0.,fMomentumSigma));
-    //Pa.SetZ(gRandom->Gaus(0.,fMomentumSigma));
     Pa.SetX(fInternalMomentum.X());
     Pa.SetY(fInternalMomentum.Y());
     Pa.SetZ(fInternalMomentum.Z());
-
+    
     //Internal momentum of heavy recoil after removal
     PB.SetXYZ( (-Pa.X()) , (-Pa.Y()) , (-Pa.Z()) );
 
@@ -400,10 +409,39 @@ void QFS::Dump(){
 }
 ////////////////////////////////////////////////////////////////////////////////////////////
 
-double QFS::ShootRandomThetaCM(){
-  // TO DO //
-  double theta =0;
-  return theta;
+TVector3 QFS::ShootInternalMomentum(){
+
+  //Shoot a momentum (vector) for the internal cluster in the beam-at-rest frame
+  // (1) if only a width is provided: shoot in 3 independant Gaussian
+  // (2) if input histos are provided: use them instead of option (1)  
+  // Remark : if both width and input histos are provided only histos are considered 
+
+  TVector3 momentum = {0,0,0};
+  double  PerpMomentum =0;
+  double  ParMomentum =0;
+  double  angle_tmp =0;
+
+  momentum.SetX(gRandom->Gaus(0.,fMomentumSigma));
+  momentum.SetY(gRandom->Gaus(0.,fMomentumSigma));
+  momentum.SetZ(gRandom->Gaus(0.,fMomentumSigma));
+
+  if(fPerpMomentumHist){
+      PerpMomentum=fPerpMomentumHist->GetRandom();
+      angle_tmp = gRandom->Rndm()*2*M_PI;
+      momentum.SetX(PerpMomentum * TMath::Cos(angle_tmp));
+      momentum.SetY(PerpMomentum * TMath::Sin(angle_tmp));
+  }
+  if(fParMomentumHist){
+      ParMomentum=fParMomentumHist->GetRandom();
+      momentum.SetZ(PerpMomentum);
+  }
+
+  //cout << " Shooting Random Momentum: "  << endl;
+  //cout<<"Px:"<<momentum.X() << endl;
+  //cout<<"Py:"<<momentum.Y() << endl;
+  //cout<<"Pz:"<<momentum.Z() << endl;
+  SetInternalMomentum(momentum);
+  return momentum;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////
