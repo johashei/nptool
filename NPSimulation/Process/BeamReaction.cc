@@ -38,6 +38,7 @@ NPS::BeamReaction::BeamReaction(G4String modelName, G4Region* envelope)
   ReadConfiguration();
   m_PreviousEnergy = 0;
   m_PreviousLength = 0;
+  m_PreviousDirection.set(0,0,0);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -127,6 +128,11 @@ G4bool NPS::BeamReaction::ModelTrigger(const G4FastTrack& fastTrack) {
   double out   = solid->DistanceToOut(P, -V);
   double ratio = in / (out + in);
 
+  //cout.precision(10); 
+  //cout<<"in:"<<in<<endl;
+  //cout<<"out:"<<out<<endl;
+  //cout<<"ratio:"<<ratio<<endl;
+
   m_Parent_ID = PrimaryTrack->GetParentID();
   // process reserved to the beam
   if(m_Parent_ID!=0)
@@ -137,6 +143,7 @@ G4bool NPS::BeamReaction::ModelTrigger(const G4FastTrack& fastTrack) {
     rand             = G4RandFlat::shoot();
     m_PreviousLength = m_StepSize;
     m_PreviousEnergy = PrimaryTrack->GetKineticEnergy();
+    m_PreviousDirection = PrimaryTrack->GetMomentumDirection();
     // Clear Previous Event
     m_ReactionConditions->Clear();
     shoot = true;
@@ -146,7 +153,6 @@ G4bool NPS::BeamReaction::ModelTrigger(const G4FastTrack& fastTrack) {
     return true;
   }
 
-  //cout.precision(17); 
   //cout<< "rand:"<<rand<<std::scientific<<endl;
 
   // If the condition is met, the event is generated
@@ -181,6 +187,7 @@ G4bool NPS::BeamReaction::ModelTrigger(const G4FastTrack& fastTrack) {
     m_PreviousLength = PrimaryTrack->GetStep()->GetStepLength();
     //cout<< "PreviousLength="<<m_PreviousLength<<endl;
     m_PreviousEnergy = PrimaryTrack->GetKineticEnergy();
+    m_PreviousDirection = PrimaryTrack->GetMomentumDirection();
   }
 
   return false;
@@ -189,6 +196,8 @@ G4bool NPS::BeamReaction::ModelTrigger(const G4FastTrack& fastTrack) {
 ////////////////////////////////////////////////////////////////////////////////
 void NPS::BeamReaction::DoIt(const G4FastTrack& fastTrack,
         G4FastStep&        fastStep) {
+
+    //cout<< "--------- DO IT ---------"<<endl;
 
     // Get the track info
     const G4Track* PrimaryTrack = fastTrack.GetPrimaryTrack();
@@ -201,13 +210,16 @@ void NPS::BeamReaction::DoIt(const G4FastTrack& fastTrack,
     double energy = PrimaryTrack->GetKineticEnergy();
     double time   = PrimaryTrack->GetGlobalTime();
 
-    // Randomize within the step
+    // Randomize vertex and energy within the step 
+    // convention: go backward from end point in the step to vertex
     // Assume energy loss is linear within the step
+    // rand = 0 beginning of step
+    // rand = 1 end of step
     // Assume no scattering
     double rand   = G4RandFlat::shoot();
-    double length = rand * (m_PreviousLength);
-    double reac_energy = m_PreviousEnergy - (1 - rand) * (m_PreviousEnergy - energy);
-    G4ThreeVector ldir = pdirection;
+    double length = (1-rand) * (m_PreviousLength);
+    double reac_energy = energy + (1-rand) * (m_PreviousEnergy - energy);
+    G4ThreeVector ldir = m_PreviousDirection;
     ldir *= length;
     localPosition = localPosition - ldir;
 
@@ -360,6 +372,7 @@ void NPS::BeamReaction::DoIt(const G4FastTrack& fastTrack,
         // Reinit for next event
         m_PreviousEnergy = 0;
         m_PreviousLength = 0;
+        m_PreviousDirection.set(0,0,0);
 
         ///////////////////////////////////////
         ///// Emitted particle Parameters /////
@@ -525,6 +538,7 @@ void NPS::BeamReaction::DoIt(const G4FastTrack& fastTrack,
         // Reinit for next event
         m_PreviousEnergy = 0;
         m_PreviousLength = 0;
+        m_PreviousDirection.set(0,0,0);
 
 
         ///////////////////////////////////
