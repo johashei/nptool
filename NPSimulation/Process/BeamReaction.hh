@@ -50,6 +50,7 @@ namespace NPS{
       string m_ReactionType;
       double m_PreviousEnergy;
       double m_PreviousLength;
+      G4ThreeVector m_PreviousDirection;
       bool   m_active;// is the process active
       double m_StepSize;
       int    m_Parent_ID;
