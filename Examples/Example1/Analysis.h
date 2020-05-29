@@ -54,6 +54,9 @@ class Analysis: public NPL::VAnalysis{
     double OriginalELab;
     double OriginalThetaLab;
     double OriginalBeamEnergy;
+    double ReactionVertexX;
+    double ReactionVertexY;
+    double ReactionVertexZ;
     NPL::Reaction* He10Reaction;
 
     // intermediate variable
