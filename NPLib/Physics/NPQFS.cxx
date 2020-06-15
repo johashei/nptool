@@ -17,11 +17,11 @@
  *  or a nucleon is removed from a projectile  by interaction with a target  *
  *  nucleon (proton target in general)                                       *
  *                                                                           *
- *  First step (dissociation):  A -> B + c                                   *
- *  Second step (scattering) :  c + T -> 1 + 2                               *
+ *  First step (dissociation):  A -> B + a                                   *
+ *  Second step (scattering) :  a + T -> 1 + 2                               *
  *  Labeling is:                                                             *
  *                                                                           *
- *              A --> T  ==> B + (c -> T) =>  B + 1 + 2                      *
+ *              A --> T  ==> B + (a -> T) =>  B + 1 + 2                      *
  *                                                                           *
  *  where:                                                                   *
  *    +  A is the beam nucleus                                               *
@@ -29,7 +29,7 @@
  *                                                                           *
  *    +  B is the residual fragment (beam-like)                              *
  *    +  1 is the scattered target nucleon  (former T)                       *
- *    +  2 is the knocked-out cluster/nucleon (noted c) in the intermediate  *
+ *    +  2 is the knocked-out cluster/nucleon (noted a) in the intermediate  *
  *---------------------------------------------------------------------------*
  * Comment:                                                                  *
  *    +  Adapted from original event generator from V. Panin (R3B collab)    *
@@ -321,7 +321,7 @@ void QFS::KineRelativistic(double& ThetaLab1, double& PhiLab1, double& KineticEn
     TVector3 direction = Pa_lab.Unit();
     fEnergyImpulsionLab_1.RotateUz(direction);
     fEnergyImpulsionLab_2.RotateUz(direction);
-
+/*
     // Angle in the Lab frame
     ThetaLab1 = fEnergyImpulsionLab_1.Angle(fEnergyImpulsionLab_A.Vect());
     //ThetaLab1 = fEnergyImpulsionLab_1.Angle(z_axis);
@@ -336,6 +336,12 @@ void QFS::KineRelativistic(double& ThetaLab1, double& PhiLab1, double& KineticEn
     if (fabs(PhiLab1) < 1e-6) PhiLab1 = 0;
     PhiLab2 = M_PI + fEnergyImpulsionLab_2.Vect().Phi(); 
     if (fabs(PhiLab2) < 1e-6) PhiLab2 = 0;
+*/
+
+    ThetaLab1 = fEnergyImpulsionLab_1.Angle(fEnergyImpulsionLab_A.Vect());
+    ThetaLab2 = fEnergyImpulsionLab_2.Angle(fEnergyImpulsionLab_A.Vect());
+    PhiLab1 = fEnergyImpulsionLab_1.Vect().Phi(); 
+    PhiLab2 = fEnergyImpulsionLab_2.Vect().Phi(); 
 
     // Kinetic Energy in the lab frame
     KineticEnergyLab1 = fEnergyImpulsionLab_1.E() - m1;
@@ -433,7 +439,7 @@ TVector3 QFS::ShootInternalMomentum(){
   }
   if(fParMomentumHist){
       ParMomentum=fParMomentumHist->GetRandom();
-      momentum.SetZ(PerpMomentum);
+      momentum.SetZ(ParMomentum);
   }
 
   //cout << " Shooting Random Momentum: "  << endl;
