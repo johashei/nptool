@@ -279,7 +279,7 @@ namespace NPL{
 
 
   //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-  string ChangeNameToG4Standard(string OriginalName){
+  string ChangeNameToG4Standard(string OriginalName,bool excited){
     string NumberOfMass ;
     string Nucleid;
 
@@ -354,6 +354,8 @@ namespace NPL{
 
     // Special case for light particles
     string FinalName=Nucleid+NumberOfMass;
+
+    if(!excited){
     if      (FinalName=="H1")       FinalName="proton";
     else if (FinalName=="H2")       FinalName="deuteron";
     else if (FinalName=="H3")       FinalName="triton";
@@ -363,6 +365,7 @@ namespace NPL{
     else if (FinalName=="t")        FinalName="triton";
     else if (FinalName=="a")        FinalName="alpha";
     else if (FinalName=="n")        FinalName="neutron";
+    }
     return(FinalName);
   }
 
@@ -440,8 +443,8 @@ namespace NPL{
       else if (character.str()=="z") Nucleid+="z";
     }
 
-    // Special case for light particles
     string FinalName=NumberOfMass+Nucleid;
+    // Special case for light particles
     if      (FinalName=="H1")       FinalName="proton";
     else if (FinalName=="H2")       FinalName="deuteron";
     else if (FinalName=="H3")       FinalName="triton";
