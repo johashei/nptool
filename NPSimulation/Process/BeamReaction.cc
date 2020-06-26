@@ -39,6 +39,7 @@ NPS::BeamReaction::BeamReaction(G4String modelName, G4Region* envelope)
   m_PreviousEnergy = 0;
   m_PreviousLength = 0;
   m_PreviousDirection.set(0,0,0);
+  m_shoot=false;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -98,8 +99,7 @@ void NPS::BeamReaction::ReadConfiguration() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-G4bool
-NPS::BeamReaction::IsApplicable(const G4ParticleDefinition& particleType) {
+G4bool NPS::BeamReaction::IsApplicable(const G4ParticleDefinition& particleType) {
   if (!m_active)
     return false;
 
@@ -115,7 +115,6 @@ NPS::BeamReaction::IsApplicable(const G4ParticleDefinition& particleType) {
 G4bool NPS::BeamReaction::ModelTrigger(const G4FastTrack& fastTrack) {
 
   //cout<< "--------- MODEL TRIG ---------"<<endl;
-  static bool    shoot        = false;
   static double  rand         = 0;
   const G4Track* PrimaryTrack = fastTrack.GetPrimaryTrack();
   G4ThreeVector  V            = PrimaryTrack->GetMomentum().unit();
@@ -128,56 +127,40 @@ G4bool NPS::BeamReaction::ModelTrigger(const G4FastTrack& fastTrack) {
   double out   = solid->DistanceToOut(P, -V);
   double ratio = in / (out + in);
 
-  //cout.precision(10); 
-  //cout<<"in:"<<in<<endl;
-  //cout<<"out:"<<out<<endl;
-  //cout<<"ratio:"<<ratio<<endl;
-
   m_Parent_ID = PrimaryTrack->GetParentID();
   // process reserved to the beam
   if(m_Parent_ID!=0)
     return false;
 
-  if (out == 0) { // first step of current event
-    //cout<< "FIRST/////////////////"<<endl;
+    if(!m_shoot){
     rand             = G4RandFlat::shoot();
     m_PreviousLength = m_StepSize;
     m_PreviousEnergy = PrimaryTrack->GetKineticEnergy();
     m_PreviousDirection = PrimaryTrack->GetMomentumDirection();
+
     // Clear Previous Event
     m_ReactionConditions->Clear();
-    shoot = true;
+    m_shoot=true;
   }
-  else if (((in-m_StepSize) <= 1E-9) && shoot) { // last step
-    //cout<< "LAST"<<endl;
+  else if (((in-m_StepSize) <= 1E-20) && m_shoot) { // last step
     return true;
   }
 
-  //cout<< "rand:"<<rand<<std::scientific<<endl;
 
   // If the condition is met, the event is generated
   if (ratio < rand) {
 
     // Reset the static for next event
-    //  shoot = false;
     if(m_ReactionType=="QFSReaction"){
-        if ( shoot && m_QFS.IsAllowed() ) {
-            shoot = false;
+        if ( m_shoot && m_QFS.IsAllowed() ) {
             return true;
-        } else {
-            return false;
-        }
+        } 
     }
    
     else if(m_ReactionType=="TwoBodyReaction"){
-        if ( shoot && m_Reaction.IsAllowed(PrimaryTrack->GetKineticEnergy()) ) {
-            shoot = false;
+        if ( m_shoot && m_Reaction.IsAllowed(PrimaryTrack->GetKineticEnergy()) ) {
             return true;
-        } else {
-            return false;
-        }
-    }else{
-        return false;
+        } 
     }
   }
 
@@ -185,7 +168,6 @@ G4bool NPS::BeamReaction::ModelTrigger(const G4FastTrack& fastTrack) {
   // so it can be used in the next one
   if (!PrimaryTrack->GetStep()->IsLastStepInVolume()) {
     m_PreviousLength = PrimaryTrack->GetStep()->GetStepLength();
-    //cout<< "PreviousLength="<<m_PreviousLength<<endl;
     m_PreviousEnergy = PrimaryTrack->GetKineticEnergy();
     m_PreviousDirection = PrimaryTrack->GetMomentumDirection();
   }
@@ -196,8 +178,8 @@ G4bool NPS::BeamReaction::ModelTrigger(const G4FastTrack& fastTrack) {
 ////////////////////////////////////////////////////////////////////////////////
 void NPS::BeamReaction::DoIt(const G4FastTrack& fastTrack,
         G4FastStep&        fastStep) {
-
-    //cout<< "--------- DO IT ---------"<<endl;
+    
+    m_shoot=false;
 
     // Get the track info
     const G4Track* PrimaryTrack = fastTrack.GetPrimaryTrack();

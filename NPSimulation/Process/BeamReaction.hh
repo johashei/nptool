@@ -52,6 +52,7 @@ namespace NPS{
       double m_PreviousLength;
       G4ThreeVector m_PreviousDirection;
       bool   m_active;// is the process active
+      bool   m_shoot;
       double m_StepSize;
       int    m_Parent_ID;
    
