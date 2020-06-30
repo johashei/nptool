@@ -1,0 +1,2 @@
+add_library(NPSTACTIC SHARED  TACTIC.cc TACTICScorer.cc)
+target_link_libraries(NPSTACTIC NPSCore ${ROOT_LIBRARIES} ${Geant4_LIBRARIES} ${NPLib_LIBRARIES} -lNPTACTIC)

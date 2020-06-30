@@ -44,13 +44,12 @@ class TDaliData : public TObject {
     vector<Double_t>   fDali_TDC;
     vector<Double_t>   fDali_Time;
 
-
+    /* vector<Int_t> fDali_ParticleID; */
   //////////////////////////////////////////////////////////////
   // Constructor and destructor
   public: 
     TDaliData();
     ~TDaliData();
-    
 
   //////////////////////////////////////////////////////////////
   // Inherited from TObject and overriden to avoid warnings
@@ -58,7 +57,6 @@ class TDaliData : public TObject {
     void Clear();
     void Clear(const Option_t*) {};
     void Dump() const;
-
 
   //////////////////////////////////////////////////////////////
   // Getters and Setters
@@ -93,6 +91,11 @@ class TDaliData : public TObject {
       fDali_T_DetectorNbr.push_back(DetNbr);     
       fDali_Time.push_back(Time);
     };//!
+ 
+    // ID for simulation
+    /* inline void SetParticleID(const Int_t& ID)	{ */
+    /*   fDali_ParticleID.push_back(ID); */
+    /* };//! */
     
     // (A&T DC)
     inline void SetADCAndTDC(const UShort_t& DetNbr,const Double_t& Energy,const Double_t& Time){
@@ -133,7 +136,9 @@ class TDaliData : public TObject {
     inline Double_t Get_Time(const unsigned int &i) const 
       {return fDali_Time[i];}//!
 
-
+      
+    /* inline Int_t GetParticleID(const unsigned int &i) const */
+    /* {return fDali_ParticleID[i];}//! */
   //////////////////////////////////////////////////////////////
   // Required for ROOT dictionnary
   ClassDef(TDaliData,1)  // DaliData structure

@@ -86,7 +86,7 @@ void ShowResults(){
     f->SetNpx(1000);
     
     TCanvas* c2 = new TCanvas("Simulated","Simulated",600,0,600,600);
-    c2->Divide(2,2);
+    c2->Divide(2,3);
     
     c2->cd(1);
     chain->Draw("OriginalELab:OriginalThetaLab>>hS(1000,0,90,1000,0,30)","","col");
@@ -110,6 +110,7 @@ void ShowResults(){
     
     TLine* lT = new TLine(0,0,90,90);
     lT->Draw();
+
     c2->cd(4);
     chain->Draw("OriginalBeamEnergy:BeamEnergy>>hS4(1000,500,600,1000,500,600)","BeamEnergy>0","col");
     TH1F* hS4 = (TH1F*) gDirectory->FindObjectAny("hS4"); 
@@ -120,5 +121,16 @@ void ShowResults(){
     lB->Draw();
     
 
+    c2->cd(5);
+    chain->Draw("ReactionVertexY:ReactionVertexX>>hVXY(1000,-20,20,1000,-20,20)","","col");
+    TH2F* hVXY = (TH2F*) gDirectory->FindObjectAny("hVXY"); 
+    hVXY->GetYaxis()->SetTitle("Reaction vertex Y (mm)");
+    hVXY->GetXaxis()->SetTitle("Reaction vertex X (mm)");  
+
+    c2->cd(6);
+    chain->Draw("ReactionVertexX:ReactionVertexZ*1000.>>hVXZ(1000,-15,15,1000,-20,20)","","col");
+    TH2F* hVXZ = (TH2F*) gDirectory->FindObjectAny("hVXZ"); 
+    hVXZ->GetZaxis()->SetTitle("Reaction vertex X (mm)");
+    hVXZ->GetXaxis()->SetTitle("Reaction vertex Z (um)");  
 
 }

@@ -1,0 +1,353 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%Target
+% THICKNESS= 10 micrometer
+% RADIUS=	20 mm
+% MATERIAL= CD2
+% ANGLE= 0 deg
+% X= 0 mm
+% Y= 0 mm
+% Z= 0 mm
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% LI
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ChiNu
+ R= 1000 mm
+ THETA= 150 deg
+ PHI= 0 deg
+ LeadShield= 1
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ChiNu
+ R= 1000 mm
+ THETA= 135 deg
+ PHI= 0 deg
+ LeadShield= 1
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ChiNu
+ R= 1000 mm
+ THETA= 120 deg
+ PHI= 0 deg
+ LeadShield= 1
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ChiNu
+ R= 1000 mm
+ THETA= 105 deg
+ PHI= 0 deg
+ LeadShield= 1
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ChiNu
+ R= 1000 mm
+ THETA= 90 deg
+ PHI= 0 deg
+ LeadShield= 1
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ChiNu
+ R= 1000 mm
+ THETA= 75 deg
+ PHI= 0 deg
+ LeadShield= 1
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ChiNu
+ R= 1000 mm
+ THETA= 60 deg
+ PHI= 0 deg
+ LeadShield= 1
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ChiNu
+ R= 1000 mm
+ THETA= 45 deg
+ PHI= 0 deg
+ LeadShield= 1
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ChiNu
+ R= 1000 mm
+ THETA= 30 deg
+ PHI= 0 deg
+ LeadShield= 1
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% LII
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ChiNu
+ R= 1000 mm
+ THETA= 150 deg
+ PHI= 30 deg
+ LeadShield= 1
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ChiNu
+ R= 1000 mm
+ THETA= 135 deg
+ PHI= 30 deg
+ LeadShield= 1
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ChiNu
+ R= 1000 mm
+ THETA= 120 deg
+ PHI= 30 deg
+ LeadShield= 1
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ChiNu
+ R= 1000 mm
+ THETA= 105 deg
+ PHI= 30 deg
+ LeadShield= 1
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ChiNu
+ R= 1000 mm
+ THETA= 90 deg
+ PHI= 30 deg
+ LeadShield= 1
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ChiNu
+ R= 1000 mm
+ THETA= 75 deg
+ PHI= 30 deg
+ LeadShield= 1
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ChiNu
+ R= 1000 mm
+ THETA= 60 deg
+ PHI= 30 deg
+ LeadShield= 1
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ChiNu
+ R= 1000 mm
+ THETA= 45 deg
+ PHI= 30 deg
+ LeadShield= 1
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ChiNu
+ R= 1000 mm
+ THETA= 30 deg
+ PHI= 30 deg
+ LeadShield= 1
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% LIII
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ChiNu
+ R= 1000 mm
+ THETA= 150 deg
+ PHI= 60 deg
+ LeadShield= 1
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ChiNu
+ R= 1000 mm
+ THETA= 135 deg
+ PHI= 60 deg
+ LeadShield= 1
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ChiNu
+ R= 1000 mm
+ THETA= 120 deg
+ PHI= 60 deg
+ LeadShield= 1
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ChiNu
+ R= 1000 mm
+ THETA= 105 deg
+ PHI= 60 deg
+ LeadShield= 1
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ChiNu
+ R= 1000 mm
+ THETA= 90 deg
+ PHI= 60 deg
+ LeadShield= 1
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ChiNu
+ R= 1000 mm
+ THETA= 75 deg
+ PHI= 60 deg
+ LeadShield= 1
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ChiNu
+ R= 1000 mm
+ THETA= 60 deg
+ PHI= 60 deg
+ LeadShield= 1
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ChiNu
+ R= 1000 mm
+ THETA= 45 deg
+ PHI= 60 deg
+ LeadShield= 1
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ChiNu
+ R= 1000 mm
+ THETA= 30 deg
+ PHI= 60 deg
+ LeadShield= 1
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% RI
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ChiNu
+ R= 1000 mm
+ THETA= 150 deg
+ PHI= 180 deg
+ LeadShield= 1
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ChiNu
+ R= 1000 mm
+ THETA= 135 deg
+ PHI= 180 deg
+ LeadShield= 1
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ChiNu
+ R= 1000 mm
+ THETA= 120 deg
+ PHI= 180 deg
+ LeadShield= 1
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ChiNu
+ R= 1000 mm
+ THETA= 105 deg
+ PHI= 180 deg
+ LeadShield= 1
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ChiNu
+ R= 1000 mm
+ THETA= 90 deg
+ PHI= 180 deg
+ LeadShield= 1
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ChiNu
+ R= 1000 mm
+ THETA= 75 deg
+ PHI= 180 deg
+ LeadShield= 1
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ChiNu
+ R= 1000 mm
+ THETA= 60 deg
+ PHI= 180 deg
+ LeadShield= 1
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ChiNu
+ R= 1000 mm
+ THETA= 45 deg
+ PHI= 180 deg
+ LeadShield= 1
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ChiNu
+ R= 1000 mm
+ THETA= 30 deg
+ PHI= 180 deg
+ LeadShield= 1
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% RII
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ChiNu
+ R= 1000 mm
+ THETA= 150 deg
+ PHI= 150 deg
+ LeadShield= 1
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ChiNu
+ R= 1000 mm
+ THETA= 135 deg
+ PHI= 150 deg
+ LeadShield= 1
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ChiNu
+ R= 1000 mm
+ THETA= 120 deg
+ PHI= 150 deg
+ LeadShield= 1
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ChiNu
+ R= 1000 mm
+ THETA= 105 deg
+ PHI= 150 deg
+ LeadShield= 1
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ChiNu
+ R= 1000 mm
+ THETA= 90 deg
+ PHI= 150 deg
+ LeadShield= 1
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ChiNu
+ R= 1000 mm
+ THETA= 75 deg
+ PHI= 150 deg
+ LeadShield= 1
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ChiNu
+ R= 1000 mm
+ THETA= 60 deg
+ PHI= 150 deg
+ LeadShield= 1
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ChiNu
+ R= 1000 mm
+ THETA= 45 deg
+ PHI= 150 deg
+ LeadShield= 1
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ChiNu
+ R= 1000 mm
+ THETA= 30 deg
+ PHI= 150 deg
+ LeadShield= 1
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% RIII
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ChiNu
+ R= 1000 mm
+ THETA= 150 deg
+ PHI= 120 deg
+ LeadShield= 1
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ChiNu
+ R= 1000 mm
+ THETA= 135 deg
+ PHI= 120 deg
+ LeadShield= 1
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ChiNu
+ R= 1000 mm
+ THETA= 120 deg
+ PHI= 120 deg
+ LeadShield= 1
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ChiNu
+ R= 1000 mm
+ THETA= 105 deg
+ PHI= 120 deg
+ LeadShield= 1
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ChiNu
+ R= 1000 mm
+ THETA= 90 deg
+ PHI= 120 deg
+ LeadShield= 1
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ChiNu
+ R= 1000 mm
+ THETA= 75 deg
+ PHI= 120 deg
+ LeadShield= 1
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ChiNu
+ R= 1000 mm
+ THETA= 60 deg
+ PHI= 120 deg
+ LeadShield= 1
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ChiNu
+ R= 1000 mm
+ THETA= 45 deg
+ PHI= 120 deg
+ LeadShield= 1
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ChiNu
+ R= 1000 mm
+ THETA= 30 deg
+ PHI= 120 deg
+ LeadShield= 1
+

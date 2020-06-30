@@ -1,4 +1,4 @@
-/*****************************************************************************
+;/*****************************************************************************
  * Copyright (C) 2009-2016   this file is part of the NPTool Project         *
  *                                                                           *
  * For the licensing terms see $NPTOOL/Licence/NPTool_Licence                *
@@ -73,6 +73,7 @@ void NPOptionManager::ReadTheInputArgument(int argc, char** argv){
   fNumberOfEntryToAnalyse     = -1;
 	fFirstEntryToAnalyse        = 0;
   fSpectraServerPort          = 9092;
+  fRandomSeed                 = -1;
   fDisableAllBranchOption = false;
   fInputPhysicalTreeOption = false;
   fGenerateHistoOption = false ;
@@ -95,7 +96,7 @@ void NPOptionManager::ReadTheInputArgument(int argc, char** argv){
 
 
 
-  for (int i = 0; i < argc; i++) {
+  for (int i = 1; i < argc; i++) {
     std::string argument = argv[i];
     if (argument == "-H" || argument == "-h" || argument == "--help") DisplayHelp();
 
@@ -151,6 +152,8 @@ void NPOptionManager::ReadTheInputArgument(int argc, char** argv){
 
     else if (argument == "-L")                                    fNumberOfEntryToAnalyse = atoi(argv[++i]) ;
 
+    else if (argument == "--random-seed")                         fRandomSeed = atoi(argv[++i]) ;
+
 		else if (argument == "-F")                                    fFirstEntryToAnalyse = atoi(argv[++i]);
 
     else if (argument == "--last-sim")                            fLastSimFile = true ;
@@ -165,8 +168,11 @@ void NPOptionManager::ReadTheInputArgument(int argc, char** argv){
 
     else if (argument == "--circular")                            {fCircularTree = true;}
 
+    else if (argument == "--definition" && argc >= i + 1)         {std::string def= argv[++i];fDefinition.insert(def);}
 
-    //else ;
+    else{
+    SendErrorAndExit(argument.c_str()); 
+    }
   }
   CheckArguments();
   if(argc!=0)
@@ -381,7 +387,8 @@ void NPOptionManager::SendErrorAndExit(const char* type) const{
   }
 
   else {
-    std::cout << "NPOptionManager::SendErrorAndExit() unkwown keyword" << std::endl;
+    std::cout << "NPOptionManager::SendErrorAndExit() unkwown program argument: " << type << std::endl;
+    exit(1);
   }
 }
 
@@ -396,6 +403,7 @@ void NPOptionManager::DisplayHelp(){
   std::cout << "\t--event-generator　-E <arg>\tSet arg as the event generator file" << std::endl ;
   std::cout << "\t--output　-O <arg>\t\tSet arg as the Output File Name (output tree)" << std::endl ;
   std::cout << "\t--tree-name <arg>\t\tSet arg as the Output Tree Name " << std::endl ;
+  std::cout << "\t--definition <definition> \tAdd <definition> to the list of definition" << std::endl  ;
   std::cout << "\t--verbose -V <arg>\t\tSet the verbose level, 0 for nothing, 1 for normal printout."<<std::endl;
 	std::cout  << "\t\t\t\t\tError and warning are not affected" << std::endl ;
   std::cout << std::endl << "NPAnalysis only:"<<std::endl;
@@ -419,7 +427,7 @@ void NPOptionManager::DisplayHelp(){
   std::cout << std::endl << "NPSimulation only:"<<std::endl;
   std::cout << "\t-M <arg>\t\t\tExecute Geant4 macro <arg> at startup" << std::endl ;
   std::cout << "\t-B <arg>\t\t\tExecute in batch mode (no ui) with Geant4 macro <arg> at startup" << std::endl ;
-
+  std::cout << "\t--random-seed <arg>\t\tSet the random generator seed to <arg> (unsigned int)" << std::endl ;
   std::cout << std::endl << std::endl ;
 
   // exit current program

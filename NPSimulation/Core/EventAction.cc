@@ -22,10 +22,10 @@
 // G4 headers
 #include "G4Event.hh"
 #include "G4UnitsTable.hh"
-//#include "G4SDManager.hh"
 #include "G4RunManager.hh"
 #include "G4Trajectory.hh"
 #include "G4TrajectoryContainer.hh"
+#include "Randomize.hh"
 // NPTool headers
 #include "EventAction.hh"
 #include "DetectorConstruction.hh"
@@ -44,6 +44,10 @@ EventAction::EventAction(){
     total=0;
     mean_rate=0;
     displayed=0;
+
+     m_tree =  RootOutput::getInstance()->GetTree();
+  //  m_tree->Branch("Geant4RandomState",&m_G4State );
+ 
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -54,24 +58,37 @@ EventAction::~EventAction(){
 void EventAction::BeginOfEventAction(const G4Event* event){
     treated= event->GetEventID()+1;
     ProgressDisplay();
+//    SaveRandomGeneratorInitialState();
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 void EventAction::EndOfEventAction(const G4Event* event){
     m_detector->ReadAllSensitive(event) ;
-    static TTree* tree =  RootOutput::getInstance()->GetTree();
-    tree->Fill();
+    m_tree->Fill();
     m_detector->ClearInteractionCoordinates();
 //    if(treated%10000==0){
 //        tree->AutoSave();
 //        RootOutput::getInstance()->GetFile()->SaveSelf(kTRUE);
 //    }
 
+    
+
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 void EventAction::SetDetector(DetectorConstruction* detector){
     m_detector = detector   ;
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+void EventAction::SaveRandomGeneratorInitialState(){
+    // This allow to restore the geant4 random generator status for problematic
+    // event
+
+    CLHEP::HepRandom::saveFullState(m_Geant4RandomFullState);
+    m_G4State=m_Geant4RandomFullState.str();
+    m_Geant4RandomFullState.str("");
+    m_Geant4RandomFullState.clear();
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

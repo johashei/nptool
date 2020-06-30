@@ -131,7 +131,6 @@ namespace DSSDScorers {
 
     private: // Needed for intermediate calculation (avoid multiple instantiation in Processing Hit)
       G4ThreeVector t_Position;
-      unsigned int t_Index;
       double t_Energy;
       double t_Time;
       unsigned int t_DetectorNbr;
@@ -190,7 +189,6 @@ namespace DSSDScorers {
       DSSDDataVector m_HitWidth;
     private: // Needed for intermediate calculation (avoid multiple instantiation in Processing Hit)
       G4ThreeVector t_Position;
-      unsigned int t_Index;
       double t_Energy;
       double t_Time;
       unsigned int t_DetectorNumber;
@@ -257,7 +255,6 @@ namespace DSSDScorers {
 
     private: // Needed for intermediate calculation (avoid multiple instantiation in Processing Hit)
       G4ThreeVector t_Position;
-      unsigned int t_Index;
       double t_Energy;
       double t_Time;
       unsigned int t_DetectorNumber;
@@ -333,7 +330,6 @@ namespace DSSDScorers {
       double t_Time;
       unsigned int t_DetectorNumber;
       unsigned int t_StripWidthNumber;
-      unsigned int t_Index;
     public:
       inline unsigned int GetUpMult() {return m_HitUp.size();};
       inline unsigned int GetStripUp(const unsigned int& i){return m_HitUp[i]->GetStrip();}; 

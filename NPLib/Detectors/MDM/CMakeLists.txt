@@ -1,8 +1,8 @@
 include(CheckLanguage)
 
-add_custom_command(OUTPUT TMDMPhysicsDict.cxx COMMAND ../../scripts/build_dict.sh TMDMPhysics.h TMDMPhysicsDict.cxx TMDMPhysics.rootmap libNPMDM.dylib DEPENDS TMDMPhysics.h)
-add_custom_command(OUTPUT TMDMPhysicsMinimizerDict.cxx COMMAND ../../scripts/build_dict.sh TMDMPhysicsMinimizer.h TMDMPhysicsMinimizerDict.cxx TMDMPhysicsMinimizer.rootmap libNPMDM.dylib DEPENDS TMDMPhysicsMinimizer.h)
-add_custom_command(OUTPUT TMDMDataDict.cxx COMMAND ../../scripts/build_dict.sh TMDMData.h TMDMDataDict.cxx TMDMData.rootmap libNPMDM.dylib DEPENDS TMDMData.h)
+add_custom_command(OUTPUT TMDMPhysicsDict.cxx COMMAND ${CMAKE_BINARY_DIR}/scripts/build_dict.sh TMDMPhysics.h TMDMPhysicsDict.cxx TMDMPhysics.rootmap libNPMDM.dylib DEPENDS TMDMPhysics.h)
+add_custom_command(OUTPUT TMDMPhysicsMinimizerDict.cxx COMMAND ${CMAKE_BINARY_DIR}/scripts/build_dict.sh TMDMPhysicsMinimizer.h TMDMPhysicsMinimizerDict.cxx TMDMPhysicsMinimizer.rootmap libNPMDM.dylib DEPENDS TMDMPhysicsMinimizer.h)
+add_custom_command(OUTPUT TMDMDataDict.cxx COMMAND ${CMAKE_BINARY_DIR}/scripts/build_dict.sh TMDMData.h TMDMDataDict.cxx TMDMData.rootmap libNPMDM.dylib DEPENDS TMDMData.h)
 
 ##
 ## Check if MINUIT2 is installed along with ROOT

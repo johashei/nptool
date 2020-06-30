@@ -30,6 +30,7 @@
 #include "G4Event.hh"
 #include "G4VTrajectory.hh"
 #include "G4RegionStore.hh"
+//----------------------//
 // NPL
 #include "RootOutput.h"
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -68,9 +69,12 @@ void RunAction::EndOfRunAction(const G4Run* aRun){
     for(unsigned int e = 0 ; e < sizeE ; e++){
       TrajectoryVector* traj = (*events)[e]->GetTrajectoryContainer()->GetVector();
       unsigned int size = traj->size();
+
       for(unsigned int i = 0 ; i < size ; i++)
         Particles.insert( (*traj)[i]->GetParticleName());
     }
-    
     MaterialManager::getInstance()->WriteDEDXTable(Particles,0,10*GeV); 
+    MaterialManager::getInstance()->WriteCrossSectionTable(Particles,0,20*MeV); 
 }
+
+

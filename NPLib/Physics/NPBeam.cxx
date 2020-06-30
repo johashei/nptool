@@ -50,6 +50,7 @@ using namespace NPL;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo...... 
 Beam::Beam(){
+  fExcitationEnergy = 0; 
   fEnergy = 0;
   fSigmaEnergy = -1 ;
   fMeanX = 0 ;

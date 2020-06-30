@@ -26,6 +26,7 @@
 // C++ headers
 #include <iostream>
 #include <string>
+#include <set>
 
 class NPOptionManager{
    public:
@@ -107,6 +108,7 @@ class NPOptionManager{
       int    GetNumberOfEntryToAnalyse()   {return fNumberOfEntryToAnalyse;} 
       int    GetFirstEntryToAnalyse()      {return fFirstEntryToAnalyse;} 
       int    GetSpectraServerPort()        {return fSpectraServerPort;}
+      int    GetRandomSeed()               {return fRandomSeed;}
       std::string GetSharedLibExtension()       {return fSharedLibExtension;}     
       std::string GetLastFile();                 
       
@@ -115,7 +117,10 @@ class NPOptionManager{
       void SetDetectorFile(const std::string& name)  {fDetectorFileName = name;CheckDetectorConfiguration();}
       void SetRunToReadFile(const std::string& name) {fRunToReadFileName = name;}
       void SetVerboseLevel(int VerboseLevel)         {fVerboseLevel = VerboseLevel;}
-  
+ 
+   public: // user definition
+      bool HasDefinition(std::string def) {return(fDefinition.find(def)!=fDefinition.end());}
+
    private:
       // default values
       std::string fDefaultReactionFileName;
@@ -125,7 +130,7 @@ class NPOptionManager{
       std::string fDefaultOutputFileName;
       std::string fDefaultOutputTreeName;
       std::string fDefaultG4MacroPath;
-
+      
       // assigned values
       std::string fReactionFileName;
       std::string fDetectorFileName;
@@ -148,9 +153,11 @@ class NPOptionManager{
       int    fNumberOfEntryToAnalyse; // use to limit the number of analysed in NPA
       int    fFirstEntryToAnalyse; // use to set the first event analysed in NPA (total: fFirstEntryToAnalyse -> fFirstEntryToAnalyse + fNumberOfEntryToAnalyse)
       int    fSpectraServerPort;
+      int    fRandomSeed;
       std::string fSharedLibExtension; // lib extension is platform dependent
       std::string fG4MacroPath; // Path to a geant4 macro to execute at start of nps
       bool fG4BatchMode; // Execute geant4 in batch mode, running the given macro
+      std::set<std::string> fDefinition; // a set of user defined definition 
 };
 
 #endif

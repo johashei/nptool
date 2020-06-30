@@ -1,0 +1,12 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+TACTIC
+ POS= 0 0 0 mm
+ Shape= Cylindrical
+% GasMaterial_1 = P10_1atm
+ GasMaterial_1 = He_gas
+ GasMaterial_2 = CO2
+ GasFraction_1 = 90
+ GasFraction_2 = 10
+ Temperature = 293.15 kelvin
+ Pressure = 0.5 bar
+% Pressure = 1.0 bar

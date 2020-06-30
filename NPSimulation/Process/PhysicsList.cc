@@ -54,7 +54,9 @@
 #include "G4PAIPhotModel.hh"
 #include "G4RadioactiveDecay.hh"
 #include "menate_R.hh"
-
+#ifdef USE_NEUTRONHP
+#include "NeutronHPphysics.hh"
+#endif
 /////////////////////////////////////////////////////////////////////////////
 PhysicsList::PhysicsList() : G4VUserPhysicsList(){
 
@@ -141,6 +143,12 @@ PhysicsList::PhysicsList() : G4VUserPhysicsList(){
     cout << "//// Using NPIonIonInelasticPhysic Physics List ////" << endl;
   }
 
+#ifdef USE_NEUTRONHP
+  if(m_NeutronHP){
+    m_PhysList["NeutronHPphysics"] = new NeutronHPphysics("neutronHP");
+    cout << "//// Using NeutronHPPhysics ////" << endl;
+  }
+#endif
   if(m_StoppingPhysics){
     m_PhysList["StoppingPhysics"]=new G4StoppingPhysics();
     cout << "//// Using G4StoppingPhysics Physics List ////" << endl;
@@ -161,6 +169,12 @@ PhysicsList::PhysicsList() : G4VUserPhysicsList(){
     std::cout << "\r\032[1;31m Warning: physics list HadronPhysicsQGSP_BIC_HP require Geant4 10, process not activated \033[0m" <<std::endl;
 #endif
   }
+
+  if(m_HadronPhysicsQGSP_BERT_HP){
+    m_PhysList["HadronPhysicsQGSP_BERT_HP"] = new G4HadronPhysicsQGSP_BERT_HP();
+    cout << "//// Using QGSP_BERT_HP Physics List ////" << endl;
+  }
+
   // Optical Photon for scintillator simulation
   if(m_OpticalPhysics){
     opticalPhysicsList = new G4OpticalPhysics(0);
@@ -219,12 +233,15 @@ void PhysicsList::ReadConfiguration(std::string filename){
   m_OpticalPhysics = 0;
   m_DriftElectronPhysics = 0;
   m_HadronPhysicsQGSP_BIC_HP = 0;
+  m_HadronPhysicsQGSP_BERT_HP = 0;
   m_HadronPhysicsINCLXX = 0;
   m_Decay = 0;
   m_IonGasModels = 0;
   m_pai= 0;
   m_pai_photon= 0;
   m_Menate_R = 0;
+
+  m_NeutronHP = 0;
 
   std::ifstream file(filename.c_str());
   if(!file.is_open()){
@@ -259,6 +276,8 @@ void PhysicsList::ReadConfiguration(std::string filename){
       m_DriftElectronPhysics= value;
     else if (name == "HadronPhysicsQGSP_BIC_HP")
       m_HadronPhysicsQGSP_BIC_HP= value;
+    else if (name == "HadronPhysicsQGSP_BERT_HP")
+      m_HadronPhysicsQGSP_BERT_HP= value;
     else if (name == "HadronPhysicsINCLXX")
       m_HadronPhysicsINCLXX= value;
     else if (name == "Decay")
@@ -271,13 +290,15 @@ void PhysicsList::ReadConfiguration(std::string filename){
       m_pai_photon = value;
     else if (name == "Menate_R")
       m_Menate_R = value;
+    else if (name == "NeutronHP")
+      m_NeutronHP = value;
     else
       std::cout <<"WARNING: Physics List Token '" << name << "' unknown. Token is ignored." << std::endl;
   }
 
   // Most special process need decay to be activated
   if( (m_IonBinaryCascadePhysics || m_EmExtraPhysics || m_HadronElasticPhysics || m_NPIonInelasticPhysics
-        || m_StoppingPhysics || m_HadronPhysicsQGSP_BIC_HP || m_HadronPhysicsINCLXX) && !m_Decay){
+        || m_StoppingPhysics || m_HadronPhysicsQGSP_BIC_HP || m_HadronPhysicsQGSP_BERT_HP || m_HadronPhysicsINCLXX) && !m_Decay){
     m_Decay = true;
     std::cout << "Information: Selected process require Decay to be activated." << std::endl;
   }
@@ -519,6 +540,9 @@ void PhysicsList::SetCuts(){
 
   // Special Cut for optical photon to be emmitted
   SetCutsWithDefault();
+
+  if(m_NeutronHP)
+    SetCutValue(0*mm,"proton");
 }
 
 ////////////////////////////////////////////////////////////////////////////////
