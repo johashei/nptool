@@ -140,8 +140,8 @@ Mugast Square
  X128_Y1= 107.49 -95.88 91.7 mm
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%Mugast Annular
-% DetectorNumber= 11
-% Center=  -0.3 1 -126.9 mm
-%
+Mugast Annular
+ DetectorNumber= 11
+ Center=  -0.3 1 -126.9 mm
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
