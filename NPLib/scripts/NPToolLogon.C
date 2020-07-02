@@ -36,6 +36,14 @@ using namespace std;
 #include"TRandom.h"
 #include"TRandom2.h"
 
+bool contains(std::string path,std::string search){
+  if(path.find(search)!=std::string::npos) 
+    return true;
+  else
+    return false;
+  }
+
+/////////////////////////////////////////////////////
 void NPToolLogon(){ 
 
 #ifdef __APPLE__
@@ -74,8 +82,8 @@ void NPToolLogon(){
 
   if(!check){
     // Add shared libraries
-    TString libpath = Form("%s/NPLib/lib", path.c_str());
-    TSystemDirectory libdir("libdir", libpath);
+    std::string libpath = Form("%s/NPLib/lib", path.c_str());
+    TSystemDirectory libdir("libdir", libpath.c_str());
     TList* listfile = libdir.GetListOfFiles();
 
     // Since the list is ordered alphabetically and that the 
@@ -83,7 +91,8 @@ void NPToolLogon(){
     // lib*Physics.dylib libraries, it is then loaded manually 
     // first.
     // Test if the lib directory is empty or not
-    if (listfile->GetEntries() > 2) gSystem->Load(libpath+"/libNPCore"+Lib_Extension);
+    std::string load_path = libpath+"/libNPCore"+Lib_Extension;
+    if (listfile->GetEntries() > 2) gSystem->Load(load_path.c_str());
 
     gSystem->Load("libPhysics.so"); // Needed by Must2 and Sharc
     gSystem->Load("libHist.so"); // Needed by TSpectra Class
@@ -91,30 +100,30 @@ void NPToolLogon(){
     // Loop on Data libraries
     Int_t i = 0;
     while (listfile->At(i)) {
-      TString libname = listfile->At(i++)->GetName();
-      if (libname.Contains(Lib_Extension) && libname.Contains("Data") && !libname.Contains("libVDetector"+Lib_Extension)) {
-        TString lib = libpath + "/" + libname;
-        gSystem->Load(lib);
+      std::string libname = listfile->At(i++)->GetName();
+      if (contains(libname,Lib_Extension) && contains(libname,"Data") && !contains(libname,"libVDetector"+Lib_Extension)) {
+        std::string lib = libpath + "/" + libname;
+        gSystem->Load(lib.c_str());
       }
     }
 
     // Loop on Physics Library
     i = 0;
     while (listfile->At(i)) {
-      TString libname = listfile->At(i++)->GetName();
-      if (libname.Contains(Lib_Extension) && libname.Contains("Physics") &&!libname.Contains("libVDetector"+Lib_Extension)) {
-        TString lib = libpath + "/" + libname;
-        gSystem->Load(lib);
+      std::string libname = listfile->At(i++)->GetName();
+      if (contains(libname,Lib_Extension) && contains(libname,"Physics") &&!contains(libname,"libVDetector"+Lib_Extension)) {
+        std::string lib = libpath + "/" + libname;
+        gSystem->Load(lib.c_str());
       }
     }
 
     // Loop on the Reset of the Library
     i = 0;
     while (listfile->At(i)) {
-      TString libname = listfile->At(i++)->GetName();
-      if (libname.Contains(Lib_Extension) && !libname.Contains("Physics") && !libname.Contains("Data")  &&!libname.Contains("libVDetector"+Lib_Extension)) {
-        TString lib = libpath + "/" + libname;
-        gSystem->Load(lib);
+      std::string libname = listfile->At(i++)->GetName();
+      if (contains(libname,Lib_Extension) && !contains(libname,"Physics") && !contains(libname,"Data")  &&!contains(libname,"libVDetector"+Lib_Extension)) {
+        std::string lib = libpath + "/" + libname;
+        gSystem->Load(lib.c_str());
       }
     }
 
@@ -125,3 +134,5 @@ void NPToolLogon(){
     gSystem->cd(currentpath.c_str());
   }
 }
+
+
