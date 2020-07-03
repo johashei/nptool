@@ -143,11 +143,11 @@ G4bool NPS::BeamReaction::ModelTrigger(const G4FastTrack& fastTrack) {
   }
 
   // If the condition is met, the event is generated
-  if (ratio < rand) {
+  if (m_shoot && (ratio < rand || (in-m_StepSize) <= 1E-20)) {
 
     // Reset the static for next event
     if(m_ReactionType=="QFSReaction"){
-        if ( m_shoot && m_QFS.IsAllowed() ) {
+        if ( m_QFS.IsAllowed() ) {
             return true;
         }
         else
@@ -155,7 +155,7 @@ G4bool NPS::BeamReaction::ModelTrigger(const G4FastTrack& fastTrack) {
     }
    
     else if(m_ReactionType=="TwoBodyReaction"){
-        if ( m_shoot && m_Reaction.IsAllowed(PrimaryTrack->GetKineticEnergy()) ) {
+        if ( m_Reaction.IsAllowed(PrimaryTrack->GetKineticEnergy()) ) {
             return true;
         } 
         else
