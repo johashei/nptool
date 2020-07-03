@@ -113,7 +113,6 @@ G4bool NPS::BeamReaction::IsApplicable(const G4ParticleDefinition& particleType)
 
 ////////////////////////////////////////////////////////////////////////////////
 G4bool NPS::BeamReaction::ModelTrigger(const G4FastTrack& fastTrack) {
-
   //cout<< "--------- MODEL TRIG ---------"<<endl;
   static double  rand         = 0;
   const G4Track* PrimaryTrack = fastTrack.GetPrimaryTrack();
@@ -132,15 +131,15 @@ G4bool NPS::BeamReaction::ModelTrigger(const G4FastTrack& fastTrack) {
   if(m_Parent_ID!=0)
     return false;
 
-    if(!m_shoot){
-    rand             = G4RandFlat::shoot();
-    m_PreviousLength = m_StepSize;
-    m_PreviousEnergy = PrimaryTrack->GetKineticEnergy();
-    m_PreviousDirection = PrimaryTrack->GetMomentumDirection();
+  if(!m_shoot){
+  rand             = G4RandFlat::shoot();
+  m_PreviousLength = m_StepSize;
+  m_PreviousEnergy = PrimaryTrack->GetKineticEnergy();
+  m_PreviousDirection = PrimaryTrack->GetMomentumDirection();
 
-    // Clear Previous Event
-    m_ReactionConditions->Clear();
-    m_shoot=true;
+  // Clear Previous Event
+  m_ReactionConditions->Clear();
+  m_shoot=true;
   }
   else if (((in-m_StepSize) <= 1E-20) && m_shoot) { // last step
     return true;
@@ -171,6 +170,8 @@ G4bool NPS::BeamReaction::ModelTrigger(const G4FastTrack& fastTrack) {
     m_PreviousEnergy = PrimaryTrack->GetKineticEnergy();
     m_PreviousDirection = PrimaryTrack->GetMomentumDirection();
   }
+  else
+    return true;
 
   return false;
 }
