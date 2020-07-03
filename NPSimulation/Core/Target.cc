@@ -17,14 +17,7 @@
  *                                                                           *
  *---------------------------------------------------------------------------*
  * Comment:                                                                  *
- *  Some improvment need to be done in material dealing                      *
  *                                                                           *
- *  + 16/09/2009: Add support for positioning the target with an angle with  *
- *                respect to the beam (N. de Sereville)                      *
- *  + 16/09/2009: Add CH2 material for targets (N. de Sereville)             *
- *  + 06/11/2009: Add new Token m_TargetNbLayers defining the number of      *
- *                steps used to slow down the beam in the target             *
- *                (N. de Sereville)                                          *
  *                                                                           *
  *****************************************************************************/
 // C++ header
@@ -74,7 +67,7 @@ Target::Target(){
   m_TargetAngle        = 0   ;
   m_TargetRadius       = 0   ;
   m_TargetDensity      = 0   ;
-  m_TargetNbLayers     = 5   ;   // Number of steps by default
+  m_TargetNbSlices     = 100.   ;   // Number of sslices/steps by default
   m_TargetBackingThickness = 0   ;
   m_ReactionRegion=NULL;
 
@@ -144,8 +137,8 @@ void Target::ReadConfiguration(NPL::InputParser parser){
       exit(1);
     }
     
-    if(starget[0]->HasToken("NBLAYERS"))
-      m_TargetNbLayers = starget[0]->GetInt("NBLAYERS");
+    if(starget[0]->HasToken("NbSlices"))
+      m_TargetNbSlices = starget[0]->GetInt("NbSlices");
     
     if(starget[0]->HasToken("BackingMaterial")&& starget[0]->HasToken("BackingThickness")){
       m_TargetBackingMaterial=GetMaterialFromLibrary(starget[0]->GetString("BackingMaterial")); 
@@ -213,8 +206,8 @@ void Target::ReadConfiguration(NPL::InputParser parser){
       exit(1);
     }
 
-    if(ctarget[0]->HasToken("NBLAYERS"))
-      m_TargetNbLayers = ctarget[0]->GetInt("NBLAYERS");
+    if(ctarget[0]->HasToken("NbSlices"))
+      m_TargetNbSlices = ctarget[0]->GetInt("NbSlices");
 
   }
   else{
@@ -458,7 +451,7 @@ void Target::ConstructDetector(G4LogicalVolume* world){
 void Target::SetReactionRegion(){
   m_ReactionRegion = G4RegionStore::GetInstance()->FindOrCreateRegion("NPSimulationProcess");
   m_ReactionRegion->AddRootLogicalVolume(m_TargetLogic);
-  m_ReactionRegion->SetUserLimits(new G4UserLimits(m_TargetThickness/10.));
+  m_ReactionRegion->SetUserLimits(new G4UserLimits(m_TargetThickness/m_TargetNbSlices));
   G4FastSimulationManager* mng = m_ReactionRegion->GetFastSimulationManager();
 
   unsigned int size = m_ReactionModel.size();
@@ -468,7 +461,7 @@ void Target::SetReactionRegion(){
   m_ReactionModel.clear();
   G4VFastSimulationModel* fsm;
   fsm = new NPS::BeamReaction("BeamReaction",m_ReactionRegion);
-  ((NPS::BeamReaction*) fsm)->SetStepSize(m_TargetThickness/10.);
+  ((NPS::BeamReaction*) fsm)->SetStepSize(m_TargetThickness/m_TargetNbSlices);
   m_ReactionModel.push_back(fsm); 
   fsm = new NPS::Decay("Decay",m_ReactionRegion);
   m_ReactionModel.push_back(fsm); 
@@ -486,73 +479,6 @@ void Target::InitializeRootOutput()
 void Target::ReadSensitive(const G4Event*)
 {}
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-// Return the slow down beam energy after interaction at ZInteraction with initial beam energy before target IncidentEnergy
-G4double Target::SlowDownBeam(G4ParticleDefinition* Beam, 
-    G4double IncidentEnergy, 
-    G4double ZInteraction, 
-    G4double IncidentTheta){
-
-  if(Beam->GetParticleName()=="neutron"){
-    return IncidentEnergy;
-  }
-
-  if((0.5*m_TargetThickness+ZInteraction)<0){
-    cout<< "Something is wrong with the Z coordinate of the interaction position"<<endl;
-    cout<< "Check the value of Z(interaction) " << ZInteraction << endl;
-  }
-
-  G4double ThicknessBeforeInteraction = 
-    (0.5*m_TargetThickness + ZInteraction) / cos(m_TargetAngle);
-
-  G4double dedx,de;
-  static G4EmCalculator emCalculator;
-
-  if(m_TargetType){
-    if(m_TargetThickness!=0){
-      for (G4int i = 0; i < m_TargetNbLayers; i++){
-        dedx = emCalculator.ComputeTotalDEDX(IncidentEnergy, Beam, m_TargetMaterial);
-        de   = dedx * ThicknessBeforeInteraction / m_TargetNbLayers;
-        IncidentEnergy -= de;
-        if(IncidentEnergy<0){
-          IncidentEnergy = 0;
-          break;
-        }
-      }
-    }
-  }
-
-  else{
-    //   Windows
-    if(m_FrontThickness!=0)
-      for (G4int i = 0; i < m_TargetNbLayers; i++){
-        dedx = emCalculator.ComputeTotalDEDX(IncidentEnergy, Beam, m_FrontMaterial);
-        de   = dedx  * m_FrontThickness / (cos(IncidentTheta)* m_TargetNbLayers);
-        IncidentEnergy -= de;
-        if(IncidentEnergy<0){
-          IncidentEnergy = 0;
-          break;
-        }
-
-      }
-
-    // Target
-    if(m_TargetThickness!=0)
-      for (G4int i = 0; i < m_TargetNbLayers; i++){
-        dedx = emCalculator.ComputeTotalDEDX(IncidentEnergy, Beam, m_TargetMaterial);
-        de   = dedx * ThicknessBeforeInteraction / m_TargetNbLayers;
-        IncidentEnergy -= de;
-        if(IncidentEnergy<0){
-          IncidentEnergy = 0;
-          break;
-        }
-
-      }
-  }
-
-  if(IncidentEnergy<0) IncidentEnergy = 0 ;
-  return IncidentEnergy;
-}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 void Target::RandomGaussian2D(double MeanX, double MeanY, double SigmaX, double SigmaY, double &X, double &Y, double NumberOfSigma){
