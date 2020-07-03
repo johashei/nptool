@@ -141,10 +141,6 @@ G4bool NPS::BeamReaction::ModelTrigger(const G4FastTrack& fastTrack) {
   m_ReactionConditions->Clear();
   m_shoot=true;
   }
-  else if (((in-m_StepSize) <= 1E-20) && m_shoot) { // last step
-    return true;
-  }
-
 
   // If the condition is met, the event is generated
   if (ratio < rand) {
@@ -153,13 +149,17 @@ G4bool NPS::BeamReaction::ModelTrigger(const G4FastTrack& fastTrack) {
     if(m_ReactionType=="QFSReaction"){
         if ( m_shoot && m_QFS.IsAllowed() ) {
             return true;
-        } 
+        }
+        else
+          m_shoot=false;
     }
    
     else if(m_ReactionType=="TwoBodyReaction"){
         if ( m_shoot && m_Reaction.IsAllowed(PrimaryTrack->GetKineticEnergy()) ) {
             return true;
         } 
+        else
+          m_shoot=false;
     }
   }
 
@@ -170,8 +170,6 @@ G4bool NPS::BeamReaction::ModelTrigger(const G4FastTrack& fastTrack) {
     m_PreviousEnergy = PrimaryTrack->GetKineticEnergy();
     m_PreviousDirection = PrimaryTrack->GetMomentumDirection();
   }
-  else
-    return true;
 
   return false;
 }
@@ -202,6 +200,7 @@ void NPS::BeamReaction::DoIt(const G4FastTrack& fastTrack,
     double rand   = G4RandFlat::shoot();
     double length = (1-rand) * (m_PreviousLength);
     double reac_energy = energy + (1-rand) * (m_PreviousEnergy - energy);
+
     G4ThreeVector ldir = m_PreviousDirection;
     ldir *= length;
     localPosition = localPosition - ldir;

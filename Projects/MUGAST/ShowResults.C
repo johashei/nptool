@@ -72,10 +72,10 @@ void ShowResults(){
   reaction->GetKinematicLine3()->Draw("c");
 
   c1->cd(2);
-  TH1F* hEx = new TH1F("hEx", "hEx",1000, -1, 5);
+  TH1F* hEx = new TH1F("hEx", "hEx",240, -1, 5);
   t->Draw("Ex>>hEx","ThetaLab>100 && ThetaLab<156","col");
   hEx->GetXaxis()->SetTitle("Ex (MeV)");
-  hEx->GetYaxis()->SetTitle("counts/100 keV");
+  hEx->GetYaxis()->SetTitle("counts/25 keV");
  
   c1->cd(3);
   TH1F *hCM = new TH1F("hCM", "hCM", 36, 0, 180); 
@@ -87,7 +87,6 @@ void ShowResults(){
     }
   }
 
-/*  
   TCanvas *c2 = new TCanvas("c2", "Control", 1000, 1000);
   c2->Divide(2,2);
   c2->cd(1);
@@ -100,7 +99,6 @@ void ShowResults(){
   t->Draw("ELab-OriginalELab>>hcE","","col");
   TLine* lE = new TLine(0,0,60,60);
   //lE->Draw();
-*/
 
 }
 
