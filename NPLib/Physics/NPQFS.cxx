@@ -227,13 +227,13 @@ void QFS::CalculateVariables(){
     double EA = sqrt(mA*mA + PA*PA);         // Beam total energy
     fEnergyImpulsionLab_A = TLorentzVector(0.,0.,PA,EA);
     
-    //Internal momentum of removed cluster/nucleon
-    Pa.SetX(fInternalMomentum.X());
-    Pa.SetY(fInternalMomentum.Y());
-    Pa.SetZ(fInternalMomentum.Z());
-    
-    //Internal momentum of heavy recoil after removal
-    PB.SetXYZ( (-Pa.X()) , (-Pa.Y()) , (-Pa.Z()) );
+    // Internal momentum of removed cluster/nucleon (Pa) and recoil (PB)
+    // here fInternalMomentum contains PB (recoil fragment momentum)
+    // readout from the input file (theoretical)
+    PB.SetX(fInternalMomentum.X());
+    PB.SetY(fInternalMomentum.Y());
+    PB.SetZ(fInternalMomentum.Z());
+    Pa.SetXYZ( (-PB.X()) , (-PB.Y()) , (-PB.Z()) );
 
     // Off-shell mass of the bound nucleon from E conservation
     // in virtual dissociation of A -> B + a
