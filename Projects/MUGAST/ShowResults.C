@@ -87,7 +87,7 @@ void ShowResults(){
     }
   }
 
-  
+/*  
   TCanvas *c2 = new TCanvas("c2", "Control", 1000, 1000);
   c2->Divide(2,2);
   c2->cd(1);
@@ -100,7 +100,7 @@ void ShowResults(){
   t->Draw("ELab-OriginalELab>>hcE","","col");
   TLine* lE = new TLine(0,0,60,60);
   //lE->Draw();
-
+*/
 
 }
 

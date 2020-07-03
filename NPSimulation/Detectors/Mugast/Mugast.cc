@@ -64,7 +64,7 @@ using namespace CLHEP;
 namespace Mugast_NS{
   // Resolution
   const G4double SigmaTime    = 0.212765957 ;// = 500ps
-  const G4double SigmaEnergy  = 0.0149      ;// 0.0223 = 52keV of Resolution //   Unit is MeV/2.35  14.861996
+  const G4double SigmaEnergy  = 0.019      ;// 
 //  const G4double TimeOffset   = 500         ;// 500 ns stop
 
   // Threshold
