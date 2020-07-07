@@ -49,17 +49,36 @@ class Strasse : public NPS::VDetector{
     /////// Specific Function of this Class ///////////
     ////////////////////////////////////////////////////
   public:
-    // Cartesian
-    void AddDetector(G4ThreeVector POS);
-    // Spherical
-    void AddDetector(double R,double Theta,double Phi);  
+    // Cylindrical coordinate
+    void AddInnerDetector(double R,double Z,double Phi);  
 
+    G4LogicalVolume* BuildInnerDetector();
+    G4LogicalVolume* BuildOutterDetector();
+    G4LogicalVolume* BuildElectronic();
+    G4LogicalVolume* BuildFrame();
+    G4LogicalVolume* BuildChamber();
 
-    G4LogicalVolume* BuildTrapezoidDetector();
-  
   private:
-    G4LogicalVolume* m_TrapezoidDetector;
-    
+    G4LogicalVolume* m_InnerDetector;
+    G4LogicalVolume* m_OutterDetector;
+    G4LogicalVolume* m_Electronic;
+    G4LogicalVolume* m_Frame;
+    G4LogicalVolume* m_Chamber;
+
+
+  private:
+    //    Initialize material used in detector definition
+    void InitializeMaterial();
+
+
+    //   List of material
+    G4Material* m_MaterialSilicon ;
+    G4Material* m_MaterialAl      ;
+    G4Material* m_MaterialVacuum  ;
+    G4Material* m_MaterialPCB     ;
+
+
+
     ////////////////////////////////////////////////////
     //////  Inherite from NPS::VDetector class /////////
     ////////////////////////////////////////////////////
@@ -98,15 +117,30 @@ class Strasse : public NPS::VDetector{
     ////////////////////////////////////////////////////
   private: // Geometry
     // Detector Coordinate 
-    vector<double>  m_R; 
-    vector<double>  m_Theta;
-    vector<double>  m_Phi; 
-    
+    vector<double>  m_Inner_R; 
+    vector<double>  m_Inner_Z;
+    vector<double>  m_Inner_Phi; 
+
     // Visualisation Attribute
     //G4VisAttributes* m_VisTrap;
 
-  // Needed for dynamic loading of the library
+    // Needed for dynamic loading of the library
   public:
     static NPS::VDetector* Construct();
+
+
+  private: // Visualisation
+    // Dark Grey
+    G4VisAttributes* SiliconVisAtt  ;
+    // Green
+    G4VisAttributes* PCBVisAtt;
+    // Gold Yellow
+    G4VisAttributes* PADVisAtt  ;
+    // Light Grey
+    G4VisAttributes* FrameVisAtt ;
+    // Light Blue
+    G4VisAttributes* GuardRingVisAtt ;
+
+
 };
 #endif

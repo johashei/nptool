@@ -1,18 +1,18 @@
 /*****************************************************************************
- * Copyright (C) 2009-2020   this file is part of the NPTool Project       *
+ * Copyright (C) 2009-2020   this file is part of the NPTool Project         *
  *                                                                           *
  * For the licensing terms see $NPTOOL/Licence/NPTool_Licence                *
  * For the list of contributors see $NPTOOL/Licence/Contributors             *
  *****************************************************************************/
 
 /*****************************************************************************
- * Original Author: Pierre Morfouace  contact address: pierre.morfouace2@cea.fr                        *
+ * Original Author: F.Flavigny  contact address: flavigny@lpccaen.in2p3.fr   *
  *                                                                           *
- * Creation Date  : May 2020                                           *
+ * Creation Date  : July 2020                                                *
  * Last update    :                                                          *
  *---------------------------------------------------------------------------*
  * Decription:                                                               *
- *  This class describe  Strasse simulation                             *
+ *  This class describe  Strasse simulation                                  *
  *                                                                           *
  *---------------------------------------------------------------------------*
  * Comment:                                                                  *
@@ -27,6 +27,11 @@
 #include "G4Tubs.hh"
 #include "G4Trap.hh"
 #include "G4Box.hh"
+#include "G4Cons.hh"
+#include "G4UnionSolid.hh"
+#include "G4ExtrudedSolid.hh"
+#include "G4SubtractionSolid.hh"
+#include "G4TwoVector.hh"
 
 //G4 sensitive
 #include "G4SDManager.hh"
@@ -61,123 +66,208 @@ namespace Strasse_NS{
   const double EnergyThreshold = 0.1*MeV;
   const double ResoEnergy = 0.015*MeV ;
 
-  // Trapezoid dimension
-  //const double TrapezoidBaseLarge = 95*mm;
-  const double TrapezoidBaseLarge = 78.1*mm;
-  //const double TrapezoidBaseSmall = 45*mm;
-  const double TrapezoidBaseSmall = 43.3*mm;
-  //const double TrapezoidHeight = 118*mm;
-  const double TrapezoidHeight = 61.8*mm;
-  const double TrapezoidLength = 1*cm;
-  const double InnerThickness = 100*um;
-  const double OutterThickness = 1*mm;
-  const double DistanceBetweenSi = 7*mm;
-  //const double InnerNbrOfStrips = 128;
-  //const double OutterNbrOfStrips = 16;
+  ////////////////////
+  // Inner Detector //
+  ////////////////////
+  // Wafer parameter
+  double Inner_Wafer_Length=100*mm;
+  double Inner_Wafer_Width=50*mm;
+  double Inner_Wafer_Thickness=300*micrometer;
+  double Inner_Wafer_AlThickness=0.4*micrometer;
+  double Inner_Wafer_PADExternal=1*cm;
+  double Inner_Wafer_PADInternal=1*mm;
+  double Inner_Wafer_GuardRing=0.5*mm;
+
+  // PCB parameter
+  double Inner_PCB_PortWidth=1*cm;
+  double Inner_PCB_StarboardWidth=2*mm;
+  double Inner_PCB_BevelAngle= 60*deg;
+  double Inner_PCB_UpstreamWidth=1*cm;
+  double Inner_PCB_DownstreamWidth=2*mm;
+  double Inner_PCB_MidWidth=2*mm;
+  double Inner_PCB_Thickness=3*mm;
+
+  /////////////////////
+  // Outter Detector //
+  /////////////////////
+  // Wafer parameter
+  double Outter_Wafer_Length=100*mm;
+  double Outter_Wafer_Width=50*mm;
+  double Outter_Wafer_Thickness=300*micrometer;
+  double Outter_Wafer_AlThickness=0.4*micrometer;
+  double Outter_Wafer_PADExternal=1*mm;
+  double Outter_Wafer_PADInternal=1*mm;
+  double Outter_Wafer_GuardRing=0.5*mm;
+
+  // PCB parameter
+  double Outter_PCB_TopPortWidth=1*cm;
+  double Outter_PCB_TopStarboardWidth=5*mm;
+  double Outter_PCB_BevelAngle= 60*deg;
+  double Outter_PCB_UpstreamWidth=1*cm;
+  double Outter_PCB_DownstreamWidth=5*mm;
+  double Outter_PCB_MidWidth=5*mm;
+  double Outter_PCB_Thickness=3*mm;
+
 }
+
 using namespace Strasse_NS;
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 // Strasse Specific Method
 Strasse::Strasse(){
+  InitializeMaterial();
   m_Event = new TStrasseData() ;
   m_InnerScorer = 0;
   m_OutterScorer = 0;
-  m_TrapezoidDetector = 0;
+  m_InnerDetector=0;
+  m_OutterDetector=0;
+  m_Chamber=0;
+  m_Frame=0;
+  m_Electronic=0;
+  // Dark Grey
+  SiliconVisAtt = new G4VisAttributes(G4Colour(0.3, 0.3, 0.3)) ;
+  // Green
+  PCBVisAtt = new G4VisAttributes(G4Colour(0.2, 0.5, 0.2)) ;
+  // Gold Yellow
+  PADVisAtt = new G4VisAttributes(G4Colour(0.5, 0.5, 0.2)) ;
+  // Light Grey
+  FrameVisAtt = new G4VisAttributes(G4Colour(0.5, 0.5, 0.5)) ;
+  // Light Blue
+  GuardRingVisAtt = new G4VisAttributes(G4Colour(1, 0.8, 0)) ;
+
+
 }
 
 Strasse::~Strasse(){
 }
+
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-void Strasse::AddDetector(G4ThreeVector POS){
-  // Convert the POS value to R theta Phi as Spherical coordinate is easier in G4 
-  m_R.push_back(POS.mag());
-  m_Theta.push_back(POS.theta());
-  m_Phi.push_back(POS.phi());
+void Strasse::AddInnerDetector(double  R, double  Z, double  Phi){
+  m_Inner_R.push_back(R);
+  m_Inner_Z.push_back(Z);
+  m_Inner_Phi.push_back(Phi);
 }
-
-
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-void Strasse::AddDetector(double  R, double  Theta, double  Phi){
-  m_R.push_back(R);
-  m_Theta.push_back(Theta);
-  m_Phi.push_back(Phi);
-}
+G4LogicalVolume* Strasse::BuildInnerDetector(){
+  if(!m_InnerDetector){
+    // Compute the needed full length of the PCB
+    // along beam axis
+    double Inner_PCB_Length= 2*Inner_Wafer_Length
+                            +Inner_PCB_UpstreamWidth
+                            +Inner_PCB_MidWidth
+                            +Inner_PCB_DownstreamWidth;
+
+    // perpendicular to beam axis
+    double Inner_PCB_Width= Inner_Wafer_Width
+                           +Inner_PCB_StarboardWidth
+                           +Inner_PCB_PortWidth;
+                           
+
+   vector<G4TwoVector> PCBCrossSection;
+   double l1 = Inner_PCB_Thickness*0.5/tan(Inner_PCB_BevelAngle);
+
+   PCBCrossSection.push_back(G4TwoVector(Inner_PCB_Width*0.5-l1,-Inner_PCB_Thickness*0.5));
+   PCBCrossSection.push_back(G4TwoVector(Inner_PCB_Width*0.5,Inner_PCB_Thickness*0.5));
+   PCBCrossSection.push_back(G4TwoVector(-Inner_PCB_Width*0.5-l1,Inner_PCB_Thickness*0.5));
+   PCBCrossSection.push_back(G4TwoVector(-Inner_PCB_Width*0.5,-Inner_PCB_Thickness*0.5));
+
+  G4ExtrudedSolid* PCBFull =
+    new G4ExtrudedSolid("PCBFull",
+        PCBCrossSection,
+        Inner_PCB_Length*0.5,// half length
+        G4TwoVector(0,0),1,// offset, scale
+        G4TwoVector(0,0),1);// offset, scale
+
+  // Master Volume that encompass everything else
+  m_InnerDetector =
+    new G4LogicalVolume(PCBFull,m_MaterialVacuum,"logicBoxDetector", 0, 0, 0);
+  m_InnerDetector->SetVisAttributes(G4VisAttributes::Invisible);
+
+  // Build the PCB
+  // Calculate the hole shift within the PCB
+  double Width_Shift= -0.5*Inner_PCB_Width + 0.5*Inner_Wafer_Width // Flush to border
+                      +Inner_PCB_PortWidth; // add the port side shift
+                      
+  double Length_Shift1 = -0.5*Inner_PCB_Length + 0.5*Inner_Wafer_Length // Flush to border
+                        + Inner_PCB_UpstreamWidth;// add Upstream side shift
+ 
+  double Length_Shift2 = Length_Shift1 // overlap detector 1
+                        + Inner_Wafer_Length // at opposing edge
+                        + Inner_PCB_MidWidth; // after mid width
+
+  G4ThreeVector HoleShift1 = G4ThreeVector(Width_Shift, 0, Length_Shift1);
+  G4ThreeVector HoleShift2 = G4ThreeVector(Width_Shift, 0, Length_Shift2);
+
+  G4Box*  HoleShape = new G4Box("HoleShape",
+      Inner_Wafer_Width*0.5,
+      Inner_PCB_Thickness*0.5+0.1*mm,
+      Inner_Wafer_Length*0.5);
+
+  // Substracting the hole Shape from the Stock PCB
+  G4SubtractionSolid* PCB_1 = new G4SubtractionSolid("PCB_1", PCBFull, HoleShape,
+      new G4RotationMatrix,HoleShift1);
+  G4SubtractionSolid* PCB = new G4SubtractionSolid("PCB", PCB_1, HoleShape,
+      new G4RotationMatrix,HoleShift2);
+
+  // Sub Volume PCB
+  G4LogicalVolume* logicPCB =
+    new G4LogicalVolume(PCB,m_MaterialPCB,"logicPCB", 0, 0, 0);
+  logicPCB->SetVisAttributes(PCBVisAtt);
+
+  new G4PVPlacement(new G4RotationMatrix(0,0,0),
+      G4ThreeVector(0,0,0),
+      logicPCB,"Strasse_Inner_PCB",m_InnerDetector,
+      false,0);
+
+  // Sub volume Wafer
+  G4Box*  WaferShape = new G4Box("WaferShape",
+      Inner_Wafer_Width*0.5,
+      Inner_Wafer_Thickness*0.5,
+      Inner_Wafer_Length*0.5);
+  
+  G4LogicalVolume* logicWafer1 =
+    new G4LogicalVolume(WaferShape,m_MaterialSilicon,"logicWafer1", 0, 0, 0);
+  logicWafer1->SetVisAttributes(GuardRingVisAtt);
+
+  G4LogicalVolume* logicWafer2 =
+    new G4LogicalVolume(WaferShape,m_MaterialSilicon,"logicWafer2", 0, 0, 0);
+  logicWafer2->SetVisAttributes(GuardRingVisAtt);
 
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-G4LogicalVolume* Strasse::BuildTrapezoidDetector(){
-  if(!m_TrapezoidDetector){
-    // Definittion of the volume containing the sensitive detectors
-    G4Trap* solidTrapezoid = new G4Trap("Strasse",
-        TrapezoidLength*0.5, 0*deg, 0*deg,
-        TrapezoidHeight*0.5, TrapezoidBaseLarge*0.5, TrapezoidBaseSmall*0.5, 0*deg, 
-        TrapezoidHeight*0.5, TrapezoidBaseLarge*0.5, TrapezoidBaseSmall*0.5, 0*deg);
-    G4LogicalVolume* logicTrapezoid = new G4LogicalVolume(solidTrapezoid,
-        MaterialManager::getInstance()->GetMaterialFromLibrary("Vacuum"),
-        "Strasse",
-        0,0,0);
+  new G4PVPlacement(new G4RotationMatrix(0,0,0),
+      G4ThreeVector(0,0.5*Inner_Wafer_Thickness-0.5*Inner_PCB_Thickness,0)// flush the wafer to the pcb on one side
+      +HoleShift1, // Shift wafer in the hole 
+      logicWafer1,"Strasse_Inner_Wafer1",m_InnerDetector,
+      false,0);
+  
+  new G4PVPlacement(new G4RotationMatrix(0,0,0),
+      G4ThreeVector(0,0.5*Inner_Wafer_Thickness-0.5*Inner_PCB_Thickness,0)// flush the wafer to the pcb on one side
+      +HoleShift2, // Shift wafer in the hole 
+      logicWafer2,"Strasse_Inner_Wafer2",m_InnerDetector,
+      false,0);
 
-    G4VisAttributes* TrapezoidVisAtt = new G4VisAttributes(G4Colour(0.90, 0.90, 0.90));
-    TrapezoidVisAtt->SetForceWireframe(true);
-    logicTrapezoid->SetVisAttributes(TrapezoidVisAtt);
+  // Sub volume Active Wafer
+  G4Box*  ActiveWaferShape = new G4Box("ActiveWaferShape",
+      Inner_Wafer_Width*0.5-Inner_Wafer_GuardRing,
+      Inner_Wafer_Thickness*0.5,
+      0.5*(Inner_Wafer_Length-Inner_Wafer_PADExternal-Inner_Wafer_PADInternal-Inner_Wafer_GuardRing));
+  
+  G4LogicalVolume* logicActiveWafer =
+    new G4LogicalVolume(ActiveWaferShape,m_MaterialSilicon,"logicActiveWafer", 0, 0, 0);
+  logicActiveWafer->SetVisAttributes(SiliconVisAtt);
 
-    // First stage silicon detector
-    G4ThreeVector positionInner = G4ThreeVector(0,0,-4*mm);
-
-    G4Trap* solidInner = new G4Trap("solidFirstSatge",
-        InnerThickness*0.5, 0*deg, 0*deg,
-        TrapezoidHeight*0.5, TrapezoidBaseLarge*0.5, TrapezoidBaseSmall*0.5, 0*deg,
-        TrapezoidHeight*0.5, TrapezoidBaseLarge*0.5, TrapezoidBaseSmall*0.5, 0*deg);
-    G4LogicalVolume* logicInner = new G4LogicalVolume(solidInner,
-        MaterialManager::getInstance()->GetMaterialFromLibrary("Si"),
-        "logicInner",
-        0,0,0);
-    new G4PVPlacement(0,
-        positionInner,
-        logicInner,
-        "Strasse_Inner",
-        logicTrapezoid,
-        false,
-        0);
-    // Set First Stage sensitive
-    logicInner->SetSensitiveDetector(m_InnerScorer);
-
-    // Visualisation of First Stage strips
-    G4VisAttributes* InnerVisAtt = new G4VisAttributes(G4Colour(0.3,0.3,0.3));
-    logicInner->SetVisAttributes(InnerVisAtt);
-
-    //////
-    // Second stage silicon detector
-    G4ThreeVector positionOutter = G4ThreeVector(0,0,-0.5*TrapezoidLength+DistanceBetweenSi);
-
-    G4Trap* solidOutter = new G4Trap("solidSecondSatge",
-        OutterThickness*0.5, 0*deg, 0*deg,
-        TrapezoidHeight*0.5, TrapezoidBaseLarge*0.5, TrapezoidBaseSmall*0.5, 0*deg,
-        TrapezoidHeight*0.5, TrapezoidBaseLarge*0.5, TrapezoidBaseSmall*0.5, 0*deg);
-    G4LogicalVolume* logicOutter = new G4LogicalVolume(solidOutter,
-        MaterialManager::getInstance()->GetMaterialFromLibrary("Si"),
-        "logicOutter",
-        0,0,0);
-    new G4PVPlacement(0,
-        positionOutter,
-        logicOutter,
-        "Strasse_Outter",
-        logicTrapezoid,
-        false,
-        0);
-    // Set Second Stage sensitive
-    logicOutter->SetSensitiveDetector(m_OutterScorer);
-
-    // Visualisation of Second Stage strips
-    G4VisAttributes* OutterVisAtt = new G4VisAttributes(G4Colour(0.4,0.5,0.5));
-    logicOutter->SetVisAttributes(OutterVisAtt);
-
-
-    m_TrapezoidDetector = logicTrapezoid;
+  new G4PVPlacement(new G4RotationMatrix(0,0,0),
+      G4ThreeVector(0,0,0.5*(Inner_Wafer_PADExternal-Inner_Wafer_PADInternal)), // assymetric pading for bounding
+      logicActiveWafer,"Strasse_Inner_ActiveWafer1",logicWafer1,
+      false,1);
+  
+  new G4PVPlacement(new G4RotationMatrix(0,0,0),
+      G4ThreeVector(0,0,-0.5*(Inner_Wafer_PADExternal-Inner_Wafer_PADInternal)), // assymetric pading for bounding
+      logicActiveWafer,"Strasse_Inner_ActiveWafer2",logicWafer2,
+      false,1);
   }
-  return m_TrapezoidDetector;
+  return m_InnerDetector;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -188,28 +278,21 @@ G4LogicalVolume* Strasse::BuildTrapezoidDetector(){
 // Read stream at Configfile to pick-up parameters of detector (Position,...)
 // Called in DetecorConstruction::ReadDetextorConfiguration Method
 void Strasse::ReadConfiguration(NPL::InputParser parser){
-  vector<NPL::InputBlock*> blocks = parser.GetAllBlocksWithToken("Strasse");
+  vector<NPL::InputBlock*> blocks_inner = parser.GetAllBlocksWithTokenAndValue("Strasse","Inner");
   if(NPOptionManager::getInstance()->GetVerboseLevel())
-    cout << "//// " << blocks.size() << " detectors found " << endl; 
+    cout << "//// " << blocks_inner.size() << " inner detectors found " << endl; 
 
-  vector<string> cart = {"POS"};
-  vector<string> sphe = {"R","Theta","Phi"};
+  vector<string> coord = {"Radius","Z","Phi"};
 
-  for(unsigned int i = 0 ; i < blocks.size() ; i++){
-    if(blocks[i]->HasTokenList(cart)){
+  for(unsigned int i = 0 ; i < blocks_inner.size() ; i++){
+    if(blocks_inner[i]->HasTokenList(coord)){
       if(NPOptionManager::getInstance()->GetVerboseLevel())
-        cout << endl << "////  Strasse " << i+1 <<  endl;
+        cout << endl << "////  Strasse inner detector" << i+1 <<  endl;
 
-      G4ThreeVector Pos = NPS::ConvertVector(blocks[i]->GetTVector3("POS","mm"));
-      AddDetector(Pos);
-    }
-    else if(blocks[i]->HasTokenList(sphe)){
-      if(NPOptionManager::getInstance()->GetVerboseLevel())
-        cout << endl << "////  Strasse " << i+1 <<  endl;
-      double R = blocks[i]->GetDouble("R","mm");
-      double Theta = blocks[i]->GetDouble("Theta","deg");
-      double Phi = blocks[i]->GetDouble("Phi","deg");
-      AddDetector(R,Theta,Phi);
+      double R = blocks_inner[i]->GetDouble("Radius","mm");
+      double Z= blocks_inner[i]->GetDouble("Z","mm");
+      double Phi = blocks_inner[i]->GetDouble("Phi","deg");
+      AddInnerDetector(R,Z,Phi);
     }
     else{
       cout << "ERROR: check your input file formatting " << endl;
@@ -224,17 +307,15 @@ void Strasse::ReadConfiguration(NPL::InputParser parser){
 // Construct detector and inialise sensitive part.
 // Called After DetecorConstruction::AddDetector Method
 void Strasse::ConstructDetector(G4LogicalVolume* world){
-  for (unsigned short i = 0 ; i < m_R.size() ; i++) {
+  for (unsigned short i = 0 ; i < m_Inner_R.size() ; i++) {
 
-    G4double wX = m_R[i] * sin(m_Theta[i] ) * cos(m_Phi[i] ) ;
-    G4double wY = m_R[i] * sin(m_Theta[i] ) * sin(m_Phi[i] ) ;
-    G4double wZ = TrapezoidHeight*0.5 + m_R[i] * cos(m_Theta[i] ) ;
-    G4ThreeVector Det_pos = G4ThreeVector(wX, wY, wZ) ;
+    G4ThreeVector Det_pos = G4ThreeVector(0,m_Inner_R[i],m_Inner_Z[i]) ;
+    Det_pos.rotate(-m_Inner_Phi[i],G4ThreeVector(0,0,1));
+
     // So the face of the detector is at R instead of the middle
-    Det_pos+=Det_pos.unit()*Strasse_NS::TrapezoidLength*0.5;
-    // Building Detector reference frame
-    G4double ii = cos(m_Theta[i]) * cos(m_Phi[i]);
-    G4double jj = cos(m_Theta[i]) * sin(m_Phi[i]);
+    /*// Building Detector reference frame
+    G4double ii = cos(m_Theta[i]) * cos(m_Inner_Phi[i]);
+    G4double jj = cos(m_Theta[i]) * sin(m_Inner_Phi[i]);
     G4double kk = -sin(m_Theta[i]);
     G4ThreeVector Y(ii,jj,kk);
     G4ThreeVector w = Det_pos.unit();
@@ -242,11 +323,13 @@ void Strasse::ConstructDetector(G4LogicalVolume* world){
     G4ThreeVector v = w.cross(u);
     v = v.unit();
     u = u.unit();
-
     G4RotationMatrix* Rot = new G4RotationMatrix(u,v,w);
+*/
 
-    new G4PVPlacement(G4Transform3D(*Rot,Det_pos),
-        BuildTrapezoidDetector(),
+    G4RotationMatrix* Rot =  new G4RotationMatrix(0*deg,0*deg,m_Inner_Phi[i]);
+
+       new G4PVPlacement(G4Transform3D(*Rot,Det_pos),
+        BuildInnerDetector(),
         "Strasse",world,false,i+1);
 
   }
@@ -268,7 +351,7 @@ void Strasse::InitializeRootOutput(){
 // Called at in the EventAction::EndOfEventAvtion
 void Strasse::ReadSensitive(const G4Event* ){
   m_Event->Clear();
-
+/*
   ///////////
   // First Stage scorer
   DSSDScorers::PS_Rectangle* InnerScorer= (DSSDScorers::PS_Rectangle*) m_InnerScorer->GetPrimitive(0);
@@ -316,14 +399,14 @@ void Strasse::ReadSensitive(const G4Event* ){
     }
   }
   OutterScorer->clear();
-
+*/
 
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 ////////////////////////////////////////////////////////////////   
 void Strasse::InitializeScorers() { 
-  // This check is necessary in case the geometry is reloaded
+/*  // This check is necessary in case the geometry is reloaded
   bool already_exist = false; 
   m_InnerScorer = CheckScorer("InnerScorer",already_exist) ;
   m_OutterScorer = CheckScorer("OutterScorer",already_exist) ;
@@ -352,6 +435,7 @@ void Strasse::InitializeScorers() {
 
   G4SDManager::GetSDMpointer()->AddNewDetector(m_InnerScorer);
   G4SDManager::GetSDMpointer()->AddNewDetector(m_OutterScorer);
+  */
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -362,6 +446,14 @@ void Strasse::InitializeScorers() {
 ////////////////////////////////////////////////////////////////////////////////
 NPS::VDetector* Strasse::Construct(){
   return  (NPS::VDetector*) new Strasse();
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+void Strasse::InitializeMaterial(){
+  m_MaterialSilicon = MaterialManager::getInstance()->GetMaterialFromLibrary("Si");
+  m_MaterialAl = MaterialManager::getInstance()->GetMaterialFromLibrary("Al");
+  m_MaterialPCB = MaterialManager::getInstance()->GetMaterialFromLibrary("PCB");
+  m_MaterialVacuum = MaterialManager::getInstance()->GetMaterialFromLibrary("Vacuum");
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -379,3 +471,5 @@ extern"C" {
 
   proxy_nps_Strasse p_nps_Strasse;
 }
+
+
