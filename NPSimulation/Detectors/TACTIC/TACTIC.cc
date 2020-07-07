@@ -251,7 +251,7 @@ void TACTIC::ConstructDetector(G4LogicalVolume* world){
 
     G4FastSimulationManager* mng = m_ReactionRegion->GetFastSimulationManager();
     unsigned int size = m_ReactionModel.size();
-    for(unsigned int i = 0 ; i < size ; i++){
+    for(unsigned int j = 0 ; j < size ; j++){
       mng->RemoveFastSimulationModel(m_ReactionModel[i]);
     }
     m_ReactionModel.clear();
