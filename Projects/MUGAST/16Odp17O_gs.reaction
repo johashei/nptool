@@ -1,0 +1,29 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%% Reaction file: 56Ni(d,p)57Ni at VAMOS-AGATA %%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Beam
+  Particle= 16O
+  Energy= 96 MeV
+  SigmaEnergy= 0 MeV
+  SigmaX= 0 mm
+  SigmaY= 0 mm
+  SigmaThetaX= 0.0 deg
+  SigmaPhiY= 0.0 deg
+  MeanThetaX= 0 mm
+  MeanPhiY= 0 mm
+  MeanX= 0 mm
+  MeanY= 0 mm
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+TwoBodyReaction
+ Beam= 16O
+ Target= 2H
+ Light= 1H
+ Heavy= 17O
+ ExcitationEnergyLight= 0.0 MeV
+ ExcitationEnergyHeavy= 0.0 MeV
+ CrossSectionPath= 16Odp17O_s12_6AMeV.dat CS
+ ShootLight= 1
+ ShootHeavy= 1
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
