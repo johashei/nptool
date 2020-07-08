@@ -1,18 +1,18 @@
 /*****************************************************************************
- * Copyright (C) 2009-2017   this file is part of the NPTool Project       *
+ * Copyright (C) 2009-2017   this file is part of the NPTool Project         *
  *                                                                           *
  * For the licensing terms see $NPTOOL/Licence/NPTool_Licence                *
  * For the list of contributors see $NPTOOL/Licence/Contributors             *
  *****************************************************************************/
 
 /*****************************************************************************
- * Original Author: valerian  contact address: girardalcindor@ganil.fr                        *
+ * Original Author: valerian  contact address: girardalcindor@ganil.fr       *
  *                                                                           *
- * Creation Date  : November 2017                                           *
+ * Creation Date  : November 2017                                            *
  * Last update    :                                                          *
  *---------------------------------------------------------------------------*
  * Decription:                                                               *
- *  This class describe  beam_dump simulation                             *
+ *  This class describe  beam_dump simulation                                *
  *                                                                           *
  *---------------------------------------------------------------------------*
  * Comment:                                                                  *
@@ -59,8 +59,8 @@ namespace beam_dump_NS{
     const double EnergyThreshold = 0.0*MeV;
     const double ResoTime = 0.0*ns ;
     const double ResoEnergy = 0.0*MeV ;
-    const double Radius = 20*cm ; 
-    const double Width = 10*cm ;
+    //const double Radius = 20*cm ; 
+    //const double Width = 10*cm ;
     // const double Thickness = 34*um ;
 }
 

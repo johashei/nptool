@@ -43,6 +43,7 @@
 // NPTool header
 #include "AGATA.hh"
 #include "CalorimeterScorers.hh"
+#include "InteractionScorers.hh"
 #include "RootOutput.h"
 #include "MaterialManager.hh"
 #include "NPSDetectorFactory.hh"
@@ -241,8 +242,10 @@ void AGATA::InitializeScorers() {
   // Otherwise the scorer is initialised
   vector<int> level; level.push_back(1);
   G4VPrimitiveScorer* Calorimeter= new CalorimeterScorers::PS_Calorimeter("Crystal",level, 0) ;
+  G4VPrimitiveScorer* Interaction= new InteractionScorers::PS_Interactions("Inter",0) ;
   //and register it to the multifunctionnal detector
   m_AGATAScorer->RegisterPrimitive(Calorimeter);
+  m_AGATAScorer->RegisterPrimitive(Interaction);
   G4SDManager::GetSDMpointer()->AddNewDetector(m_AGATAScorer) ;
 }
 
