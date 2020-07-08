@@ -40,6 +40,8 @@ NPS::BeamReaction::BeamReaction(G4String modelName, G4Region* envelope)
   m_PreviousLength = 0;
   m_PreviousDirection.set(0,0,0);
   m_shoot=false;
+  m_rand=0;
+  m_reverse=false;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -69,7 +71,7 @@ void NPS::BeamReaction::ReadConfiguration() {
   //if(blocks.size()>0) m_ReactionType ="QFSReaction";
 
   if(input.GetAllBlocksWithToken("TwoBodyReaction").size()>0) m_ReactionType ="TwoBodyReaction";
-  if(input.GetAllBlocksWithToken("QFSReaction").size()>0) m_ReactionType ="QFSReaction";
+  else if(input.GetAllBlocksWithToken("QFSReaction").size()>0) m_ReactionType ="QFSReaction";
 
 
   if (m_ReactionType=="TwoBodyReaction" ) {
@@ -83,7 +85,9 @@ void NPS::BeamReaction::ReadConfiguration() {
               RootOutput::getInstance()->GetTree()->Branch(
                       "ReactionConditions", "TReactionConditions", &m_ReactionConditions);
       }
-  } else  if (m_ReactionType=="QFSReaction") {
+  } 
+  
+  else  if (m_ReactionType=="QFSReaction") {
       m_QFS.ReadConfigurationFile(input);
       m_BeamName = NPL::ChangeNameToG4Standard(m_QFS.GetNucleusA()->GetName());
       m_active             = true;
@@ -114,62 +118,81 @@ G4bool NPS::BeamReaction::IsApplicable(const G4ParticleDefinition& particleType)
 ////////////////////////////////////////////////////////////////////////////////
 G4bool NPS::BeamReaction::ModelTrigger(const G4FastTrack& fastTrack) {
   //cout<< "--------- MODEL TRIG ---------"<<endl;
-  static double  rand         = 0;
   const G4Track* PrimaryTrack = fastTrack.GetPrimaryTrack();
+  m_Parent_ID = PrimaryTrack->GetParentID();
+  // process reserved to the beam
+  if(m_Parent_ID!=0)
+    return false;
+
   G4ThreeVector  V            = PrimaryTrack->GetMomentum().unit();
   G4ThreeVector  P            = fastTrack.GetPrimaryTrackLocalPosition();
   G4VSolid*      solid        = fastTrack.GetPrimaryTrack()
                         ->GetVolume()
                         ->GetLogicalVolume()
                         ->GetSolid();
-  double in    = solid->DistanceToOut(P, V);
-  double out   = solid->DistanceToOut(P, -V);
-  double ratio = in / (out + in);
+  double  to_exit    = solid->DistanceToOut(P, V);
+  double  to_entrance   = solid->DistanceToOut(P, -V);
+  bool is_first = (to_entrance==0);
+  bool is_last  = (abs(to_exit-m_StepSize)<=1e-9);
 
-  m_Parent_ID = PrimaryTrack->GetParentID();
-  // process reserved to the beam
-  if(m_Parent_ID!=0)
-    return false;
+   if(is_first && m_shoot){
+    std::cout << "Something went wrong in beam reaction, m_shoot cannot be true at beginning of event" << std::endl;
+    std::cout << "rand: " << m_rand << std::endl;
+    m_shoot = false;
+  }
 
-  if(!m_shoot){
-  rand             = G4RandFlat::shoot();
+
+  if(is_first){
+  m_rand           = G4RandFlat::shoot()*(to_exit+to_entrance); // random Z in the Volume
   m_PreviousLength = m_StepSize;
   m_PreviousEnergy = PrimaryTrack->GetKineticEnergy();
   m_PreviousDirection = PrimaryTrack->GetMomentumDirection();
-
   // Clear Previous Event
   m_ReactionConditions->Clear();
   m_shoot=true;
+
+  if((to_exit+to_entrance)-m_rand<m_StepSize){ // reaction happen in last step
+    // the last step in the volume is not at the volume boundary but one step
+    // back, so for this case, the reaction must happen in reverse, ahead of 
+    // the current position, not after
+    m_reverse=true;
+  }
+  else
+    m_reverse=false;
+    return false;
   }
 
-  // If the condition is met, the event is generated
-  if (m_shoot && (ratio < rand || (in-m_StepSize) <= 1E-20)) {
 
-    // Reset the static for next event
+
+  // If the condition is met, the event is generated
+//  cout << to_exit << " " << to_entrance << " " << m_rand << endl;
+  if (m_shoot && (to_entrance > m_rand || is_last)) {
     if(m_ReactionType=="QFSReaction"){
         if ( m_QFS.IsAllowed() ) {
             return true;
         }
-        else
+        else{
           m_shoot=false;
+          std::cout << "QFS not allowed" << std::endl;
+        }
     }
    
     else if(m_ReactionType=="TwoBodyReaction"){
         if ( m_Reaction.IsAllowed(PrimaryTrack->GetKineticEnergy()) ) {
             return true;
         } 
-        else
+        else{
           m_shoot=false;
+          std::cout << "Two body reaction not allowed" << std::endl;
+        }
     }
   }
 
   // Record the situation of the current step
   // so it can be used in the next one
-  if (!PrimaryTrack->GetStep()->IsLastStepInVolume()) {
     m_PreviousLength = PrimaryTrack->GetStep()->GetStepLength();
     m_PreviousEnergy = PrimaryTrack->GetKineticEnergy();
     m_PreviousDirection = PrimaryTrack->GetMomentumDirection();
-  }
 
   return false;
 }
@@ -178,6 +201,7 @@ G4bool NPS::BeamReaction::ModelTrigger(const G4FastTrack& fastTrack) {
 void NPS::BeamReaction::DoIt(const G4FastTrack& fastTrack,
         G4FastStep&        fastStep) {
     
+   // std::cout << "DOIT" << std::endl; 
     m_shoot=false;
 
     // Get the track info
@@ -199,11 +223,18 @@ void NPS::BeamReaction::DoIt(const G4FastTrack& fastTrack,
     // Assume no scattering
     double rand   = G4RandFlat::shoot();
     double length = (1-rand) * (m_PreviousLength);
-    double reac_energy = energy + (1-rand) * (m_PreviousEnergy - energy);
+    double reac_energy ;
+    if(!m_reverse)
+      reac_energy = energy + (1-rand) * (m_PreviousEnergy - energy);
+    else
+      reac_energy = energy - (1-rand) * (m_PreviousEnergy - energy);
 
     G4ThreeVector ldir = m_PreviousDirection;
     ldir *= length;
-    localPosition = localPosition - ldir;
+    if(!m_reverse)
+      localPosition = localPosition - ldir;
+    else
+      localPosition = localPosition + ldir;
 
     // Set the end of the step conditions
     fastStep.SetPrimaryTrackFinalKineticEnergyAndDirection(0, pdirection);

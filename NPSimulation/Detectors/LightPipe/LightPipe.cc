@@ -76,7 +76,7 @@ LightPipe::LightPipe(){
 	m_ScintillatorMaterial = CreateScintillatorMaterial();
 	m_PipeMaterial = CreatePipeMaterial();
 	//m_WrappingMaterial = CreateWrappingMaterial();
-  m_WrappingMaterial =  NULL;
+//  m_WrappingMaterial =  NULL;
 	m_ReflectiveSurface = CreateReflectiveSurface();
 
 	m_VisSquare->SetForceWireframe(true);
