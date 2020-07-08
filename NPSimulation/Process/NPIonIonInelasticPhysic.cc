@@ -164,7 +164,7 @@ void NPIonIonInelasticPhysic::ConstructProcess()
         
         G4DynamicParticle* dp = new G4DynamicParticle(particle,G4ThreeVector(0,0,1),energy*MeV);
         //G4Element* element = new G4Element("Sn","Sn",1);
-        //G4Isotope *isotope = new G4Isotope("Sn",50,70,120*g/mole);
+       //G4Isotope *isotope = new G4Isotope("Sn",50,70,120*g/mole);
         //element->AddIsotope(isotope,1);
         // Glauber-Gribov
         //cout << energy << " " << GlauberGribovCrossSection->GetInelasticIsotopeCrossSection(particle,energy*MeV,Z,A)/barn << endl;

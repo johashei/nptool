@@ -106,7 +106,6 @@ namespace CalorimeterScorers {
         // Give the list of the nesting level at which the copy number should be return.
         // 0 is the lowest level possible (the actual volume copy number in which the interaction happen)
         vector<G4int> m_NestingLevel;
-        G4int m_Index;
         
     private: 
         CalorimeterDataVector m_Data;

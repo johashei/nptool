@@ -903,7 +903,7 @@ void MUST2Array::ReadSensitive(const G4Event*) {
 
   for(it=mapBack.begin();it!=mapBack.end();it++){
     double energyY = RandGauss::shoot(it->second.first, ResoStrip);
-    double timeX = TimeOffset - RandGauss::shoot(it->second.second, ResoTimeMust);
+    double timeY = TimeOffset - RandGauss::shoot(it->second.second, ResoTimeMust);
     unsigned int strip = it->first-1000000*(it->first/1000000);
     unsigned int det   = it->first/1000000;
     if (energyY > ThresholdSi) {
@@ -912,7 +912,7 @@ void MUST2Array::ReadSensitive(const G4Event*) {
       m_Event->SetStripYE(det, strip ,
           NPL::EnergyToADC(energyY, 0, 63, 8192, 0)); 
       m_Event->SetStripYT(det, strip ,
-          NPL::EnergyToADC(timeX, 0, 1000, 8192, 16384));
+          NPL::EnergyToADC(timeY, 0, 1000, 8192, 16384));
     }
   }
 

@@ -6,13 +6,13 @@
  *****************************************************************************/
 
 /*****************************************************************************
- * Original Author: Adrien MATTA  contact address: a.matta@surrey.ac.uk      *
+ * Original Author: Adrien MATTA  contact address: matta@lpccaen.in2p3.fr    *
  *                                                                           *
- * Creation Date  : febuary 2009                                             *
- * Last update    : october 2010                                             *
+ * Creation Date  : novembre 2018                                            *
+ * Last update    :                                                          *
  *---------------------------------------------------------------------------*
  * Decription:                                                               *
- *  This class hold Mugast treated data                                       *
+ *  This class hold Mugast treated data                                      *
  *                                                                           *
  *---------------------------------------------------------------------------*
  * Comment:                                                                  *
@@ -544,7 +544,7 @@ void TMugastPhysics::ReadConfiguration(NPL::InputParser parser) {
       TVector3 C = blocks[i]->GetTVector3("X1_Y128", "mm");
       TVector3 D = blocks[i]->GetTVector3("X128_Y128", "mm");
 
-      AddTelescope(A, B, C, D);
+      AddTelescope(DetectorType[detectorNbr],A, B, C, D);
     }
 
     else if (blocks[i]->HasTokenList(annular)) {
@@ -561,7 +561,7 @@ void TMugastPhysics::ReadConfiguration(NPL::InputParser parser) {
       det = i+1;
       m_DetectorNumberIndex[detectorNbr]=det;
       TVector3 Center = blocks[i]->GetTVector3("Center", "mm");
-      AddTelescope(Center);
+      AddTelescope(DetectorType[detectorNbr],Center);
     }
 
 
@@ -583,7 +583,7 @@ void TMugastPhysics::ReadConfiguration(NPL::InputParser parser) {
       double         Phi   = blocks[i]->GetDouble("PHI", "deg");
       double         R     = blocks[i]->GetDouble("R", "mm");
       vector<double> beta  = blocks[i]->GetVectorDouble("BETA", "deg");
-      AddTelescope(Theta, Phi, R, beta[0], beta[1], beta[2]);
+      AddTelescope(DetectorType[detectorNbr],Theta, Phi, R, beta[0], beta[1], beta[2]);
     }
 
     else {
@@ -728,7 +728,7 @@ void TMugastPhysics::InitializeRootOutput() {
 }
 
 /////   Specific to MugastArray   ////
-void TMugastPhysics::AddTelescope(TVector3 C_X1_Y1, TVector3 C_X128_Y1,
+void TMugastPhysics::AddTelescope(MG_DetectorType type,TVector3 C_X1_Y1, TVector3 C_X128_Y1,
     TVector3 C_X1_Y128, TVector3 C_X128_Y128) {
   // To avoid warning
   C_X128_Y128 *= 1;
@@ -750,14 +750,16 @@ void TMugastPhysics::AddTelescope(TVector3 C_X1_Y1, TVector3 C_X128_Y1,
 
   //   Geometry Parameter
   double Base,Height;
-  if(DetectorType[m_NumberOfTelescope-1]==MG_TRAPEZE){
+  if(type==MG_TRAPEZE){
     Base          = 91.48; // mm
     Height        = 104.688; // mm
   }
     
-  if(DetectorType[m_NumberOfTelescope-1]==MG_SQUARE){
+  if(type==MG_SQUARE){
     Base          = 91.716; // mm
     Height        = 94.916; // mm
+//
+ //   Height        = 194.916; // mm
   }
     //double Face          = 98; // mm
   double NumberOfStrip = 128;
@@ -773,10 +775,13 @@ void TMugastPhysics::AddTelescope(TVector3 C_X1_Y1, TVector3 C_X128_Y1,
   vector<vector<double>> OneTelescopeStripPositionZ;
 
   //   Moving StripCenter to 1.1 corner:
-  //Strip_1_1 = C_X1_Y1 + (U + V) * (StripPitch / 2.);
-  Strip_1_1 = C_X1_Y1 + U  * (StripPitchBase / 2.) + V * (StripPitchHeight / 2.);
-  //Strip_1_1 += U + V ;
-
+ // Strip_1_1 = C_X1_Y1 + U  * (StripPitchBase / 2.) + V * (StripPitchHeight / 2.);
+  // This calculation recenter the strip around the detector center. 
+  // This account for cases where the provided corner coordinates
+  // does not match the detector size
+  TVector3 Center = 0.25*(C_X1_Y128 + C_X128_Y128 + C_X1_Y1 + C_X128_Y1);
+  Strip_1_1 = Center-(0.5*Base*U+0.5*Height*V) + U  * (StripPitchBase / 2.) + V * (StripPitchHeight / 2.);
+ 
   for (int i = 0; i < 128; ++i) {
     lineX.clear();
     lineY.clear();
@@ -834,7 +839,7 @@ void TMugastPhysics::InitializeStandardParameter() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-void TMugastPhysics::AddTelescope(TVector3 C_Center) {
+void TMugastPhysics::AddTelescope(MG_DetectorType type,TVector3 C_Center) {
   // To avoid warning
   m_NumberOfTelescope++;
   double Z = C_Center.Z();
@@ -863,19 +868,6 @@ void TMugastPhysics::AddTelescope(TVector3 C_Center) {
   vector<vector<double>> OneStripPositionY;
   vector<vector<double>> OneStripPositionZ;
 
-  /* The logic behind the strip numbering of S1 in NPTOOL: 
-     The number of rings goes from 1->64, the number of sectors goes from 1->16 
-     (4 per quadrant). There's a redundancy in the fact that 1->64 already contain 
-     the information about the quadrant and the majority of these positions are 
-     indeed not physical. Example: 
-     A hit combining Ring 17 (first ring in Quadrant 2) and 
-     Sector 4 (last sector in Quadrant 1) is not possible due to physical mismatch 
-     of the detector frontside-backside layout. 
-     The three loops however takes all the possible combintation that an analysis
-     can produce. This works perfectly for cases where the detector does not have 
-     "Quadrants", e.g. S3 type. For the S1 an extra condition is added to flag the
-     non physical hit combinations. 
-     */
 
   for(int iQuad = 0; iQuad < NumberOfQuadrant ; iQuad++){
     for(int iRing = 0 ; iRing < NumberofRing; iRing++){
@@ -889,26 +881,6 @@ void TMugastPhysics::AddTelescope(TVector3 C_Center) {
         //Build vector
         StripCenter = TVector3(C_Center.X()+R_Min+(iRing+0.5)*StripPitchRing,C_Center.Y(), Z);
         StripCenter.RotateZ((Phi_0 + (iSector+0.5)*StripPitchSector) *M_PI/180.);
-
-        // if the hit is not "allowed" (see comment above) use a default value
-        if(iQuad == 2){
-          if(!(iSector == 0 || iSector == 1 || iSector == 14 || iSector == 15)) {
-            StripCenter.SetXYZ(-1000,-1000, Z-1000);
-          }
-        } else if(iQuad == 3){
-          if(!(iSector > 1 && iSector < 6)){
-            StripCenter.SetXYZ(-1000,-1000, Z-1000);
-          }
-        } else if(iQuad == 1){
-          if(!(iSector > 5 && iSector < 10)){
-            StripCenter.SetXYZ(-1000,-1000, Z-1000);
-          }
-        }
-        else if(iQuad == 0){
-          if(!(iSector > 9 && iSector < 14)){
-            StripCenter.SetXYZ(-1000,-1000, Z-1000);
-          }
-        }
 
         // these vectors will contain 16x4 = 64 elements
         lineX.push_back( StripCenter.X() );
@@ -938,7 +910,7 @@ void TMugastPhysics::AddTelescope(TVector3 C_Center) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-void TMugastPhysics::AddTelescope(double theta, double phi, double distance,
+void TMugastPhysics::AddTelescope(MG_DetectorType type,double theta, double phi, double distance,
     double beta_u, double beta_v, double beta_w) {
 
   m_NumberOfTelescope++;

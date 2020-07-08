@@ -73,13 +73,13 @@ namespace Dali_NS{
   // Energy and time Resolution
   const double EnergyThreshold = 0*MeV;
   const double ResoTime = 0.0*ns; //4.5*ns ;
-  const double ResoEnergy = 1.36*MeV ; // mean Resolution(FWHM) 1.7% of 80MeV from slides 20170214-SAMURAI34-setup-DALI.pdf if 1.7% of 30MeV = 0.51 MeV // 0.001*MeV ;
-  const double Radius = 50*mm ; 
+  const double ResoEnergy = 0.122;  //Relative resolution DeltaE = 0.122*Sqrt(E) 
+  /* const double ResoEnergy = 1.36*MeV ; // mean Resolution(FWHM) 1.7% of 80MeV from slides 20170214-SAMURAI34-setup-DALI.pdf if 1.7% of 30MeV = 0.51 MeV // 0.001*MeV ; */
+  //const double Radius = 50*mm ; 
   const double Width = 49.76*mm ;
   const double Hight = 84.81*mm ;
   const double Thickness = 164.82*mm ;
   const double LengthPMT = 152.62*mm ;
-  const string Material = "NaI";   
 }
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -87,287 +87,194 @@ namespace Dali_NS{
 // Dali Specific Method
 Dali::Dali(){
   m_Event = new TDaliData() ;
-  m_DaliScorer = 0;
   m_SquareDetector = 0;
-  m_SquareDetector_Can = 0;
-  m_SquareDetector_CanMgO =0;
-  m_CylindricalDetector = 0;
-  m_SquareDetector_Crystal = 0;
-  Logic_ArrayDali_1 =0;
-  
-  // RGB Color + Transparency
-  m_VisSquare = new G4VisAttributes(G4Colour(0, 1, 1/*, 0.3*/));   
-  m_VisCylinder = new G4VisAttributes(G4Colour(0, 0, 1/*, 0.3*/));   
-
-}
+  m_DaliScorer = 0;
+  Log_Dali_1Volume = 0;
+  Log_Al_Cryst_can = 0;
+  Log_MgO_Cryst_can =0;
+  Log_Crystal = 0;
+  Log_Dali_3Volume=0;
+ }
 
 Dali::~Dali(){
 }
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-void Dali::AddDetector(G4ThreeVector POS, string  Shape){
+void Dali::AddDetector(G4ThreeVector POS ){
   // Convert the POS value to R theta Phi as Cylindrical coordinate is easier in G4 
   m_R.push_back(POS.perp());
   m_Alpha.push_back(POS.phi());
   m_Zeta.push_back(POS.y());
-  m_Shape.push_back(Shape);
 }
 
-
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-void Dali::AddDetector(double  R, double  Theta, double  Phi, string  Shape){
-
+void Dali::AddDetector(double  R, double  Theta, double  Phi){
   double m_r, m_alpha, m_zeta;
-  
   m_r = R*cos(Phi);
   m_alpha = Theta;
   m_zeta = R*sin(Phi);
-       
   m_R.push_back(m_r);
   m_Alpha.push_back(m_alpha);
   m_Zeta.push_back(m_zeta);
-  m_Shape.push_back(Shape);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void Dali::AddDetector2(double  R, double  Alpha, double  Zeta, string  Shape){
+void Dali::AddDetector(double  R, double  Alpha, double  Zeta, int Ring){
   m_R.push_back(R);
   m_Alpha.push_back(Alpha);
   m_Zeta.push_back(Zeta);
-  m_Shape.push_back(Shape);
+  m_Ring.push_back(Ring);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 // Definition Materials MgO and NaI(Tl)
 
  void Dali::DefinitionMaterials()
  {
-    //G4Element* H       = new G4Element("Hydrogen","H" , 1., 1.01*g/mole);
-    
-    G4Isotope* Mg24 = new G4Isotope ("Mg24", 12, 24, 23.985041*g/mole);
-    G4Isotope* Mg25 = new G4Isotope ("Mg25", 12, 25, 24.985836*g/mole);
-    G4Isotope* Mg26 = new G4Isotope ("Mg26", 12, 26, 25.982592*g/mole);
-    G4Element* Mg= new G4Element("elMagnesium","Mg",3);
-    Mg->AddIsotope(Mg24, 78.99*perCent);
-    Mg->AddIsotope(Mg25, 10*perCent);
-    Mg->AddIsotope(Mg26, 11.01*perCent);
+  
+    G4Element *Tl = new G4Element("Thallium","Tl",81.,204.383*g/mole );
 
-    G4Isotope* O16 = new G4Isotope ("O16", 8, 16, 15.99*g/mole);
-    G4Isotope* O17 = new G4Isotope ("O17", 8, 17, 17.00*g/mole);
-    G4Isotope* O18 = new G4Isotope ("O18", 8, 18, 18.00*g/mole);
-    G4Element* O = new G4Element("elOxygen","O",3);
-    O->AddIsotope(O16, 99.76*perCent);
-    O->AddIsotope(O17, 0.04*perCent);
-    O->AddIsotope(O18, 0.20*perCent);
-
-    
-    MgO = new G4Material("MgO",3.6*g/cm3, 2 );
-    MgO->AddElement(Mg,1);
-    MgO->AddElement(O, 1);
-    
-    G4Element *elTl = new G4Element("Thallium","Tl",81.,204.383*g/mole );
-    
     NaI_Tl = new G4Material("NaI_Tl",3.6667*g/cm3, 2);
     NaI_Tl->AddMaterial(MaterialManager::getInstance()->GetMaterialFromLibrary("NaI"), 99.6*perCent);
-    NaI_Tl->AddElement(elTl, 0.4*perCent);
-
+    NaI_Tl->AddElement(Tl, 0.4*perCent);
+ 
  }
 
-
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
 
 G4LogicalVolume* Dali::BuildSquareDetector(){
   if(!m_SquareDetector){
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-
-    G4Box* box_3can = new G4Box("Dali_3BoxCan", Dali_NS::Hight*0.5,
-                                Dali_NS::Width*0.5*3, Dali_NS::Thickness*0.5 + Dali_NS::LengthPMT/2.+11.5/2.*mm /*last part is PMTVolume*/ );
-    G4Material* Aria = MaterialManager::getInstance()->GetMaterialFromLibrary("Air");
-    Logic_ArrayDali_1 = new G4LogicalVolume(box_3can,Aria,"logic_ArrayDali",0,0,0);
-
-    Logic_ArrayDali_1->SetVisAttributes(G4VisAttributes(G4Colour(1,1,1, 0)));
-
     
-    G4Box* box_can = new G4Box("Dali_BoxCan", Dali_NS::Hight*0.5,
-                               Dali_NS::Width*0.5, Dali_NS::Thickness*0.5);
-
-    G4Box* box_canandPMT = new G4Box("Dali_BoxCan", Dali_NS::Hight*0.5,
-                               Dali_NS::Width*0.5, Dali_NS::Thickness*0.5 + Dali_NS::LengthPMT/2.+11.5/2.*mm /*last part is PMTVolume*/ );
- 
     std::vector<G4TwoVector> polygon;
-    polygon.push_back(G4TwoVector(Dali_NS::Hight*0.5, Dali_NS::Width*0.5*3.  )  ) ;
-    polygon.push_back(G4TwoVector(Dali_NS::Hight*0.5, -Dali_NS::Width*0.5*3.  )  ) ;
-    polygon.push_back(G4TwoVector(-Dali_NS::Hight*0.5, -Dali_NS::Width*0.5*3.  )  ) ;
-    polygon.push_back(G4TwoVector(-Dali_NS::Hight*0.5, Dali_NS::Width*0.5*3.  )  ) ;
-
-    // std::vector<ZSection> zsection;
-    // zsection.push_back(ZSection (Dali_NS::Thickness*0.5, {0,0}, 1. ) );
-    // zsection.push_back(ZSection (-Dali_NS::Thickness*0.5-19.5*2.*mm , {0,0}, 1. ) );
-
+    polygon.push_back(G4TwoVector(Dali_NS::Hight*0.5, Dali_NS::Width*0.5*3.)  ) ;
+    polygon.push_back(G4TwoVector(Dali_NS::Hight*0.5, -Dali_NS::Width*0.5*3.)  ) ;
+    polygon.push_back(G4TwoVector(-Dali_NS::Hight*0.5, -Dali_NS::Width*0.5*3.)  ) ;
+    polygon.push_back(G4TwoVector(-Dali_NS::Hight*0.5, Dali_NS::Width*0.5*3.)  ) ;
     
-    G4Box* Extrudedbox_can  = new G4Box("Dali_BoxCan", Dali_NS::Hight*0.5,Dali_NS::Width*0.5, Dali_NS::LengthPMT/2.+11.5/2.*mm);
-
+    G4Material* Aria = MaterialManager::getInstance()->GetMaterialFromLibrary("Air");
+    G4Material* Al = MaterialManager::getInstance()->GetMaterialFromLibrary("Al");
+    G4Material* MgO = MaterialManager::getInstance()->GetMaterialFromLibrary("MgO");
+    //G4Material* muMetal = MaterialManager::getInstance()->GetMaterialFromLibrary("mumetal");
+    G4Material* Vacuum = MaterialManager::getInstance()->GetMaterialFromLibrary("Vacuum");
+    //G4Material* BoroSili_Glass = MaterialManager::getInstance()->GetMaterialFromLibrary("Borosillicate_Glass");
+    
+    ///// CONTENAIR VOLUMES 
+    G4Box* Dali_3Volume = new G4Box("Dali_3Volume", 
+                                 Dali_NS::Hight*0.5,
+                                 Dali_NS::Width*0.5*3,
+                                 Dali_NS::Thickness*0.5 + Dali_NS::LengthPMT/2.+11.5/2.*mm );        
+    Log_Dali_3Volume = new G4LogicalVolume(Dali_3Volume,
+                                            Aria,"log_Dali_3Volume",0,0,0);
+    G4Box* Dali_1Volume = new G4Box("Dali_1Volume", 
+                                      Dali_NS::Hight*0.5,
+                                      Dali_NS::Width*0.5, 
+                                      Dali_NS::Thickness*0.5 + Dali_NS::LengthPMT/2.+11.5/2.*mm );
+    Log_Dali_1Volume = new G4LogicalVolume(Dali_1Volume, 
+                                                Aria,"logic_1DaliVolume",0,0,0);
+    
+    G4Box* Extrudedbox_can  = new G4Box("extrude_box", Dali_NS::Hight*0.5,
+                                         Dali_NS::Width*0.5, 
+                                         Dali_NS::LengthPMT/2.+11.5/2.*mm);
     AriaExtrude = new G4LogicalVolume(Extrudedbox_can,Aria, "logic_Ariaextrude",0,0,0);
 
-    G4Material* DetectorCanMaterial = MaterialManager::getInstance()->GetMaterialFromLibrary("Al");
-    m_SquareDetector_Can = new G4LogicalVolume(box_can,DetectorCanMaterial,"logic_Dali_Can",0,0,0);
-    m_Square2Detector_Can = new G4LogicalVolume(box_canandPMT, Aria,"logic_Dali_CanandPMT",0,0,0);
 
-
-    //THE PMT
+    /////// PMTs objets 
     G4Tubs* AlPMT = new G4Tubs("AlPMT",16.5*mm, 19.5*mm,Dali_NS::LengthPMT/2.,0*deg,360*deg);
-    G4Tubs* MuPMT = new G4Tubs("MuPMT",16.5*mm,20.*mm,Dali_NS::LengthPMT/2.,0*deg,360*deg);
-    G4Box* TopPlatePMT = new G4Box("TopPlatePMT",  Dali_NS::Hight*0.5-1*mm,
-                                  Dali_NS::Width*0.5-1*mm, 11.5/2.*mm );
-    G4Tubs* GlassPMT = new G4Tubs("GlassPMT", 0. , 16.5*mm , 11.5/2.*mm ,0*deg,360*deg);
-
-    lAlPMT = new G4LogicalVolume(AlPMT, DetectorCanMaterial ,"lAlPMT",0,0,0);
-    lMuPMT = new G4LogicalVolume(MuPMT, DetectorCanMaterial ,"lMuPMT",0,0,0);
-    lTopPlatePMT = new G4LogicalVolume(TopPlatePMT, DetectorCanMaterial ,"lTopPlatePMT",0,0,0);
-    lGlassPMT = new G4LogicalVolume(GlassPMT , MaterialManager::getInstance()->GetMaterialFromLibrary("Borosillicate_Glass") ,"lGlassPMT",0,0,0);
-
-
-    G4VisAttributes* Can_Attributes = new G4VisAttributes(G4Colour(0.5,0.5,0.5, .3));
-    m_SquareDetector_Can->SetVisAttributes(Can_Attributes);
-    m_Square2Detector_Can->SetVisAttributes(G4VisAttributes(G4Colour(1,1,1,0)));
-                                                
-        AriaExtrude->SetVisAttributes(G4VisAttributes(G4Colour(1,1,1,0)));
-        lAlPMT->SetVisAttributes(Can_Attributes);
-        lMuPMT->SetVisAttributes(Can_Attributes);
-        lTopPlatePMT->SetVisAttributes(Can_Attributes);
-          
-    G4Box* box_MgO = new G4Box("Dali_BoxMgO", Dali_NS::Hight*0.5-1*mm,
-                               Dali_NS::Width*0.5-1*mm, Dali_NS::Thickness*0.5-1*mm);    // Size of Al Can but w/o thickness of AlCan
- 
-    m_SquareDetector_CanMgO = new G4LogicalVolume(box_MgO,MgO,"logic_Dali_CanMg0",0,0,0);
-
-    G4Box* box_crystal = new G4Box("Dali_BoxNaI", Dali_NS::Hight*0.5-2.4*mm,
-                           Dali_NS::Width*0.5-2.4*mm, Dali_NS::Thickness*0.5-2.4*mm); // Size of AlCan but w/o thickness of AlCan and MgO
+    lAlPMT = new G4LogicalVolume(AlPMT, Vacuum ,"lAlPMT",0,0,0);
     
-//    G4Material* DetectorMaterial = MaterialManager::getInstance()->GetMaterialFromLibrary(Dali_NS::Material);
+    G4Tubs* MuPMT = new G4Tubs("MuPMT",16.5*mm,20.*mm,Dali_NS::LengthPMT/2.,0*deg,360*deg);
+    lMuPMT = new G4LogicalVolume(MuPMT, Vacuum ,"lMuPMT",0,0,0);
+    
+    G4Box* TopPlatePMT = new G4Box("TopPlatePMT",  Dali_NS::Hight*0.5-1*mm,
+                                  Dali_NS::Width*0.5-1*mm, 
+                                  11.5/2.*mm );
+    lTopPlatePMT = new G4LogicalVolume(TopPlatePMT, Vacuum ,"lTopPlatePMT",0,0,0);
+    
+    G4Tubs* GlassPMT = new G4Tubs("GlassPMT", 0. , 16.5*mm , 11.5/2.*mm ,0*deg,360*deg);
+    lGlassPMT = new G4LogicalVolume(GlassPMT , Vacuum ,"lGlassPMT",0,0,0); // Cyril
 
-    m_SquareDetector_Crystal = new G4LogicalVolume(box_crystal,
-                                                   NaI_Tl,
-                                                   // DetectorMaterial,
-                                                   "logic_Dali_Box",0,0,0);
- 
+
+    
+    //////////////// CRYSTAL part
+    G4Box* Al_Cryst_can = new G4Box("Al_Cryst_can", 
+                                    Dali_NS::Hight*0.5,
+                                    Dali_NS::Width*0.5,  
+                                    Dali_NS::Thickness*0.5);
+    Log_Al_Cryst_can    = new G4LogicalVolume(Al_Cryst_can,
+                                    Al,"log_Al_Cryst_can",0,0,0);
+
+    G4Box* MgO_Cryst_can = new G4Box("MgO_Cryst_can", 
+                                    Dali_NS::Hight*0.5-1*mm,
+                                    Dali_NS::Width*0.5-1*mm, 
+                                    Dali_NS::Thickness*0.5-1*mm);  
+    Log_MgO_Cryst_can = new G4LogicalVolume(MgO_Cryst_can,
+                                    MgO, "logic_Dali_CanMg0",0,0,0);
+
+    G4Box* Crystal  = new G4Box("Crystal", 
+                                Dali_NS::Hight*0.5-2.4*mm,
+                                Dali_NS::Width*0.5-2.4*mm, 
+                                Dali_NS::Thickness*0.5-2.4*mm);
+    Log_Crystal     = new G4LogicalVolume(Crystal,
+                                          NaI_Tl,"logic_Dali_Box",0,0,0);
+
     G4ThreeVector positionnull = G4ThreeVector(0,0,0);
 
-
-     // PMT Volume -
+    // PMT  part -
     new G4PVPlacement(0, positionnull,
-                      lAlPMT ,
-                      "AlPMT",
-                      lMuPMT,
-                      false,
-                      0);
+                      lAlPMT ,"AlPMT",lMuPMT,false,0);
     new G4PVPlacement(0, G4ThreeVector(0,0, -11.5/2.*mm ),
-                      lMuPMT ,
-                      "MuPMT",
-                      AriaExtrude,
-                      false,
-                      0);
-    
-    
-    new G4PVPlacement(0, positionnull,
-                      lGlassPMT,
-                      "GlassPMT",
-                      lTopPlatePMT,
-                      false,
-                      0);
+                      lMuPMT ,"MuPMT",AriaExtrude,false,0);
+    new G4PVPlacement(0, positionnull,lGlassPMT,"GlassPMT",
+                      lTopPlatePMT,false,0);
     new G4PVPlacement(0,  G4ThreeVector(0,0, Dali_NS::LengthPMT/2. ),
-                      lTopPlatePMT,
-                      "TopPlatePMT",
-                      AriaExtrude,
-                      false,
-                      0);
-
-
-
+                      lTopPlatePMT,"TopPlatePMT",AriaExtrude,false,0);
     new G4PVPlacement(0,  G4ThreeVector(0,0, -Dali_NS::Thickness*0.5 ),
-                      AriaExtrude,
-                      "PMTVolume",
-                      m_Square2Detector_Can,
-                      false,
-                      0);
-
-
-
-
-    new G4PVPlacement(0,  G4ThreeVector(0,0, Dali_NS::LengthPMT/2.+11.5/2.*mm ),
-                      m_SquareDetector_Can,
-                      "DetectorVolume",
-                      m_Square2Detector_Can,
-                      false,
-                      0);
-
-
-    // MgO Volume -
-    new G4PVPlacement(0, positionnull,
-                                             m_SquareDetector_CanMgO,
-                                             "MgO",
-                                             m_SquareDetector_Can,
-                                             false,
-                                             0); 
-    G4VisAttributes* MgO_Attributes = new G4VisAttributes(G4Colour(1,1,1, .3));
-    m_SquareDetector_CanMgO->SetVisAttributes(MgO_Attributes);
-
+                      AriaExtrude,"PMTVolume",Log_Dali_1Volume,false,0);
     
-    // NaI Volume -
+
+    // Cryst Part -
+    new G4PVPlacement(0,  G4ThreeVector(0,0, 
+                      Dali_NS::LengthPMT/2.+11.5/2.*mm ),
+                      Log_Al_Cryst_can,
+                      "DetectorVolume",
+                      Log_Dali_1Volume,false,0);
+                      
     new G4PVPlacement(0, positionnull,
-                                                 m_SquareDetector_Crystal,
-                                                 "CrystalNaI",
-                                                 m_SquareDetector_CanMgO,
-                                                 false,
-                                                 0); 
-
-    m_SquareDetector_Crystal->SetVisAttributes(m_VisSquare);
-    m_SquareDetector_Crystal->SetSensitiveDetector(m_DaliScorer);
-
-
-    // new G4PVPlacement(0, positionnull,
-    //                                              m_SquareDetector_Crystal,
-    //                                              "CrystalNaI",
-    //                                              m_SquareDetector_CanMgO,
-    //                                              false,
-    //                                              0); 
-
-
-                                                
+                      Log_MgO_Cryst_can,
+                      "MgO_Can",
+                      Log_Al_Cryst_can,false,0); 
+    new G4PVPlacement(0, positionnull,
+                      Log_Crystal,
+                      "CrystalNaI",
+                      Log_MgO_Cryst_can,false,0); 
     new G4PVReplica("DaliArrayElement",
-                                                        m_Square2Detector_Can,
-                                                        Logic_ArrayDali_1 ,
-                                                        kYAxis,
-                                                        3,
-                                                        Dali_NS::Width,    //?????????
-                                                        0);
+                    Log_Dali_1Volume,
+                    Log_Dali_3Volume ,
+                    kYAxis,3,Dali_NS::Width,0);
+     
+    G4VisAttributes* MgO_Color = new G4VisAttributes(G4Colour(1,1,1, .4));
+    G4VisAttributes* Al_Color = new G4VisAttributes(G4Colour(0.5,0.5,0.5, .3));
+    G4VisAttributes* Crystal_Color = new G4VisAttributes(G4Colour(0, 1, 1));   
+    //G4VisAttributes* mumetal_Color = new G4VisAttributes(G4Colour(0, 0.5, 1, .3));   
 
 
-       
+    Log_Dali_3Volume->SetVisAttributes(G4VisAttributes(G4Colour(1,1,1, 0)));
+    Log_Dali_1Volume->SetVisAttributes(G4VisAttributes(G4Colour(1,1,1,0)));
+    AriaExtrude->SetVisAttributes(G4VisAttributes(G4Colour(1,1,1,0)));
+    
+    Log_MgO_Cryst_can->SetVisAttributes(MgO_Color);
+    Log_Crystal->SetVisAttributes(Crystal_Color);
+    Log_Al_Cryst_can->SetVisAttributes(Al_Color);
+    
+    lAlPMT->SetVisAttributes(Al_Color);
+    lMuPMT->SetVisAttributes(Al_Color);
+    lTopPlatePMT->SetVisAttributes(Al_Color);
+
+    Log_Crystal->SetSensitiveDetector(m_DaliScorer);
   }
-  
-  return Logic_ArrayDali_1;
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-G4LogicalVolume* Dali::BuildCylindricalDetector(){
-  if(!m_CylindricalDetector){
-    G4Tubs* tub = new G4Tubs("Dali_Cyl",0,Dali_NS::Radius, Dali_NS::Thickness*0.5,0,360*deg);
-
-    G4Material* DetectorMaterial = MaterialManager::getInstance()->GetMaterialFromLibrary(Dali_NS::Material);
-    m_CylindricalDetector = new G4LogicalVolume(tub,DetectorMaterial,"logic_Dali_tub",0,0,0);
-    m_CylindricalDetector->SetVisAttributes(m_VisSquare);
-    m_CylindricalDetector->SetSensitiveDetector(m_DaliScorer);
-
-  }
-  return m_CylindricalDetector;
-}
+  return Log_Dali_3Volume;
+} // end BuildSquareDetector
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -381,36 +288,25 @@ void Dali::ReadConfiguration(NPL::InputParser parser){
   if(NPOptionManager::getInstance()->GetVerboseLevel())
     cout << "//// " << blocks.size() << " detectors found " << endl; 
 
-  vector<string> cart = {"POS","Shape"};
-  vector<string> sphe = {"R","Theta","Phi","Shape"};
-  vector<string> cyli = {"R","Alpha","Zeta","Shape"};
+  vector<string> cart = {"POS"};
+  vector<string> cyli = {"R","Alpha","Zeta"};
 
   for(unsigned int i = 0 ; i < blocks.size() ; i++){
     if(blocks[i]->HasTokenList(cart)){
       if(NPOptionManager::getInstance()->GetVerboseLevel())
         cout << endl << "////  Dali " << i+1 <<  endl;
-    
       G4ThreeVector Pos = NPS::ConvertVector(blocks[i]->GetTVector3("POS","mm"));
-      string Shape = blocks[i]->GetString("Shape");
-      AddDetector(Pos,Shape);
+      AddDetector(Pos);
     }
-    else if(blocks[i]->HasTokenList(sphe)){
-      if(NPOptionManager::getInstance()->GetVerboseLevel())
-        cout << endl << "////  Dali " << i+1 <<  endl;
-      double R = blocks[i]->GetDouble("R","mm");
-      double Theta = blocks[i]->GetDouble("Theta","deg");
-      double Phi = blocks[i]->GetDouble("Phi","deg");
-      string Shape = blocks[i]->GetString("Shape");
-      AddDetector(R,Theta,Phi,Shape);
-    }
+
     else if(blocks[i]->HasTokenList(cyli)){
       if(NPOptionManager::getInstance()->GetVerboseLevel())
         cout << endl << "////  Dali " << i+1 <<  endl;
       double R = blocks[i]->GetDouble("R","mm");
       double Alpha = blocks[i]->GetDouble("Alpha","deg");
       double Zeta = blocks[i]->GetDouble("Zeta","mm");
-      string Shape = blocks[i]->GetString("Shape");
-      AddDetector2(R,Alpha,Zeta,Shape);
+      int    Ring = blocks[i]->GetInt("Ring");
+      AddDetector(R,Alpha,Zeta,Ring);
     }
     else{
       cout << "ERROR: check your input file formatting " << endl;
@@ -426,44 +322,25 @@ void Dali::ReadConfiguration(NPL::InputParser parser){
 // Called After DetecorConstruction::AddDetector Method
 void Dali::ConstructDetector(G4LogicalVolume* world){    
 
-
   DefinitionMaterials();
-  
   for (unsigned short i = 0 ; i < m_R.size() ; i++) {
-
     G4double wX = m_R[i] * cos(m_Alpha[i] ) ; 
     G4double wY = m_R[i] * sin(m_Alpha[i] ) ;
     G4double wZ = m_Zeta[i];
-    if(m_Zeta[i]<0) wZ = wZ - Dali_NS::LengthPMT/2.+11.5/2.*mm;
-    else wZ = wZ + Dali_NS::LengthPMT/2.+11.5/2.*mm;
+    if(m_Ring[i]==1) wZ = wZ - (Dali_NS::Thickness+11.5*mm+Dali_NS::LengthPMT)/2. + Dali_NS::Thickness/2.;
+    else wZ = wZ + (Dali_NS::Thickness+11.5*mm+Dali_NS::LengthPMT)/2. - Dali_NS::Thickness/2.;
     G4ThreeVector Det_pos = G4ThreeVector(wX, wY, wZ) ;
 
-
-    
     G4RotationMatrix* Rot = new G4RotationMatrix();
 
-
-
-
     Rot->rotateX(180*deg);
-    if(m_Zeta[i]<0){
+    if(m_Ring[i]==1){
       Rot->rotateY(180*deg); Rot->rotateZ(m_Alpha[i]); 
     } else{Rot->rotateZ(m_Alpha[i]);}
 
-   
-    if(m_Shape[i] == "Cylindrical"){
-      new G4PVPlacement(G4Transform3D(*Rot,Det_pos),
-          BuildCylindricalDetector(),
-          "Dali",world,false,i+1);
-    }
-
-    else if(m_Shape[i] == "Square"){
-      new G4PVPlacement(G4Transform3D(*Rot,Det_pos),
-                        BuildSquareDetector(),
-          "Dali",world,false,i+1);
-
-     
-    }
+    new G4PVPlacement(G4Transform3D(*Rot,Det_pos),
+        BuildSquareDetector(),
+        "Dali",world,false,i+1);
   }
 }
 
@@ -483,20 +360,17 @@ void Dali::InitializeRootOutput(){
 // Read sensitive part and fill the Root tree.
 // Called at in the EventAction::EndOfEventAvtion
 void Dali::ReadSensitive(const G4Event* ){
-   m_Event->Clear();
+  m_Event->Clear();
   ///////////
 
-  
   // Calorimeter scorer
   CalorimeterScorers::PS_Calorimeter* Scorer= (CalorimeterScorers::PS_Calorimeter*) m_DaliScorer->GetPrimitive(0);
 
   //cout << m_DaliScorer->GetNumberOfPrimitives()<<endl;
-
-  
   unsigned int size = Scorer->GetMult();
   for(unsigned int i = 0 ; i < size ; i++){
     vector<unsigned int> level = Scorer->GetLevel(i); 
-    double Energy = RandGauss::shoot(Scorer->GetEnergy(i),Dali_NS::ResoEnergy);
+    double Energy = RandGauss::shoot(Scorer->GetEnergy(i),Dali_NS::ResoEnergy*std::sqrt(Scorer->GetEnergy(i)));
     // cout << Energy << endl;
     if(Energy>Dali_NS::EnergyThreshold){
       double Time = RandGauss::shoot(Scorer->GetTime(i),Dali_NS::ResoTime);
@@ -505,6 +379,7 @@ void Dali::ReadSensitive(const G4Event* ){
       int DetectorNbr = (ArrayNbr-1)*3+DetectinsArrayNbr;
       m_Event->SetEnergy(DetectorNbr,Energy);
       m_Event->SetTime(DetectorNbr,Time);
+      /* m_Event->SetParticleID(Scorer->GetParticleID(i)); */
     }
   }
 }
@@ -517,14 +392,13 @@ void Dali::InitializeScorers() {
   vector<int> NestingLevel;
   NestingLevel.push_back(3);
   NestingLevel.push_back(4);
-  
+
   m_DaliScorer = CheckScorer("DaliScorer",already_exist) ;
 
   if(already_exist) //Necessary?
     return ;  //Necessary?
-
   // Otherwise the scorer is initialised
-//  vector<int> level; level.push_back(0);
+  //  vector<int> level; level.push_back(0);
   G4VPrimitiveScorer* Calorimeter= new CalorimeterScorers::PS_Calorimeter("Calorimeter", NestingLevel) ;
   G4VPrimitiveScorer* Interaction= new InteractionScorers::PS_Interactions("Interaction",ms_InterCoord, 0) ;
   //and register it to the multifunctionnal detector

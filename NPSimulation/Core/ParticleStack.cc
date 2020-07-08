@@ -91,8 +91,13 @@ void ParticleStack::AddParticleToStack(Particle& particle){
     // If the particle is the first one to be added, then the IC are cleared
     if(m_First)
         m_InitialConditions->Clear();
-    
+   
     m_ParticleStack.push_back(particle);
+   
+    //m_InitialConditions-> SetIncidentInitialKineticEnergy  (particle. GetParticleKineticEnergy());
+    m_InitialConditions-> SetIncidentPositionX     (particle. GetParticlePosition().x());
+    m_InitialConditions-> SetIncidentPositionY     (particle. GetParticlePosition().y());
+    m_InitialConditions-> SetIncidentPositionZ     (particle. GetParticlePosition().z());
     
     m_First=false;
 }

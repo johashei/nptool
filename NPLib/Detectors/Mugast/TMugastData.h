@@ -8,9 +8,9 @@
  *****************************************************************************/
 
 /*****************************************************************************
- * Original Author: Adrien MATTA  contact address: a.matta@surrey.ac.uk      *
+ * Original Author: Adrien MATTA  contact address: matta@lpccaen.in2p3.fr    *
  *                                                                           *
- * Creation Date  : November 2018                                            *
+ * Creation Date  : Novembre 2018                                            *
  * Last update    :                                                          *
  *---------------------------------------------------------------------------*
  * Decription:                                                               *
@@ -200,12 +200,12 @@ public:
       // (X,E)
       inline unsigned short   GetDSSDXEMult()                      const {return fMG_DSSDXE_DetectorNbr.size();}
       inline unsigned short   GetDSSDXEDetectorNbr(const int& i)   const {return fMG_DSSDXE_DetectorNbr[i];}
-      inline unsigned short   GetDSSDXEStripNbr(const int& i)       const {return fMG_DSSDXE_StripNbr[i];}
+      inline unsigned short   GetDSSDXEStripNbr(const int& i)      const {return fMG_DSSDXE_StripNbr[i];}
       inline double           GetDSSDXEEnergy(const int& i)        const {return fMG_DSSDXE_Energy[i];}
       // (X,T)
       inline unsigned short   GetDSSDXTMult()                      const {return fMG_DSSDXT_DetectorNbr.size();}
       inline unsigned short   GetDSSDXTDetectorNbr(const int& i)   const {return fMG_DSSDXT_DetectorNbr[i];}
-      inline unsigned short   GetDSSDXTStripNbr(const int& i)       const {return fMG_DSSDXT_StripNbr[i];}
+      inline unsigned short   GetDSSDXTStripNbr(const int& i)      const {return fMG_DSSDXT_StripNbr[i];}
       inline double           GetDSSDXTTime(const int& i)          const {return fMG_DSSDXT_Time[i];}
       // (Y,E)
       inline unsigned short   GetDSSDYEMult()                      const {return fMG_DSSDYE_DetectorNbr.size();}

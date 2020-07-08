@@ -10,14 +10,11 @@
 
 #include "G4UIterminal.hh"
 #include "G4UItcsh.hh"
+#include "G4VisManager.hh"
 
-#ifdef G4VIS_USE
 #include "G4VisExecutive.hh"
-#endif
 
-#ifdef G4UI_USE
 #include "G4UIExecutive.hh"
-#endif
 
 // G4 local source
 #include "DetectorConstruction.hh"
@@ -26,6 +23,10 @@
 
 // G4 General Source
 #include "SteppingVerbose.hh"
+#include "Randomize.hh"
+
+// Root
+#include "TRandom.h"
 
 // NPS headers
 #include "EventAction.hh"
@@ -58,6 +59,17 @@ int main(int argc, char** argv){
     // case when input files are here
     G4String EventGeneratorFileName = OptionManager->GetReactionFile();
     G4String DetectorFileName       = OptionManager->GetDetectorFile();
+    
+    
+    // initialize the state of the root and geant4 random generator
+    if(OptionManager->GetRandomSeed()>0){
+      std::cout << " Seeds for random generators set to: " << OptionManager->GetRandomSeed() << std::endl;
+      gRandom->SetSeed(OptionManager->GetRandomSeed()); 
+      CLHEP::HepRandom::setTheSeed(OptionManager->GetRandomSeed(),3);
+    }
+    
+    
+    
     // my Verbose output class
     G4VSteppingVerbose::SetInstance(new SteppingVerbose);
     
@@ -88,9 +100,7 @@ int main(int argc, char** argv){
     // Get the pointer to the User Interface manager
     G4cout << "//////////// Starting UI ////////////"<< endl;
     G4UImanager* UImanager = G4UImanager::GetUIpointer();
-#ifdef G4UI_USE
     G4UIExecutive* ui = new G4UIExecutive(argc, argv);
-#endif
     
     
     ///////////////////////////////////////////////////////////////
@@ -114,32 +124,30 @@ int main(int argc, char** argv){
     
     
     G4VisManager* visManager=NULL;
+
     if(!OptionManager->GetG4BatchMode()){
-#ifdef G4UI_USE
         string Path_Macro = getenv("NPTOOL");
         Path_Macro+="/NPSimulation/ressources/macro/";
         UImanager->ApplyCommand("/control/execute " +Path_Macro+"verbose.mac");
 
-#ifdef G4VIS_USE
         UImanager->ApplyCommand("/control/execute " +Path_Macro+"aliases.mac");
         visManager = new G4VisExecutive("Quiet");
         visManager->Initialize();
         UImanager->ApplyCommand("/control/execute " +Path_Macro+"vis.mac");
-#endif
         if (ui->IsGUI()){
             UImanager->ApplyCommand("/control/execute " +Path_Macro+"gui.mac");
         }
-#ifdef __APPLE__
+
+  #ifdef __APPLE__
         string command= "osascript ";
         command+= getenv("NPTOOL");
         command+="/NPSimulation/ressources/scripts/bringtofront.osa & ";
         int res =system(command.c_str());
         res =0;
-        
-#endif
+  #endif
     }
     else{// if batch mode do not accumulate any track
-       UImanager->ApplyCommand("/vis/scene/endOfEventAction accumulate 0");
+        UImanager->ApplyCommand("/vis/scene/endOfEventAction accumulate 0");
       }
     // Execute user macro
     if(!OptionManager->IsDefault("G4MacroPath")){
@@ -152,19 +160,29 @@ int main(int argc, char** argv){
     
     
     delete ui;
-#endif
     
-#ifdef G4VIS_USE
     if(visManager)
         delete visManager;
-#endif
     
     ///////////////////////////////////////////////////////////////
     ////////////////////// Job termination ////////////////////////
     ///////////////////////////////////////////////////////////////
+    // Save the Geant4 random generator internal generator state in a TASCII 
+    // file store with the root output
+    std::ofstream file(".geant4_random_state");
+    CLHEP::HepRandom::saveFullState(file);  
+    file.close(); 
+    TAsciiFile* aFile = new TAsciiFile();
+    aFile->SetNameTitle("G4RandomFinalState",".geant4_random_state");
+    aFile->Append(".geant4_random_state");
+    RootOutput::getInstance()->GetFile()->cd();
+    aFile->Write(0,TAsciiFile::kOverwrite);
+    int dummy=0;
+    dummy= system("rm .geant4_random_state");
     // delete primary; delete detector;
     
     delete runManager;
+    
     RootOutput::getInstance()->Destroy();
     return 0;
 }

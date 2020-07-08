@@ -61,8 +61,8 @@ using namespace CLHEP;
 namespace TNT_NS{
   // Energy and time Resolution
   const double EnergyThreshold = 0.1*MeV;
-  const double ResoTime = 4.5*ns ;
-  const double ResoEnergy = 1.0*MeV ;
+  //const double ResoTime = 4.5*ns ;
+//  const double ResoEnergy = 1.0*MeV ;
   const double Radius = 50*mm ; 
   // const string Material = "para-Terphenyl_Scintillator";
   //const string Material = "BC400";  

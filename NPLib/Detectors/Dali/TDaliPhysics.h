@@ -67,6 +67,7 @@ class TDaliPhysics : public TObject, public NPL::VDetector {
     vector<double>   Energy;
     vector<double>   TDC;
     vector<double>   Time;
+    /* vector<int>   ParticleID; */
 
   /// A usefull method to bundle all operation to add a detector
   void AddDetector(TVector3 POS, string shape); 
@@ -154,6 +155,16 @@ class TDaliPhysics : public TObject, public NPL::VDetector {
   public:
     TDaliData* GetRawData()        const {return m_EventData;}
     TDaliData* GetPreTreatedData() const {return m_PreTreatedData;}
+
+  // Use to access energies et det number
+
+    int GetDetNumber(const int &i) const {return DetectorNumber[i];};
+    int GetMultEnergy() const {return Energy.size();};
+    double GetEnergy(const int &i) const {return Energy[i];};
+    /* int GetParticleID(const int &i) const {return ParticleID[i];}; */
+
+
+
 
   // parameters used in the analysis
   private:

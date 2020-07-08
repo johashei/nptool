@@ -288,6 +288,17 @@ void Nucleus::Extract(string line){
   // life time
   string s_lt_units = line.substr(69,3); 
   string s_LifeTime = line.substr(57,12);
+  // Remove star
+  replace (s_LifeTime.begin(), s_LifeTime.end(), '*' , ' ');
+  // Remove <
+  replace (s_LifeTime.begin(), s_LifeTime.end(), '<' , ' ');
+  // Remove >
+  replace (s_LifeTime.begin(), s_LifeTime.end(), '>' , ' ');
+  // Remove &
+  replace (s_LifeTime.begin(), s_LifeTime.end(), '&' , ' ');
+  // Remove #
+  replace (s_LifeTime.begin(), s_LifeTime.end(), '#' , ' ');
+
   // Remove space
   s_LifeTime.erase( std::remove_if( s_LifeTime.begin(), s_LifeTime.end(), ::isspace ), s_LifeTime.end() );
   s_lt_units.erase( std::remove_if( s_lt_units.begin(), s_lt_units.end(), ::isspace ), s_lt_units.end() );

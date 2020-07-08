@@ -1,25 +1,23 @@
 #ifndef TMUGASTPHYSICS_H
 #define TMUGASTPHYSICS_H
 /*****************************************************************************
- * Copyright (C) 2009-2016    this file is part of the NPTool Project        *
+ * Copyright (C) 2009-2016   this file is part of the NPTool Project         *
  *                                                                           *
  * For the licensing terms see $NPTOOL/Licence/NPTool_Licence                *
  * For the list of contributors see $NPTOOL/Licence/Contributors             *
  *****************************************************************************/
 
 /*****************************************************************************
- * Original Author: Adrien MATTA  contact address: a.matta@surrey.ac.uk      *
+ * Original Author: Adrien MATTA  contact address: matta@lpccaen.in2p3.fr    *
  *                                                                           *
- * Creation Date  : febuary 2009                                             *
+ * Creation Date  : novembre 2018                                            *
  * Last update    :                                                          *
  *---------------------------------------------------------------------------*
  * Decription:                                                               *
- *  This class hold must2 treated data                                       *
+ *  This class hold Mugast treated data                                      *
  *                                                                           *
  *---------------------------------------------------------------------------*
  * Comment:                                                                  *
- *                                                                           *
- *                                                                           *
  *                                                                           *
  *****************************************************************************/
 // STL
@@ -167,15 +165,15 @@ class TMugastPhysics : public TObject, public NPL::VDetector {
   void ReadAnalysisConfig();
 
   //   Add a Telescope using Corner Coordinate information
-  void AddTelescope(TVector3 C_X1_Y1, TVector3 C_X128_Y1, TVector3 C_X1_Y128,
+  void AddTelescope(MG_DetectorType type,TVector3 C_X1_Y1, TVector3 C_X128_Y1, TVector3 C_X1_Y128,
                     TVector3 C_X128_Y128);
 
   //   Add a Telescope using R Theta Phi of Si center information
-  void AddTelescope(double theta, double phi, double distance, double beta_u,
+  void AddTelescope(MG_DetectorType type,double theta, double phi, double distance, double beta_u,
                     double beta_v, double beta_w);
 
  //   Special Method for Annular S1
-  void AddTelescope(TVector3 C_Center);
+  void AddTelescope(MG_DetectorType type,TVector3 C_Center);
 
   // Give and external TMustData object to TMugastPhysics. Needed for online
   // analysis for example.

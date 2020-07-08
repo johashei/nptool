@@ -96,5 +96,14 @@ public:
   // for a list of particle name
   void WriteDEDXTable(std::set<string> Particle ,G4double Emin,G4double Emax);
 
+  // Write the Cross Section table for all material instantiate in the MaterialManager
+  // for a given particle
+  void WriteCrossSectionTable(G4ParticleDefinition* Particle ,G4double Emin,G4double Emax);
+
+  // Write the Cross Section table for all material instantiate in the MaterialManager
+  // for a list of particle name
+  void WriteCrossSectionTable(std::set<string> Particle ,G4double Emin,G4double Emax);
+
+
 };
 #endif

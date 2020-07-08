@@ -36,16 +36,29 @@ Analysis::~Analysis(){
 
 ////////////////////////////////////////////////////////////////////////////////
 void Analysis::Init() {
-
+  if(NPOptionManager::getInstance()->HasDefinition("simulation")){
+    cout << "Considering input data as simulation" << endl; 
+    simulation=true;
+  }
+  else{
+    cout << "Considering input data as real" << endl; 
+    simulation=false;
+  }
   agata_zShift=51*mm;
 
   // initialize input and output branches
+  if(simulation){
+    Initial = new TInitialConditions();
+    ReactionConditions = new TReactionConditions(); 
+  }
+
   InitOutputBranch();
   InitInputBranch();
   // get MUST2 and Gaspard objects
   M2 = (TMust2Physics*)  m_DetectorManager -> GetDetector("M2Telescope");
   MG = (TMugastPhysics*) m_DetectorManager -> GetDetector("Mugast");
-  CATS = (TCATSPhysics*) m_DetectorManager->GetDetector("CATSDetector");
+  if(!simulation)
+    CATS = (TCATSPhysics*) m_DetectorManager->GetDetector("CATSDetector");
 
   // get reaction information
   reaction.ReadConfigurationFile(NPOptionManager::getInstance()->GetReactionFile());
@@ -63,9 +76,15 @@ void Analysis::Init() {
   LightTarget = NPL::EnergyLoss(light+"_"+TargetMaterial+".G4table","G4Table",100 );
   LightAl = NPL::EnergyLoss(light+"_Al.G4table","G4Table",100);
   LightSi = NPL::EnergyLoss(light+"_Si.G4table","G4Table",100);
-  BeamCD2 = NPL::EnergyLoss(beam+"_"+TargetMaterial+".G4table","G4Table",100);
+  BeamCD2 = NPL::EnergyLoss(beam+"_"+TargetMaterial+".G4table","G4Table",00);
+
+  FinalBeamEnergy = BeamCD2.Slow(OriginalBeamEnergy,TargetThickness*0.5,0); 
+  //FinalBeamEnergy = OriginalBeamEnergy; 
+  cout << "Original beam energy: " << OriginalBeamEnergy  << " MeV      Mid-target beam energy: " << FinalBeamEnergy << "MeV " << endl; 
+  reaction.SetBeamEnergy(FinalBeamEnergy);
 
   if(WindowsThickness){
+    cout << "Cryogenic target with windows" << endl;
     BeamWindow= new NPL::EnergyLoss(beam+"_"+WindowsMaterial+".G4table","G4Table",100); 
     LightWindow=  new NPL::EnergyLoss(light+"_"+WindowsMaterial+".G4table","G4Table",100);  
   }
@@ -97,10 +116,20 @@ void Analysis::Init() {
 void Analysis::TreatEvent() {
   // Reinitiate calculated variable
   ReInitValue();
-  double XTarget = CATS->GetPositionOnTarget().X();
-  double YTarget = CATS->GetPositionOnTarget().Y();
-  TVector3 BeamDirection = CATS->GetBeamDirection();
-
+  double XTarget, YTarget;
+  TVector3 BeamDirection;
+  if(!simulation){
+    XTarget = CATS->GetPositionOnTarget().X();
+    YTarget = CATS->GetPositionOnTarget().Y();
+    BeamDirection = CATS->GetBeamDirection();
+  }
+  else{
+    XTarget = 0;
+    YTarget = 0;
+    BeamDirection = TVector3(0,0,1);
+    OriginalELab = ReactionConditions->GetKineticEnergy(0);
+    OriginalThetaLab = ReactionConditions->GetTheta(0);
+  }
   BeamImpact = TVector3(XTarget,YTarget,0); 
   // determine beam energy for a randomized interaction point in target
   // 1% FWHM randominastion (E/100)/2.35
@@ -151,7 +180,7 @@ void Analysis::TreatEvent() {
     // Evaluate energy using the thickness
     ELab = LightAl.EvaluateInitialEnergy( Energy ,0.4*micrometer , ThetaM2Surface);
     // Target Correction
-    ELab   = LightTarget.EvaluateInitialEnergy( ELab ,TargetThickness/2., ThetaNormalTarget);
+    ELab   = LightTarget.EvaluateInitialEnergy( ELab ,TargetThickness*0.5, ThetaNormalTarget);
 
     if(LightWindow)
       ELab = LightWindow->EvaluateInitialEnergy( ELab ,WindowsThickness, ThetaNormalTarget);
@@ -192,8 +221,10 @@ void Analysis::TreatEvent() {
     // Part 2 : Impact Energy
     Energy = ELab = 0;
     Energy = MG->GetEnergyDeposit(countMugast);
+
+    // ELab = LightAl.EvaluateInitialEnergy( Energy ,0.4*micrometer , ThetaMGSurface);
     // Target Correction
-    ELab   = LightTarget.EvaluateInitialEnergy( Energy ,TargetThickness*0.5, ThetaNormalTarget);
+    ELab   = LightTarget.EvaluateInitialEnergy( Energy,TargetThickness*0.5, ThetaNormalTarget);
 
     if(LightWindow)
       ELab = LightWindow->EvaluateInitialEnergy( ELab ,WindowsThickness, ThetaNormalTarget);
@@ -207,7 +238,7 @@ void Analysis::TreatEvent() {
     ThetaLab=ThetaLab/deg;
 
   }//end loop Mugast
-  
+
   ////////////////////////////////////////////////////////////////////////////
   ///////////////////////////////// LOOP on AGATA ////////////////////////////
   ////////////////////////////////////////////////////////////////////////////
@@ -230,7 +261,7 @@ void Analysis::TreatEvent() {
     GammaLV.Boost(-beta);
     // Get EDC
     EDC=GammaLV.Energy();
-    }
+  }
 
 }
 
@@ -271,6 +302,10 @@ void Analysis::InitOutputBranch() {
   RootOutput::getInstance()->GetTree()->Branch("coreTS",coreTS,"coreTS[nbCores]/l");
   RootOutput::getInstance()->GetTree()->Branch("coreE0",coreE0,"coreE0[nbCores]/F");
   //
+  if(simulation){
+    RootOutput::getInstance()->GetTree()->Branch("OriginalELab",&OriginalELab,"OriginalELab/D");
+    RootOutput::getInstance()->GetTree()->Branch("OriginalThetaLab",&OriginalThetaLab,"OriginalThetaLab/D");
+  }
 }
 
 
@@ -292,6 +327,14 @@ void Analysis::InitInputBranch(){
   RootInput::getInstance()->GetChain()->SetBranchAddress("coreId",coreId);
   RootInput::getInstance()->GetChain()->SetBranchAddress("coreTS",coreTS);
   RootInput::getInstance()->GetChain()->SetBranchAddress("coreE0",coreE0);
+  if(simulation){
+    RootInput:: getInstance()->GetChain()->SetBranchStatus("InitialConditions",true );
+    RootInput:: getInstance()->GetChain()->SetBranchStatus("fIC_*",true );
+    RootInput:: getInstance()->GetChain()->SetBranchAddress("InitialConditions",&Initial);
+    RootInput:: getInstance()->GetChain()->SetBranchStatus("ReactionConditions",true );
+    RootInput:: getInstance()->GetChain()->SetBranchStatus("fRC_*",true );
+    RootInput:: getInstance()->GetChain()->SetBranchAddress("ReactionConditions",&ReactionConditions);
+  }
 }
 ////////////////////////////////////////////////////////////////////////////////
 void Analysis::ReInitValue(){
@@ -318,13 +361,13 @@ NPL::VAnalysis* Analysis::Construct(){
 //            Registering the construct method to the factory                 //
 ////////////////////////////////////////////////////////////////////////////////
 extern "C"{
-class proxy_analysis{
-  public:
-    proxy_analysis(){
-      NPL::AnalysisFactory::getInstance()->SetConstructor(Analysis::Construct);
-    }
-};
+  class proxy_analysis{
+    public:
+      proxy_analysis(){
+        NPL::AnalysisFactory::getInstance()->SetConstructor(Analysis::Construct);
+      }
+  };
 
-proxy_analysis p_analysis;
+  proxy_analysis p_analysis;
 }
 

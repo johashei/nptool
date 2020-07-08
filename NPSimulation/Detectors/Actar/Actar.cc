@@ -78,7 +78,7 @@ using namespace CLHEP;
 namespace Actar_NS{
     // Energy and time Resolution
     const double ChargeThreshold = 0;
-    const double ResoTime = 0.1*ns ;
+    //const double ResoTime = 0.1*ns ;
     const double ResoCharge = 5./100 ;
     const double ChamberThickness = 376*mm ;
     const double ChamberWidth = 376*mm ;
@@ -117,7 +117,7 @@ namespace Actar_NS{
     const double CsIWidth = 2.5*cm;
     const double DistInterCsI = 1.*mm;
     const double CsI_PosZ = 16.*cm;
-    const double ResoCsI = 0.200/2.35;
+    //const double ResoCsI = 0.200/2.35;
 
     const double BeamDumpRadius = 30*mm;
     const double BeamDumpThickness = 5*mm;
@@ -149,7 +149,7 @@ Actar::Actar(){
     m_build_Silicon=1;
     m_build_Vamos_Silicon=0;
     m_build_CsI=1;
-
+    m_ReactionRegion=NULL;
     // Lookup table //
    // bool ReadingLookupTable = false;
     string LT_FileName = "./Detectors/Actar/LT.dat";
@@ -598,7 +598,6 @@ void Actar::ConstructDetector(G4LogicalVolume* world){
                           BuildDetector(),
                           "Actar",world,false,i+1);
     }
-
     if(!m_ReactionRegion){
         G4ProductionCuts* ecut = new G4ProductionCuts();
         ecut->SetProductionCut(1000,"e-");
@@ -612,21 +611,17 @@ void Actar::ConstructDetector(G4LogicalVolume* world){
         Region_cut->SetProductionCuts(ecut);
         Region_cut->AddRootLogicalVolume(m_SquareDetector);
     }
-
     G4FastSimulationManager* mng = m_ReactionRegion->GetFastSimulationManager();
-
     unsigned int size = m_ReactionModel.size();
     for(unsigned int i = 0 ; i < size ; i++){
         mng->RemoveFastSimulationModel(m_ReactionModel[i]);
     }
-
     m_ReactionModel.clear();
     G4VFastSimulationModel* fsm;
     fsm = new NPS::BeamReaction("BeamReaction",m_ReactionRegion);
     m_ReactionModel.push_back(fsm);
     fsm = new NPS::Decay("Decay",m_ReactionRegion);
     m_ReactionModel.push_back(fsm);
-
 }
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 // Add Detector branch to the EventTree.

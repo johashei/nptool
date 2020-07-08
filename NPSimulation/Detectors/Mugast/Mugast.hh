@@ -50,7 +50,9 @@ class Mugast : public NPS::VDetector{
     ////////////////////////////////////////////////////
   public:
     // Cartesian
-    void AddDetector(string Shape,G4ThreeVector PX1_Y1 ,
+    void AddDetector(int DetectorNumber,
+      string Shape,
+      G4ThreeVector PX1_Y1 ,
       G4ThreeVector PX1_Y128=G4ThreeVector() ,
       G4ThreeVector PX128_Y1=G4ThreeVector(),
       G4ThreeVector PX128_Y128=G4ThreeVector());
@@ -89,7 +91,9 @@ class Mugast : public NPS::VDetector{
     void InitializeScorers() ;
 
     //   Associated Scorer
-    G4MultiFunctionalDetector* m_MugastScorer ;
+    G4MultiFunctionalDetector* m_SquareScorer;
+    G4MultiFunctionalDetector* m_TrapezoidScorer;
+    G4MultiFunctionalDetector* m_AnnularScorer;
     ////////////////////////////////////////////////////
     ///////////Event class to store Data////////////////
     ////////////////////////////////////////////////////
@@ -106,10 +110,11 @@ class Mugast : public NPS::VDetector{
     vector<G4ThreeVector>   m_X1_Y128   ; // Bottom Left Corner Position Vector
     vector<G4ThreeVector>   m_X128_Y1   ; // Bottom Right Corner Position Vector
     vector<G4ThreeVector>   m_X128_Y128 ; // Center Corner Position Vector
-
+    
     //   Shape type
     vector<string> m_Shape ;
-   
+    // DetectorNumber
+    vector<int>    m_DetectorNumber;
     // Visualisation Attribute
     G4VisAttributes* m_VisSquare;
     G4VisAttributes* m_VisCylinder;

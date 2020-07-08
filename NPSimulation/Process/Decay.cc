@@ -61,8 +61,12 @@ void Decay::ReadConfiguration(){
   m_Decay.ReadConfiguration(input);
   std::set<std::string> Mother = m_Decay.GetAllMotherName();
   std::set<std::string>::iterator it ;
-  for(it = Mother.begin() ; it != Mother.end() ; it++)
+  for(it = Mother.begin() ; it != Mother.end() ; it++){
+    // ground state name, e.g. deuteron
     m_MotherName.insert(NPL::ChangeNameToG4Standard(*it));
+    // excited state name e.g. H2
+    m_MotherName.insert(NPL::ChangeNameToG4Standard(*it,true));
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -73,7 +77,6 @@ G4bool Decay::IsApplicable( const G4ParticleDefinition& particleType) {
     m_ExcitationEnergy = atof(m_CurrentName.substr(m_CurrentName.find("[")+1,m_CurrentName.find("]")-1).c_str())*keV;
   else
     m_ExcitationEnergy=0;
-
 
   // Strip name from excitation energy
   m_CurrentName = m_CurrentName.substr(0,m_CurrentName.find("["));
@@ -131,6 +134,7 @@ void Decay::DoIt(const G4FastTrack& fastTrack,G4FastStep& fastStep){
  
   G4ParticleDefinition* DaughterDef; 
   unsigned int size = Daughter.size();
+
   if(size == 0)
     return;
   for(unsigned int i = 0 ; i < size ; i++){
@@ -172,4 +176,5 @@ void Decay::DoIt(const G4FastTrack& fastTrack,G4FastStep& fastStep){
     fastStep.KillPrimaryTrack();
     fastStep.SetPrimaryTrackPathLength(0.0);
     }
+    
 }

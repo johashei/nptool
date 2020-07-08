@@ -53,66 +53,52 @@ using namespace std;
 using namespace NPL;
 
 void ShowResults(){
-   // get tree   
-   TFile *f = new TFile("../../Outputs/Analysis/PhysicsTree.root");
-   TTree *t = (TTree*) f->Get("PhysicsTree");
+  // get tree   
+  TFile* f = new TFile("../../Outputs/Analysis/PhysicsTree.root");
+  TTree* t = (TTree*) f->Get("PhysicsTree");
 
-   // draw kinematic information
-   // canvas
-   TCanvas *c1 = new TCanvas("c1", "kinematic information", 600, 600);
-   c1->Draw();
-   // kinematic line
-   TH2F *hk = new TH2F("hk", "hk", 180, 0, 180, 200, 0, 60);
-   hk->GetXaxis()->SetTitle("#Theta_{lab} (deg)");
-   hk->GetYaxis()->SetTitle("E_{p} (MeV)");
-   cout << "counts " << t->Draw("ELab:ThetaLab>>hk","Ex>0&&Ex<6","colz") << endl;
-   NPL::Reaction* reaction = new NPL::Reaction();
-   reaction->ReadConfigurationFile("28Mg.reaction");
-   reaction->GetKinematicLine3()->Draw("c");
+  // draw kinematic information
+  // canvas
+  TCanvas *c1 = new TCanvas("c1", "Results", 1000, 1000);
+  c1->Divide(2,2);
+  c1->cd(1);
+  // kinematic line
+  TH2F* hk = new TH2F("hk", "hk", 180*3, 0, 180, 1000, 0, 60);
+  t->Draw("ELab:ThetaLab>>hk","","col");
+  hk->GetXaxis()->SetTitle("#Theta_{lab} (deg)");
+  hk->GetYaxis()->SetTitle("E_{p} (MeV)");
+  NPL::Reaction* reaction = new NPL::Reaction();
+  reaction->ReadConfigurationFile("16Odp17O_870keV_12.reaction");
+  reaction->GetKinematicLine3()->Draw("c");
 
-  new TCanvas();
+  c1->cd(2);
+  TH1F* hEx = new TH1F("hEx", "hEx",240, -1, 5);
+  t->Draw("Ex>>hEx","ThetaLab>100 && ThetaLab<156","col");
+  hEx->GetXaxis()->SetTitle("Ex (MeV)");
+  hEx->GetYaxis()->SetTitle("counts/25 keV");
+ 
+  c1->cd(3);
   TH1F *hCM = new TH1F("hCM", "hCM", 36, 0, 180); 
-  t->Draw("ThetaCM>>hCM","Ex>0&&Ex<6","",2900);
+  t->Draw("ThetaCM>>hCM","Ex>0&&Ex<6","");
   for(int i = 0 ; i < hCM->GetNbinsX();i++){
     if(hCM->GetBinCenter(i)==37.5 || hCM->GetBinCenter(i)==97.5|| hCM->GetBinCenter(i)==167.5|| hCM->GetBinCenter(i)==42.5){
       hCM->SetBinContent(i,0);
-      
-      }
-    
+
     }
- gPad->SetLogy();
+  }
 
-  TFile* file= new TFile("effMUGAST.root");
-  TH1* hOmega = (TH1*)file->FindObjectAny("hDetecThetaCM");
-  hOmega->Rebin(5);
-  hCM->Sumw2();
-  hCM->Divide(hOmega);
-  TGraph* g= new TGraph("22.jjj");
-  g->Draw("c");
-   hCM->Scale(g->Eval(32.5)/hCM->GetBinContent(hCM->FindBin(32.5)));
-  TGraph* g2= new TGraph("22.l2");
-  g2->Draw("c");
-  TGraph* g3= new TGraph("22.l3");
-  g3->Draw("c");
-
-
-}
-
-
-void CountingRates(Double_t ibeam = 1e5, Double_t ubt = 30){
-   // load event generator file
-   NPL::Reaction* reaction = new NPL::Reaction();
-   reaction->ReadConfigurationFile("28Mg.reaction");
-//   reaction->ReadConfigurationFile("11Be_d3He.reaction");
-   // get angular distribution
-   TH1F *dsig = reaction->GetCrossSectionHist();
-   dsig->Draw();
-   // calculate total cross section
-   Double_t stot = reaction->GetTotalCrossSection();
-   cout << "total cross section = " << reaction->GetTotalCrossSection() << " mb" << endl;
-
-   // get target thickness
-//   NPL::DetectorManager* myDetector = new NPL::DetectorManager();
-//   myDetector->ReadConfigurationFile("MUGAST_Manu.detector");
+  TCanvas *c2 = new TCanvas("c2", "Control", 1000, 1000);
+  c2->Divide(2,2);
+  c2->cd(1);
+  TH1F* hcT = new TH1F("hcT", "hcT", 180*3, -1,1);
+  t->Draw("ThetaLab-OriginalThetaLab>>hcT","","col");
+  TLine* lT = new TLine(0,0,180,180);
+  //lT->Draw();
+  c2->cd(2);
+  TH1F* hcE = new TH1F("hcE", "hcE", 1000, -1, 1);
+  t->Draw("ELab-OriginalELab>>hcE","","col");
+  TLine* lE = new TLine(0,0,60,60);
+  //lE->Draw();
 
 }
+

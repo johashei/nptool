@@ -97,34 +97,35 @@ G4DETransport::~G4DETransport(){}
 // -------------
 //
 G4VParticleChange*
+
 G4DETransport::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep){
-    aParticleChange.Initialize(aTrack);
-    
-    G4StepPoint* pPreStepPoint  = aStep.GetPreStepPoint();
-    
-    G4ThreeVector x0 = pPreStepPoint->GetPosition();
-    G4ThreeVector p0 = aStep.GetDeltaPosition().unit();
-    G4double      t0 = pPreStepPoint->GetGlobalTime();
-    G4double Energy = pPreStepPoint->GetKineticEnergy();
-    
-    // The time scale is imposed by the distance travelled
-    G4double step_length = aStep.GetDeltaPosition().mag();
-    
-    // allow internal relocation of the track by the kernel taking a 0 length intermediate step
-    // suppress also parasite infinetismal step that slow down the tracking
-    if(step_length<100*micrometer){
-        return G4VDiscreteProcess::PostStepDoIt(aTrack, aStep);
-    }
-    
-    // Get the material table
-    const G4Material* aMaterial = aTrack.GetMaterial();
-    
-    G4MaterialPropertiesTable* aMaterialPropertiesTable =
-    aMaterial->GetMaterialPropertiesTable();
+  aParticleChange.Initialize(aTrack);
   
+  G4StepPoint* pPreStepPoint  = aStep.GetPreStepPoint();
+  //G4StepPoint* pPostStepPoint  = aStep.GetPostStepPoint();
+  
+  G4ThreeVector x0 = pPreStepPoint->GetPosition();
+  G4ThreeVector p0 = aStep.GetDeltaPosition().unit();
+  G4double      t0 = pPreStepPoint->GetGlobalTime();
+  
+  // The time scale is imposed by the distance travelled
+  G4double step_length = aStep.GetDeltaPosition().mag();
+  G4double delta_time = aStep.GetDeltaTime();
+
+  // allow internal relocation of the track by the kernel taking a 0 length intermediate step
+  // suppress also parasite infinetismal step that slow down the tracking
+  if(step_length<100*micrometer){
+      return G4VDiscreteProcess::PostStepDoIt(aTrack, aStep);
+  }
+  
+  // Get the material table
+  const G4Material* aMaterial = aTrack.GetMaterial();
+  
+  G4MaterialPropertiesTable* aMaterialPropertiesTable =
+  aMaterial->GetMaterialPropertiesTable();
+
   if (!aMaterialPropertiesTable)
     return G4VDiscreteProcess::PostStepDoIt(aTrack, aStep);
-  
 
   if(!aMaterialPropertiesTable->ConstPropertyExists("DE_PAIRENERGY") ||
      !aMaterialPropertiesTable->ConstPropertyExists("DE_TRANSVERSALSPREAD") ||
@@ -132,93 +133,74 @@ G4DETransport::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep){
      !aMaterialPropertiesTable->ConstPropertyExists("DE_DRIFTSPEED") )
     return G4VDiscreteProcess::PostStepDoIt(aTrack, aStep);
  
-
   // Electron follow the field direction
   // The field direction is taken from the field manager
   static G4double* fieldArr = new G4double[6];
   G4double  Point[4]={x0.x(),x0.y(),x0.z(),t0};
-  G4FieldManager* fMng = pPreStepPoint->GetTouchableHandle()->GetVolume()->GetLogicalVolume()->GetFieldManager();
+  G4FieldManager*  fMng = pPreStepPoint->GetTouchableHandle()->GetVolume()->GetLogicalVolume()->GetFieldManager();
     
-    G4ElectroMagneticField* field = (G4ElectroMagneticField*)fMng->GetDetectorField();
-    field->GetFieldValue(Point,fieldArr) ;
-    
-    // Electron move opposite to the field direction, hance the minus sign
-    G4ThreeVector driftDir(-fieldArr[3],-fieldArr[4],-fieldArr[5]);
-    // Normalised the drift direction
-    driftDir = driftDir.unit();
-    G4double v_drift = aMaterialPropertiesTable->GetConstProperty("DE_DRIFTSPEED");
-    
-    G4double sigmaTrans  = sqrt(2*step_length*aMaterialPropertiesTable->GetConstProperty("DE_TRANSVERSALSPREAD")/v_drift);
-    G4double sigmaLong   = sqrt(2*step_length*aMaterialPropertiesTable->GetConstProperty("DE_LONGITUDINALSPREAD")/v_drift);
+  G4ElectroMagneticField* field = (G4ElectroMagneticField*)fMng->GetDetectorField();
+  field->GetFieldValue(Point,fieldArr) ;
+  
+  // Electron move opposite to the field direction, hance the minus sign
+  G4ThreeVector driftDir(-fieldArr[3],-fieldArr[4],-fieldArr[5]);
+  // Normalised the drift direction
+  driftDir = driftDir.unit();
+  
+  G4double v_drift = aMaterialPropertiesTable->GetConstProperty("DE_DRIFTSPEED");
+  // Speed sigma in transversal and longitudinal direction based on the 
+  // step length, drift speed and long/trans spread parameters
+  G4double sigmaTrans  = sqrt(2*step_length*aMaterialPropertiesTable->GetConstProperty("DE_TRANSVERSALSPREAD")/v_drift)/delta_time;
+  G4double sigmaLong   = sqrt(2*step_length*aMaterialPropertiesTable->GetConstProperty("DE_LONGITUDINALSPREAD")/v_drift)/delta_time;
    
-    G4double d_trans = G4RandGauss::shoot(0,sigmaTrans);
-    G4double d_long=0;
-    G4double d_drift=-1;
-    while(d_drift<0){
-      d_long  = G4RandGauss::shoot(0,sigmaLong);
-      d_drift = step_length+d_long;
+  // Building the modified drift vector
+  // i.e. the speed vector of the particle at the end of the step
+  G4double d_trans = G4RandGauss::shoot(0,sigmaTrans);
+  G4double d_long  = G4RandGauss::shoot(v_drift,sigmaLong);
+  
+  // The transverse component is perpendicular to the drift direction,
+  // to build an arbritary trans vector, we have to make a cross product with
+  // an arbritary, non parallel vector, and  driftDir
+  G4ThreeVector arbritary(1,0,0);
+  G4ThreeVector trans;
+  if(driftDir.dot(arbritary)!=1) // not orthogonal (both are unitary)
+    trans=d_trans*(driftDir.cross(arbritary)).unit();
+  else{
+    arbritary=G4ThreeVector(0,1,0);
+    trans=d_trans*(driftDir.cross(arbritary)).unit();
     }
-    
-    // The transverse component is perpendicular to the drift direction,
-    // to build an arbritary trans vector, we have to make a cross product with
-    // an arbritary, non parallel vector, and  driftDir
-    G4ThreeVector arbritary(1,0,0);
-    G4ThreeVector trans ;
-    if(driftDir.dot(arbritary)!=1) // not orthogonal (both are unitary)
-      trans=d_trans*(driftDir.cross(arbritary)).unit();
-    else{
-      arbritary=G4ThreeVector(0,1,0);
-      trans=d_trans*(driftDir.cross(arbritary)).unit();
-      }
-   
-    // Rotate randomly around driftDir for the Phi component
-    trans.rotate(driftDir,twopi*G4UniformRand()); 
+ 
+  // Rotate randomly around driftDir for the Phi component
+  trans.rotate(driftDir,twopi*G4UniformRand()); 
 
-    // new position is drift length*driftDir + the transversal movement
-    G4ThreeVector d_Pos = (d_drift)*driftDir+trans;
-    
-    // Garanty that the electron does not jump outside the current volume
-    G4double safety = m_SafetyHelper->ComputeSafety(x0,d_Pos.mag());
-    
-    // If the distance travelled if above safety, the step is not taken
-    if(d_Pos.mag()>safety){
-        // multiply by 0.9 to take a 10% safety margin
-        d_drift = d_drift*0.9*safety/d_Pos.mag();
-        d_trans = d_trans*0.9*safety/d_Pos.mag();
-        trans=trans.unit()*d_trans;
-        d_Pos = (d_drift)*driftDir+trans;
-    }
+  // new position is drift vector
+  G4ThreeVector drift_vector=d_long*driftDir.unit()+trans.unit()*d_trans;
+  double speed = drift_vector.mag(); 
+//  std::cout << " " << step_length << " " << speed << " " << d_trans << " " << d_long-v_drift << std::endl;
 
-    // Should be equal to delta length
-    G4double step = (d_drift)/v_drift;
-    
-    // New particle Position with matching time
-    G4ThreeVector pos = x0 + d_Pos;
-    G4double time = t0 + step;
-    
-   
-    aParticleChange.ProposeMomentumDirection(d_Pos.unit());
-    aParticleChange.ProposeEnergy(Energy);
-    aParticleChange.ProposePosition(pos);
-    aParticleChange.ProposeGlobalTime(time);
-    aParticleChange.ProposeLocalTime(time);
-    
-    
-    aParticleChange.ProposeVelocity(v_drift/c_light);
-    m_SafetyHelper->ReLocateWithinVolume(pos);
-    return &aParticleChange;
+  G4double Energy= (0.5*((electron_mass_c2/joule)/(c_squared/((m*m)/(s*s))))*(speed/(m/s))*(speed/(m/s)))*joule;
+  aParticleChange.ProposeMomentumDirection(drift_vector.unit());
+  aParticleChange.ProposeEnergy(Energy);
+  
+  return &aParticleChange;
 }
 
 
 // GetMeanFreePath
 // ---------------
 //
-G4double G4DETransport::GetMeanFreePath(const G4Track& ,
+G4double G4DETransport::GetMeanFreePath(const G4Track& track,
                                         G4double ,
                                         G4ForceCondition* )
 {
-    // Typical distance after which the electron position should be reevaluated
-    // to take into account the diffusivity of the charge cloud inside the 
-    // medium
-    return 1.5*mm;
+  // Typical distance after which the electron position should be reevaluated
+  // to take into account the diffusivity of the charge cloud inside the 
+  // medium
+  double d = m_SafetyHelper->ComputeSafety(track.GetPosition());
+  if(d>1*mm)
+    return 1*mm;
+  else if (d>1*micrometer)
+    return d;
+  else
+    return 1*pc;
 }

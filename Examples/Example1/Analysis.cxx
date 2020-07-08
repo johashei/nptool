@@ -75,6 +75,9 @@ void Analysis::TreatEvent(){
   OriginalELab = ReactionConditions->GetKineticEnergy(0);
   OriginalThetaLab = ReactionConditions->GetTheta(0);
   OriginalBeamEnergy = ReactionConditions->GetBeamEnergy();
+  ReactionVertexX = ReactionConditions->GetVertexPositionX(); 
+  ReactionVertexY = ReactionConditions->GetVertexPositionY(); 
+  ReactionVertexZ = ReactionConditions->GetVertexPositionZ(); 
   // Get the Init information on beam position and energy
   // and apply by hand the experimental resolution
   // This is because the beam diagnosis are not simulated
@@ -207,6 +210,9 @@ void Analysis::InitOutputBranch() {
   RootOutput::getInstance()->GetTree()->Branch("OriginalELab",&OriginalELab,"OriginalELab/D");
   RootOutput::getInstance()->GetTree()->Branch("OriginalThetaLab",&OriginalThetaLab,"OriginalThetaLab/D");
   RootOutput::getInstance()->GetTree()->Branch("OriginalBeamEnergy",&OriginalBeamEnergy,"OriginalBeamEnergy/D");
+  RootOutput::getInstance()->GetTree()->Branch("ReactionVertexX",&ReactionVertexX,"ReactionVertexX/D");
+  RootOutput::getInstance()->GetTree()->Branch("ReactionVertexY",&ReactionVertexY,"ReactionVertexY/D");
+  RootOutput::getInstance()->GetTree()->Branch("ReactionVertexZ",&ReactionVertexZ,"ReactionVertexZ/D");
 }
 
 ////////////////////////////////////////////////////////////////////////////////
