@@ -76,7 +76,7 @@ void Analysis::Init() {
   LightTarget = NPL::EnergyLoss(light+"_"+TargetMaterial+".G4table","G4Table",100 );
   LightAl = NPL::EnergyLoss(light+"_Al.G4table","G4Table",100);
   LightSi = NPL::EnergyLoss(light+"_Si.G4table","G4Table",100);
-  BeamCD2 = NPL::EnergyLoss(beam+"_"+TargetMaterial+".G4table","G4Table",00);
+  BeamCD2 = NPL::EnergyLoss(beam+"_"+TargetMaterial+".G4table","G4Table",100);
 
   FinalBeamEnergy = BeamCD2.Slow(OriginalBeamEnergy,TargetThickness*0.5,0); 
   //FinalBeamEnergy = OriginalBeamEnergy; 

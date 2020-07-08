@@ -51,16 +51,17 @@ class Strasse : public NPS::VDetector{
   public:
     // Cylindrical coordinate
     void AddInnerDetector(double R,double Z,double Phi);  
+    void AddOuterDetector(double R,double Z,double Phi);  
 
     G4LogicalVolume* BuildInnerDetector();
-    G4LogicalVolume* BuildOutterDetector();
+    G4LogicalVolume* BuildOuterDetector();
     G4LogicalVolume* BuildElectronic();
     G4LogicalVolume* BuildFrame();
     G4LogicalVolume* BuildChamber();
 
   private:
     G4LogicalVolume* m_InnerDetector;
-    G4LogicalVolume* m_OutterDetector;
+    G4LogicalVolume* m_OuterDetector;
     G4LogicalVolume* m_Electronic;
     G4LogicalVolume* m_Frame;
     G4LogicalVolume* m_Chamber;
@@ -105,7 +106,7 @@ class Strasse : public NPS::VDetector{
 
     //   Associated Scorer
     G4MultiFunctionalDetector* m_InnerScorer ;
-    G4MultiFunctionalDetector* m_OutterScorer ;
+    G4MultiFunctionalDetector* m_OuterScorer ;
     ////////////////////////////////////////////////////
     ///////////Event class to store Data////////////////
     ////////////////////////////////////////////////////
@@ -120,6 +121,10 @@ class Strasse : public NPS::VDetector{
     vector<double>  m_Inner_R; 
     vector<double>  m_Inner_Z;
     vector<double>  m_Inner_Phi; 
+    vector<double>  m_Outer_R; 
+    vector<double>  m_Outer_Z;
+    vector<double>  m_Outer_Phi; 
+
 
     // Visualisation Attribute
     //G4VisAttributes* m_VisTrap;
