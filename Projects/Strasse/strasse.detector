@@ -1,14 +1,14 @@
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 Target
- THICKNESS= 150 mm
+ THICKNESS= 100 mm
  ANGLE= 0 deg
  RADIUS= 50 mm
  MATERIAL= LH2
  X= 0 mm
  Y= 0 mm
  Z= 0 mm
- NbSlices= 10000
+ NbSlices= 10
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%1
 Strasse Info
