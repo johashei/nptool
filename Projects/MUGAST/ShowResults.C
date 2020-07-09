@@ -72,10 +72,10 @@ void ShowResults(){
   reaction->GetKinematicLine3()->Draw("c");
 
   c1->cd(2);
-  TH1F* hEx = new TH1F("hEx", "hEx",240, -1, 5);
+  TH1F* hEx = new TH1F("hEx", "hEx",600, -1, 5);
   t->Draw("Ex>>hEx","ThetaLab>100 && ThetaLab<156","col");
   hEx->GetXaxis()->SetTitle("Ex (MeV)");
-  hEx->GetYaxis()->SetTitle("counts/25 keV");
+  hEx->GetYaxis()->SetTitle("counts/10 keV");
  
   c1->cd(3);
   TH1F *hCM = new TH1F("hCM", "hCM", 36, 0, 180); 
