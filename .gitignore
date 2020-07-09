@@ -34,6 +34,7 @@ npsimulation
 NPData/*
 Projects/T40/*cxx
 Inputs/EnergyLoss/*.G4table
+Inputs/CrossSection/*.dat
 .ls_return
 Documentation/user_guide.log
 *.bbl
