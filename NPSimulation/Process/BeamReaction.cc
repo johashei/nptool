@@ -189,7 +189,9 @@ void NPS::BeamReaction::DoIt(const G4FastTrack& fastTrack,
     ->GetMaterial();
  
   double energy = PrimaryTrack->GetKineticEnergy();
-  double time   = PrimaryTrack->GetGlobalTime();
+  double speed  = PrimaryTrack->GetVelocity();
+  double time   = PrimaryTrack->GetGlobalTime()+m_length/speed;
+   
 
   double reac_energy = SlowDownBeam (
     PrimaryTrack->GetParticleDefinition(),
