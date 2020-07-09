@@ -130,6 +130,7 @@ void Analysis::TreatEvent() {
     BeamDirection = TVector3(0,0,1);
     OriginalELab = ReactionConditions->GetKineticEnergy(0);
     OriginalThetaLab = ReactionConditions->GetTheta(0);
+    BeamEnergy = ReactionConditions->GetBeamEnergy();
   }
   BeamImpact = TVector3(XTarget,YTarget,0); 
   // determine beam energy for a randomized interaction point in target
@@ -308,6 +309,7 @@ void Analysis::InitOutputBranch() {
   else{
     RootOutput::getInstance()->GetTree()->Branch("OriginalELab",&OriginalELab,"OriginalELab/D");
     RootOutput::getInstance()->GetTree()->Branch("OriginalThetaLab",&OriginalThetaLab,"OriginalThetaLab/D");
+    RootOutput::getInstance()->GetTree()->Branch("BeamEnergy",&BeamEnergy,"BeamEnergy/D");
   }
 }
 
@@ -346,6 +348,7 @@ void Analysis::ReInitValue(){
   Ex = -1000 ;
   EDC= -1000;
   ELab = -1000;
+  BeamEnergy = -1000;
   ThetaLab = -1000;
   ThetaCM = -1000;
   X = -1000;

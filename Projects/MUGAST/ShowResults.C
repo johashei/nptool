@@ -99,6 +99,8 @@ void ShowResults(){
   t->Draw("ELab-OriginalELab>>hcE","","col");
   TLine* lE = new TLine(0,0,60,60);
   //lE->Draw();
-
+  c2->cd(3);
+  TH1F* hcBE = new TH1F("hcBE", "hcBE", 100, 90, 100);
+  t->Draw("BeamEnergy>>hcBE","","");
 }
 

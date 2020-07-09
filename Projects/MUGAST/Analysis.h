@@ -86,6 +86,7 @@ class Analysis: public NPL::VAnalysis{
   double Si_E_M2 ;
   double CsI_E_M2  ;
   double Energy ;
+  double BeamEnergy;
   
   double ThetaGDSurface ;
   double X ;

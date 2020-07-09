@@ -997,7 +997,8 @@ void TMugastPhysics::AddTelescope(MG_DetectorType type,double theta, double phi,
   m_StripPositionZ.push_back(OneTelescopeStripPositionZ);
 }
 
-TVector3 TMugastPhysics::GetPositionOfInteraction(const int i) {
+///////////////////////////////////////////////////////////////////////////////
+TVector3 TMugastPhysics::GetPositionOfInteraction(const int i,bool random) {
   TVector3 Position
     = TVector3(GetStripPositionX(TelescopeNumber[i], DSSD_X[i], DSSD_Y[i]),
         GetStripPositionY(TelescopeNumber[i], DSSD_X[i], DSSD_Y[i]),
@@ -1006,6 +1007,7 @@ TVector3 TMugastPhysics::GetPositionOfInteraction(const int i) {
   return Position;
 }
 
+///////////////////////////////////////////////////////////////////////////////
 TVector3 TMugastPhysics::GetTelescopeNormal(const int i) {
   TVector3 U = TVector3(GetStripPositionX(TelescopeNumber[i], 128, 1),
       GetStripPositionY(TelescopeNumber[i], 128, 1),

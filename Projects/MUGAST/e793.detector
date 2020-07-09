@@ -1,10 +1,10 @@
 %%%%%%%%%%Detector%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%1
 Target
- THICKNESS= 0.1 micrometer
+ THICKNESS= 9.43 micrometer
  ANGLE= 0 deg
  RADIUS= 10 mm
- MATERIAL= Vacuum
+ MATERIAL= CD2 
  X= 0 mm
  Y= 0 mm
  Z= 0 mm
