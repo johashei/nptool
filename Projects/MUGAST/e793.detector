@@ -1,14 +1,14 @@
 %%%%%%%%%%Detector%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%1
 Target
- THICKNESS= 20 micrometer
+ THICKNESS= 0.1 micrometer
  ANGLE= 0 deg
  RADIUS= 10 mm
- MATERIAL= CD2
+ MATERIAL= Vacuum
  X= 0 mm
  Y= 0 mm
  Z= 0 mm
- NbSlices= 100
+ NbSlices= 10
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%1
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 CATSDetector

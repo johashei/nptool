@@ -109,6 +109,7 @@ void Analysis::Init() {
   Z = 0;
   dE = 0;
   BeamDirection = TVector3(0,0,1);
+  nbTrack=0;
 
 }
 
@@ -280,6 +281,7 @@ void Analysis::InitOutputBranch() {
   RootOutput::getInstance()->GetTree()->Branch("Y",&Y,"Y/D");
   RootOutput::getInstance()->GetTree()->Branch("Z",&Z,"Z/D");
   RootOutput::getInstance()->GetTree()->Branch("dE",&dE,"dE/D");
+  if(!simulation){
   // Vamos 
   RootOutput::getInstance()->GetTree()->Branch("LTS",&LTS,"LTS/l");
 
@@ -302,7 +304,8 @@ void Analysis::InitOutputBranch() {
   RootOutput::getInstance()->GetTree()->Branch("coreTS",coreTS,"coreTS[nbCores]/l");
   RootOutput::getInstance()->GetTree()->Branch("coreE0",coreE0,"coreE0[nbCores]/F");
   //
-  if(simulation){
+  }
+  else{
     RootOutput::getInstance()->GetTree()->Branch("OriginalELab",&OriginalELab,"OriginalELab/D");
     RootOutput::getInstance()->GetTree()->Branch("OriginalThetaLab",&OriginalThetaLab,"OriginalThetaLab/D");
   }
@@ -312,22 +315,24 @@ void Analysis::InitOutputBranch() {
 ////////////////////////////////////////////////////////////////////////////////
 void Analysis::InitInputBranch(){
   // RootInput:: getInstance()->GetChain()->SetBranchAddress("GATCONF",&vGATCONF);
-  // Vamos
-  RootInput::getInstance()->GetChain()->SetBranchAddress("LTS",&LTS);
-  // Agata
-  RootInput::getInstance()->GetChain()->SetBranchAddress("TStrack",&TStrack);
-  RootInput::getInstance()->GetChain()->SetBranchAddress("nbTrack",&nbTrack);
-  RootInput::getInstance()->GetChain()->SetBranchAddress("trackE",trackE);
-  RootInput::getInstance()->GetChain()->SetBranchAddress("trackX1",trackX1);
-  RootInput::getInstance()->GetChain()->SetBranchAddress("trackY1",trackY1);
-  RootInput::getInstance()->GetChain()->SetBranchAddress("trackZ1",trackZ1);
-  RootInput::getInstance()->GetChain()->SetBranchAddress("trackT",trackT);
-  RootInput::getInstance()->GetChain()->SetBranchAddress("trackCrystalID",trackCrystalID);
-  RootInput::getInstance()->GetChain()->SetBranchAddress("nbCores",&nbCores);
-  RootInput::getInstance()->GetChain()->SetBranchAddress("coreId",coreId);
-  RootInput::getInstance()->GetChain()->SetBranchAddress("coreTS",coreTS);
-  RootInput::getInstance()->GetChain()->SetBranchAddress("coreE0",coreE0);
-  if(simulation){
+  if(!simulation){
+    // Vamos
+    RootInput::getInstance()->GetChain()->SetBranchAddress("LTS",&LTS);
+    // Agata
+    RootInput::getInstance()->GetChain()->SetBranchAddress("TStrack",&TStrack);
+    RootInput::getInstance()->GetChain()->SetBranchAddress("nbTrack",&nbTrack);
+    RootInput::getInstance()->GetChain()->SetBranchAddress("trackE",trackE);
+    RootInput::getInstance()->GetChain()->SetBranchAddress("trackX1",trackX1);
+    RootInput::getInstance()->GetChain()->SetBranchAddress("trackY1",trackY1);
+    RootInput::getInstance()->GetChain()->SetBranchAddress("trackZ1",trackZ1);
+    RootInput::getInstance()->GetChain()->SetBranchAddress("trackT",trackT);
+    RootInput::getInstance()->GetChain()->SetBranchAddress("trackCrystalID",trackCrystalID);
+    RootInput::getInstance()->GetChain()->SetBranchAddress("nbCores",&nbCores);
+    RootInput::getInstance()->GetChain()->SetBranchAddress("coreId",coreId);
+    RootInput::getInstance()->GetChain()->SetBranchAddress("coreTS",coreTS);
+    RootInput::getInstance()->GetChain()->SetBranchAddress("coreE0",coreE0);
+  }
+  else{
     RootInput:: getInstance()->GetChain()->SetBranchStatus("InitialConditions",true );
     RootInput:: getInstance()->GetChain()->SetBranchStatus("fIC_*",true );
     RootInput:: getInstance()->GetChain()->SetBranchAddress("InitialConditions",&Initial);
