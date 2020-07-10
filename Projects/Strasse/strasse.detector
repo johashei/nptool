@@ -3,7 +3,7 @@
 Target
  THICKNESS= 100 mm
  ANGLE= 0 deg
- RADIUS= 50 mm
+ RADIUS= 15 mm
  MATERIAL= LH2
  X= 0 mm
  Y= 0 mm
@@ -12,129 +12,104 @@ Target
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%1
 Strasse Info
-  Inner_Wafer_Length= 100 mm
-  Inner_Wafer_Width= 50 mm
+  Inner_Wafer_Length= 124 mm
+  Inner_Wafer_Width= 30 mm
   Inner_Wafer_Thickness= 300 micrometer
   Inner_Wafer_AlThickness= 0.4 micrometer
   Inner_Wafer_PADExternal= 1 mm
   Inner_Wafer_PADInternal= 1 mm
   Inner_Wafer_GuardRing= 1.5 mm
-  Inner_PCB_PortWidth= 1 cm
-  Inner_PCB_StarboardWidth= 2 mm
-  Inner_PCB_BevelAngle=  60 deg
+  Inner_PCB_PortWidth= 5 mm
+  Inner_PCB_StarboardWidth= 1 mm
+  Inner_PCB_BevelAngle=  45 deg
   Inner_PCB_UpstreamWidth= 1 cm
-  Inner_PCB_DownstreamWidth= 2 mm
-  Inner_PCB_MidWidth= 2 mm
-  Inner_PCB_Thickness= 3 mm
-  Outer_Wafer_Length= 150 mm
-  Outer_Wafer_Width= 150 mm
+  Inner_PCB_DownstreamWidth= 1 mm
+  Inner_PCB_MidWidth= 1 mm
+  Inner_PCB_Thickness= 1.6 mm
+  Outer_Wafer_Length= 107 mm
+  Outer_Wafer_Width= 86 mm
   Outer_Wafer_Thickness= 300 micrometer
   Outer_Wafer_AlThickness= 0.4 micrometer
   Outer_Wafer_PADExternal= 1 mm
   Outer_Wafer_PADInternal= 1 mm
   Outer_Wafer_GuardRing= 1.5 mm
-  Outer_PCB_PortWidth= 1 cm
-  Outer_PCB_StarboardWidth= 2 mm
-  Outer_PCB_BevelAngle=  60 deg
+  Outer_PCB_PortWidth= 5 mm
+  Outer_PCB_StarboardWidth= 1 mm
+  Outer_PCB_BevelAngle=  45 deg
   Outer_PCB_UpstreamWidth= 1 cm
-  Outer_PCB_DownstreamWidth= 2 mm
-  Outer_PCB_MidWidth= 2 mm
-  Outer_PCB_Thickness= 3 mm
+  Outer_PCB_DownstreamWidth= 1 mm
+  Outer_PCB_MidWidth= 1 mm
+  Outer_PCB_Thickness= 1.6 mm
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%1
 Strasse Inner
-  Radius= 100 mm
+  Radius= 32 mm
   Z= 100 mm
   Phi= 0 deg
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%2
 Strasse Inner
-  Radius= 100 mm
+  Radius= 32 mm
   Z= 100 mm
-  Phi= 45 deg
+  Phi= 60 deg
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%3
 Strasse Inner
-  Radius= 100 mm
+  Radius= 32 mm
   Z= 100 mm
-  Phi= 90 deg
+  Phi= 120 deg
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%4
 Strasse Inner
-  Radius= 100 mm
-  Z= 100 mm
-  Phi= 135 deg
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
-Strasse Inner
-  Radius= 100 mm
+  Radius= 32 mm
   Z= 100 mm
   Phi= 180 deg
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
+Strasse Inner
+  Radius= 32 mm
+  Z= 100 mm
+  Phi= 240 deg
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%6
 Strasse Inner
-  Radius= 100 mm
+  Radius= 32 mm
   Z= 100 mm
-  Phi= 225 deg
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%7
-Strasse Inner
-  Radius= 100 mm
-  Z= 100 mm
-  Phi= 270 deg
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%8
-Strasse Inner
-  Radius= 100 mm
-  Z= 100 mm
-  Phi= 315 deg
+  Phi= 300 deg
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%1
 Strasse Outer
-  Radius= 200 mm
-  Z= 200 mm
+  Radius= 80 mm
+  Z= 129 mm
   Phi= 0 deg
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%2
 Strasse Outer
-  Radius= 200 mm
-  Z= 200 mm
-  Phi= 45 deg
+  Radius= 80 mm
+  Z= 129 mm
+  Phi= 60 deg
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%3
 Strasse Outer
-  Radius= 200 mm
-  Z= 200 mm
-  Phi= 90 deg
+  Radius= 80 mm
+  Z= 129 mm
+  Phi= 120 deg
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%4
 Strasse Outer
-  Radius= 200 mm
-  Z= 200 mm
-  Phi= 135 deg
+  Radius= 80 mm
+  Z= 129 mm
+  Phi= 180 deg
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
 Strasse Outer
-  Radius= 200 mm
-  Z= 200 mm
-  Phi= 180 deg
+  Radius= 80 mm
+  Z= 129 mm
+  Phi= 240 deg
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%6
 Strasse Outer
-  Radius= 200 mm
-  Z= 200 mm
-  Phi= 225 deg
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%7
-Strasse Outer
-  Radius= 200 mm
-  Z= 200 mm
-  Phi= 270 deg
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%8
-Strasse Outer
-  Radius= 200 mm
-  Z= 200 mm
-  Phi= 315 deg
-
+  Radius= 80 mm
+  Z= 129 mm
+  Phi= 300 deg
 
