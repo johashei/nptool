@@ -19,6 +19,8 @@ Strasse Info
   Inner_Wafer_PADExternal= 1 mm
   Inner_Wafer_PADInternal= 1 mm
   Inner_Wafer_GuardRing= 1.5 mm
+  Inner_Wafer_FrontStrips= 128
+  Inner_Wafer_BackStrips= 128
   Inner_PCB_PortWidth= 5 mm
   Inner_PCB_StarboardWidth= 1 mm
   Inner_PCB_BevelAngle=  45 deg
@@ -27,7 +29,7 @@ Strasse Info
   Inner_PCB_MidWidth= 1 mm
   Inner_PCB_Thickness= 1.6 mm
   Outer_Wafer_Length= 107 mm
-  Outer_Wafer_Width= 86 mm
+  Outer_Wafer_Width= 60 mm
   Outer_Wafer_Thickness= 300 micrometer
   Outer_Wafer_AlThickness= 0.4 micrometer
   Outer_Wafer_PADExternal= 1 mm
@@ -40,76 +42,78 @@ Strasse Info
   Outer_PCB_DownstreamWidth= 1 mm
   Outer_PCB_MidWidth= 1 mm
   Outer_PCB_Thickness= 1.6 mm
+  Outer_Wafer_FrontStrips= 128
+  Outer_Wafer_BackStrips= 128
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%1
 Strasse Inner
-  Radius= 32 mm
+  Radius= 30 mm
   Z= 100 mm
   Phi= 0 deg
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%2
 Strasse Inner
-  Radius= 32 mm
+  Radius= 30 mm
   Z= 100 mm
   Phi= 60 deg
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%3
 Strasse Inner
-  Radius= 32 mm
+  Radius= 30 mm
   Z= 100 mm
   Phi= 120 deg
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%4
 Strasse Inner
-  Radius= 32 mm
+  Radius= 30 mm
   Z= 100 mm
   Phi= 180 deg
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
 Strasse Inner
-  Radius= 32 mm
+  Radius= 30 mm
   Z= 100 mm
   Phi= 240 deg
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%6
 Strasse Inner
-  Radius= 32 mm
+  Radius= 30 mm
   Z= 100 mm
   Phi= 300 deg
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%1
 Strasse Outer
-  Radius= 80 mm
+  Radius= 60 mm
   Z= 129 mm
   Phi= 0 deg
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%2
 Strasse Outer
-  Radius= 80 mm
+  Radius= 60 mm
   Z= 129 mm
   Phi= 60 deg
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%3
 Strasse Outer
-  Radius= 80 mm
+  Radius= 60 mm
   Z= 129 mm
   Phi= 120 deg
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%4
 Strasse Outer
-  Radius= 80 mm
+  Radius= 60 mm
   Z= 129 mm
   Phi= 180 deg
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
 Strasse Outer
-  Radius= 80 mm
+  Radius= 60 mm
   Z= 129 mm
   Phi= 240 deg
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%6
 Strasse Outer
-  Radius= 80 mm
+  Radius= 60 mm
   Z= 129 mm
   Phi= 300 deg
 

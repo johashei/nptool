@@ -63,7 +63,7 @@ using namespace CLHEP;
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 namespace Strasse_NS{
   // Energy and time Resolution
-  const double EnergyThreshold = 0.1*MeV;
+  const double EnergyThreshold = 10*keV;
   const double ResoEnergy = 0.015*MeV ;
 
   ////////////////////
@@ -86,6 +86,8 @@ namespace Strasse_NS{
   double Inner_PCB_DownstreamWidth=2*mm;
   double Inner_PCB_MidWidth=2*mm;
   double Inner_PCB_Thickness=3*mm;
+  double Inner_Wafer_FrontStrips= 128;
+  double Inner_Wafer_BackStrips= 128;
 
   ////////////////////
   // Outer Detector //
@@ -107,6 +109,9 @@ namespace Strasse_NS{
   double Outer_PCB_DownstreamWidth=2*mm;
   double Outer_PCB_MidWidth=2*mm;
   double Outer_PCB_Thickness=3*mm;
+  double Outer_Wafer_FrontStrips= 128;
+  double Outer_Wafer_BackStrips= 128;
+
 
 }
 
@@ -267,6 +272,7 @@ G4LogicalVolume* Strasse::BuildInnerDetector(){
     G4LogicalVolume* logicActiveWafer =
       new G4LogicalVolume(ActiveWaferShape,m_MaterialSilicon,"logicActiveWafer", 0, 0, 0);
     logicActiveWafer->SetVisAttributes(SiliconVisAtt);
+    logicActiveWafer->SetSensitiveDetector(m_InnerScorer);
 
     new G4PVPlacement(new G4RotationMatrix(0,0,0),
         G4ThreeVector(0,0,0.5*(Inner_Wafer_PADExternal-Inner_Wafer_PADInternal)), // assymetric pading for bounding
@@ -392,6 +398,7 @@ G4LogicalVolume* Strasse::BuildOuterDetector(){
     G4LogicalVolume* logicActiveWafer =
       new G4LogicalVolume(ActiveWaferShape,m_MaterialSilicon,"logicActiveWafer", 0, 0, 0);
     logicActiveWafer->SetVisAttributes(SiliconVisAtt);
+    logicActiveWafer->SetSensitiveDetector(m_OuterScorer);
 
     new G4PVPlacement(new G4RotationMatrix(0,0,0),
         G4ThreeVector(0,0,0.5*(Outer_Wafer_PADExternal-Outer_Wafer_PADInternal)), // assymetric pading for bounding
@@ -440,6 +447,8 @@ void Strasse::ReadConfiguration(NPL::InputParser parser){
     "Inner_PCB_DownstreamWidth",
     "Inner_PCB_MidWidth",       
     "Inner_PCB_Thickness",      
+    "Inner_Wafer_FrontStrips",
+    "Inner_Wafer_BackStrips",
     "Outer_Wafer_Length",       
     "Outer_Wafer_Width",        
     "Outer_Wafer_Thickness",    
@@ -454,6 +463,8 @@ void Strasse::ReadConfiguration(NPL::InputParser parser){
     "Outer_PCB_DownstreamWidth",
     "Outer_PCB_MidWidth",       
     "Outer_PCB_Thickness",      
+    "Outer_Wafer_FrontStrips",
+    "Outer_Wafer_BackStrips"
   };
 
   if(blocks_info[0]->HasTokenList(info)){
@@ -465,6 +476,8 @@ void Strasse::ReadConfiguration(NPL::InputParser parser){
     Inner_Wafer_PADExternal = blocks_info[0]->GetDouble("Inner_Wafer_PADExternal","mm");     
     Inner_Wafer_PADInternal = blocks_info[0]->GetDouble("Inner_Wafer_PADInternal","mm");   
     Inner_Wafer_GuardRing = blocks_info[0]->GetDouble("Inner_Wafer_GuardRing","mm");     
+    Inner_Wafer_FrontStrips = blocks_info[0]->GetInt("Inner_Wafer_FrontStrips");        
+    Inner_Wafer_BackStrips = blocks_info[0]->GetInt("Inner_Wafer_BackStrips");       
     Inner_PCB_PortWidth = blocks_info[0]->GetDouble("Inner_PCB_PortWidth","mm");       
     Inner_PCB_StarboardWidth = blocks_info[0]->GetDouble("Inner_PCB_StarboardWidth","mm");  
     Inner_PCB_BevelAngle = blocks_info[0]->GetDouble("Inner_PCB_BevelAngle","mm");      
@@ -479,6 +492,8 @@ void Strasse::ReadConfiguration(NPL::InputParser parser){
     Outer_Wafer_PADExternal = blocks_info[0]->GetDouble("Outer_Wafer_PADExternal","mm");   
     Outer_Wafer_PADInternal = blocks_info[0]->GetDouble("Outer_Wafer_PADInternal","mm");   
     Outer_Wafer_GuardRing = blocks_info[0]->GetDouble("Outer_Wafer_GuardRing","mm");     
+    Outer_Wafer_FrontStrips = blocks_info[0]->GetInt("Outer_Wafer_FrontStrips");        
+    Outer_Wafer_BackStrips = blocks_info[0]->GetInt("Outer_Wafer_BackStrips");       
     Outer_PCB_PortWidth = blocks_info[0]->GetDouble("Outer_PCB_PortWidth","mm");       
     Outer_PCB_StarboardWidth = blocks_info[0]->GetDouble("Outer_PCB_StarboardWidth","mm");  
     Outer_PCB_BevelAngle = blocks_info[0]->GetDouble("Outer_PCB_BevelAngle","deg");      
@@ -590,78 +605,82 @@ void Strasse::InitializeRootOutput(){
 // Called at in the EventAction::EndOfEventAvtion
 void Strasse::ReadSensitive(const G4Event* ){
   m_Event->Clear();
-  /*
+
   ///////////
-  // First Stage scorer
+  // Inner barrel scorer
   DSSDScorers::PS_Rectangle* InnerScorer= (DSSDScorers::PS_Rectangle*) m_InnerScorer->GetPrimitive(0);
 
   unsigned int sizeFront = InnerScorer->GetLengthMult(); 
   for(unsigned int i = 0 ; i < sizeFront ; i++){
-  double Energy = RandGauss::shoot(InnerScorer->GetEnergyLength(i), ResoEnergy);   
-  if(Energy>EnergyThreshold){
-  int DetNbr  = InnerScorer->GetDetectorLength(i);
-  int StripFront = InnerScorer->GetStripLength(i);
-  m_Event->SetInnerXE(DetNbr, StripFront, Energy);
-  }
+    double Energy = RandGauss::shoot(InnerScorer->GetEnergyLength(i), ResoEnergy);   
+    if(Energy>EnergyThreshold){
+      int DetNbr  = InnerScorer->GetDetectorLength(i);
+      int StripFront = InnerScorer->GetStripLength(i);
+     // m_Event->SetInnerXE(DetNbr, StripFront, Energy);
+     std::cout << DetNbr << " " << StripFront << " " << Energy/keV << std::endl;
+    }
   }
   unsigned int sizeBack = InnerScorer->GetWidthMult(); 
   for(unsigned int i = 0 ; i < sizeBack ; i++){
-  double Energy = RandGauss::shoot(InnerScorer->GetEnergyWidth(i), ResoEnergy);   
-  if(Energy>EnergyThreshold){
-  int DetNbr  = InnerScorer->GetDetectorWidth(i);
-  int StripFront = InnerScorer->GetStripWidth(i);
-  m_Event->SetInnerYE(DetNbr, StripFront, Energy);
-  }
+    double Energy = RandGauss::shoot(InnerScorer->GetEnergyWidth(i), ResoEnergy);   
+    if(Energy>EnergyThreshold){
+      int DetNbr  = InnerScorer->GetDetectorWidth(i);
+      int StripFront = InnerScorer->GetStripWidth(i);
+    //  m_Event->SetInnerYE(DetNbr, StripFront, Energy);
+    }
   }
   InnerScorer->clear();
-
+  
   ///////////
-  // Second Stage scorer
+  // Outer barrel scorer
   DSSDScorers::PS_Rectangle* OuterScorer= (DSSDScorers::PS_Rectangle*) m_OuterScorer->GetPrimitive(0);
 
-  unsigned int sizeFrontOuter = OuterScorer->GetLengthMult(); 
-  for(unsigned int i = 0 ; i < sizeFrontOuter ; i++){
-  double Energy = RandGauss::shoot(OuterScorer->GetEnergyLength(i), ResoEnergy);   
-  if(Energy>EnergyThreshold){
-  int DetNbr  = OuterScorer->GetDetectorLength(i);
-  int StripFront = OuterScorer->GetStripLength(i);
-  m_Event->SetOuterXE(DetNbr, StripFront, Energy);
+  sizeFront = OuterScorer->GetLengthMult(); 
+  for(unsigned int i = 0 ; i < sizeFront ; i++){
+    double Energy = RandGauss::shoot(OuterScorer->GetEnergyLength(i), ResoEnergy);   
+    if(Energy>EnergyThreshold){
+      int DetNbr  = OuterScorer->GetDetectorLength(i);
+      int StripFront = OuterScorer->GetStripLength(i);
+ //     m_Event->SetOuterXE(DetNbr, StripFront, Energy);
+    }
   }
-  }
-  unsigned int sizeBackOuter = OuterScorer->GetWidthMult(); 
-  for(unsigned int i = 0 ; i < sizeBackOuter ; i++){
-  double Energy = RandGauss::shoot(OuterScorer->GetEnergyWidth(i), ResoEnergy);   
-  if(Energy>EnergyThreshold){
-  int DetNbr  = OuterScorer->GetDetectorWidth(i);
-  int StripFront = OuterScorer->GetStripWidth(i);
-  m_Event->SetOuterYE(DetNbr, StripFront, Energy);
-  }
+  
+  sizeBack = OuterScorer->GetWidthMult(); 
+  for(unsigned int i = 0 ; i < sizeBack ; i++){
+    double Energy = RandGauss::shoot(OuterScorer->GetEnergyWidth(i), ResoEnergy);   
+    if(Energy>EnergyThreshold){
+      int DetNbr  = OuterScorer->GetDetectorWidth(i);
+      int StripFront = OuterScorer->GetStripWidth(i);
+   //   m_Event->SetOuterYE(DetNbr, StripFront, Energy);
+    }
   }
   OuterScorer->clear();
-  */
 
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 ////////////////////////////////////////////////////////////////   
 void Strasse::InitializeScorers() { 
-  /*  // This check is necessary in case the geometry is reloaded
-      bool already_exist = false; 
-      m_InnerScorer = CheckScorer("InnerScorer",already_exist) ;
-      m_OuterScorer = CheckScorer("OuterScorer",already_exist) ;
+  // This check is necessary in case the geometry is reloaded
+  bool already_exist = false; 
+  m_InnerScorer = CheckScorer("InnerScorer",already_exist) ;
+  m_OuterScorer = CheckScorer("OuterScorer",already_exist) ;
 
-      if(already_exist) 
-      return ;
+  if(already_exist) 
+    return ;
 
   // Otherwise the scorer is initialised
-  G4VPrimitiveScorer* InnerScorer = new DSSDScorers::PS_Rectangle("InnerScorer",1,
-  TrapezoidBaseLarge,
-  TrapezoidHeight,
-  128,128);
-  G4VPrimitiveScorer* OuterScorer = new DSSDScorers::PS_Rectangle("OuterScorer",1,
-  TrapezoidBaseLarge,
-  TrapezoidHeight,
-  16,16);
+  G4VPrimitiveScorer* InnerScorer = new DSSDScorers::PS_Rectangle("InnerScorer",2,
+      Inner_Wafer_Length,
+      Inner_Wafer_Width,
+      Inner_Wafer_FrontStrips,
+      Inner_Wafer_BackStrips);
+
+  G4VPrimitiveScorer* OuterScorer = new DSSDScorers::PS_Rectangle("OuterScorer",2,
+      Outer_Wafer_Length,
+      Outer_Wafer_Width,
+      Outer_Wafer_FrontStrips,
+      Outer_Wafer_BackStrips);
 
   G4VPrimitiveScorer* InteractionInner = new InteractionScorers::PS_Interactions("InteractionInner",ms_InterCoord,0);
   G4VPrimitiveScorer* InteractionOuter = new InteractionScorers::PS_Interactions("InteractionOuter",ms_InterCoord,0);
@@ -674,7 +693,7 @@ void Strasse::InitializeScorers() {
 
   G4SDManager::GetSDMpointer()->AddNewDetector(m_InnerScorer);
   G4SDManager::GetSDMpointer()->AddNewDetector(m_OuterScorer);
-  */
+
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
