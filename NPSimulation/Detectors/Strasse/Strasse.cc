@@ -123,8 +123,10 @@ using namespace Strasse_NS;
 Strasse::Strasse(){
   InitializeMaterial();
   m_Event = new TStrasseData() ;
-  m_InnerScorer = 0;
-  m_OuterScorer = 0;
+  m_InnerScorer1 = 0;
+  m_OuterScorer1 = 0;
+  m_InnerScorer2 = 0;
+  m_OuterScorer2 = 0;
   m_InnerDetector=0;
   m_OuterDetector=0;
   m_Chamber=0;
@@ -269,20 +271,27 @@ G4LogicalVolume* Strasse::BuildInnerDetector(){
         0.5*Inner_Wafer_Thickness,
         0.5*m_Active_InnerWafer_Length);
 
-    G4LogicalVolume* logicActiveWafer =
-      new G4LogicalVolume(ActiveWaferShape,m_MaterialSilicon,"logicActiveWafer", 0, 0, 0);
-    logicActiveWafer->SetVisAttributes(SiliconVisAtt);
-    logicActiveWafer->SetSensitiveDetector(m_InnerScorer);
+    G4LogicalVolume* logicActiveWafer1 =
+      new G4LogicalVolume(ActiveWaferShape,m_MaterialSilicon,"logicActiveWafer1", 0, 0, 0);
+    logicActiveWafer1->SetVisAttributes(SiliconVisAtt);
+    logicActiveWafer1->SetSensitiveDetector(m_InnerScorer1);
+
+    G4LogicalVolume* logicActiveWafer2 =
+      new G4LogicalVolume(ActiveWaferShape,m_MaterialSilicon,"logicActiveWafer2", 0, 0, 0);
+    logicActiveWafer2->SetVisAttributes(SiliconVisAtt);
+    logicActiveWafer2->SetSensitiveDetector(m_InnerScorer2);
+
+
 
     new G4PVPlacement(new G4RotationMatrix(0,0,0),
         G4ThreeVector(0,0,0.5*(Inner_Wafer_PADExternal-Inner_Wafer_PADInternal)), // assymetric pading for bounding
-        logicActiveWafer,"Strasse_Inner_ActiveWafer1",logicWafer1,
+        logicActiveWafer1,"Strasse_Inner_ActiveWafer1",logicWafer1,
         false,1);
 
     new G4PVPlacement(new G4RotationMatrix(0,0,0),
         G4ThreeVector(0,0,-0.5*(Inner_Wafer_PADExternal-Inner_Wafer_PADInternal)), // assymetric pading for bounding
-        logicActiveWafer,"Strasse_Inner_ActiveWafer2",logicWafer2,
-        false,1);
+        logicActiveWafer2,"Strasse_Inner_ActiveWafer2",logicWafer2,
+        false,2);
   }
   return m_InnerDetector;
 }
@@ -395,20 +404,26 @@ G4LogicalVolume* Strasse::BuildOuterDetector(){
         0.5*Outer_Wafer_Thickness,
         0.5*m_Active_OuterWafer_Length);
 
-    G4LogicalVolume* logicActiveWafer =
-      new G4LogicalVolume(ActiveWaferShape,m_MaterialSilicon,"logicActiveWafer", 0, 0, 0);
-    logicActiveWafer->SetVisAttributes(SiliconVisAtt);
-    logicActiveWafer->SetSensitiveDetector(m_OuterScorer);
+    G4LogicalVolume* logicActiveWafer1 =
+      new G4LogicalVolume(ActiveWaferShape,m_MaterialSilicon,"logicActiveWafer1", 0, 0, 0);
+    logicActiveWafer1->SetVisAttributes(SiliconVisAtt);
+    logicActiveWafer1->SetSensitiveDetector(m_OuterScorer1);
+
+    G4LogicalVolume* logicActiveWafer2 =
+      new G4LogicalVolume(ActiveWaferShape,m_MaterialSilicon,"logicActiveWafer2", 0, 0, 0);
+    logicActiveWafer2->SetVisAttributes(SiliconVisAtt);
+    logicActiveWafer2->SetSensitiveDetector(m_OuterScorer2);
+
 
     new G4PVPlacement(new G4RotationMatrix(0,0,0),
         G4ThreeVector(0,0,0.5*(Outer_Wafer_PADExternal-Outer_Wafer_PADInternal)), // assymetric pading for bounding
-        logicActiveWafer,"Strasse_Outer_ActiveWafer1",logicWafer1,
+        logicActiveWafer1,"Strasse_Outer_ActiveWafer1",logicWafer1,
         false,1);
 
     new G4PVPlacement(new G4RotationMatrix(0,0,0),
         G4ThreeVector(0,0,-0.5*(Outer_Wafer_PADExternal-Outer_Wafer_PADInternal)), // assymetric pading for bounding
-        logicActiveWafer,"Strasse_Outer_ActiveWafer2",logicWafer2,
-        false,1);
+        logicActiveWafer2,"Strasse_Outer_ActiveWafer2",logicWafer2,
+        false,2);
   }
   return m_OuterDetector;
 }
@@ -608,51 +623,100 @@ void Strasse::ReadSensitive(const G4Event* ){
 
   ///////////
   // Inner barrel scorer
-  DSSDScorers::PS_Rectangle* InnerScorer= (DSSDScorers::PS_Rectangle*) m_InnerScorer->GetPrimitive(0);
+  DSSDScorers::PS_Rectangle* InnerScorer1= (DSSDScorers::PS_Rectangle*) m_InnerScorer1->GetPrimitive(0);
 
-  unsigned int sizeFront = InnerScorer->GetWidthMult(); 
+  unsigned int sizeFront = InnerScorer1->GetWidthMult(); 
   for(unsigned int i = 0 ; i < sizeFront ; i++){
-    double Energy = RandGauss::shoot(InnerScorer->GetEnergyWidth(i), ResoEnergy);   
+    double Energy = RandGauss::shoot(InnerScorer1->GetEnergyWidth(i), ResoEnergy);   
     if(Energy>EnergyThreshold){
-      int DetNbr  = InnerScorer->GetDetectorWidth(i);
-      int StripFront = InnerScorer->GetStripWidth(i);
+      int DetNbr  = InnerScorer1->GetDetectorWidth(i);
+      int StripFront = InnerScorer1->GetStripWidth(i);
       m_Event->SetInnerXE(DetNbr, StripFront, Energy);
     }
   }
-  unsigned int sizeBack = InnerScorer->GetLengthMult(); 
+  unsigned int sizeBack = InnerScorer1->GetLengthMult(); 
   for(unsigned int i = 0 ; i < sizeBack ; i++){
-    double Energy = RandGauss::shoot(InnerScorer->GetEnergyLength(i), ResoEnergy);   
+    double Energy = RandGauss::shoot(InnerScorer1->GetEnergyLength(i), ResoEnergy);   
     if(Energy>EnergyThreshold){
-      int DetNbr  = InnerScorer->GetDetectorLength(i);
-      int StripBack= InnerScorer->GetStripLength(i);
+      int DetNbr  = InnerScorer1->GetDetectorLength(i);
+      int StripBack= InnerScorer1->GetStripLength(i);
       m_Event->SetInnerYE(DetNbr, StripBack, Energy);
     }
   }
-  InnerScorer->clear();
+  InnerScorer1->clear();
+
+  // second silicon
+  DSSDScorers::PS_Rectangle* InnerScorer2= (DSSDScorers::PS_Rectangle*) m_InnerScorer2->GetPrimitive(0);
+
+  sizeFront = InnerScorer2->GetWidthMult(); 
+  for(unsigned int i = 0 ; i < sizeFront ; i++){
+    double Energy = RandGauss::shoot(InnerScorer2->GetEnergyWidth(i), ResoEnergy);   
+    if(Energy>EnergyThreshold){
+      int DetNbr  = InnerScorer2->GetDetectorWidth(i);
+      int StripFront = InnerScorer2->GetStripWidth(i)+Inner_Wafer_FrontStrips;
+      m_Event->SetInnerXE(DetNbr, StripFront, Energy);
+    }
+  }
+  sizeBack = InnerScorer2->GetLengthMult(); 
+  for(unsigned int i = 0 ; i < sizeBack ; i++){
+    double Energy = RandGauss::shoot(InnerScorer2->GetEnergyLength(i), ResoEnergy);   
+    if(Energy>EnergyThreshold){
+      int DetNbr  = InnerScorer2->GetDetectorLength(i);
+      int StripBack= InnerScorer2->GetStripLength(i);
+      m_Event->SetInnerYE(DetNbr, StripBack, Energy);
+    }
+  }
+  InnerScorer2->clear();
+  
+
   
   ///////////
   // Outer barrel scorer
-  DSSDScorers::PS_Rectangle* OuterScorer= (DSSDScorers::PS_Rectangle*) m_OuterScorer->GetPrimitive(0);
+  DSSDScorers::PS_Rectangle* OuterScorer1= (DSSDScorers::PS_Rectangle*) m_OuterScorer1->GetPrimitive(0);
 
-  sizeFront = OuterScorer->GetWidthMult(); 
+  sizeFront = OuterScorer1->GetWidthMult(); 
   for(unsigned int i = 0 ; i < sizeFront ; i++){
-    double Energy = RandGauss::shoot(OuterScorer->GetEnergyWidth(i), ResoEnergy);   
+    double Energy = RandGauss::shoot(OuterScorer1->GetEnergyWidth(i), ResoEnergy);   
     if(Energy>EnergyThreshold){
-      int DetNbr  = OuterScorer->GetDetectorWidth(i);
-      int StripFront = OuterScorer->GetStripWidth(i);
+      int DetNbr  = OuterScorer1->GetDetectorWidth(i);
+      int StripFront = OuterScorer1->GetStripWidth(i);
       m_Event->SetOuterXE(DetNbr, StripFront, Energy);
     }
   }
-  sizeBack = OuterScorer->GetLengthMult(); 
+  sizeBack = OuterScorer1->GetLengthMult(); 
   for(unsigned int i = 0 ; i < sizeBack ; i++){
-    double Energy = RandGauss::shoot(OuterScorer->GetEnergyLength(i), ResoEnergy);   
+    double Energy = RandGauss::shoot(OuterScorer1->GetEnergyLength(i), ResoEnergy);   
     if(Energy>EnergyThreshold){
-      int DetNbr  = OuterScorer->GetDetectorLength(i);
-      int StripBack= OuterScorer->GetStripLength(i);
+      int DetNbr  = OuterScorer1->GetDetectorLength(i);
+      int StripBack= OuterScorer1->GetStripLength(i);
       m_Event->SetOuterYE(DetNbr, StripBack, Energy);
     }
   }
-  OuterScorer->clear();
+  OuterScorer1->clear();
+
+  // Second silicon
+  DSSDScorers::PS_Rectangle* OuterScorer2= (DSSDScorers::PS_Rectangle*) m_OuterScorer2->GetPrimitive(0);
+
+  sizeFront = OuterScorer2->GetWidthMult(); 
+  for(unsigned int i = 0 ; i < sizeFront ; i++){
+    double Energy = RandGauss::shoot(OuterScorer2->GetEnergyWidth(i), ResoEnergy);   
+    if(Energy>EnergyThreshold){
+      int DetNbr  = OuterScorer2->GetDetectorWidth(i);
+      int StripFront = OuterScorer2->GetStripWidth(i)+Inner_Wafer_FrontStrips;
+      m_Event->SetOuterXE(DetNbr, StripFront, Energy);
+    }
+  }
+  sizeBack = OuterScorer2->GetLengthMult(); 
+  for(unsigned int i = 0 ; i < sizeBack ; i++){
+    double Energy = RandGauss::shoot(OuterScorer2->GetEnergyLength(i), ResoEnergy);   
+    if(Energy>EnergyThreshold){
+      int DetNbr  = OuterScorer2->GetDetectorLength(i);
+      int StripBack= OuterScorer2->GetStripLength(i);
+      m_Event->SetOuterYE(DetNbr, StripBack, Energy);
+    }
+  }
+  OuterScorer2->clear();
+
 
 }
 
@@ -661,8 +725,11 @@ void Strasse::ReadSensitive(const G4Event* ){
 void Strasse::InitializeScorers() { 
   // This check is necessary in case the geometry is reloaded
   bool already_exist = false; 
-  m_InnerScorer = CheckScorer("InnerScorer",already_exist) ;
-  m_OuterScorer = CheckScorer("OuterScorer",already_exist) ;
+  m_InnerScorer1 = CheckScorer("InnerScorer1",already_exist) ;
+  m_OuterScorer1 = CheckScorer("OuterScorer1",already_exist) ;
+  m_InnerScorer2 = CheckScorer("InnerScorer2",already_exist) ;
+  m_OuterScorer2 = CheckScorer("OuterScorer2",already_exist) ;
+
 
   if(already_exist) 
     return ;
@@ -673,11 +740,18 @@ void Strasse::InitializeScorers() {
   Inner_Wafer_Length-Inner_Wafer_PADExternal-Inner_Wafer_PADInternal-Inner_Wafer_GuardRing;
     
 
-  G4VPrimitiveScorer* InnerScorer = new DSSDScorers::PS_Rectangle("InnerScorer",2,
+  G4VPrimitiveScorer* InnerScorer1 = new DSSDScorers::PS_Rectangle("InnerScorer1",2,
       m_Active_InnerWafer_Width,
       m_Active_InnerWafer_Length,
       Inner_Wafer_FrontStrips,
       Inner_Wafer_BackStrips,0,"xz");
+
+  G4VPrimitiveScorer* InnerScorer2 = new DSSDScorers::PS_Rectangle("InnerScorer2",2,
+      m_Active_InnerWafer_Width,
+      m_Active_InnerWafer_Length,
+      Inner_Wafer_FrontStrips,
+      Inner_Wafer_BackStrips,0,"xz");
+
 
 
   m_Active_OuterWafer_Width=Outer_Wafer_Width-2.*Outer_Wafer_GuardRing;
@@ -685,23 +759,42 @@ void Strasse::InitializeScorers() {
   Outer_Wafer_Length-Outer_Wafer_PADExternal-Outer_Wafer_PADInternal-Outer_Wafer_GuardRing;
 
 
-  G4VPrimitiveScorer* OuterScorer = new DSSDScorers::PS_Rectangle("OuterScorer",2,
+  G4VPrimitiveScorer* OuterScorer1 = new DSSDScorers::PS_Rectangle("OuterScorer1",2,
       m_Active_OuterWafer_Width,
       m_Active_OuterWafer_Length,
       Outer_Wafer_FrontStrips,
       Outer_Wafer_BackStrips,0,"xz");
 
-  G4VPrimitiveScorer* InteractionInner = new InteractionScorers::PS_Interactions("InteractionInner",ms_InterCoord,0);
-  G4VPrimitiveScorer* InteractionOuter = new InteractionScorers::PS_Interactions("InteractionOuter",ms_InterCoord,0);
+  G4VPrimitiveScorer* OuterScorer2 = new DSSDScorers::PS_Rectangle("OuterScorer2",2,
+      m_Active_OuterWafer_Width,
+      m_Active_OuterWafer_Length,
+      Outer_Wafer_FrontStrips,
+      Outer_Wafer_BackStrips,0,"xz");
+
+
+
+  G4VPrimitiveScorer* InteractionInner1 = new InteractionScorers::PS_Interactions("InteractionInner1",ms_InterCoord,0);
+  G4VPrimitiveScorer* InteractionOuter1 = new InteractionScorers::PS_Interactions("InteractionOuter1",ms_InterCoord,0);
+  G4VPrimitiveScorer* InteractionInner2 = new InteractionScorers::PS_Interactions("InteractionInner2",ms_InterCoord,0);
+  G4VPrimitiveScorer* InteractionOuter2 = new InteractionScorers::PS_Interactions("InteractionOuter2",ms_InterCoord,0);
+
 
   // Register it to the multifunctionnal detector
-  m_InnerScorer->RegisterPrimitive(InnerScorer);
-  m_InnerScorer->RegisterPrimitive(InteractionInner);
-  m_OuterScorer->RegisterPrimitive(OuterScorer);
-  m_OuterScorer->RegisterPrimitive(InteractionOuter);
+  m_InnerScorer1->RegisterPrimitive(InnerScorer1);
+  m_InnerScorer1->RegisterPrimitive(InteractionInner1);
+  m_OuterScorer1->RegisterPrimitive(OuterScorer1);
+  m_OuterScorer1->RegisterPrimitive(InteractionOuter1);
+  m_InnerScorer2->RegisterPrimitive(InnerScorer2);
+  m_InnerScorer2->RegisterPrimitive(InteractionInner2);
+  m_OuterScorer2->RegisterPrimitive(OuterScorer2);
+  m_OuterScorer2->RegisterPrimitive(InteractionOuter2);
 
-  G4SDManager::GetSDMpointer()->AddNewDetector(m_InnerScorer);
-  G4SDManager::GetSDMpointer()->AddNewDetector(m_OuterScorer);
+
+  G4SDManager::GetSDMpointer()->AddNewDetector(m_InnerScorer1);
+  G4SDManager::GetSDMpointer()->AddNewDetector(m_OuterScorer1);
+  G4SDManager::GetSDMpointer()->AddNewDetector(m_InnerScorer2);
+  G4SDManager::GetSDMpointer()->AddNewDetector(m_OuterScorer2);
+
 
 }
 

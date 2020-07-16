@@ -110,8 +110,11 @@ class Strasse : public NPS::VDetector{
     void InitializeScorers() ;
 
     //   Associated Scorer
-    G4MultiFunctionalDetector* m_InnerScorer ;
-    G4MultiFunctionalDetector* m_OuterScorer ;
+    G4MultiFunctionalDetector* m_InnerScorer1 ;
+    G4MultiFunctionalDetector* m_OuterScorer1 ;
+    G4MultiFunctionalDetector* m_InnerScorer2 ;
+    G4MultiFunctionalDetector* m_OuterScorer2 ;
+
     ////////////////////////////////////////////////////
     ///////////Event class to store Data////////////////
     ////////////////////////////////////////////////////
