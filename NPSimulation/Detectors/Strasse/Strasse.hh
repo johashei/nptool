@@ -8,7 +8,7 @@
  *****************************************************************************/
 
 /*****************************************************************************
- * Original Author: F. Flavigny  contact address: flavigny@lpccaen.in2p3.fr  *
+ * Original Author: A. Matta  contact address: matta@lpccaen.in2p3.fr        *
  *                                                                           *
  * Creation Date  : July 2020                                                *
  * Last update    :                                                          *
@@ -78,6 +78,11 @@ class Strasse : public NPS::VDetector{
     G4Material* m_MaterialVacuum  ;
     G4Material* m_MaterialPCB     ;
 
+    // calculated dimension
+    double m_Active_InnerWafer_Width;
+    double m_Active_InnerWafer_Length; 
+    double m_Active_OuterWafer_Width;
+    double m_Active_OuterWafer_Length; 
 
 
     ////////////////////////////////////////////////////

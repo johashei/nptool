@@ -13,7 +13,7 @@ Target
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%1
 Strasse Info
   Inner_Wafer_Length= 124 mm
-  Inner_Wafer_Width= 30 mm
+  Inner_Wafer_Width= 25 mm
   Inner_Wafer_Thickness= 300 micrometer
   Inner_Wafer_AlThickness= 0.4 micrometer
   Inner_Wafer_PADExternal= 1 mm

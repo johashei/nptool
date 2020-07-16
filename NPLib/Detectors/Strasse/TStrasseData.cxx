@@ -54,13 +54,13 @@ void TStrasseData::Clear() {
   fInner_YE_Energy.clear();
 
   // Energy X
-  fOutter_XE_DetectorNbr.clear();
-  fOutter_XE_StripNbr.clear();
-  fOutter_XE_Energy.clear();
+  fOuter_XE_DetectorNbr.clear();
+  fOuter_XE_StripNbr.clear();
+  fOuter_XE_Energy.clear();
   // Energy Y
-  fOutter_YE_DetectorNbr.clear();
-  fOutter_YE_StripNbr.clear();
-  fOutter_YE_Energy.clear();
+  fOuter_YE_DetectorNbr.clear();
+  fOuter_YE_StripNbr.clear();
+  fOuter_YE_Energy.clear();
 
 }
 

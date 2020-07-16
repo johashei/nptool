@@ -199,11 +199,11 @@ void TStrassePhysics::BuildPhysicalEvent() {
       PosY.push_back(GetPositionOfInteraction(i).y());
       PosZ.push_back(GetPositionOfInteraction(i).z());
 
-      int OutterMult = m_PreTreatedData->GetOutterMultXEnergy();
-      for(unsigned int j=0; j<OutterMult; j++){
-        if(m_PreTreatedData->GetOutter_XE_DetectorNbr(j)==N){
-          double XDE = m_PreTreatedData->GetOutter_XE_Energy(j);
-          double YDE = m_PreTreatedData->GetOutter_YE_Energy(j);
+      int OuterMult = m_PreTreatedData->GetOuterMultXEnergy();
+      for(unsigned int j=0; j<OuterMult; j++){
+        if(m_PreTreatedData->GetOuter_XE_DetectorNbr(j)==N){
+          double XDE = m_PreTreatedData->GetOuter_XE_Energy(j);
+          double YDE = m_PreTreatedData->GetOuter_YE_Energy(j);
 
           E.push_back(XDE);
         }
@@ -297,23 +297,23 @@ void TStrassePhysics::PreTreat() {
 
   //////
   // Second Stage Energy
-  sizeFront = m_EventData->GetOutterMultXEnergy();
+  sizeFront = m_EventData->GetOuterMultXEnergy();
   for (UShort_t i = 0; i < sizeFront ; ++i) {
-    if (m_EventData->GetOutter_XE_Energy(i) > m_E_RAW_Threshold) {
-      Double_t Energy = m_EventData->GetOutter_XE_Energy(i);
-      //Double_t Energy = Cal->ApplyCalibration("Strasse/ENERGY"+NPL::itoa(m_EventData->GetOutter_XE_DetectorNbr(i)),m_EventData->GetOutter_XE_Energy(i));
+    if (m_EventData->GetOuter_XE_Energy(i) > m_E_RAW_Threshold) {
+      Double_t Energy = m_EventData->GetOuter_XE_Energy(i);
+      //Double_t Energy = Cal->ApplyCalibration("Strasse/ENERGY"+NPL::itoa(m_EventData->GetOuter_XE_DetectorNbr(i)),m_EventData->GetOuter_XE_Energy(i));
       if (Energy > m_E_Threshold) {
-        m_PreTreatedData->SetOutterXE(m_EventData->GetOutter_XE_DetectorNbr(i), m_EventData->GetOutter_XE_StripNbr(i), Energy);
+        m_PreTreatedData->SetOuterXE(m_EventData->GetOuter_XE_DetectorNbr(i), m_EventData->GetOuter_XE_StripNbr(i), Energy);
       }
     }
   }
-  sizeBack = m_EventData->GetOutterMultXEnergy();
+  sizeBack = m_EventData->GetOuterMultXEnergy();
   for (UShort_t i = 0; i < sizeBack ; ++i) {
-    if (m_EventData->GetOutter_YE_Energy(i) > m_E_RAW_Threshold) {
-      Double_t Energy = m_EventData->GetOutter_YE_Energy(i);
-      //Double_t Energy = Cal->ApplyCalibration("Strasse/ENERGY"+NPL::itoa(m_EventData->GetOutter_YE_DetectorNbr(i)),m_EventData->GetOutter_YE_Energy(i));
+    if (m_EventData->GetOuter_YE_Energy(i) > m_E_RAW_Threshold) {
+      Double_t Energy = m_EventData->GetOuter_YE_Energy(i);
+      //Double_t Energy = Cal->ApplyCalibration("Strasse/ENERGY"+NPL::itoa(m_EventData->GetOuter_YE_DetectorNbr(i)),m_EventData->GetOuter_YE_Energy(i));
       if (Energy > m_E_Threshold) {
-        m_PreTreatedData->SetOutterYE(m_EventData->GetOutter_YE_DetectorNbr(i), m_EventData->GetOutter_YE_StripNbr(i), Energy);
+        m_PreTreatedData->SetOuterYE(m_EventData->GetOuter_YE_DetectorNbr(i), m_EventData->GetOuter_YE_StripNbr(i), Energy);
       }
     }
   }

@@ -6,7 +6,7 @@
  *****************************************************************************/
 
 /*****************************************************************************
- * Original Author: F.Flavigny  contact address: flavigny@lpccaen.in2p3.fr   *
+ * Original Author: A. Matta  contact address: matta@lpccaen.in2p3.fr        *
  *                                                                           *
  * Creation Date  : July 2020                                                *
  * Last update    :                                                          *
@@ -264,10 +264,10 @@ G4LogicalVolume* Strasse::BuildInnerDetector(){
         false,0);
 
     // Sub volume Active Wafer
-    G4Box*  ActiveWaferShape = new G4Box("ActiveWaferShape",
-        Inner_Wafer_Width*0.5-Inner_Wafer_GuardRing,
-        Inner_Wafer_Thickness*0.5,
-        0.5*(Inner_Wafer_Length-Inner_Wafer_PADExternal-Inner_Wafer_PADInternal-Inner_Wafer_GuardRing));
+        G4Box*  ActiveWaferShape = new G4Box("InnerActiveWaferShape",
+        0.5*m_Active_InnerWafer_Width,
+        0.5*Inner_Wafer_Thickness,
+        0.5*m_Active_InnerWafer_Length);
 
     G4LogicalVolume* logicActiveWafer =
       new G4LogicalVolume(ActiveWaferShape,m_MaterialSilicon,"logicActiveWafer", 0, 0, 0);
@@ -390,10 +390,10 @@ G4LogicalVolume* Strasse::BuildOuterDetector(){
         false,0);
 
     // Sub volume Active Wafer
-    G4Box*  ActiveWaferShape = new G4Box("ActiveWaferShape",
-        Outer_Wafer_Width*0.5-Outer_Wafer_GuardRing,
-        Outer_Wafer_Thickness*0.5,
-        0.5*(Outer_Wafer_Length-Outer_Wafer_PADExternal-Outer_Wafer_PADInternal-Outer_Wafer_GuardRing));
+        G4Box*  ActiveWaferShape = new G4Box("OuterActiveWaferShape",
+        0.5*m_Active_OuterWafer_Width,
+        0.5*Outer_Wafer_Thickness,
+        0.5*m_Active_OuterWafer_Length);
 
     G4LogicalVolume* logicActiveWafer =
       new G4LogicalVolume(ActiveWaferShape,m_MaterialSilicon,"logicActiveWafer", 0, 0, 0);
@@ -610,23 +610,22 @@ void Strasse::ReadSensitive(const G4Event* ){
   // Inner barrel scorer
   DSSDScorers::PS_Rectangle* InnerScorer= (DSSDScorers::PS_Rectangle*) m_InnerScorer->GetPrimitive(0);
 
-  unsigned int sizeFront = InnerScorer->GetLengthMult(); 
+  unsigned int sizeFront = InnerScorer->GetWidthMult(); 
   for(unsigned int i = 0 ; i < sizeFront ; i++){
-    double Energy = RandGauss::shoot(InnerScorer->GetEnergyLength(i), ResoEnergy);   
-    if(Energy>EnergyThreshold){
-      int DetNbr  = InnerScorer->GetDetectorLength(i);
-      int StripFront = InnerScorer->GetStripLength(i);
-     // m_Event->SetInnerXE(DetNbr, StripFront, Energy);
-     std::cout << DetNbr << " " << StripFront << " " << Energy/keV << std::endl;
-    }
-  }
-  unsigned int sizeBack = InnerScorer->GetWidthMult(); 
-  for(unsigned int i = 0 ; i < sizeBack ; i++){
     double Energy = RandGauss::shoot(InnerScorer->GetEnergyWidth(i), ResoEnergy);   
     if(Energy>EnergyThreshold){
       int DetNbr  = InnerScorer->GetDetectorWidth(i);
       int StripFront = InnerScorer->GetStripWidth(i);
-    //  m_Event->SetInnerYE(DetNbr, StripFront, Energy);
+      m_Event->SetInnerXE(DetNbr, StripFront, Energy);
+    }
+  }
+  unsigned int sizeBack = InnerScorer->GetLengthMult(); 
+  for(unsigned int i = 0 ; i < sizeBack ; i++){
+    double Energy = RandGauss::shoot(InnerScorer->GetEnergyLength(i), ResoEnergy);   
+    if(Energy>EnergyThreshold){
+      int DetNbr  = InnerScorer->GetDetectorLength(i);
+      int StripBack= InnerScorer->GetStripLength(i);
+      m_Event->SetInnerYE(DetNbr, StripBack, Energy);
     }
   }
   InnerScorer->clear();
@@ -635,23 +634,22 @@ void Strasse::ReadSensitive(const G4Event* ){
   // Outer barrel scorer
   DSSDScorers::PS_Rectangle* OuterScorer= (DSSDScorers::PS_Rectangle*) m_OuterScorer->GetPrimitive(0);
 
-  sizeFront = OuterScorer->GetLengthMult(); 
+  sizeFront = OuterScorer->GetWidthMult(); 
   for(unsigned int i = 0 ; i < sizeFront ; i++){
-    double Energy = RandGauss::shoot(OuterScorer->GetEnergyLength(i), ResoEnergy);   
-    if(Energy>EnergyThreshold){
-      int DetNbr  = OuterScorer->GetDetectorLength(i);
-      int StripFront = OuterScorer->GetStripLength(i);
- //     m_Event->SetOuterXE(DetNbr, StripFront, Energy);
-    }
-  }
-  
-  sizeBack = OuterScorer->GetWidthMult(); 
-  for(unsigned int i = 0 ; i < sizeBack ; i++){
     double Energy = RandGauss::shoot(OuterScorer->GetEnergyWidth(i), ResoEnergy);   
     if(Energy>EnergyThreshold){
       int DetNbr  = OuterScorer->GetDetectorWidth(i);
       int StripFront = OuterScorer->GetStripWidth(i);
-   //   m_Event->SetOuterYE(DetNbr, StripFront, Energy);
+      m_Event->SetOuterXE(DetNbr, StripFront, Energy);
+    }
+  }
+  sizeBack = OuterScorer->GetLengthMult(); 
+  for(unsigned int i = 0 ; i < sizeBack ; i++){
+    double Energy = RandGauss::shoot(OuterScorer->GetEnergyLength(i), ResoEnergy);   
+    if(Energy>EnergyThreshold){
+      int DetNbr  = OuterScorer->GetDetectorLength(i);
+      int StripBack= OuterScorer->GetStripLength(i);
+      m_Event->SetOuterYE(DetNbr, StripBack, Energy);
     }
   }
   OuterScorer->clear();
@@ -670,17 +668,28 @@ void Strasse::InitializeScorers() {
     return ;
 
   // Otherwise the scorer is initialised
+  m_Active_InnerWafer_Width= Inner_Wafer_Width-2.*Inner_Wafer_GuardRing;
+  m_Active_InnerWafer_Length= 
+  Inner_Wafer_Length-Inner_Wafer_PADExternal-Inner_Wafer_PADInternal-Inner_Wafer_GuardRing;
+    
+
   G4VPrimitiveScorer* InnerScorer = new DSSDScorers::PS_Rectangle("InnerScorer",2,
-      Inner_Wafer_Length,
-      Inner_Wafer_Width,
+      m_Active_InnerWafer_Width,
+      m_Active_InnerWafer_Length,
       Inner_Wafer_FrontStrips,
-      Inner_Wafer_BackStrips);
+      Inner_Wafer_BackStrips,0,"xz");
+
+
+  m_Active_OuterWafer_Width=Outer_Wafer_Width-2.*Outer_Wafer_GuardRing;
+  m_Active_OuterWafer_Length=
+  Outer_Wafer_Length-Outer_Wafer_PADExternal-Outer_Wafer_PADInternal-Outer_Wafer_GuardRing;
+
 
   G4VPrimitiveScorer* OuterScorer = new DSSDScorers::PS_Rectangle("OuterScorer",2,
-      Outer_Wafer_Length,
-      Outer_Wafer_Width,
+      m_Active_OuterWafer_Width,
+      m_Active_OuterWafer_Length,
       Outer_Wafer_FrontStrips,
-      Outer_Wafer_BackStrips);
+      Outer_Wafer_BackStrips,0,"xz");
 
   G4VPrimitiveScorer* InteractionInner = new InteractionScorers::PS_Interactions("InteractionInner",ms_InterCoord,0);
   G4VPrimitiveScorer* InteractionOuter = new InteractionScorers::PS_Interactions("InteractionOuter",ms_InterCoord,0);
