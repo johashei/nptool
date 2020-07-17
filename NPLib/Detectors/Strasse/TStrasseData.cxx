@@ -45,22 +45,22 @@ TStrasseData::~TStrasseData() {
 //////////////////////////////////////////////////////////////////////
 void TStrasseData::Clear() {
   // Energy X
-  fInner_XE_DetectorNbr.clear();
-  fInner_XE_StripNbr.clear();
-  fInner_XE_Energy.clear();
-  // Energy Y
-  fInner_YE_DetectorNbr.clear();
-  fInner_YE_StripNbr.clear();
-  fInner_YE_Energy.clear();
+  fInner_TE_DetectorNbr.clear();
+  fInner_TE_StripNbr.clear();
+  fInner_TE_Energy.clear();
+  // Energy L
+  fInner_LE_DetectorNbr.clear();
+  fInner_LE_StripNbr.clear();
+  fInner_LE_Energy.clear();
 
   // Energy X
-  fOuter_XE_DetectorNbr.clear();
-  fOuter_XE_StripNbr.clear();
-  fOuter_XE_Energy.clear();
-  // Energy Y
-  fOuter_YE_DetectorNbr.clear();
-  fOuter_YE_StripNbr.clear();
-  fOuter_YE_Energy.clear();
+  fOuter_TE_DetectorNbr.clear();
+  fOuter_TE_StripNbr.clear();
+  fOuter_TE_Energy.clear();
+  // Energy L
+  fOuter_LE_DetectorNbr.clear();
+  fOuter_LE_StripNbr.clear();
+  fOuter_LE_Energy.clear();
 
 }
 
@@ -72,12 +72,12 @@ void TStrasseData::Dump() const {
   cout << "XXXXXXXXXXXXXXXXXXXXXXXX New Event [TStrasseData::Dump()] XXXXXXXXXXXXXXXXX" << endl;
 
   // Energy
-  size_t mysize = fInner_XE_DetectorNbr.size();
-  cout << "Inner Strasse_XE_Mult: " << mysize << endl;
+  size_t mysize = fInner_TE_DetectorNbr.size();
+  cout << "Inner Strasse_TE_Mult: " << mysize << endl;
  
   for (size_t i = 0 ; i < mysize ; i++){
-    cout << "X-DetNbr: " << fInner_XE_DetectorNbr[i]
-         << " X-Energy: " << fInner_XE_Energy[i];
+    cout << "T-DetNbr: " << fInner_TE_DetectorNbr[i]
+         << " T-Energy: " << fInner_TE_Energy[i];
   }
   
 }

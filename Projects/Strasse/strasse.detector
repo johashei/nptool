@@ -19,8 +19,8 @@ Strasse Info
   Inner_Wafer_PADExternal= 1 mm
   Inner_Wafer_PADInternal= 1 mm
   Inner_Wafer_GuardRing= 1.5 mm
-  Inner_Wafer_FrontStrips= 128
-  Inner_Wafer_BackStrips= 128
+  Inner_Wafer_TransverseStrips= 128
+  Inner_Wafer_LongitudinalStrips= 128
   Inner_PCB_PortWidth= 5 mm
   Inner_PCB_StarboardWidth= 1 mm
   Inner_PCB_BevelAngle=  45 deg
@@ -42,8 +42,8 @@ Strasse Info
   Outer_PCB_DownstreamWidth= 1 mm
   Outer_PCB_MidWidth= 1 mm
   Outer_PCB_Thickness= 1.6 mm
-  Outer_Wafer_FrontStrips= 128
-  Outer_Wafer_BackStrips= 128
+  Outer_Wafer_TransverseStrips= 128
+  Outer_Wafer_LongitudinalStrips= 128
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%1
 Strasse Inner

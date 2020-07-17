@@ -104,12 +104,12 @@ void TStrasseSpectra::FillRawSpectra(TStrasseData* RawData) {
   static string family;
 
   // Energy 
-  unsigned int sizeE = RawData->GetInnerMultXEnergy();
+  unsigned int sizeE = RawData->GetInnerMultTEnergy();
   for (unsigned int i = 0; i < sizeE; i++) {
-    name = "Strasse"+NPL::itoa(RawData->GetInner_XE_DetectorNbr(i))+"_ENERGY_RAW";
+    name = "Strasse"+NPL::itoa(RawData->GetInner_TE_DetectorNbr(i))+"_ENERGY_RAW";
     family = "Strasse/RAW";
 
-    FillSpectra(family,name,RawData->GetInner_XE_Energy(i));
+    FillSpectra(family,name,RawData->GetInner_TE_Energy(i));
   }
 
 }
@@ -122,12 +122,12 @@ void TStrasseSpectra::FillPreTreatedSpectra(TStrasseData* PreTreatedData) {
   static string family;
   
   // Energy 
-  unsigned int sizeE = PreTreatedData->GetInnerMultXEnergy();
+  unsigned int sizeE = PreTreatedData->GetInnerMultTEnergy();
   for (unsigned int i = 0; i < sizeE; i++) {
-    name = "Strasse"+NPL::itoa(PreTreatedData->GetInner_XE_DetectorNbr(i))+"_ENERGY_CAL";
+    name = "Strasse"+NPL::itoa(PreTreatedData->GetInner_TE_DetectorNbr(i))+"_ENERGY_CAL";
     family = "Strasse/CAL";
 
-    FillSpectra(family,name,PreTreatedData->GetInner_XE_Energy(i));
+    FillSpectra(family,name,PreTreatedData->GetInner_TE_Energy(i));
   }
 }
 

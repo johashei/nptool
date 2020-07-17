@@ -184,26 +184,26 @@ void TStrassePhysics::BuildPhysicalEvent() {
 
     EventMultiplicity = couple.size();
     for(unsigned int i=0; i<couple.size(); i++){
-      int N = m_PreTreatedData->GetInner_XE_DetectorNbr(couple[i].X());
-      int X = m_PreTreatedData->GetInner_XE_StripNbr(couple[i].X());
-      int Y = m_PreTreatedData->GetInner_YE_StripNbr(couple[i].Y());
+      int N = m_PreTreatedData->GetInner_TE_DetectorNbr(couple[i].X());
+      int X = m_PreTreatedData->GetInner_TE_StripNbr(couple[i].X());
+      int Y = m_PreTreatedData->GetInner_LE_StripNbr(couple[i].Y());
 
-      double XE = m_PreTreatedData->GetInner_XE_Energy(couple[i].X());
-      double YE = m_PreTreatedData->GetInner_YE_Energy(couple[i].Y());
+      double TE = m_PreTreatedData->GetInner_TE_Energy(couple[i].X());
+      double LE = m_PreTreatedData->GetInner_LE_Energy(couple[i].Y());
       DetectorNumber.push_back(N);
       StripX.push_back(X);
       StripY.push_back(Y);
-      DE.push_back(XE);
+      DE.push_back(TE);
       
       PosX.push_back(GetPositionOfInteraction(i).x());
       PosY.push_back(GetPositionOfInteraction(i).y());
       PosZ.push_back(GetPositionOfInteraction(i).z());
 
-      int OuterMult = m_PreTreatedData->GetOuterMultXEnergy();
+      int OuterMult = m_PreTreatedData->GetOuterMultTEnergy();
       for(unsigned int j=0; j<OuterMult; j++){
-        if(m_PreTreatedData->GetOuter_XE_DetectorNbr(j)==N){
-          double XDE = m_PreTreatedData->GetOuter_XE_Energy(j);
-          double YDE = m_PreTreatedData->GetOuter_YE_Energy(j);
+        if(m_PreTreatedData->GetOuter_TE_DetectorNbr(j)==N){
+          double XDE = m_PreTreatedData->GetOuter_TE_Energy(j);
+          double YDE = m_PreTreatedData->GetOuter_LE_Energy(j);
 
           E.push_back(XDE);
         }
@@ -216,31 +216,31 @@ void TStrassePhysics::BuildPhysicalEvent() {
 vector<TVector2> TStrassePhysics::Match_X_Y(){
   vector<TVector2> ArrayOfGoodCouple;
 
-  static unsigned int m_XEMult, m_YEMult;
-  m_XEMult = m_PreTreatedData->GetInnerMultXEnergy();
-  m_YEMult = m_PreTreatedData->GetInnerMultYEnergy();
+  static unsigned int m_TEMult, m_LEMult;
+  m_TEMult = m_PreTreatedData->GetInnerMultTEnergy();
+  m_LEMult = m_PreTreatedData->GetInnerMultLEnergy();
 
-  if(m_XEMult>m_MaximumStripMultiplicityAllowed || m_YEMult>m_MaximumStripMultiplicityAllowed){
+  if(m_TEMult>m_MaximumStripMultiplicityAllowed || m_LEMult>m_MaximumStripMultiplicityAllowed){
     return ArrayOfGoodCouple;
   }
 
-  for(unsigned int i=0; i<m_XEMult; i++){
-    for(unsigned int j=0; j<m_YEMult; j++){
+  for(unsigned int i=0; i<m_TEMult; i++){
+    for(unsigned int j=0; j<m_LEMult; j++){
 
       // Declaration of variable for clarity
-      int XDetNbr = m_PreTreatedData->GetInner_XE_DetectorNbr(i);
-      int YDetNbr = m_PreTreatedData->GetInner_YE_DetectorNbr(j);
+      int XDetNbr = m_PreTreatedData->GetInner_TE_DetectorNbr(i);
+      int YDetNbr = m_PreTreatedData->GetInner_LE_DetectorNbr(j);
 
       // if same detector check energy
       if(XDetNbr == YDetNbr){
         // Declaration of variable for clarity
-        double XE = m_PreTreatedData->GetInner_XE_Energy(i);
-        double YE = m_PreTreatedData->GetInner_YE_Energy(i);
-        double XStripNbr = m_PreTreatedData->GetInner_XE_StripNbr(i);
-        double YStripNbr = m_PreTreatedData->GetInner_YE_StripNbr(i);
+        double TE = m_PreTreatedData->GetInner_TE_Energy(i);
+        double LE = m_PreTreatedData->GetInner_LE_Energy(i);
+        double XStripNbr = m_PreTreatedData->GetInner_TE_StripNbr(i);
+        double YStripNbr = m_PreTreatedData->GetInner_LE_StripNbr(i);
 
         // look if energy matches
-        if(abs(XE-YE)/2.<m_StripEnergyMatching){
+        if(abs(TE-LE)/2.<m_StripEnergyMatching){
           ArrayOfGoodCouple.push_back(TVector2(i,j));
         }
       }
@@ -253,7 +253,7 @@ vector<TVector2> TStrassePhysics::Match_X_Y(){
 ///////////////////////////////////////////////////////////////////////////
 int TStrassePhysics::CheckEvent(){
   // Check the size of the different elements
-  if(m_PreTreatedData->GetInnerMultXEnergy() == m_PreTreatedData->GetInnerMultYEnergy() )
+  if(m_PreTreatedData->GetInnerMultTEnergy() == m_PreTreatedData->GetInnerMultLEnergy() )
     return 1;
 
   else
@@ -274,46 +274,46 @@ void TStrassePhysics::PreTreat() {
 
   //////
   // First Stage Energy
-  unsigned int sizeFront = m_EventData->GetInnerMultXEnergy();
+  unsigned int sizeFront = m_EventData->GetInnerMultTEnergy();
   for (UShort_t i = 0; i < sizeFront ; ++i) {
-    if (m_EventData->GetInner_XE_Energy(i) > m_E_RAW_Threshold) {
-      Double_t Energy = m_EventData->GetInner_XE_Energy(i);
-      //Double_t Energy = Cal->ApplyCalibration("Strasse/ENERGY"+NPL::itoa(m_EventData->GetInner_XE_DetectorNbr(i)),m_EventData->GetInner_XE_Energy(i));
+    if (m_EventData->GetInner_TE_Energy(i) > m_E_RAW_Threshold) {
+      Double_t Energy = m_EventData->GetInner_TE_Energy(i);
+      //Double_t Energy = Cal->ApplyCalibration("Strasse/ENERGY"+NPL::itoa(m_EventData->GetInner_TE_DetectorNbr(i)),m_EventData->GetInner_TE_Energy(i));
       if (Energy > m_E_Threshold) {
-        m_PreTreatedData->SetInnerXE(m_EventData->GetInner_XE_DetectorNbr(i), m_EventData->GetInner_XE_StripNbr(i), Energy);
+        m_PreTreatedData->SetInnerTE(m_EventData->GetInner_TE_DetectorNbr(i), m_EventData->GetInner_TE_StripNbr(i), Energy);
       }
     }
   }
-  unsigned int sizeBack = m_EventData->GetInnerMultXEnergy();
+  unsigned int sizeBack = m_EventData->GetInnerMultTEnergy();
   for (UShort_t i = 0; i < sizeBack ; ++i) {
-    if (m_EventData->GetInner_YE_Energy(i) > m_E_RAW_Threshold) {
-      Double_t Energy = m_EventData->GetInner_YE_Energy(i);
-      //Double_t Energy = Cal->ApplyCalibration("Strasse/ENERGY"+NPL::itoa(m_EventData->GetInner_YE_DetectorNbr(i)),m_EventData->GetInner_YE_Energy(i));
+    if (m_EventData->GetInner_LE_Energy(i) > m_E_RAW_Threshold) {
+      Double_t Energy = m_EventData->GetInner_LE_Energy(i);
+      //Double_t Energy = Cal->ApplyCalibration("Strasse/ENERGY"+NPL::itoa(m_EventData->GetInner_LE_DetectorNbr(i)),m_EventData->GetInner_LE_Energy(i));
       if (Energy > m_E_Threshold) {
-        m_PreTreatedData->SetInnerYE(m_EventData->GetInner_YE_DetectorNbr(i), m_EventData->GetInner_YE_StripNbr(i), Energy);
+        m_PreTreatedData->SetInnerLE(m_EventData->GetInner_LE_DetectorNbr(i), m_EventData->GetInner_LE_StripNbr(i), Energy);
       }
     }
   }
 
   //////
   // Second Stage Energy
-  sizeFront = m_EventData->GetOuterMultXEnergy();
+  sizeFront = m_EventData->GetOuterMultTEnergy();
   for (UShort_t i = 0; i < sizeFront ; ++i) {
-    if (m_EventData->GetOuter_XE_Energy(i) > m_E_RAW_Threshold) {
-      Double_t Energy = m_EventData->GetOuter_XE_Energy(i);
-      //Double_t Energy = Cal->ApplyCalibration("Strasse/ENERGY"+NPL::itoa(m_EventData->GetOuter_XE_DetectorNbr(i)),m_EventData->GetOuter_XE_Energy(i));
+    if (m_EventData->GetOuter_TE_Energy(i) > m_E_RAW_Threshold) {
+      Double_t Energy = m_EventData->GetOuter_TE_Energy(i);
+      //Double_t Energy = Cal->ApplyCalibration("Strasse/ENERGY"+NPL::itoa(m_EventData->GetOuter_TE_DetectorNbr(i)),m_EventData->GetOuter_TE_Energy(i));
       if (Energy > m_E_Threshold) {
-        m_PreTreatedData->SetOuterXE(m_EventData->GetOuter_XE_DetectorNbr(i), m_EventData->GetOuter_XE_StripNbr(i), Energy);
+        m_PreTreatedData->SetOuterTE(m_EventData->GetOuter_TE_DetectorNbr(i), m_EventData->GetOuter_TE_StripNbr(i), Energy);
       }
     }
   }
-  sizeBack = m_EventData->GetOuterMultXEnergy();
+  sizeBack = m_EventData->GetOuterMultTEnergy();
   for (UShort_t i = 0; i < sizeBack ; ++i) {
-    if (m_EventData->GetOuter_YE_Energy(i) > m_E_RAW_Threshold) {
-      Double_t Energy = m_EventData->GetOuter_YE_Energy(i);
-      //Double_t Energy = Cal->ApplyCalibration("Strasse/ENERGY"+NPL::itoa(m_EventData->GetOuter_YE_DetectorNbr(i)),m_EventData->GetOuter_YE_Energy(i));
+    if (m_EventData->GetOuter_LE_Energy(i) > m_E_RAW_Threshold) {
+      Double_t Energy = m_EventData->GetOuter_LE_Energy(i);
+      //Double_t Energy = Cal->ApplyCalibration("Strasse/ENERGY"+NPL::itoa(m_EventData->GetOuter_LE_DetectorNbr(i)),m_EventData->GetOuter_LE_Energy(i));
       if (Energy > m_E_Threshold) {
-        m_PreTreatedData->SetOuterYE(m_EventData->GetOuter_YE_DetectorNbr(i), m_EventData->GetOuter_YE_StripNbr(i), Energy);
+        m_PreTreatedData->SetOuterLE(m_EventData->GetOuter_LE_DetectorNbr(i), m_EventData->GetOuter_LE_StripNbr(i), Energy);
       }
     }
   }
