@@ -149,17 +149,19 @@ Strasse::~Strasse(){
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-void Strasse::AddInnerDetector(double  R, double  Z, double  Phi){
+void Strasse::AddInnerDetector(double  R, double  Z, double  Phi, double Shift){
   m_Inner_R.push_back(R);
   m_Inner_Z.push_back(Z);
   m_Inner_Phi.push_back(Phi);
+  m_Inner_Shift.push_back(Shift);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-void Strasse::AddOuterDetector(double  R, double  Z, double  Phi){
+void Strasse::AddOuterDetector(double  R, double  Z, double  Phi, double Shift){
   m_Outer_R.push_back(R);
   m_Outer_Z.push_back(Z);
   m_Outer_Phi.push_back(Phi);
+  m_Outer_Shift.push_back(Shift);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -530,7 +532,7 @@ void Strasse::ReadConfiguration(NPL::InputParser parser){
   if(NPOptionManager::getInstance()->GetVerboseLevel())
     cout << "//// " << blocks_inner.size() << " inner detectors found " << endl; 
 
-  vector<string> coord = {"Radius","Z","Phi"};
+  vector<string> coord = {"Radius","Z","Phi","Shift"};
 
   for(unsigned int i = 0 ; i < blocks_inner.size() ; i++){
     if(blocks_inner[i]->HasTokenList(coord)){
@@ -540,10 +542,11 @@ void Strasse::ReadConfiguration(NPL::InputParser parser){
       double R = blocks_inner[i]->GetDouble("Radius","mm");
       double Z= blocks_inner[i]->GetDouble("Z","mm");
       double Phi = blocks_inner[i]->GetDouble("Phi","deg");
-      AddInnerDetector(R,Z,Phi);
+      double Shift = blocks_inner[i]->GetDouble("Shift","mm");
+      AddInnerDetector(R,Z,Phi,Shift);
     }
     else{
-      cout << "ERROR: check your input file formatting " << endl;
+      cout << "ERROR: check your input file formatting on " << i+1 << " inner block " <<endl;
       exit(1);
     }
   }
@@ -561,10 +564,12 @@ void Strasse::ReadConfiguration(NPL::InputParser parser){
       double R = blocks_outer[i]->GetDouble("Radius","mm");
       double Z= blocks_outer[i]->GetDouble("Z","mm");
       double Phi = blocks_outer[i]->GetDouble("Phi","deg");
-      AddOuterDetector(R,Z,Phi);
+      double Shift = blocks_outer[i]->GetDouble("Shift","mm");
+      AddOuterDetector(R,Z,Phi,Shift);
     }
     else{
-      cout << "ERROR: check your input file formatting " << endl;
+
+      cout << "ERROR: check your input file formatting on " << i+1 << " outer block " <<endl;
       exit(1);
     }
   }
@@ -580,7 +585,7 @@ void Strasse::ConstructDetector(G4LogicalVolume* world){
  
   // Inner Barrel
   for (unsigned short i = 0 ; i < m_Inner_R.size() ; i++) {
-    G4ThreeVector Det_pos = G4ThreeVector(0,m_Inner_R[i],m_Inner_Z[i]) ;
+    G4ThreeVector Det_pos = G4ThreeVector(m_Inner_Shift[i],m_Inner_R[i],m_Inner_Z[i]) ;
     Det_pos.rotate(-m_Inner_Phi[i],G4ThreeVector(0,0,1));
     G4RotationMatrix* Rot =  new G4RotationMatrix(0*deg,0*deg,m_Inner_Phi[i]);
 
@@ -591,7 +596,7 @@ void Strasse::ConstructDetector(G4LogicalVolume* world){
 
   // Outer Barrel 
   for (unsigned short i = 0 ; i < m_Outer_R.size() ; i++) {
-    G4ThreeVector Det_pos = G4ThreeVector(0,m_Outer_R[i],m_Outer_Z[i]) ;
+    G4ThreeVector Det_pos = G4ThreeVector(m_Outer_Shift[i],m_Outer_R[i],m_Outer_Z[i]) ;
     Det_pos.rotate(-m_Outer_Phi[i],G4ThreeVector(0,0,1));
     G4RotationMatrix* Rot =  new G4RotationMatrix(0*deg,0*deg,m_Outer_Phi[i]);
 

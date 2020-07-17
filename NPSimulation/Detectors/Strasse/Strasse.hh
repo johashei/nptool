@@ -50,8 +50,8 @@ class Strasse : public NPS::VDetector{
     ////////////////////////////////////////////////////
   public:
     // Cylindrical coordinate
-    void AddInnerDetector(double R,double Z,double Phi);  
-    void AddOuterDetector(double R,double Z,double Phi);  
+    void AddInnerDetector(double R,double Z,double Phi, double Shift);  
+    void AddOuterDetector(double R,double Z,double Phi, double Shift);  
 
     G4LogicalVolume* BuildInnerDetector();
     G4LogicalVolume* BuildOuterDetector();
@@ -129,9 +129,12 @@ class Strasse : public NPS::VDetector{
     vector<double>  m_Inner_R; 
     vector<double>  m_Inner_Z;
     vector<double>  m_Inner_Phi; 
+    vector<double>  m_Inner_Shift; 
+
     vector<double>  m_Outer_R; 
     vector<double>  m_Outer_Z;
     vector<double>  m_Outer_Phi; 
+    vector<double>  m_Outer_Shift; 
 
 
     // Visualisation Attribute

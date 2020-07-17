@@ -50,70 +50,82 @@ Strasse Inner
   Radius= 30 mm
   Z= 100 mm
   Phi= 0 deg
+  Shift= 5 mm
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%2
 Strasse Inner
   Radius= 30 mm
   Z= 100 mm
   Phi= 60 deg
+  Shift= 5 mm
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%3
 Strasse Inner
   Radius= 30 mm
   Z= 100 mm
   Phi= 120 deg
+  Shift= 5 mm
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%4
 Strasse Inner
   Radius= 30 mm
   Z= 100 mm
   Phi= 180 deg
+  Shift= 5 mm
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
 Strasse Inner
   Radius= 30 mm
   Z= 100 mm
   Phi= 240 deg
+  Shift= 5 mm
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%6
 Strasse Inner
   Radius= 30 mm
   Z= 100 mm
   Phi= 300 deg
+  Shift= 5 mm
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%1
 Strasse Outer
   Radius= 60 mm
   Z= 129 mm
   Phi= 0 deg
+  Shift= 5 mm
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%2
 Strasse Outer
   Radius= 60 mm
   Z= 129 mm
   Phi= 60 deg
+  Shift= 5 mm
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%3
 Strasse Outer
   Radius= 60 mm
   Z= 129 mm
   Phi= 120 deg
+  Shift= 5 mm
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%4
 Strasse Outer
   Radius= 60 mm
   Z= 129 mm
   Phi= 180 deg
+  Shift= 5 mm
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
 Strasse Outer
   Radius= 60 mm
   Z= 129 mm
   Phi= 240 deg
+  Shift= 5 mm
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%6
 Strasse Outer
   Radius= 60 mm
   Z= 129 mm
   Phi= 300 deg
+  Shift= 5 mm
 
