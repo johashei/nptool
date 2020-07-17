@@ -1,6 +1,6 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 Target
- THICKNESS= 100 mm
+ THICKNESS= 150 mm
  ANGLE= 0 deg
  RADIUS= 15 mm
  MATERIAL= LH2
@@ -12,46 +12,46 @@ Target
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%1
 Strasse Info
   Inner_Wafer_Length= 124 mm
-  Inner_Wafer_Width= 25 mm
-  Inner_Wafer_Thickness= 300 micrometer
+  Inner_Wafer_Width= 30 mm
+  Inner_Wafer_Thickness= 200 micrometer
   Inner_Wafer_AlThickness= 0.4 micrometer
-  Inner_Wafer_PADExternal= 1 mm
-  Inner_Wafer_PADInternal= 1 mm
+  Inner_Wafer_PADExternal= 0 mm
+  Inner_Wafer_PADInternal= 0 mm
   Inner_Wafer_GuardRing= 1.5 mm
-  Inner_Wafer_TransverseStrips= 128
-  Inner_Wafer_LongitudinalStrips= 128
-  Inner_PCB_PortWidth= 5 mm
+  Inner_Wafer_TransverseStrips= 620
+  Inner_Wafer_LongitudinalStrips= 150
+  Inner_PCB_PortWidth= 1 mm
   Inner_PCB_StarboardWidth= 1 mm
   Inner_PCB_BevelAngle=  45 deg
-  Inner_PCB_UpstreamWidth= 1 cm
+  Inner_PCB_UpstreamWidth= 1 mm
   Inner_PCB_DownstreamWidth= 1 mm
   Inner_PCB_MidWidth= 1 mm
   Inner_PCB_Thickness= 1.6 mm
-  Outer_Wafer_Length= 107 mm
-  Outer_Wafer_Width= 60 mm
+  Outer_Wafer_Length= 121 mm
+  Outer_Wafer_Width= 65 mm
   Outer_Wafer_Thickness= 300 micrometer
   Outer_Wafer_AlThickness= 0.4 micrometer
-  Outer_Wafer_PADExternal= 1 mm
-  Outer_Wafer_PADInternal= 1 mm
+  Outer_Wafer_PADExternal= 0 mm
+  Outer_Wafer_PADInternal= 0 mm
   Outer_Wafer_GuardRing= 1.5 mm
-  Outer_PCB_PortWidth= 5 mm
+  Outer_PCB_PortWidth= 1 mm
   Outer_PCB_StarboardWidth= 1 mm
   Outer_PCB_BevelAngle=  45 deg
-  Outer_PCB_UpstreamWidth= 1 cm
+  Outer_PCB_UpstreamWidth= 1 mm
   Outer_PCB_DownstreamWidth= 1 mm
   Outer_PCB_MidWidth= 1 mm
   Outer_PCB_Thickness= 1.6 mm
-  Outer_Wafer_TransverseStrips= 128
-  Outer_Wafer_LongitudinalStrips= 128
+  Outer_Wafer_TransverseStrips= 605
+  Outer_Wafer_LongitudinalStrips= 325
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%1
 Alias InnerShift
   Action= Replace 
-  Value= 5 
+  Value= 3 
 
 Alias InnerRadius
   Action= Replace 
-  Value= 30 
+  Value= 27 
 
 Alias InnerPhi
   Action= Copy
@@ -59,28 +59,28 @@ Alias InnerPhi
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%1
 Alias OuterShift
   Action= Replace 
-  Value= -5 
+  Value= 0 
 
 Alias OuterRadius
   Action= Replace 
-  Value= 60 
+  Value= 61 
 
 Alias OuterPhi
   Action= Copy
-  Value= 0 60 120 180 240 300
+  Value= 5 65 125 185 245 305
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%1
 Strasse Inner
   Radius= @InnerRadius mm
-  Z= 100 mm
+  Z= 68.5 mm
   Phi= @InnerPhi deg
   Shift= @InnerShift mm
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%1
 Strasse Outer
   Radius= @OuterRadius mm
-  Z= 129 mm
+  Z= 93.5 mm
   Phi= @OuterPhi deg
   Shift= @OuterShift mm
 
