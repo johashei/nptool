@@ -256,7 +256,6 @@ void TStrassePhysics::BuildPhysicalEvent() {
         InnerStripT.push_back(T);
         InnerStripL.push_back(L);
         DE.push_back(TE);
-        cout << N <<  " " << T <<  " " << L <<" " << m_InnerStripPositionX.size() << " " << m_InnerStripPositionX[0].size()<< " " << m_InnerStripPositionX[0][0].size() << endl;
         InnerPosX.push_back(GetInnerPositionOfInteraction(i).x());
         InnerPosY.push_back(GetInnerPositionOfInteraction(i).y());
         InnerPosZ.push_back(GetInnerPositionOfInteraction(i).z());
