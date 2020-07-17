@@ -1,4 +1,3 @@
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 Target
  THICKNESS= 100 mm
@@ -46,86 +45,42 @@ Strasse Info
   Outer_Wafer_LongitudinalStrips= 128
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%1
-Strasse Inner
-  Radius= 30 mm
-  Z= 100 mm
-  Phi= 0 deg
-  Shift= 5 mm
+Alias InnerShift
+  Action= Replace 
+  Value= 5 
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%2
-Strasse Inner
-  Radius= 30 mm
-  Z= 100 mm
-  Phi= 60 deg
-  Shift= 5 mm
+Alias InnerRadius
+  Action= Replace 
+  Value= 30 
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%3
-Strasse Inner
-  Radius= 30 mm
-  Z= 100 mm
-  Phi= 120 deg
-  Shift= 5 mm
+Alias InnerPhi
+  Action= Copy
+  Value= 0 60 120 180 240 300
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%1
+Alias OuterShift
+  Action= Replace 
+  Value= -5 
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%4
-Strasse Inner
-  Radius= 30 mm
-  Z= 100 mm
-  Phi= 180 deg
-  Shift= 5 mm
+Alias OuterRadius
+  Action= Replace 
+  Value= 60 
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
-Strasse Inner
-  Radius= 30 mm
-  Z= 100 mm
-  Phi= 240 deg
-  Shift= 5 mm
+Alias OuterPhi
+  Action= Copy
+  Value= 0 60 120 180 240 300
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%6
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%1
 Strasse Inner
-  Radius= 30 mm
+  Radius= @InnerRadius mm
   Z= 100 mm
-  Phi= 300 deg
-  Shift= 5 mm
+  Phi= @InnerPhi deg
+  Shift= @InnerShift mm
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%1
 Strasse Outer
-  Radius= 60 mm
+  Radius= @OuterRadius mm
   Z= 129 mm
-  Phi= 0 deg
-  Shift= -5 mm
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%2
-Strasse Outer
-  Radius= 60 mm
-  Z= 129 mm
-  Phi= 60 deg
-  Shift= -5 mm
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%3
-Strasse Outer
-  Radius= 60 mm
-  Z= 129 mm
-  Phi= 120 deg
-  Shift= -5 mm
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%4
-Strasse Outer
-  Radius= 60 mm
-  Z= 129 mm
-  Phi= 180 deg
-  Shift= -5 mm
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
-Strasse Outer
-  Radius= 60 mm
-  Z= 129 mm
-  Phi= 240 deg
-  Shift= -5 mm
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%6
-Strasse Outer
-  Radius= 60 mm
-  Z= 129 mm
-  Phi= 300 deg
-  Shift= -5 mm
+  Phi= @OuterPhi deg
+  Shift= @OuterShift mm
 

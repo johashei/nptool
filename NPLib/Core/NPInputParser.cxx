@@ -392,7 +392,7 @@ void NPL::InputParser::TreatAliases(){
       unsigned int size = m_Block[b]->GetSize();
       size_t pos;  
       // In place case loop over each value and replace them
-      if(action=="Inplace"){
+      if(action=="Replace"){
         for(unsigned int v = 0 ; v < size ; v++){
           while((pos=m_Block[b]->GetValue(v).find(name))!=std::string::npos){
             std::string val = m_Block[b]->GetValue(v);
@@ -402,7 +402,7 @@ void NPL::InputParser::TreatAliases(){
         }
       }
 
-      else if (action=="Split"){
+      else if (action=="Copy"){
         bool check = false;
         // first pass identify if the block use an alias
         for(unsigned int v = 0 ; v < size ; v++){
