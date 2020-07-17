@@ -59,7 +59,7 @@ Alias InnerPhi
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%1
 Alias OuterShift
   Action= Replace 
-  Value= -5 
+  Value= 0
 
 Alias OuterRadius
   Action= Replace 
@@ -67,7 +67,7 @@ Alias OuterRadius
 
 Alias OuterPhi
   Action= Copy
-  Value= 0 60 120 180 240 300
+  Value= 5 65 125 185 245 305
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%1

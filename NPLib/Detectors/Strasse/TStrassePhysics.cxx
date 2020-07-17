@@ -33,9 +33,12 @@ using namespace std;
 //   NPL
 #include "RootInput.h"
 #include "RootOutput.h"
+#include "Math/Transform3D.h"
+#include "Math/RotationZYX.h"
 #include "NPDetectorFactory.h"
 #include "NPOptionManager.h"
-
+#include "NPSystemOfUnits.h"
+using namespace NPUNITS;
 //   ROOT
 #include "TChain.h"
 
@@ -49,56 +52,89 @@ ClassImp(TStrassePhysics)
     m_Spectra = NULL;
     m_E_RAW_Threshold = 0; // adc channels
     m_E_Threshold = 0;     // MeV
-    m_NumberOfDetectors = 0;
+    m_NumberOfInnerDetectors = 0;
+    m_NumberOfOuterDetectors = 0;
     m_MaximumStripMultiplicityAllowed = 10;
     m_StripEnergyMatching = 0.050;
+
+    ////////////////////
+    // Inner Detector //
+    ////////////////////
+    // Wafer parameter
+    Inner_Wafer_Length=100*mm;
+    Inner_Wafer_Width=50*mm;
+    Inner_Wafer_Thickness=300*micrometer;
+    Inner_Wafer_AlThickness=0.4*micrometer;
+    Inner_Wafer_PADExternal=1*cm;
+    Inner_Wafer_PADInternal=1*mm;
+    Inner_Wafer_GuardRing=0.5*mm;
+
+    // PCB parameter
+    Inner_PCB_PortWidth=1*cm;
+    Inner_PCB_StarboardWidth=2*mm;
+    Inner_PCB_BevelAngle= 60*deg;
+    Inner_PCB_UpstreamWidth=1*cm;
+    Inner_PCB_DownstreamWidth=2*mm;
+    Inner_PCB_MidWidth=2*mm;
+    Inner_PCB_Thickness=3*mm;
+    Inner_Wafer_TransverseStrips= 128;
+    Inner_Wafer_LongitudinalStrips= 128;
+
+    ////////////////////
+    // Outer Detector //
+    ////////////////////
+    // Wafer parameter
+    Outer_Wafer_Length=150*mm;
+    Outer_Wafer_Width=75*mm;
+    Outer_Wafer_Thickness=300*micrometer;
+    Outer_Wafer_AlThickness=0.4*micrometer;
+    Outer_Wafer_PADExternal=1*cm;
+    Outer_Wafer_PADInternal=1*mm;
+    Outer_Wafer_GuardRing=0.5*mm;
+
+    // PCB parameter
+    Outer_PCB_PortWidth=1*cm;
+    Outer_PCB_StarboardWidth=2*mm;
+    Outer_PCB_BevelAngle= 60*deg;
+    Outer_PCB_UpstreamWidth=1*cm;
+    Outer_PCB_DownstreamWidth=2*mm;
+    Outer_PCB_MidWidth=2*mm;
+    Outer_PCB_Thickness=3*mm;
+    Outer_Wafer_TransverseStrips= 128;
+    Outer_Wafer_LongitudinalStrips= 128;
+
+
   }
 
 ///////////////////////////////////////////////////////////////////////////
-/// A usefull method to bundle all operation to add a detector
-void TStrassePhysics::AddDetector(TVector3){
-  // In That simple case nothing is done
-  // Typically for more complex detector one would calculate the relevant 
-  // positions (stripped silicon) or angles (gamma array)
-  m_NumberOfDetectors++;
-} 
+void TStrassePhysics::AddInnerDetector(double R, double Z, double Phi, double Shift){
+  m_NumberOfInnerDetectors++;
+  double ActiveWidth  = Inner_Wafer_Width-2.*Inner_Wafer_GuardRing;
+  double ActiveLength = Inner_Wafer_Length-Inner_Wafer_PADExternal-Inner_Wafer_PADInternal-Inner_Wafer_GuardRing;
+  double LongitudinalPitch = ActiveLength/Inner_Wafer_TransverseStrips;
+  double TransversePitch = ActiveWidth/Inner_Wafer_LongitudinalStrips;
+  TVector3 Det_pos(Shift,R,Z) ;
 
-///////////////////////////////////////////////////////////////////////////
-void TStrassePhysics::AddDetector(double R, double Theta, double Phi){
-  m_NumberOfDetectors++;
-
-  //double Height = 118; // mm
-  double Height = 61.8; // mm
-  //double Base = 95; // mm
-  double Base = 78.1; // mm
-  double NumberOfStrips = 128;
-  double StripPitchHeight = Height / NumberOfStrips; // mm
-  double StripPitchBase = Base / NumberOfStrips; // mm
-
-
-  // Vector U on detector face (parallel to Y strips) Y strips are along X axis
-  TVector3 U;
-  // Vector V on detector face (parallel to X strips)
-  TVector3 V;
-  // Vector W normal to detector face (pointing to the back)
-  TVector3 W;
   // Vector C position of detector face center
-  TVector3 C;
+  TVector3 C(Shift,R,Z);// center of the whole detector, including PCB
+  C.RotateZ(Phi);
 
-  C = TVector3(R*sin(Theta)*cos(Phi),
-        R*sin(Theta)*sin(Phi),
-        Height*0.5+R*cos(Theta));
+  // Vector W normal to detector face (pointing to the back)
+  TVector3 W(0,1,0);
+  W.RotateZ(Phi);
 
-  TVector3 P = TVector3(cos(Theta)*cos(Phi),
-      cos(Theta)*sin(Phi),
-      -sin(Theta));
+  // Vector U on detector face (parallel to Z axis/longitudinal strips) 
+  TVector3 U = TVector3(0,0,1);
+  // Vector V on detector face (parallel to transverse strips)
+  TVector3 V = W.Cross(U);
 
-  W = C.Unit();
-  U = W.Cross(P);
-  V = W.Cross(U);
-
-  U = U.Unit();
-  V = V.Unit();
+  // Adding position for downstream silicon:
+  // Moving to corner of the silicon
+  TVector3 P_1_1 = C
+    +U*(Inner_PCB_UpstreamWidth-Inner_PCB_DownstreamWidth)
+    +U*(0.5*Inner_PCB_MidWidth+Inner_Wafer_GuardRing+Inner_Wafer_PADInternal)
+    +V*(Inner_PCB_PortWidth-Inner_PCB_StarboardWidth)
+    +V*(0.5*Inner_Wafer_Width-Inner_Wafer_GuardRing);
 
   vector<double> lineX;
   vector<double> lineY;
@@ -108,64 +144,90 @@ void TStrassePhysics::AddDetector(double R, double Theta, double Phi){
   vector<vector<double>> OneDetectorStripPositionY;
   vector<vector<double>> OneDetectorStripPositionZ;
 
-  double X, Y, Z;
-
-  // Moving C to the 1.1 Corner;
-  TVector3 Strip_1_1;
-  Strip_1_1 = C - (0.5*Base*U + 0.5*Height*V) + U*(StripPitchBase / 2.) + V*(StripPitchHeight / 2.);
-
-  TVector3 StripPos;
-  for(int i=0; i<NumberOfStrips; i++){
-    lineX.clear();
-    lineY.clear();
-    lineZ.clear();
-    for(int j=0; j<NumberOfStrips; j++){
-      StripPos = Strip_1_1 + i*U*StripPitchBase + j*V*StripPitchHeight;
-      lineX.push_back(StripPos.X());
-      lineY.push_back(StripPos.Y());
-      lineZ.push_back(StripPos.Z());
-    }
-
-    OneDetectorStripPositionX.push_back(lineX);
-    OneDetectorStripPositionY.push_back(lineY);
-    OneDetectorStripPositionZ.push_back(lineZ);
+  TVector3 P;
+  for(int i=0; i<Inner_Wafer_TransverseStrips; i++){
+  lineX.clear();
+  lineY.clear();
+  lineZ.clear();
+  for(int j=0; j<Inner_Wafer_LongitudinalStrips; j++){
+  P = P_1_1 + i*U*LongitudinalPitch + j*V*TransversePitch;
+  lineX.push_back(P.X());
+  lineY.push_back(P.Y());
+  lineZ.push_back(P.Z());
   }
 
-  m_StripPositionX.push_back(OneDetectorStripPositionX);
-  m_StripPositionY.push_back(OneDetectorStripPositionY);
-  m_StripPositionZ.push_back(OneDetectorStripPositionZ);
+  OneDetectorStripPositionX.push_back(lineX);
+  OneDetectorStripPositionY.push_back(lineY);
+  OneDetectorStripPositionZ.push_back(lineZ);
+  }
+
+  m_InnerStripPositionX.push_back(OneDetectorStripPositionX);
+  m_InnerStripPositionY.push_back(OneDetectorStripPositionY);
+  m_InnerStripPositionZ.push_back(OneDetectorStripPositionZ);
+
+  // Adding position for upstream silicon:
+  // Moving to corner of the silicon
+  P_1_1 = C
+    -U*(Inner_PCB_UpstreamWidth-Inner_PCB_DownstreamWidth)
+    -U*(0.5*Inner_PCB_MidWidth+Inner_Wafer_GuardRing+Inner_Wafer_PADInternal)
+    +V*(Inner_PCB_PortWidth-Inner_PCB_StarboardWidth)
+    +V*(0.5*Inner_Wafer_Width-Inner_Wafer_GuardRing);
+
+  for(int i=0; i<Inner_Wafer_TransverseStrips; i++){
+  for(int j=0; j<Inner_Wafer_LongitudinalStrips; j++){
+    P = P_1_1 + i*U*LongitudinalPitch - j*V*TransversePitch;
+    m_InnerStripPositionX[m_NumberOfInnerDetectors-1][i].push_back(P.X());
+    m_InnerStripPositionY[m_NumberOfInnerDetectors-1][i].push_back(P.Y());
+    m_InnerStripPositionZ[m_NumberOfInnerDetectors-1][i].push_back(P.Z());
+    }
+  }
+}
+
+///////////////////////////////////////////////////////////////////////////
+void TStrassePhysics::AddOuterDetector(double R, double Z, double Phi, double Shift){
 } 
 
 ///////////////////////////////////////////////////////////////////////////
-TVector3 TStrassePhysics::GetPositionOfInteraction(const int i){
-  TVector3 Position = TVector3(GetStripPositionX(DetectorNumber[i], StripX[i], StripY[i]),
-      GetStripPositionY(DetectorNumber[i], StripX[i], StripY[i]),
-      GetStripPositionZ(DetectorNumber[i], StripX[i], StripY[i]));
+TVector3 TStrassePhysics::GetInnerPositionOfInteraction(const int i){
+  TVector3 Position = TVector3(GetInnerStripPositionX(DetectorNumber[i], InnerStripL[i], InnerStripT[i]),
+      GetInnerStripPositionY(DetectorNumber[i], InnerStripL[i], InnerStripT[i]),
+      GetInnerStripPositionZ(DetectorNumber[i], InnerStripL[i], InnerStripT[i]));
 
   return Position;
 }
 
 ///////////////////////////////////////////////////////////////////////////
+TVector3 TStrassePhysics::GetOuterPositionOfInteraction(const int i){
+  TVector3 Position = TVector3(GetOuterStripPositionX(DetectorNumber[i], OuterStripL[i], OuterStripT[i]),
+      GetOuterStripPositionY(DetectorNumber[i], OuterStripL[i], OuterStripT[i]),
+      GetOuterStripPositionZ(DetectorNumber[i], OuterStripL[i], OuterStripT[i]));
+
+  return Position;
+}
+
+
+///////////////////////////////////////////////////////////////////////////
 TVector3 TStrassePhysics::GetDetectorNormal(const int i){
-  TVector3 U = TVector3(GetStripPositionX(DetectorNumber[i],128,1),
-      GetStripPositionY(DetectorNumber[i],128,1),
-      GetStripPositionZ(DetectorNumber[i],128,1))
-
-    -TVector3(GetStripPositionX(DetectorNumber[i],1,1),
-      GetStripPositionY(DetectorNumber[i],1,1),
-      GetStripPositionZ(DetectorNumber[i],1,1));
-
-  TVector3 V = TVector3(GetStripPositionX(DetectorNumber[i],128,128),
-      GetStripPositionY(DetectorNumber[i],128,128),
-      GetStripPositionZ(DetectorNumber[i],128,128))
-
-    -TVector3(GetStripPositionX(DetectorNumber[i],128,1),
-      GetStripPositionY(DetectorNumber[i],128,1),
-      GetStripPositionZ(DetectorNumber[i],128,1));
-
-  TVector3 Normal = U.Cross(V);
-
-  return (Normal.Unit());
+  //  TVector3 U = TVector3(GetStripPositionX(DetectorNumber[i],128,1),
+  //      GetStripPositionY(DetectorNumber[i],128,1),
+  //      GetStripPositionZ(DetectorNumber[i],128,1))
+  //
+  //    -TVector3(GetStripPositionX(DetectorNumber[i],1,1),
+  //        GetStripPositionY(DetectorNumber[i],1,1),
+  //        GetStripPositionZ(DetectorNumber[i],1,1));
+  //
+  //  TVector3 V = TVector3(GetStripPositionX(DetectorNumber[i],128,128),
+  //      GetStripPositionY(DetectorNumber[i],128,128),
+  //      GetStripPositionZ(DetectorNumber[i],128,128))
+  //
+  //    -TVector3(GetStripPositionX(DetectorNumber[i],128,1),
+  //        GetStripPositionY(DetectorNumber[i],128,1),
+  //        GetStripPositionZ(DetectorNumber[i],128,1));
+  //
+  //  TVector3 Normal = U.Cross(V);
+  //
+  //  return (Normal.Unit());
+  return TVector3(0,0,0);
 }
 ///////////////////////////////////////////////////////////////////////////
 void TStrassePhysics::BuildSimplePhysicalEvent() {
@@ -178,38 +240,30 @@ void TStrassePhysics::BuildSimplePhysicalEvent() {
 void TStrassePhysics::BuildPhysicalEvent() {
   // apply thresholds and calibration
   PreTreat();
-
-  if(1 /*CheckEvent() == 1*/){
-    vector<TVector2> couple = Match_X_Y();
-
-    EventMultiplicity = couple.size();
-    for(unsigned int i=0; i<couple.size(); i++){
-      int N = m_PreTreatedData->GetInner_TE_DetectorNbr(couple[i].X());
-      int X = m_PreTreatedData->GetInner_TE_StripNbr(couple[i].X());
-      int Y = m_PreTreatedData->GetInner_LE_StripNbr(couple[i].Y());
-
-      double TE = m_PreTreatedData->GetInner_TE_Energy(couple[i].X());
-      double LE = m_PreTreatedData->GetInner_LE_Energy(couple[i].Y());
-      DetectorNumber.push_back(N);
-      StripX.push_back(X);
-      StripY.push_back(Y);
-      DE.push_back(TE);
-      
-      PosX.push_back(GetPositionOfInteraction(i).x());
-      PosY.push_back(GetPositionOfInteraction(i).y());
-      PosZ.push_back(GetPositionOfInteraction(i).z());
-
-      int OuterMult = m_PreTreatedData->GetOuterMultTEnergy();
-      for(unsigned int j=0; j<OuterMult; j++){
-        if(m_PreTreatedData->GetOuter_TE_DetectorNbr(j)==N){
-          double XDE = m_PreTreatedData->GetOuter_TE_Energy(j);
-          double YDE = m_PreTreatedData->GetOuter_LE_Energy(j);
-
-          E.push_back(XDE);
-        }
+  
+    if(1 /*CheckEvent() == 1*/){
+      vector<TVector2> couple = Match_X_Y();
+  
+      EventMultiplicity = couple.size();
+      for(unsigned int i=0; i<couple.size(); i++){
+        int N = m_PreTreatedData->GetInner_TE_DetectorNbr(couple[i].X());
+        int T = m_PreTreatedData->GetInner_TE_StripNbr(couple[i].X());
+        int L = m_PreTreatedData->GetInner_LE_StripNbr(couple[i].Y());
+  
+        double TE = m_PreTreatedData->GetInner_TE_Energy(couple[i].X());
+        double LE = m_PreTreatedData->GetInner_LE_Energy(couple[i].Y());
+        DetectorNumber.push_back(N);
+        InnerStripT.push_back(T);
+        InnerStripL.push_back(L);
+        DE.push_back(TE);
+        cout << N <<  " " << T <<  " " << L <<" " << m_InnerStripPositionX.size() << " " << m_InnerStripPositionX[0].size()<< " " << m_InnerStripPositionX[0][0].size() << endl;
+        InnerPosX.push_back(GetInnerPositionOfInteraction(i).x());
+        InnerPosY.push_back(GetInnerPositionOfInteraction(i).y());
+        InnerPosZ.push_back(GetInnerPositionOfInteraction(i).z());
+  
       }
     }
-  }
+   
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -391,15 +445,20 @@ void TStrassePhysics::Clear() {
   EventMultiplicity = 0;
 
   // Position Information
-  PosX.clear();
-  PosY.clear();
-  PosZ.clear();
+  InnerPosX.clear();
+  InnerPosY.clear();
+  InnerPosZ.clear();
+  OuterPosX.clear();
+  OuterPosY.clear();
+  OuterPosZ.clear();
 
   // DSSD
   DetectorNumber.clear();
   E.clear();
-  StripX.clear();
-  StripY.clear();
+  InnerStripT.clear();
+  InnerStripL.clear();
+  OuterStripT.clear();
+  OuterStripL.clear();
   DE.clear();
 }
 
@@ -407,41 +466,146 @@ void TStrassePhysics::Clear() {
 
 ///////////////////////////////////////////////////////////////////////////
 void TStrassePhysics::ReadConfiguration(NPL::InputParser parser) {
-  vector<NPL::InputBlock*> blocks = parser.GetAllBlocksWithToken("Strasse");
+  // Info block
+  vector<NPL::InputBlock*> blocks_info = parser.GetAllBlocksWithTokenAndValue("Strasse","Info");
   if(NPOptionManager::getInstance()->GetVerboseLevel())
-    cout << "//// " << blocks.size() << " detectors found " << endl; 
+    cout << "//// " << blocks_info.size() << " info block founds " << endl; 
 
-  vector<string> cart = {"POS"};
-  vector<string> sphe = {"R","Theta","Phi"};
+  if(blocks_info.size()>1){
+    cout << "ERROR: can only accepte one info block, " << blocks_info.size() << " info block founds." << endl; 
+    exit(1); 
+  }
 
-  for(unsigned int i = 0 ; i < blocks.size() ; i++){
-    if(blocks[i]->HasTokenList(cart)){
+  vector<string> info = {
+    "Inner_Wafer_Length",         
+    "Inner_Wafer_Width",          
+    "Inner_Wafer_Thickness",     
+    "Inner_Wafer_AlThickness",    
+    "Inner_Wafer_PADExternal",    
+    "Inner_Wafer_PADInternal",  
+    "Inner_Wafer_GuardRing",    
+    "Inner_PCB_PortWidth",      
+    "Inner_PCB_StarboardWidth", 
+    "Inner_PCB_BevelAngle",     
+    "Inner_PCB_UpstreamWidth",  
+    "Inner_PCB_DownstreamWidth",
+    "Inner_PCB_MidWidth",       
+    "Inner_PCB_Thickness",      
+    "Inner_Wafer_TransverseStrips",
+    "Inner_Wafer_LongitudinalStrips",
+    "Outer_Wafer_Length",       
+    "Outer_Wafer_Width",        
+    "Outer_Wafer_Thickness",    
+    "Outer_Wafer_AlThickness",  
+    "Outer_Wafer_PADExternal",  
+    "Outer_Wafer_PADInternal",  
+    "Outer_Wafer_GuardRing",    
+    "Outer_PCB_PortWidth",      
+    "Outer_PCB_StarboardWidth", 
+    "Outer_PCB_BevelAngle",     
+    "Outer_PCB_UpstreamWidth",  
+    "Outer_PCB_DownstreamWidth",
+    "Outer_PCB_MidWidth",       
+    "Outer_PCB_Thickness",      
+    "Outer_Wafer_TransverseStrips",
+    "Outer_Wafer_LongitudinalStrips"
+  };
+
+  if(blocks_info[0]->HasTokenList(info)){
+    cout << endl << "////  Strasse info block" <<  endl;
+    Inner_Wafer_Length = blocks_info[0]->GetDouble("Inner_Wafer_Length","mm");
+    Inner_Wafer_Width = blocks_info[0]->GetDouble("Inner_Wafer_Width","mm");          
+    Inner_Wafer_Thickness = blocks_info[0]->GetDouble("Inner_Wafer_Thickness","micrometer");      
+    Inner_Wafer_AlThickness = blocks_info[0]->GetDouble("Inner_Wafer_AlThickness","micrometer");     
+    Inner_Wafer_PADExternal = blocks_info[0]->GetDouble("Inner_Wafer_PADExternal","mm");     
+    Inner_Wafer_PADInternal = blocks_info[0]->GetDouble("Inner_Wafer_PADInternal","mm");   
+    Inner_Wafer_GuardRing = blocks_info[0]->GetDouble("Inner_Wafer_GuardRing","mm");     
+    Inner_Wafer_TransverseStrips = blocks_info[0]->GetInt("Inner_Wafer_TransverseStrips");        
+    Inner_Wafer_LongitudinalStrips = blocks_info[0]->GetInt("Inner_Wafer_LongitudinalStrips");       
+    Inner_PCB_PortWidth = blocks_info[0]->GetDouble("Inner_PCB_PortWidth","mm");       
+    Inner_PCB_StarboardWidth = blocks_info[0]->GetDouble("Inner_PCB_StarboardWidth","mm");  
+    Inner_PCB_BevelAngle = blocks_info[0]->GetDouble("Inner_PCB_BevelAngle","mm");      
+    Inner_PCB_UpstreamWidth = blocks_info[0]->GetDouble("Inner_PCB_UpstreamWidth","mm");   
+    Inner_PCB_DownstreamWidth = blocks_info[0]->GetDouble("Inner_PCB_DownstreamWidth","mm"); 
+    Inner_PCB_MidWidth = blocks_info[0]->GetDouble("Inner_PCB_MidWidth","mm");        
+    Inner_PCB_Thickness = blocks_info[0]->GetDouble("Inner_PCB_Thickness","mm");       
+    Outer_Wafer_Length = blocks_info[0]->GetDouble("Outer_Wafer_Length","mm");        
+    Outer_Wafer_Width = blocks_info[0]->GetDouble("Outer_Wafer_Width","mm");         
+    Outer_Wafer_Thickness = blocks_info[0]->GetDouble("Outer_Wafer_Thickness","mm");     
+    Outer_Wafer_AlThickness = blocks_info[0]->GetDouble("Outer_Wafer_AlThickness","micrometer");   
+    Outer_Wafer_PADExternal = blocks_info[0]->GetDouble("Outer_Wafer_PADExternal","mm");   
+    Outer_Wafer_PADInternal = blocks_info[0]->GetDouble("Outer_Wafer_PADInternal","mm");   
+    Outer_Wafer_GuardRing = blocks_info[0]->GetDouble("Outer_Wafer_GuardRing","mm");     
+    Outer_Wafer_TransverseStrips = blocks_info[0]->GetInt("Outer_Wafer_TransverseStrips");        
+    Outer_Wafer_LongitudinalStrips = blocks_info[0]->GetInt("Outer_Wafer_LongitudinalStrips");       
+    Outer_PCB_PortWidth = blocks_info[0]->GetDouble("Outer_PCB_PortWidth","mm");       
+    Outer_PCB_StarboardWidth = blocks_info[0]->GetDouble("Outer_PCB_StarboardWidth","mm");  
+    Outer_PCB_BevelAngle = blocks_info[0]->GetDouble("Outer_PCB_BevelAngle","deg");      
+    Outer_PCB_UpstreamWidth = blocks_info[0]->GetDouble("Outer_PCB_UpstreamWidth","mm");   
+    Outer_PCB_DownstreamWidth = blocks_info[0]->GetDouble("Outer_PCB_DownstreamWidth","mm"); 
+    Outer_PCB_MidWidth = blocks_info[0]->GetDouble("Outer_PCB_MidWidth","mm");        
+    Outer_PCB_Thickness = blocks_info[0]->GetDouble("Outer_PCB_Thickness","mm");       
+
+  }
+
+  else{
+    cout << "ERROR: check your input file formatting " << endl;
+    exit(1);
+  }
+
+
+  // Inner Barrel
+  vector<NPL::InputBlock*> blocks_inner = parser.GetAllBlocksWithTokenAndValue("Strasse","Inner");
+  if(NPOptionManager::getInstance()->GetVerboseLevel())
+    cout << "//// " << blocks_inner.size() << " inner detectors found " << endl; 
+
+  vector<string> coord = {"Radius","Z","Phi","Shift"};
+
+  for(unsigned int i = 0 ; i < blocks_inner.size() ; i++){
+    if(blocks_inner[i]->HasTokenList(coord)){
       if(NPOptionManager::getInstance()->GetVerboseLevel())
-        cout << endl << "////  Strasse " << i+1 <<  endl;
+        cout << endl << "////  Strasse inner detector" << i+1 <<  endl;
 
-      TVector3 Pos = blocks[i]->GetTVector3("POS","mm");
-
-      AddDetector(Pos);
-    }
-    else if(blocks[i]->HasTokenList(sphe)){
-      if(NPOptionManager::getInstance()->GetVerboseLevel())
-        cout << endl << "////  Strasse " << i+1 <<  endl;
-      double R = blocks[i]->GetDouble("R","mm");
-      double Theta = blocks[i]->GetDouble("Theta","deg");
-      double Phi = blocks[i]->GetDouble("Phi","deg");
-
-      AddDetector(R, Theta, Phi);
+      double R = blocks_inner[i]->GetDouble("Radius","mm");
+      double Z= blocks_inner[i]->GetDouble("Z","mm");
+      double Phi = blocks_inner[i]->GetDouble("Phi","deg");
+      double Shift = blocks_inner[i]->GetDouble("Shift","mm");
+      AddInnerDetector(R,Z,Phi,Shift);
     }
     else{
-      cout << "ERROR: check your input file formatting " << endl;
+      cout << "ERROR: check your input file formatting on " << i+1 << " inner block " <<endl;
       exit(1);
     }
   }
+
+  // Outer barrel
+  vector<NPL::InputBlock*> blocks_outer = parser.GetAllBlocksWithTokenAndValue("Strasse","Outer");
+  if(NPOptionManager::getInstance()->GetVerboseLevel())
+    cout << "//// " << blocks_outer.size() << " outer detectors found " << endl; 
+
+  for(unsigned int i = 0 ; i < blocks_outer.size() ; i++){
+    if(blocks_outer[i]->HasTokenList(coord)){
+      if(NPOptionManager::getInstance()->GetVerboseLevel())
+        cout << endl << "////  Strasse outer detector" << i+1 <<  endl;
+
+      double R = blocks_outer[i]->GetDouble("Radius","mm");
+      double Z= blocks_outer[i]->GetDouble("Z","mm");
+      double Phi = blocks_outer[i]->GetDouble("Phi","deg");
+      double Shift = blocks_outer[i]->GetDouble("Shift","mm");
+      AddOuterDetector(R,Z,Phi,Shift);
+    }
+    else{
+
+      cout << "ERROR: check your input file formatting on " << i+1 << " outer block " <<endl;
+      exit(1);
+    }
+  }
+
 }
 
 ///////////////////////////////////////////////////////////////////////////
 void TStrassePhysics::InitSpectra() {
-  m_Spectra = new TStrasseSpectra(m_NumberOfDetectors);
+  //  m_Spectra = new TStrasseSpectra(m_NumberOfInnerDetectors);
 }
 
 
@@ -489,10 +653,13 @@ void TStrassePhysics::WriteSpectra() {
 ///////////////////////////////////////////////////////////////////////////
 void TStrassePhysics::AddParameterToCalibrationManager() {
   CalibrationManager* Cal = CalibrationManager::getInstance();
-  for (int i = 0; i < m_NumberOfDetectors; ++i) {
-    Cal->AddParameter("Strasse", "D"+ NPL::itoa(i+1)+"_ENERGY","Strasse_D"+ NPL::itoa(i+1)+"_ENERGY");
-    Cal->AddParameter("Strasse", "D"+ NPL::itoa(i+1)+"_TIME","Strasse_D"+ NPL::itoa(i+1)+"_TIME");
-  }
+  /*  for (int i = 0; i < m_NumberOfInnerDetectors; ++i) {
+      Cal->AddParameter("Strasse", "INNER"+ NPL::itoa(i+1)+"_ENERGY","Strasse_INNER"+ NPL::itoa(i+1)+"_ENERGY");
+      }
+      for (int i = 0; i < m_NumberOfInnerDetectors; ++i) {
+      Cal->AddParameter("Strasse", "OUTER"+ NPL::itoa(i+1)+"_ENERGY","Strasse_OUTER"+ NPL::itoa(i+1)+"_ENERGY");
+      }
+      */
 }
 
 

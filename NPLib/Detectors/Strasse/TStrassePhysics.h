@@ -69,12 +69,19 @@ class TStrassePhysics : public TObject, public NPL::VDetector {
     vector<int>     DetectorNumber;
     vector<double>  E;
     vector<double>  DE;
-    vector<int>     StripX;
-    vector<int>     StripY;
+    vector<int>     InnerStripT;
+    vector<int>     InnerStripL;
+    vector<int>     OuterStripT;
+    vector<int>     OuterStripL;
 
-    vector<double> PosX;
-    vector<double> PosY;
-    vector<double> PosZ;
+
+    vector<double> InnerPosX;
+    vector<double> InnerPosY;
+    vector<double> InnerPosZ;
+    vector<double> OuterPosX;
+    vector<double> OuterPosY;
+    vector<double> OuterPosZ;
+
 
   
   //////////////////////////////////////////////////////////////
@@ -84,8 +91,8 @@ class TStrassePhysics : public TObject, public NPL::VDetector {
     void ReadConfiguration(NPL::InputParser);
 
     /// A usefull method to bundle all operation to add a detector
-    void AddDetector(TVector3 POS); 
-    void AddDetector(double R, double Theta, double Phi); 
+    void AddInnerDetector(double R, double Z, double Phi,double Shift); 
+    void AddOuterDetector(double R, double Z, double Phi,double Shift); 
  
     // add parameters to the CalibrationManger
     void AddParameterToCalibrationManager();
@@ -153,21 +160,33 @@ class TStrassePhysics : public TObject, public NPL::VDetector {
     // needed for online analysis for example
     void SetRawDataPointer(TStrasseData* rawDataPointer) {m_EventData = rawDataPointer;}
  
-    double GetNumberOfTelescope() const {return m_NumberOfDetectors;}
+    double GetNumberOfInnerDetector() const {return m_NumberOfInnerDetectors;}
+    double GetNumberOfOuterDetector() const {return m_NumberOfOuterDetectors;}
     int GetEventMultiplicity() const {return EventMultiplicity;}
 
-    double GetStripPositionX(const int N, const int X, const int Y){
-      return m_StripPositionX[N-1][X-1][Y-1];
+    double GetInnerStripPositionX(const int N, const int X, const int Y){
+      return m_InnerStripPositionX[N-1][X-1][Y-1];
     };
-    double GetStripPositionY(const int N, const int X, const int Y){
-      return m_StripPositionY[N-1][X-1][Y-1];
+    double GetInnerStripPositionY(const int N, const int X, const int Y){
+      return m_InnerStripPositionY[N-1][X-1][Y-1];
     };
-    double GetStripPositionZ(const int N, const int X, const int Y){
-      return m_StripPositionZ[N-1][X-1][Y-1];
+    double GetInnerStripPositionZ(const int N, const int X, const int Y){
+      return m_InnerStripPositionZ[N-1][X-1][Y-1];
+    };
+    
+    double GetOuterStripPositionX(const int N, const int X, const int Y){
+      return m_OuterStripPositionX[N-1][X-1][Y-1];
+    };
+    double GetOuterStripPositionY(const int N, const int X, const int Y){
+      return m_OuterStripPositionY[N-1][X-1][Y-1];
+    };
+    double GetOuterStripPositionZ(const int N, const int X, const int Y){
+      return m_OuterStripPositionZ[N-1][X-1][Y-1];
     };
 
+    TVector3 GetInnerPositionOfInteraction(const int i);
+    TVector3 GetOuterPositionOfInteraction(const int i);
 
-    TVector3 GetPositionOfInteraction(const int i);
     TVector3 GetDetectorNormal(const int i);
     
   // objects are not written in the TTree
@@ -183,11 +202,17 @@ class TStrassePhysics : public TObject, public NPL::VDetector {
 
   // parameters used in the analysis
   private:
-    int m_NumberOfDetectors; //!
+    int m_NumberOfInnerDetectors; //!
+    int m_NumberOfOuterDetectors; //!
 
-    vector<vector<vector<double>>> m_StripPositionX; //!
-    vector<vector<vector<double>>> m_StripPositionY; //!
-    vector<vector<vector<double>>> m_StripPositionZ; //!
+    vector<vector<vector<double>>> m_InnerStripPositionX; //!
+    vector<vector<vector<double>>> m_InnerStripPositionY; //!
+    vector<vector<vector<double>>> m_InnerStripPositionZ; //!
+
+    vector<vector<vector<double>>> m_OuterStripPositionX; //!
+    vector<vector<vector<double>>> m_OuterStripPositionY; //!
+    vector<vector<vector<double>>> m_OuterStripPositionZ; //!
+
 
     // thresholds
     double m_E_RAW_Threshold; //!
@@ -211,5 +236,54 @@ class TStrassePhysics : public TObject, public NPL::VDetector {
     static NPL::VDetector* Construct();
 
     ClassDef(TStrassePhysics,1)  // StrassePhysics structure
+  
+  private: // geometry
+  ////////////////////
+  // Inner Detector //
+  ////////////////////
+  // Wafer parameter
+  double Inner_Wafer_Length;
+  double Inner_Wafer_Width;
+  double Inner_Wafer_Thickness;
+  double Inner_Wafer_AlThickness;
+  double Inner_Wafer_PADExternal;
+  double Inner_Wafer_PADInternal;
+  double Inner_Wafer_GuardRing;
+
+  // PCB parameter
+  double Inner_PCB_PortWidth;
+  double Inner_PCB_StarboardWidth;
+  double Inner_PCB_BevelAngle;
+  double Inner_PCB_UpstreamWidth;
+  double Inner_PCB_DownstreamWidth;
+  double Inner_PCB_MidWidth;
+  double Inner_PCB_Thickness;
+  double Inner_Wafer_TransverseStrips;
+  double Inner_Wafer_LongitudinalStrips;
+
+  ////////////////////
+  // Outer Detector //
+  ////////////////////
+  // Wafer parameter
+  double Outer_Wafer_Length;
+  double Outer_Wafer_Width;
+  double Outer_Wafer_Thickness;
+  double Outer_Wafer_AlThickness;
+  double Outer_Wafer_PADExternal;
+  double Outer_Wafer_PADInternal;
+  double Outer_Wafer_GuardRing;
+
+  // PCB parameter
+  double Outer_PCB_PortWidth;
+  double Outer_PCB_StarboardWidth;
+  double Outer_PCB_BevelAngle;
+  double Outer_PCB_UpstreamWidth;
+  double Outer_PCB_DownstreamWidth;
+  double Outer_PCB_MidWidth;
+  double Outer_PCB_Thickness;
+  double Outer_Wafer_TransverseStrips;
+  double Outer_Wafer_LongitudinalStrips;
+
+
 };
 #endif
