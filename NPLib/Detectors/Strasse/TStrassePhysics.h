@@ -58,7 +58,8 @@ class TStrassePhysics : public TObject, public NPL::VDetector {
     void Clear(const Option_t*) {};
 
   public:
-    vector<TVector2> Match_X_Y();
+    vector<TVector2> MatchInner();
+    vector<TVector2> MatchOuter();
     int CheckEvent();
 
   //////////////////////////////////////////////////////////////

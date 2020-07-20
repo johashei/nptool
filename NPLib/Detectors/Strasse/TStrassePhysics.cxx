@@ -204,7 +204,100 @@ void TStrassePhysics::AddInnerDetector(double R, double Z, double Phi, double Sh
 
 ///////////////////////////////////////////////////////////////////////////
 void TStrassePhysics::AddOuterDetector(double R, double Z, double Phi, double Shift){
-} 
+  m_NumberOfOuterDetectors++;
+  double ActiveWidth  = Outer_Wafer_Width-2.*Outer_Wafer_GuardRing;
+  double ActiveLength = Outer_Wafer_Length-Outer_Wafer_PADExternal-Outer_Wafer_PADInternal-2*Outer_Wafer_GuardRing;
+  double LongitudinalPitch = ActiveWidth/Outer_Wafer_LongitudinalStrips;
+  double TransversePitch = ActiveLength/Outer_Wafer_TransverseStrips;
+//cout << ActiveWidth << " " << ActiveLength << " " << LongitudinalPitch << " " << TransversePitch << endl;
+
+  // Vector C position of detector face center
+  TVector3 C(Shift,R,Z);// center of the whole detector, including PCB
+  C.RotateZ(-Phi);
+
+  // Vector W normal to detector face (pointing to the back)
+  TVector3 W(0,1,0);
+  W.RotateZ(-Phi);
+
+  // Vector U on detector face (parallel to Z axis/longitudinal strips) 
+  TVector3 U = TVector3(0,0,1);
+  // Vector V on detector face (parallel to transverse strips)
+  TVector3 V = W.Cross(U);
+
+  // Adding position for downstream silicon:
+  // Moving to corner of the silicon
+  TVector3 P_1_1 = C
+      +U*0.5*(Outer_PCB_UpstreamWidth-Outer_PCB_DownstreamWidth) // In between wafer
+      -U*0.5*Outer_PCB_MidWidth // Internal wafer edge
+      -U*Outer_Wafer_Length // External wafer edge
+      +U*(Outer_Wafer_GuardRing+Outer_Wafer_PADExternal) // External active wafer edge
+      +U*0.5*TransversePitch // middle of strip
+      -V*0.5*(Outer_PCB_StarboardWidth-Outer_PCB_PortWidth)
+      -V*0.5*Outer_Wafer_Width
+      +V*Outer_Wafer_GuardRing
+      +V*0.5*LongitudinalPitch; // middle of strip
+  
+  vector<double> lineX;
+  vector<double> lineY;
+  vector<double> lineZ;
+
+  vector<vector<double>> OneDetectorStripPositionX;
+  vector<vector<double>> OneDetectorStripPositionY;
+  vector<vector<double>> OneDetectorStripPositionZ;
+
+  TVector3 P;
+  for(int i=0; i<Outer_Wafer_TransverseStrips; i++){
+    lineX.clear();
+    lineY.clear();
+    lineZ.clear();
+    for(int j=0; j<Outer_Wafer_LongitudinalStrips; j++){
+      P = P_1_1 + i*U*TransversePitch + j*V*LongitudinalPitch;
+      lineX.push_back(P.X());
+      lineY.push_back(P.Y());
+      lineZ.push_back(P.Z());
+      }
+
+    OneDetectorStripPositionX.push_back(lineX);
+    OneDetectorStripPositionY.push_back(lineY);
+    OneDetectorStripPositionZ.push_back(lineZ);
+  }
+
+  m_OuterStripPositionX.push_back(OneDetectorStripPositionX);
+  m_OuterStripPositionY.push_back(OneDetectorStripPositionY);
+  m_OuterStripPositionZ.push_back(OneDetectorStripPositionZ);
+
+  // Adding position for upstream silicon:
+  // Moving to corner of the silicon
+  P_1_1 = C
+      +U*0.5*(Outer_PCB_UpstreamWidth-Outer_PCB_DownstreamWidth) // In between wafer
+      +U*0.5*Outer_PCB_MidWidth // Internal wafer edge
+      +U*(Outer_Wafer_GuardRing+Outer_Wafer_PADInternal) // Internal active wafer edge
+      +U*0.5*TransversePitch// middle of strip
+      -V*0.5*(Outer_PCB_StarboardWidth-Outer_PCB_PortWidth)
+      -V*0.5*Outer_Wafer_Width
+      +V*Outer_Wafer_GuardRing
+      +V*0.5*LongitudinalPitch; // middle of strip
+
+  for(int i=0; i<Outer_Wafer_TransverseStrips; i++){
+    lineX.clear();
+    lineY.clear();
+    lineZ.clear();
+
+    for(int j=0; j<Outer_Wafer_LongitudinalStrips; j++){
+      P = P_1_1 + i*U*TransversePitch + j*V*LongitudinalPitch;
+      lineX.push_back(P.X());
+      lineY.push_back(P.Y());
+      lineZ.push_back(P.Z());
+
+    }
+
+    m_OuterStripPositionX[m_NumberOfOuterDetectors-1].push_back(lineX);
+    m_OuterStripPositionY[m_NumberOfOuterDetectors-1].push_back(lineY);
+    m_OuterStripPositionZ[m_NumberOfOuterDetectors-1].push_back(lineZ);
+
+  }
+}
+
 
 ///////////////////////////////////////////////////////////////////////////
 TVector3 TStrassePhysics::GetInnerPositionOfInteraction(const int i){
@@ -218,9 +311,9 @@ TVector3 TStrassePhysics::GetInnerPositionOfInteraction(const int i){
 
 ///////////////////////////////////////////////////////////////////////////
 TVector3 TStrassePhysics::GetOuterPositionOfInteraction(const int i){
-  TVector3 Position = TVector3(GetOuterStripPositionX(DetectorNumber[i], OuterStripL[i], OuterStripT[i]),
-      GetOuterStripPositionY(DetectorNumber[i], OuterStripL[i], OuterStripT[i]),
-      GetOuterStripPositionZ(DetectorNumber[i], OuterStripL[i], OuterStripT[i]));
+  TVector3 Position = TVector3(GetOuterStripPositionX(DetectorNumber[i], OuterStripT[i], OuterStripL[i]),
+      GetOuterStripPositionY(DetectorNumber[i], OuterStripT[i], OuterStripL[i]),
+      GetOuterStripPositionZ(DetectorNumber[i], OuterStripT[i], OuterStripL[i]));
 
   return Position;
 }
@@ -262,16 +355,17 @@ void TStrassePhysics::BuildPhysicalEvent() {
   PreTreat();
   
     if(1 /*CheckEvent() == 1*/){
-      vector<TVector2> couple = Match_X_Y();
+      vector<TVector2> inner = MatchInner();
+      vector<TVector2> outer = MatchOuter();
   
-      EventMultiplicity = couple.size();
-      for(unsigned int i=0; i<couple.size(); i++){
-        int N = m_PreTreatedData->GetInner_TE_DetectorNbr(couple[i].X());
-        int T = m_PreTreatedData->GetInner_TE_StripNbr(couple[i].X());
-        int L = m_PreTreatedData->GetInner_LE_StripNbr(couple[i].Y());
+      EventMultiplicity = inner.size();
+      
+      for(unsigned int i=0; i<inner.size(); i++){
+        int N = m_PreTreatedData->GetInner_TE_DetectorNbr(inner[i].X());
+        int T = m_PreTreatedData->GetInner_TE_StripNbr(inner[i].X());
+        int L = m_PreTreatedData->GetInner_LE_StripNbr(inner[i].Y());
   
-        double TE = m_PreTreatedData->GetInner_TE_Energy(couple[i].X());
-        double LE = m_PreTreatedData->GetInner_LE_Energy(couple[i].Y());
+        double TE = m_PreTreatedData->GetInner_TE_Energy(inner[i].X());
         DetectorNumber.push_back(N);
         InnerStripT.push_back(T);
         InnerStripL.push_back(L);
@@ -279,14 +373,41 @@ void TStrassePhysics::BuildPhysicalEvent() {
         InnerPosX.push_back(GetInnerPositionOfInteraction(i).x());
         InnerPosY.push_back(GetInnerPositionOfInteraction(i).y());
         InnerPosZ.push_back(GetInnerPositionOfInteraction(i).z());
-  
+        // look for outer  
+        double outerE = 0;
+        int outerT=0;
+        int outerL=0;
+        for(unsigned int j=0; j<outer.size(); j++){
+          if(m_PreTreatedData->GetInner_TE_DetectorNbr(outer[j].X())==N){
+            outerE =  m_PreTreatedData->GetOuter_TE_Energy(outer[j].X()); 
+            outerT = m_PreTreatedData->GetOuter_TE_StripNbr(outer[j].X());
+            outerL = m_PreTreatedData->GetOuter_LE_StripNbr(outer[j].Y());
+            }
+        }
+        if(outerE){
+          OuterStripT.push_back(outerT);
+          OuterStripL.push_back(outerL);
+          E.push_back(outerE);
+          OuterPosX.push_back(GetOuterPositionOfInteraction(i).x());
+          OuterPosY.push_back(GetOuterPositionOfInteraction(i).y());
+          OuterPosZ.push_back(GetOuterPositionOfInteraction(i).z());
+          }
+        else{
+          OuterStripT.push_back(-1000);
+          OuterStripL.push_back(-1000);
+          E.push_back(-1000);
+          OuterPosX.push_back(-1000);
+          OuterPosY.push_back(-1000);
+          OuterPosZ.push_back(-1000);
+          }
       }
+
     }
    
 }
 
 ///////////////////////////////////////////////////////////////////////////
-vector<TVector2> TStrassePhysics::Match_X_Y(){
+vector<TVector2> TStrassePhysics::MatchInner(){
   vector<TVector2> ArrayOfGoodCouple;
 
   static unsigned int m_TEMult, m_LEMult;
@@ -308,7 +429,7 @@ vector<TVector2> TStrassePhysics::Match_X_Y(){
       if(XDetNbr == YDetNbr){
         // Declaration of variable for clarity
         double TE = m_PreTreatedData->GetInner_TE_Energy(i);
-        double LE = m_PreTreatedData->GetInner_LE_Energy(i);
+        double LE = m_PreTreatedData->GetInner_LE_Energy(j);
 
         // look if energy matches
         if(abs(TE-LE)/2.<m_StripEnergyMatching){
@@ -320,6 +441,42 @@ vector<TVector2> TStrassePhysics::Match_X_Y(){
 
   return ArrayOfGoodCouple;
 }
+///////////////////////////////////////////////////////////////////////////
+vector<TVector2> TStrassePhysics::MatchOuter(){
+  vector<TVector2> ArrayOfGoodCouple;
+
+  static unsigned int m_TEMult, m_LEMult;
+  m_TEMult = m_PreTreatedData->GetOuterMultTEnergy();
+  m_LEMult = m_PreTreatedData->GetOuterMultLEnergy();
+
+  if(m_TEMult>m_MaximumStripMultiplicityAllowed || m_LEMult>m_MaximumStripMultiplicityAllowed){
+    return ArrayOfGoodCouple;
+  }
+
+  for(unsigned int i=0; i<m_TEMult; i++){
+    for(unsigned int j=0; j<m_LEMult; j++){
+
+      // Declaration of variable for clarity
+      int XDetNbr = m_PreTreatedData->GetOuter_TE_DetectorNbr(i);
+      int YDetNbr = m_PreTreatedData->GetOuter_LE_DetectorNbr(j);
+
+      // if same detector check energy
+      if(XDetNbr == YDetNbr){
+        // Declaration of variable for clarity
+        double TE = m_PreTreatedData->GetOuter_TE_Energy(i);
+        double LE = m_PreTreatedData->GetOuter_LE_Energy(j);
+
+        // look if energy matches
+        if(abs(TE-LE)/2.<m_StripEnergyMatching){
+          ArrayOfGoodCouple.push_back(TVector2(i,j));
+        }
+      }
+    }
+  }
+
+  return ArrayOfGoodCouple;
+}
+
 
 ///////////////////////////////////////////////////////////////////////////
 int TStrassePhysics::CheckEvent(){
@@ -460,7 +617,6 @@ void TStrassePhysics::ReadAnalysisConfig() {
 ///////////////////////////////////////////////////////////////////////////
 void TStrassePhysics::Clear() {
   EventMultiplicity = 0;
-
   // DSSD
   DetectorNumber.clear();
   E.clear();
