@@ -634,6 +634,7 @@ void Strasse::ReadSensitive(const G4Event* ){
     if(Energy>EnergyThreshold){
       int DetNbr  = InnerScorer1->GetDetectorWidth(i);
       int StripTransverse = InnerScorer1->GetStripWidth(i);
+      cout<< "StripTransverse1 = "<<StripTransverse<<endl;
       m_Event->SetInnerTE(DetNbr, StripTransverse, Energy);
     }
   }
@@ -643,8 +644,9 @@ void Strasse::ReadSensitive(const G4Event* ){
     double Energy = RandGauss::shoot(InnerScorer1->GetEnergyLength(i), ResoEnergy);   
     if(Energy>EnergyThreshold){
       int DetNbr  = InnerScorer1->GetDetectorLength(i);
-      int Strip= InnerScorer1->GetStripLength(i);
-      m_Event->SetInnerLE(DetNbr, Strip, Energy);
+      int StripLongitudinal= InnerScorer1->GetStripLength(i);
+      cout<< "StripLongitudinal1 = "<<StripLongitudinal<<endl;
+      m_Event->SetInnerLE(DetNbr, StripLongitudinal, Energy);
     }
   }
   InnerScorer1->clear();
@@ -658,6 +660,7 @@ void Strasse::ReadSensitive(const G4Event* ){
     if(Energy>EnergyThreshold){
       int DetNbr  = InnerScorer2->GetDetectorWidth(i);
       int StripTransverse = InnerScorer2->GetStripWidth(i)+Inner_Wafer_TransverseStrips;
+      cout<< "StripTransverse2 = "<<StripTransverse<<endl;
       m_Event->SetInnerTE(DetNbr, StripTransverse, Energy);
     }
   }
@@ -666,8 +669,9 @@ void Strasse::ReadSensitive(const G4Event* ){
     double Energy = RandGauss::shoot(InnerScorer2->GetEnergyLength(i), ResoEnergy);   
     if(Energy>EnergyThreshold){
       int DetNbr  = InnerScorer2->GetDetectorLength(i);
-      int Strip= InnerScorer2->GetStripLength(i);
-      m_Event->SetInnerLE(DetNbr, Strip, Energy);
+      int StripLongitudinal= InnerScorer2->GetStripLength(i);
+      cout<< "StripLongitudinal2 = "<<StripLongitudinal<<endl;
+      m_Event->SetInnerLE(DetNbr, StripLongitudinal, Energy);
     }
   }
   InnerScorer2->clear();
@@ -692,8 +696,8 @@ void Strasse::ReadSensitive(const G4Event* ){
     double Energy = RandGauss::shoot(OuterScorer1->GetEnergyLength(i), ResoEnergy);   
     if(Energy>EnergyThreshold){
       int DetNbr  = OuterScorer1->GetDetectorLength(i);
-      int Strip= OuterScorer1->GetStripLength(i);
-      m_Event->SetOuterLE(DetNbr, Strip, Energy);
+      int StripLongitudinal= OuterScorer1->GetStripLength(i);
+      m_Event->SetOuterLE(DetNbr, StripLongitudinal, Energy);
     }
   }
   OuterScorer1->clear();
@@ -706,7 +710,7 @@ void Strasse::ReadSensitive(const G4Event* ){
     double Energy = RandGauss::shoot(OuterScorer2->GetEnergyWidth(i), ResoEnergy);   
     if(Energy>EnergyThreshold){
       int DetNbr  = OuterScorer2->GetDetectorWidth(i);
-      int StripTransverse = OuterScorer2->GetStripWidth(i)+Inner_Wafer_TransverseStrips;
+      int StripTransverse = OuterScorer2->GetStripWidth(i)+Outer_Wafer_TransverseStrips;
       m_Event->SetOuterTE(DetNbr, StripTransverse, Energy);
     }
   }
@@ -715,8 +719,8 @@ void Strasse::ReadSensitive(const G4Event* ){
     double Energy = RandGauss::shoot(OuterScorer2->GetEnergyLength(i), ResoEnergy);   
     if(Energy>EnergyThreshold){
       int DetNbr  = OuterScorer2->GetDetectorLength(i);
-      int Strip= OuterScorer2->GetStripLength(i);
-      m_Event->SetOuterLE(DetNbr, Strip, Energy);
+      int StripLongitudinal= OuterScorer2->GetStripLength(i);
+      m_Event->SetOuterLE(DetNbr, StripLongitudinal, Energy);
     }
   }
   OuterScorer2->clear();
@@ -747,14 +751,14 @@ void Strasse::InitializeScorers() {
   G4VPrimitiveScorer* InnerScorer1 = new DSSDScorers::PS_Rectangle("InnerScorer1",2,
       m_Active_InnerWafer_Width,
       m_Active_InnerWafer_Length,
-      Inner_Wafer_TransverseStrips,
-      Inner_Wafer_LongitudinalStrips,0,"xz");
+      Inner_Wafer_LongitudinalStrips,
+      Inner_Wafer_TransverseStrips,0,"xz");
 
   G4VPrimitiveScorer* InnerScorer2 = new DSSDScorers::PS_Rectangle("InnerScorer2",2,
       m_Active_InnerWafer_Width,
       m_Active_InnerWafer_Length,
-      Inner_Wafer_TransverseStrips,
-      Inner_Wafer_LongitudinalStrips,0,"xz");
+      Inner_Wafer_LongitudinalStrips,
+      Inner_Wafer_TransverseStrips,0,"xz");
 
 
 
@@ -766,14 +770,14 @@ void Strasse::InitializeScorers() {
   G4VPrimitiveScorer* OuterScorer1 = new DSSDScorers::PS_Rectangle("OuterScorer1",2,
       m_Active_OuterWafer_Width,
       m_Active_OuterWafer_Length,
-      Outer_Wafer_TransverseStrips,
-      Outer_Wafer_LongitudinalStrips,0,"xz");
+      Outer_Wafer_LongitudinalStrips,
+      Outer_Wafer_TransverseStrips,0,"xz");
 
   G4VPrimitiveScorer* OuterScorer2 = new DSSDScorers::PS_Rectangle("OuterScorer2",2,
       m_Active_OuterWafer_Width,
       m_Active_OuterWafer_Length,
-      Outer_Wafer_TransverseStrips,
-      Outer_Wafer_LongitudinalStrips,0,"xz");
+      Outer_Wafer_LongitudinalStrips,
+      Outer_Wafer_TransverseStrips,0,"xz");
 
 
 
