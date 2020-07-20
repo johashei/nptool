@@ -358,22 +358,14 @@ void TStrassePhysics::BuildPhysicalEvent() {
       vector<TVector2> inner = MatchInner();
       vector<TVector2> outer = MatchOuter();
   
-      EventMultiplicity = inner.size();
       
       for(unsigned int i=0; i<inner.size(); i++){
         int N = m_PreTreatedData->GetInner_TE_DetectorNbr(inner[i].X());
-        int T = m_PreTreatedData->GetInner_TE_StripNbr(inner[i].X());
-        int L = m_PreTreatedData->GetInner_LE_StripNbr(inner[i].Y());
+        int innerT = m_PreTreatedData->GetInner_TE_StripNbr(inner[i].X());
+        int innerL = m_PreTreatedData->GetInner_LE_StripNbr(inner[i].Y());
   
         double TE = m_PreTreatedData->GetInner_TE_Energy(inner[i].X());
-        DetectorNumber.push_back(N);
-        InnerStripT.push_back(T);
-        InnerStripL.push_back(L);
-        DE.push_back(TE);
-        InnerPosX.push_back(GetInnerPositionOfInteraction(i).x());
-        InnerPosY.push_back(GetInnerPositionOfInteraction(i).y());
-        InnerPosZ.push_back(GetInnerPositionOfInteraction(i).z());
-        // look for outer  
+               // look for outer  
         double outerE = 0;
         int outerT=0;
         int outerL=0;
@@ -384,22 +376,24 @@ void TStrassePhysics::BuildPhysicalEvent() {
             outerL = m_PreTreatedData->GetOuter_LE_StripNbr(outer[j].Y());
             }
         }
+
         if(outerE){
+          EventMultiplicity++;
+          DetectorNumber.push_back(N);
+          InnerStripT.push_back(innerT);
+          InnerStripL.push_back(innerL);
+          DE.push_back(TE);
+          InnerPosX.push_back(GetInnerPositionOfInteraction(i).x());
+          InnerPosY.push_back(GetInnerPositionOfInteraction(i).y());
+          InnerPosZ.push_back(GetInnerPositionOfInteraction(i).z());
+
           OuterStripT.push_back(outerT);
           OuterStripL.push_back(outerL);
           E.push_back(outerE);
           OuterPosX.push_back(GetOuterPositionOfInteraction(i).x());
           OuterPosY.push_back(GetOuterPositionOfInteraction(i).y());
           OuterPosZ.push_back(GetOuterPositionOfInteraction(i).z());
-          }
-        else{
-          OuterStripT.push_back(-1000);
-          OuterStripL.push_back(-1000);
-          E.push_back(-1000);
-          OuterPosX.push_back(-1000);
-          OuterPosY.push_back(-1000);
-          OuterPosZ.push_back(-1000);
-          }
+        }
       }
 
     }

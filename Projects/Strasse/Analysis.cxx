@@ -35,7 +35,11 @@ Analysis::~Analysis(){
 
 ////////////////////////////////////////////////////////////////////////////////
 void Analysis::Init(){
-  IC= new TInteractionCoordinates;
+  IC= new TInitialConditions;
+  DC= new TInteractionCoordinates;
+  RC= new TReactionConditions;
+  
+
   InitOutputBranch();
   InitInputBranch();
   
@@ -51,6 +55,30 @@ void Analysis::Init(){
 void Analysis::TreatEvent(){
   // Reinitiate calculated variable
   ReInitValue();
+  unsigned int size = Strasse->GetEventMultiplicity();
+  if(size==2){ // 2 proton detected
+    // Proton 1
+    TVector3 InnerPos1 = Strasse->GetInnerPositionOfInteraction(0);
+    TVector3 OuterPos1 = Strasse->GetOuterPositionOfInteraction(0);
+    TVector3 Proton1 = OuterPos1-InnerPos1;
+    // Proton 2
+    TVector3 InnerPos2 = Strasse->GetInnerPositionOfInteraction(1);
+    TVector3 OuterPos2 = Strasse->GetOuterPositionOfInteraction(1);
+    TVector3 Proton2 = OuterPos2-InnerPos2;
+
+    double deltaPhi = abs(Proton1.Phi()/deg-Proton2.Phi()/deg);
+    double sumTheta = Proton1.Theta()/deg+Proton2.Theta()/deg
+    
+    // reject event that make no physical sense
+    if(deltaPhi<170 && sumTheta<80){
+      return
+      }
+    
+    // computing minimum distance of the two lines
+    TVector3 a;
+    TVector3 b;
+    
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -62,13 +90,14 @@ void Analysis::InitOutputBranch() {
   RootOutput::getInstance()->GetTree()->Branch("ELab",&ELab,"ELab/D");
   RootOutput::getInstance()->GetTree()->Branch("ThetaLab",&ThetaLab,"ThetaLab/D");
   RootOutput::getInstance()->GetTree()->Branch("ThetaCM",&ThetaCM,"ThetaCM/D");
-  RootOutput::getInstance()->GetTree()->Branch("InteractionCoordinates","TInteractionCoordinates",&IC);
+  RootOutput::getInstance()->GetTree()->Branch("InteractionCoordinates","TInteractionCoordinates",&DC);
+  RootOutput::getInstance()->GetTree()->Branch("ReactionConditions","TReactionConditions",&RC);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 void Analysis::InitInputBranch(){
-
-    RootInput:: getInstance()->GetChain()->SetBranchAddress("InteractionCoordinates",&IC);
+    RootInput:: getInstance()->GetChain()->SetBranchAddress("InteractionCoordinates",&DC);
+    RootInput:: getInstance()->GetChain()->SetBranchAddress("ReactionConditions",&RC);
 }
 ////////////////////////////////////////////////////////////////////////////////
 void Analysis::ReInitValue(){
@@ -76,6 +105,9 @@ void Analysis::ReInitValue(){
   ELab = -1000;
   ThetaLab = -1000;
   ThetaCM = -1000;
+  VertexX=-1000;
+  VertexY=-1000;
+  VertexZ=-1000;
 }
 
 
