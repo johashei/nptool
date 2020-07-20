@@ -660,7 +660,6 @@ void Strasse::ReadSensitive(const G4Event* ){
     if(Energy>EnergyThreshold){
       int DetNbr  = InnerScorer2->GetDetectorWidth(i);
       int StripTransverse = InnerScorer2->GetStripWidth(i)+Inner_Wafer_TransverseStrips;
-      cout<< "StripTransverse2 = "<<StripTransverse<<endl;
       m_Event->SetInnerTE(DetNbr, StripTransverse, Energy);
     }
   }
@@ -670,7 +669,6 @@ void Strasse::ReadSensitive(const G4Event* ){
     if(Energy>EnergyThreshold){
       int DetNbr  = InnerScorer2->GetDetectorLength(i);
       int StripLongitudinal= InnerScorer2->GetStripLength(i);
-      cout<< "StripLongitudinal2 = "<<StripLongitudinal<<endl;
       m_Event->SetInnerLE(DetNbr, StripLongitudinal, Energy);
     }
   }
