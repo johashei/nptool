@@ -28,6 +28,7 @@
 #include"RootInput.h"
 #include "TStrassePhysics.h"
 #include "TInitialConditions.h"
+#include "TInteractionCoordinates.h"
 #include <TRandom3.h>
 #include <TVector3.h>
 #include <TMath.h>
@@ -83,5 +84,6 @@ TInitialConditions* myInit ;
   double Si_X_Sharc ;
   double Si_Y_Sharc ;
   TStrassePhysics* Strasse;
+  TInteractionCoordinates* IC;
 };
 #endif

@@ -585,7 +585,7 @@ void Strasse::ConstructDetector(G4LogicalVolume* world){
  
   // Inner Barrel
   for (unsigned short i = 0 ; i < m_Inner_R.size() ; i++) {
-    G4ThreeVector Det_pos = G4ThreeVector(m_Inner_Shift[i],m_Inner_R[i],m_Inner_Z[i]) ;
+    G4ThreeVector Det_pos = G4ThreeVector(m_Inner_Shift[i],m_Inner_R[i]+0.5*Inner_PCB_Thickness,m_Inner_Z[i]) ;
     Det_pos.rotate(-m_Inner_Phi[i],G4ThreeVector(0,0,1));
     G4RotationMatrix* Rot =  new G4RotationMatrix(0*deg,0*deg,m_Inner_Phi[i]);
 
@@ -596,7 +596,7 @@ void Strasse::ConstructDetector(G4LogicalVolume* world){
 
   // Outer Barrel 
   for (unsigned short i = 0 ; i < m_Outer_R.size() ; i++) {
-    G4ThreeVector Det_pos = G4ThreeVector(m_Outer_Shift[i],m_Outer_R[i],m_Outer_Z[i]) ;
+    G4ThreeVector Det_pos = G4ThreeVector(m_Outer_Shift[i],m_Outer_R[i]+0.5*Inner_PCB_Thickness,m_Outer_Z[i]) ;
     Det_pos.rotate(-m_Outer_Phi[i],G4ThreeVector(0,0,1));
     G4RotationMatrix* Rot =  new G4RotationMatrix(0*deg,0*deg,m_Outer_Phi[i]);
 
@@ -741,7 +741,7 @@ void Strasse::InitializeScorers() {
   // Otherwise the scorer is initialised
   m_Active_InnerWafer_Width= Inner_Wafer_Width-2.*Inner_Wafer_GuardRing;
   m_Active_InnerWafer_Length= 
-  Inner_Wafer_Length-Inner_Wafer_PADExternal-Inner_Wafer_PADInternal-Inner_Wafer_GuardRing;
+  Inner_Wafer_Length-Inner_Wafer_PADExternal-Inner_Wafer_PADInternal-2*Inner_Wafer_GuardRing;
     
 
   G4VPrimitiveScorer* InnerScorer1 = new DSSDScorers::PS_Rectangle("InnerScorer1",2,
@@ -760,7 +760,7 @@ void Strasse::InitializeScorers() {
 
   m_Active_OuterWafer_Width=Outer_Wafer_Width-2.*Outer_Wafer_GuardRing;
   m_Active_OuterWafer_Length=
-  Outer_Wafer_Length-Outer_Wafer_PADExternal-Outer_Wafer_PADInternal-Outer_Wafer_GuardRing;
+  Outer_Wafer_Length-Outer_Wafer_PADExternal-Outer_Wafer_PADInternal-2*Outer_Wafer_GuardRing;
 
 
   G4VPrimitiveScorer* OuterScorer1 = new DSSDScorers::PS_Rectangle("OuterScorer1",2,

@@ -35,6 +35,7 @@ Analysis::~Analysis(){
 
 ////////////////////////////////////////////////////////////////////////////////
 void Analysis::Init(){
+  IC= new TInteractionCoordinates;
   InitOutputBranch();
   InitInputBranch();
   
@@ -61,10 +62,13 @@ void Analysis::InitOutputBranch() {
   RootOutput::getInstance()->GetTree()->Branch("ELab",&ELab,"ELab/D");
   RootOutput::getInstance()->GetTree()->Branch("ThetaLab",&ThetaLab,"ThetaLab/D");
   RootOutput::getInstance()->GetTree()->Branch("ThetaCM",&ThetaCM,"ThetaCM/D");
+  RootOutput::getInstance()->GetTree()->Branch("InteractionCoordinates","TInteractionCoordinates",&IC);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 void Analysis::InitInputBranch(){
+
+    RootInput:: getInstance()->GetChain()->SetBranchAddress("InteractionCoordinates",&IC);
 }
 ////////////////////////////////////////////////////////////////////////////////
 void Analysis::ReInitValue(){

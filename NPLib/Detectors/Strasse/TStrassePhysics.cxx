@@ -55,7 +55,7 @@ ClassImp(TStrassePhysics)
     m_NumberOfInnerDetectors = 0;
     m_NumberOfOuterDetectors = 0;
     m_MaximumStripMultiplicityAllowed = 10;
-    m_StripEnergyMatching = 0.050;
+    m_StripEnergyMatching = 1.00;
 
     ////////////////////
     // Inner Detector //
@@ -110,18 +110,18 @@ ClassImp(TStrassePhysics)
 void TStrassePhysics::AddInnerDetector(double R, double Z, double Phi, double Shift){
   m_NumberOfInnerDetectors++;
   double ActiveWidth  = Inner_Wafer_Width-2.*Inner_Wafer_GuardRing;
-  double ActiveLength = Inner_Wafer_Length-Inner_Wafer_PADExternal-Inner_Wafer_PADInternal-Inner_Wafer_GuardRing;
-  double LongitudinalPitch = ActiveLength/Inner_Wafer_TransverseStrips;
-  double TransversePitch = ActiveWidth/Inner_Wafer_LongitudinalStrips;
-  TVector3 Det_pos(Shift,R,Z) ;
+  double ActiveLength = Inner_Wafer_Length-Inner_Wafer_PADExternal-Inner_Wafer_PADInternal-2*Inner_Wafer_GuardRing;
+  double LongitudinalPitch = ActiveWidth/Inner_Wafer_LongitudinalStrips;
+  double TransversePitch = ActiveLength/Inner_Wafer_TransverseStrips;
+//cout << ActiveWidth << " " << ActiveLength << " " << LongitudinalPitch << " " << TransversePitch << endl;
 
   // Vector C position of detector face center
   TVector3 C(Shift,R,Z);// center of the whole detector, including PCB
-  C.RotateZ(Phi);
+  C.RotateZ(-Phi);
 
   // Vector W normal to detector face (pointing to the back)
   TVector3 W(0,1,0);
-  W.RotateZ(Phi);
+  W.RotateZ(-Phi);
 
   // Vector U on detector face (parallel to Z axis/longitudinal strips) 
   TVector3 U = TVector3(0,0,1);
@@ -131,11 +131,16 @@ void TStrassePhysics::AddInnerDetector(double R, double Z, double Phi, double Sh
   // Adding position for downstream silicon:
   // Moving to corner of the silicon
   TVector3 P_1_1 = C
-    +U*(Inner_PCB_UpstreamWidth-Inner_PCB_DownstreamWidth)
-    +U*(0.5*Inner_PCB_MidWidth+Inner_Wafer_GuardRing+Inner_Wafer_PADInternal)
-    +V*(Inner_PCB_PortWidth-Inner_PCB_StarboardWidth)
-    +V*(0.5*Inner_Wafer_Width-Inner_Wafer_GuardRing);
-
+      +U*0.5*(Inner_PCB_UpstreamWidth-Inner_PCB_DownstreamWidth) // In between wafer
+      -U*0.5*Inner_PCB_MidWidth // Internal wafer edge
+      -U*Inner_Wafer_Length // External wafer edge
+      +U*(Inner_Wafer_GuardRing+Inner_Wafer_PADExternal) // External active wafer edge
+      +U*0.5*TransversePitch // middle of strip
+      -V*0.5*(Inner_PCB_StarboardWidth-Inner_PCB_PortWidth)
+      -V*0.5*Inner_Wafer_Width
+      +V*Inner_Wafer_GuardRing
+      +V*0.5*LongitudinalPitch; // middle of strip
+  
   vector<double> lineX;
   vector<double> lineY;
   vector<double> lineZ;
@@ -146,19 +151,19 @@ void TStrassePhysics::AddInnerDetector(double R, double Z, double Phi, double Sh
 
   TVector3 P;
   for(int i=0; i<Inner_Wafer_TransverseStrips; i++){
-  lineX.clear();
-  lineY.clear();
-  lineZ.clear();
-  for(int j=0; j<Inner_Wafer_LongitudinalStrips; j++){
-  P = P_1_1 + i*U*LongitudinalPitch + j*V*TransversePitch;
-  lineX.push_back(P.X());
-  lineY.push_back(P.Y());
-  lineZ.push_back(P.Z());
-  }
+    lineX.clear();
+    lineY.clear();
+    lineZ.clear();
+    for(int j=0; j<Inner_Wafer_LongitudinalStrips; j++){
+      P = P_1_1 + i*U*TransversePitch + j*V*LongitudinalPitch;
+      lineX.push_back(P.X());
+      lineY.push_back(P.Y());
+      lineZ.push_back(P.Z());
+      }
 
-  OneDetectorStripPositionX.push_back(lineX);
-  OneDetectorStripPositionY.push_back(lineY);
-  OneDetectorStripPositionZ.push_back(lineZ);
+    OneDetectorStripPositionX.push_back(lineX);
+    OneDetectorStripPositionY.push_back(lineY);
+    OneDetectorStripPositionZ.push_back(lineZ);
   }
 
   m_InnerStripPositionX.push_back(OneDetectorStripPositionX);
@@ -168,18 +173,32 @@ void TStrassePhysics::AddInnerDetector(double R, double Z, double Phi, double Sh
   // Adding position for upstream silicon:
   // Moving to corner of the silicon
   P_1_1 = C
-    -U*(Inner_PCB_UpstreamWidth-Inner_PCB_DownstreamWidth)
-    -U*(0.5*Inner_PCB_MidWidth+Inner_Wafer_GuardRing+Inner_Wafer_PADInternal)
-    +V*(Inner_PCB_PortWidth-Inner_PCB_StarboardWidth)
-    +V*(0.5*Inner_Wafer_Width-Inner_Wafer_GuardRing);
+      +U*0.5*(Inner_PCB_UpstreamWidth-Inner_PCB_DownstreamWidth) // In between wafer
+      +U*0.5*Inner_PCB_MidWidth // Internal wafer edge
+      +U*(Inner_Wafer_GuardRing+Inner_Wafer_PADInternal) // Internal active wafer edge
+      +U*0.5*TransversePitch// middle of strip
+      -V*0.5*(Inner_PCB_StarboardWidth-Inner_PCB_PortWidth)
+      -V*0.5*Inner_Wafer_Width
+      +V*Inner_Wafer_GuardRing
+      +V*0.5*LongitudinalPitch; // middle of strip
 
   for(int i=0; i<Inner_Wafer_TransverseStrips; i++){
-  for(int j=0; j<Inner_Wafer_LongitudinalStrips; j++){
-    P = P_1_1 + i*U*LongitudinalPitch - j*V*TransversePitch;
-    m_InnerStripPositionX[m_NumberOfInnerDetectors-1][i].push_back(P.X());
-    m_InnerStripPositionY[m_NumberOfInnerDetectors-1][i].push_back(P.Y());
-    m_InnerStripPositionZ[m_NumberOfInnerDetectors-1][i].push_back(P.Z());
+    lineX.clear();
+    lineY.clear();
+    lineZ.clear();
+
+    for(int j=0; j<Inner_Wafer_LongitudinalStrips; j++){
+      P = P_1_1 + i*U*TransversePitch + j*V*LongitudinalPitch;
+      lineX.push_back(P.X());
+      lineY.push_back(P.Y());
+      lineZ.push_back(P.Z());
+
     }
+
+    m_InnerStripPositionX[m_NumberOfInnerDetectors-1].push_back(lineX);
+    m_InnerStripPositionY[m_NumberOfInnerDetectors-1].push_back(lineY);
+    m_InnerStripPositionZ[m_NumberOfInnerDetectors-1].push_back(lineZ);
+
   }
 }
 
@@ -189,9 +208,10 @@ void TStrassePhysics::AddOuterDetector(double R, double Z, double Phi, double Sh
 
 ///////////////////////////////////////////////////////////////////////////
 TVector3 TStrassePhysics::GetInnerPositionOfInteraction(const int i){
-  TVector3 Position = TVector3(GetInnerStripPositionX(DetectorNumber[i], InnerStripL[i], InnerStripT[i]),
-      GetInnerStripPositionY(DetectorNumber[i], InnerStripL[i], InnerStripT[i]),
-      GetInnerStripPositionZ(DetectorNumber[i], InnerStripL[i], InnerStripT[i]));
+  TVector3 Position = TVector3(
+      GetInnerStripPositionX(DetectorNumber[i], InnerStripT[i], InnerStripL[i]),
+      GetInnerStripPositionY(DetectorNumber[i], InnerStripT[i], InnerStripL[i]),
+      GetInnerStripPositionZ(DetectorNumber[i], InnerStripT[i], InnerStripL[i]));
 
   return Position;
 }
@@ -289,8 +309,6 @@ vector<TVector2> TStrassePhysics::Match_X_Y(){
         // Declaration of variable for clarity
         double TE = m_PreTreatedData->GetInner_TE_Energy(i);
         double LE = m_PreTreatedData->GetInner_LE_Energy(i);
-        double XStripNbr = m_PreTreatedData->GetInner_TE_StripNbr(i);
-        double YStripNbr = m_PreTreatedData->GetInner_LE_StripNbr(i);
 
         // look if energy matches
         if(abs(TE-LE)/2.<m_StripEnergyMatching){
@@ -443,14 +461,6 @@ void TStrassePhysics::ReadAnalysisConfig() {
 void TStrassePhysics::Clear() {
   EventMultiplicity = 0;
 
-  // Position Information
-  InnerPosX.clear();
-  InnerPosY.clear();
-  InnerPosZ.clear();
-  OuterPosX.clear();
-  OuterPosY.clear();
-  OuterPosZ.clear();
-
   // DSSD
   DetectorNumber.clear();
   E.clear();
@@ -459,6 +469,16 @@ void TStrassePhysics::Clear() {
   OuterStripT.clear();
   OuterStripL.clear();
   DE.clear();
+
+  // Position Information
+  InnerPosX.clear();
+  InnerPosY.clear();
+  InnerPosZ.clear();
+  OuterPosX.clear();
+  OuterPosY.clear();
+  OuterPosZ.clear();
+
+
 }
 
 
