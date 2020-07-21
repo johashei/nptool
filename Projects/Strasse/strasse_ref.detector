@@ -89,4 +89,9 @@ Strasse Outer
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%1
 Strasse Chamber
-  Z= 0 mm
+  Z= -30 mm
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Catana Dummy
+ Z= 300 mm
+

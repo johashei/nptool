@@ -43,9 +43,16 @@ Strasse Info
   Outer_PCB_Thickness= 1.6 mm
   Outer_Wafer_TransverseStrips= 605
   Outer_Wafer_LongitudinalStrips= 325
+  % all radius are external, internal deduced from thickness
   Chamber_Thickness= 3 mm
-  Chamber_Length= 500 mm
-  Chamber_Radius= 100 mm
+  Chamber_Cylinder_Length= 360 mm
+  Chamber_Radius= 180 mm
+  Chamber_ExitTube_Radius= 79.5 mm 
+  Chamber_ExitTube_Length= 100 mm
+  Chamber_Flange_Inner_Radius= 50 mm
+  Chamber_Sphere_Radius= 220 mm 
+  Chamber_Sphere_Shift= 60 mm
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%1
 Alias InnerShift
@@ -89,4 +96,9 @@ Strasse Outer
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%1
 Strasse Chamber
-  Z= 0 mm
+  Z= -30 mm
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Catana Dummy
+ Z= 300 mm
+

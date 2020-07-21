@@ -67,11 +67,12 @@ void Analysis::TreatEvent(){
     TVector3 Proton2 = OuterPos2-InnerPos2;
 
     double deltaPhi = abs(Proton1.Phi()/deg-Proton2.Phi()/deg);
-    double sumTheta = Proton1.Theta()/deg+Proton2.Theta()/deg
-    
+    double sumTheta = Proton1.Theta()/deg+Proton2.Theta()/deg;
+    double OpeningAngle = Proton1.Angle(Proton2)/deg;
+   cout << OpeningAngle << endl;  
     // reject event that make no physical sense
     if(deltaPhi<170 && sumTheta<80){
-      return
+      return;
       }
     
     // computing minimum distance of the two lines

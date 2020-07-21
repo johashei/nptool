@@ -25,9 +25,8 @@
 #include <limits>
 //G4 Geometry object
 #include "G4Tubs.hh"
-#include "G4Trap.hh"
 #include "G4Box.hh"
-#include "G4Cons.hh"
+#include "G4Sphere.hh"
 #include "G4UnionSolid.hh"
 #include "G4ExtrudedSolid.hh"
 #include "G4SubtractionSolid.hh"
@@ -115,9 +114,15 @@ namespace Strasse_NS{
   ////////////////////
   // Vacuum Chamber //
   ////////////////////
-  double Chamber_Thickness=3*mm;
-  double Chamber_Length=500*mm;
-  double Chamber_Radius=100*mm;
+  double Chamber_Thickness= 3*mm;
+  double Chamber_Cylinder_Length= 400*mm;
+  double Chamber_Radius= 180*mm;
+  double Chamber_ExitTube_Radius= 79.5*mm ;
+  double Chamber_ExitTube_Length= 100*mm;
+  double Chamber_Flange_Inner_Radius= 150*mm;
+  double Chamber_Sphere_Radius= 220*mm ;
+  double Chamber_Sphere_Shift= 60*mm;
+
 }
 
 using namespace Strasse_NS;
@@ -146,7 +151,7 @@ Strasse::Strasse(){
   // Light Grey
   FrameVisAtt = new G4VisAttributes(G4Colour(0.5, 0.5, 0.5)) ;
   // Space transparent
-  ChamberVisAtt = new G4VisAttributes(G4Colour(0.3, 0.4, 0.5,0.1)) ;
+  ChamberVisAtt = new G4VisAttributes(G4Colour(0.3, 0.4, 0.5,0.2)) ;
   // Light Blue
   GuardRingVisAtt = new G4VisAttributes(G4Colour(0, 0, 0,0.5)) ;
 }
@@ -279,7 +284,7 @@ G4LogicalVolume* Strasse::BuildInnerDetector(){
         false,0);
 
     // Sub volume Active Wafer
-        G4Box*  ActiveWaferShape = new G4Box("InnerActiveWaferShape",
+    G4Box*  ActiveWaferShape = new G4Box("InnerActiveWaferShape",
         0.5*m_Active_InnerWafer_Width,
         0.5*Inner_Wafer_Thickness,
         0.5*m_Active_InnerWafer_Length);
@@ -412,7 +417,7 @@ G4LogicalVolume* Strasse::BuildOuterDetector(){
         false,0);
 
     // Sub volume Active Wafer
-        G4Box*  ActiveWaferShape = new G4Box("OuterActiveWaferShape",
+    G4Box*  ActiveWaferShape = new G4Box("OuterActiveWaferShape",
         0.5*m_Active_OuterWafer_Width,
         0.5*Outer_Wafer_Thickness,
         0.5*m_Active_OuterWafer_Length);
@@ -444,17 +449,74 @@ G4LogicalVolume* Strasse::BuildOuterDetector(){
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 G4LogicalVolume* Strasse::BuildChamber(){
   if(!m_Chamber){
-   G4Tubs* tub = new G4Tubs("StrasseChamberVolume",
-    Chamber_Radius-Chamber_Thickness,
-    Chamber_Radius,Chamber_Length*0.5,
-    0,360*deg);
+    // Needed Element
     G4Material* Material = MaterialManager::getInstance()->GetMaterialFromLibrary("Al");
-    m_Chamber = new G4LogicalVolume(tub,Material,"logic_Strasse_Chamber",0,0,0);
+    G4RotationMatrix* Rot = new G4RotationMatrix();
+
+    // Main Cylinder
+    G4Tubs* Cylinder = new G4Tubs("StrasseCylinderVolume",
+        Chamber_Radius-Chamber_Thickness,
+        Chamber_Radius,Chamber_Cylinder_Length*0.5,
+        0,360*deg);
+    // for substraction
+    G4Tubs* DummyCyl = new G4Tubs("StrasseDummyCylVolume",
+        0,
+        Chamber_Sphere_Radius*1.1,Chamber_Cylinder_Length*0.5,
+        0,360*deg);
+
+
+  //  G4LogicalVolume* ChamberCyl = new G4LogicalVolume(Cyl,Material,"logic_Strasse_Chamber",0,0,0);
+
+    // Entrance Flange
+    G4Tubs* Flange = new G4Tubs("StrasseFlangeVolume",
+        Chamber_Flange_Inner_Radius,
+        Chamber_Radius,1*cm,
+        0,360*deg);
+
+   // G4LogicalVolume* ChamberFlange = new G4LogicalVolume(Flange,Material,"logic_Strasse_Flange",0,0,0);
+
+    // Spherial Portion
+    G4Sphere* Sphere= new G4Sphere("StrasseSphereVolume",
+        Chamber_Sphere_Radius-Chamber_Thickness,
+        Chamber_Sphere_Radius,
+        0,360*deg,
+        0,180*deg);
+    
+    // Exit tube portion
+    G4Tubs* Tube = new G4Tubs("StrasseTubeVolume",
+        Chamber_ExitTube_Radius-Chamber_Thickness,
+        Chamber_ExitTube_Radius,Chamber_ExitTube_Length*0.5,
+        0,360*deg);
+    G4Tubs* DummyTube = new G4Tubs("StrasseDummyTubeVolume",
+        0,
+        Chamber_ExitTube_Radius*0.99,Chamber_ExitTube_Length*0.5,
+        0,360*deg);
+    
+    //Partial Sphere
+    
+    G4SubtractionSolid* Sphere1= new G4SubtractionSolid("Sphere1",Sphere,DummyCyl,
+      Rot,G4ThreeVector(0,0,-Chamber_Sphere_Shift));
+    G4SubtractionSolid* Sphere2= new G4SubtractionSolid("Sphere2",Sphere1,DummyTube,
+      Rot,G4ThreeVector(0,0,Chamber_Sphere_Radius+Chamber_ExitTube_Length*0.5-2*cm));
+    
+    // Building the whole chamber
+    G4UnionSolid* Chamber1= new G4UnionSolid("Chamber1",Cylinder,Flange,
+      Rot,G4ThreeVector(0,0,-Chamber_Cylinder_Length*0.5));
+
+    G4UnionSolid* Chamber2= new G4UnionSolid("Chamber2",Chamber1,Sphere2,
+      Rot,G4ThreeVector(0,0,Chamber_Sphere_Shift));
+
+    G4UnionSolid* Chamber3= new G4UnionSolid("Chamber3",Chamber2,Tube,
+      Rot,G4ThreeVector(0,0,Chamber_Sphere_Shift+Chamber_Sphere_Radius+Chamber_ExitTube_Length*0.5-2*cm));
+
+    m_Chamber = new G4LogicalVolume(Chamber3,Material,"logic_Strasse_Chamber",0,0,0);
+
+
     m_Chamber->SetVisAttributes(ChamberVisAtt);
   }
 
 
-return m_Chamber;
+  return m_Chamber;
 
 }
 
@@ -510,8 +572,13 @@ void Strasse::ReadConfiguration(NPL::InputParser parser){
     "Outer_Wafer_TransverseStrips",
     "Outer_Wafer_LongitudinalStrips",
     "Chamber_Thickness",
-    "Chamber_Length",
-    "Chamber_Radius"
+    "Chamber_Cylinder_Length",
+    "Chamber_Radius",
+    "Chamber_ExitTube_Radius",
+    "Chamber_ExitTube_Length",
+    "Chamber_Flange_Inner_Radius",
+    "Chamber_Sphere_Radius",
+    "Chamber_Sphere_Shift"
   };
 
   if(blocks_info[0]->HasTokenList(info)){
@@ -549,8 +616,13 @@ void Strasse::ReadConfiguration(NPL::InputParser parser){
     Outer_PCB_MidWidth = blocks_info[0]->GetDouble("Outer_PCB_MidWidth","mm");        
     Outer_PCB_Thickness = blocks_info[0]->GetDouble("Outer_PCB_Thickness","mm");       
     Chamber_Thickness= blocks_info[0]->GetDouble("Chamber_Thickness","mm"); 
-    Chamber_Length= blocks_info[0]->GetDouble("Chamber_Length","mm");        
+    Chamber_Cylinder_Length= blocks_info[0]->GetDouble("Chamber_Cylinder_Length","mm");        
     Chamber_Radius= blocks_info[0]->GetDouble("Chamber_Radius","mm");       
+    Chamber_ExitTube_Radius=blocks_info[0]->GetDouble("Chamber_ExitTube_Radius","mm");
+    Chamber_ExitTube_Length=blocks_info[0]->GetDouble("Chamber_ExitTube_Length","mm");
+    Chamber_Flange_Inner_Radius=blocks_info[0]->GetDouble("Chamber_Flange_Inner_Radius","mm");
+    Chamber_Sphere_Radius=blocks_info[0]->GetDouble("Chamber_Sphere_Radius","mm");
+    Chamber_Sphere_Shift=blocks_info[0]->GetDouble("Chamber_Sphere_Shift","mm");
   }
 
   else{
@@ -605,7 +677,7 @@ void Strasse::ReadConfiguration(NPL::InputParser parser){
       exit(1);
     }
   }
-  
+
   // Chamber
   vector<std::string> token = {"Z"};
   vector<NPL::InputBlock*> blocks_chamber = parser.GetAllBlocksWithTokenAndValue("Strasse","Chamber");
@@ -636,7 +708,7 @@ void Strasse::ReadConfiguration(NPL::InputParser parser){
 // Construct detector and inialise sensitive part.
 // Called After DetecorConstruction::AddDetector Method
 void Strasse::ConstructDetector(G4LogicalVolume* world){
- 
+
   // Inner Barrel
   for (unsigned short i = 0 ; i < m_Inner_R.size() ; i++) {
     G4ThreeVector Det_pos = G4ThreeVector(m_Inner_Shift[i],m_Inner_R[i]+0.5*Inner_PCB_Thickness,m_Inner_Z[i]) ;
@@ -661,7 +733,7 @@ void Strasse::ConstructDetector(G4LogicalVolume* world){
 
   // Chamber 
   for (unsigned short i = 0 ; i < m_Chamber_Z.size() ; i++) {
-    G4ThreeVector Det_pos = G4ThreeVector(0,0,m_Chamber_Z[i]) ;
+    G4ThreeVector Det_pos = G4ThreeVector(0,0,-m_Chamber_Z[i]) ;
     G4RotationMatrix* Rot =  new G4RotationMatrix();
 
     new G4PVPlacement(G4Transform3D(*Rot,Det_pos),
@@ -700,7 +772,7 @@ void Strasse::ReadSensitive(const G4Event* ){
       m_Event->SetInnerTE(DetNbr, StripTransverse, Energy);
     }
   }
-  
+
   size = InnerScorer1->GetLengthMult(); 
   for(unsigned int i = 0 ; i < size ; i++){
     double Energy = RandGauss::shoot(InnerScorer1->GetEnergyLength(i), ResoEnergy);   
@@ -734,9 +806,9 @@ void Strasse::ReadSensitive(const G4Event* ){
     }
   }
   InnerScorer2->clear();
-  
 
-  
+
+
   ///////////
   // Outer barrel scorer
   DSSDScorers::PS_Rectangle* OuterScorer1= (DSSDScorers::PS_Rectangle*) m_OuterScorer1->GetPrimitive(0);
@@ -797,15 +869,14 @@ void Strasse::InitializeScorers() {
   m_InnerScorer2 = CheckScorer("InnerScorer2",already_exist) ;
   m_OuterScorer2 = CheckScorer("OuterScorer2",already_exist) ;
 
-
   if(already_exist) 
     return ;
 
   // Otherwise the scorer is initialised
   m_Active_InnerWafer_Width= Inner_Wafer_Width-2.*Inner_Wafer_GuardRing;
   m_Active_InnerWafer_Length= 
-  Inner_Wafer_Length-Inner_Wafer_PADExternal-Inner_Wafer_PADInternal-2*Inner_Wafer_GuardRing;
-    
+    Inner_Wafer_Length-Inner_Wafer_PADExternal-Inner_Wafer_PADInternal-2*Inner_Wafer_GuardRing;
+
 
   G4VPrimitiveScorer* InnerScorer1 = new DSSDScorers::PS_Rectangle("InnerScorer1",2,
       m_Active_InnerWafer_Width,
@@ -820,10 +891,9 @@ void Strasse::InitializeScorers() {
       Inner_Wafer_TransverseStrips,0,"xz");
 
 
-
   m_Active_OuterWafer_Width=Outer_Wafer_Width-2.*Outer_Wafer_GuardRing;
   m_Active_OuterWafer_Length=
-  Outer_Wafer_Length-Outer_Wafer_PADExternal-Outer_Wafer_PADInternal-2*Outer_Wafer_GuardRing;
+    Outer_Wafer_Length-Outer_Wafer_PADExternal-Outer_Wafer_PADInternal-2*Outer_Wafer_GuardRing;
 
 
   G4VPrimitiveScorer* OuterScorer1 = new DSSDScorers::PS_Rectangle("OuterScorer1",2,

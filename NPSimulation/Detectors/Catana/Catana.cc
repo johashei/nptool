@@ -60,9 +60,9 @@ namespace Catana_NS{
   const double EnergyThreshold = 0.1*MeV;
   const double ResoTime = 4.5*ns ;
   const double ResoEnergy = 1.0*MeV ;
-  double DummyInnerRadius = 80*mm ; 
-  double DummyOuterRadius = 160*mm ; 
-  double Length = 200*mm ;
+  double DummyInnerRadius = 200*mm ; 
+  double DummyOuterRadius = 600*mm ; 
+  double Length = 600*mm ;
   string Material = "CsI";
 }
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -75,7 +75,7 @@ Catana::Catana(){
   m_DummyDetector = 0;
 
   // RGB Color + Transparency
-  m_VisCrystal = new G4VisAttributes(G4Colour(1, 0.8, 0, 0.5));   
+  m_VisCrystal = new G4VisAttributes(G4Colour(1, 0.8, 0, 0.2));   
 
 }
 
