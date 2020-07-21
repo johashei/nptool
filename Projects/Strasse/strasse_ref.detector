@@ -43,6 +43,9 @@ Strasse Info
   Outer_PCB_Thickness= 1.6 mm
   Outer_Wafer_TransverseStrips= 605
   Outer_Wafer_LongitudinalStrips= 325
+  Chamber_Thickness= 3 mm
+  Chamber_Length= 500 mm
+  Chamber_Radius= 100 mm
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%1
 Alias InnerShift
@@ -84,3 +87,6 @@ Strasse Outer
   Phi= @OuterPhi deg
   Shift= @OuterShift mm
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%1
+Strasse Chamber
+  Z= 0 mm

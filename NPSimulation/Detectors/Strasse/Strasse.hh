@@ -52,6 +52,7 @@ class Strasse : public NPS::VDetector{
     // Cylindrical coordinate
     void AddInnerDetector(double R,double Z,double Phi, double Shift);  
     void AddOuterDetector(double R,double Z,double Phi, double Shift);  
+    void AddChamber(double Z);
 
     G4LogicalVolume* BuildInnerDetector();
     G4LogicalVolume* BuildOuterDetector();
@@ -136,6 +137,7 @@ class Strasse : public NPS::VDetector{
     vector<double>  m_Outer_Phi; 
     vector<double>  m_Outer_Shift; 
 
+    vector<double>  m_Chamber_Z;
 
     // Visualisation Attribute
     //G4VisAttributes* m_VisTrap;
@@ -146,15 +148,11 @@ class Strasse : public NPS::VDetector{
 
 
   private: // Visualisation
-    // Dark Grey
     G4VisAttributes* SiliconVisAtt  ;
-    // Green
     G4VisAttributes* PCBVisAtt;
-    // Gold Yellow
     G4VisAttributes* PADVisAtt  ;
-    // Light Grey
     G4VisAttributes* FrameVisAtt ;
-    // Light Blue
+    G4VisAttributes* ChamberVisAtt ;
     G4VisAttributes* GuardRingVisAtt ;
 
 

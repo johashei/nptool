@@ -112,7 +112,12 @@ namespace Strasse_NS{
   double Outer_Wafer_TransverseStrips= 128;
   double Outer_Wafer_LongitudinalStrips= 128;
 
-
+  ////////////////////
+  // Vacuum Chamber //
+  ////////////////////
+  double Chamber_Thickness=3*mm;
+  double Chamber_Length=500*mm;
+  double Chamber_Radius=100*mm;
 }
 
 using namespace Strasse_NS;
@@ -140,6 +145,8 @@ Strasse::Strasse(){
   PADVisAtt = new G4VisAttributes(G4Colour(0.5, 0.5, 0.2)) ;
   // Light Grey
   FrameVisAtt = new G4VisAttributes(G4Colour(0.5, 0.5, 0.5)) ;
+  // Space transparent
+  ChamberVisAtt = new G4VisAttributes(G4Colour(0.3, 0.4, 0.5,0.1)) ;
   // Light Blue
   GuardRingVisAtt = new G4VisAttributes(G4Colour(0, 0, 0,0.5)) ;
 }
@@ -162,6 +169,10 @@ void Strasse::AddOuterDetector(double  R, double  Z, double  Phi, double Shift){
   m_Outer_Z.push_back(Z);
   m_Outer_Phi.push_back(Phi);
   m_Outer_Shift.push_back(Shift);
+}
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+void Strasse::AddChamber(double  Z){
+  m_Chamber_Z.push_back(Z);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -430,6 +441,22 @@ G4LogicalVolume* Strasse::BuildOuterDetector(){
   return m_OuterDetector;
 }
 
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+G4LogicalVolume* Strasse::BuildChamber(){
+  if(!m_Chamber){
+   G4Tubs* tub = new G4Tubs("StrasseChamberVolume",
+    Chamber_Radius-Chamber_Thickness,
+    Chamber_Radius,Chamber_Length*0.5,
+    0,360*deg);
+    G4Material* Material = MaterialManager::getInstance()->GetMaterialFromLibrary("Al");
+    m_Chamber = new G4LogicalVolume(tub,Material,"logic_Strasse_Chamber",0,0,0);
+    m_Chamber->SetVisAttributes(ChamberVisAtt);
+  }
+
+
+return m_Chamber;
+
+}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -481,7 +508,10 @@ void Strasse::ReadConfiguration(NPL::InputParser parser){
     "Outer_PCB_MidWidth",       
     "Outer_PCB_Thickness",      
     "Outer_Wafer_TransverseStrips",
-    "Outer_Wafer_LongitudinalStrips"
+    "Outer_Wafer_LongitudinalStrips",
+    "Chamber_Thickness",
+    "Chamber_Length",
+    "Chamber_Radius"
   };
 
   if(blocks_info[0]->HasTokenList(info)){
@@ -518,7 +548,9 @@ void Strasse::ReadConfiguration(NPL::InputParser parser){
     Outer_PCB_DownstreamWidth = blocks_info[0]->GetDouble("Outer_PCB_DownstreamWidth","mm"); 
     Outer_PCB_MidWidth = blocks_info[0]->GetDouble("Outer_PCB_MidWidth","mm");        
     Outer_PCB_Thickness = blocks_info[0]->GetDouble("Outer_PCB_Thickness","mm");       
-
+    Chamber_Thickness= blocks_info[0]->GetDouble("Chamber_Thickness","mm"); 
+    Chamber_Length= blocks_info[0]->GetDouble("Chamber_Length","mm");        
+    Chamber_Radius= blocks_info[0]->GetDouble("Chamber_Radius","mm");       
   }
 
   else{
@@ -573,6 +605,28 @@ void Strasse::ReadConfiguration(NPL::InputParser parser){
       exit(1);
     }
   }
+  
+  // Chamber
+  vector<std::string> token = {"Z"};
+  vector<NPL::InputBlock*> blocks_chamber = parser.GetAllBlocksWithTokenAndValue("Strasse","Chamber");
+  if(NPOptionManager::getInstance()->GetVerboseLevel())
+    cout << "//// " << blocks_chamber.size() << " chamber detectors found " << endl; 
+
+  for(unsigned int i = 0 ; i < blocks_chamber.size() ; i++){
+    if(blocks_chamber[i]->HasTokenList(token)){
+      if(NPOptionManager::getInstance()->GetVerboseLevel())
+        cout << endl << "////  Strasse chamber detector" << i+1 <<  endl;
+
+      double Z= blocks_chamber[i]->GetDouble("Z","mm");
+      AddChamber(Z);
+    }
+    else{
+
+      cout << "ERROR: check your input file formatting on " << i+1 << " chamber block " <<endl;
+      exit(1);
+    }
+  }
+
 
 }
 
@@ -605,6 +659,15 @@ void Strasse::ConstructDetector(G4LogicalVolume* world){
         "Strasse",world,false,i+1);
   }
 
+  // Chamber 
+  for (unsigned short i = 0 ; i < m_Chamber_Z.size() ; i++) {
+    G4ThreeVector Det_pos = G4ThreeVector(0,0,m_Chamber_Z[i]) ;
+    G4RotationMatrix* Rot =  new G4RotationMatrix();
+
+    new G4PVPlacement(G4Transform3D(*Rot,Det_pos),
+        BuildChamber(),
+        "Strasse",world,false,i+1);
+  }
 }
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 // Add Detector branch to the EventTree.
