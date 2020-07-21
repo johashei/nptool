@@ -1,5 +1,5 @@
-#ifndef Strasse_h
-#define Strasse_h 1
+#ifndef Catana_h
+#define Catana_h 1
 /*****************************************************************************
  * Copyright (C) 2009-2020   this file is part of the NPTool Project         *
  *                                                                           *
@@ -8,13 +8,13 @@
  *****************************************************************************/
 
 /*****************************************************************************
- * Original Author: A. Matta  contact address: matta@lpccaen.in2p3.fr        *
+ * Original Author: Adrien Matta  contact address: matta@lpccaen.in2p3.fr    *
  *                                                                           *
  * Creation Date  : July 2020                                                *
  * Last update    :                                                          *
  *---------------------------------------------------------------------------*
  * Decription:                                                               *
- *  This class describe  Strasse simulation                                  *
+ *  This class describe  Catana simulation                                   *
  *                                                                           *
  *---------------------------------------------------------------------------*
  * Comment:                                                                  *
@@ -34,58 +34,30 @@ using namespace std;
 
 // NPTool header
 #include "NPSVDetector.hh"
-#include "TStrasseData.h"
+#include "TCatanaData.h"
 #include "NPInputParser.h"
 
-class Strasse : public NPS::VDetector{
+class Catana : public NPS::VDetector{
   ////////////////////////////////////////////////////
   /////// Default Constructor and Destructor /////////
   ////////////////////////////////////////////////////
   public:
-    Strasse() ;
-    virtual ~Strasse() ;
+    Catana() ;
+    virtual ~Catana() ;
 
     ////////////////////////////////////////////////////
     /////// Specific Function of this Class ///////////
     ////////////////////////////////////////////////////
   public:
-    // Cylindrical coordinate
-    void AddInnerDetector(double R,double Z,double Phi, double Shift);  
-    void AddOuterDetector(double R,double Z,double Phi, double Shift);  
-    void AddChamber(double Z);
+    // Cartesian
+    void AddDummyDetector(double Z);
 
-    G4LogicalVolume* BuildInnerDetector();
-    G4LogicalVolume* BuildOuterDetector();
-    G4LogicalVolume* BuildElectronic();
-    G4LogicalVolume* BuildFrame();
-    G4LogicalVolume* BuildChamber();
 
+    G4LogicalVolume* BuildDummyDetector();
+  
   private:
-    G4LogicalVolume* m_InnerDetector;
-    G4LogicalVolume* m_OuterDetector;
-    G4LogicalVolume* m_Electronic;
-    G4LogicalVolume* m_Frame;
-    G4LogicalVolume* m_Chamber;
-
-
-  private:
-    //    Initialize material used in detector definition
-    void InitializeMaterial();
-
-
-    //   List of material
-    G4Material* m_MaterialSilicon ;
-    G4Material* m_MaterialAl      ;
-    G4Material* m_MaterialVacuum  ;
-    G4Material* m_MaterialPCB     ;
-
-    // calculated dimension
-    double m_Active_InnerWafer_Width;
-    double m_Active_InnerWafer_Length; 
-    double m_Active_OuterWafer_Width;
-    double m_Active_OuterWafer_Length; 
-
-
+    G4LogicalVolume* m_DummyDetector;
+    
     ////////////////////////////////////////////////////
     //////  Inherite from NPS::VDetector class /////////
     ////////////////////////////////////////////////////
@@ -111,50 +83,25 @@ class Strasse : public NPS::VDetector{
     void InitializeScorers() ;
 
     //   Associated Scorer
-    G4MultiFunctionalDetector* m_InnerScorer1 ;
-    G4MultiFunctionalDetector* m_OuterScorer1 ;
-    G4MultiFunctionalDetector* m_InnerScorer2 ;
-    G4MultiFunctionalDetector* m_OuterScorer2 ;
-
+    G4MultiFunctionalDetector* m_CatanaScorer ;
     ////////////////////////////////////////////////////
     ///////////Event class to store Data////////////////
     ////////////////////////////////////////////////////
   private:
-    TStrasseData* m_Event ;
+    TCatanaData* m_Event ;
 
     ////////////////////////////////////////////////////
     ///////////////Private intern Data//////////////////
     ////////////////////////////////////////////////////
   private: // Geometry
     // Detector Coordinate 
-    vector<double>  m_Inner_R; 
-    vector<double>  m_Inner_Z;
-    vector<double>  m_Inner_Phi; 
-    vector<double>  m_Inner_Shift; 
-
-    vector<double>  m_Outer_R; 
-    vector<double>  m_Outer_Z;
-    vector<double>  m_Outer_Phi; 
-    vector<double>  m_Outer_Shift; 
-
-    vector<double>  m_Chamber_Z;
-
+    vector<double>  m_Z; 
+    
     // Visualisation Attribute
-    //G4VisAttributes* m_VisTrap;
+    G4VisAttributes* m_VisCrystal;
 
-    // Needed for dynamic loading of the library
+  // Needed for dynamic loading of the library
   public:
     static NPS::VDetector* Construct();
-
-
-  private: // Visualisation
-    G4VisAttributes* SiliconVisAtt  ;
-    G4VisAttributes* PCBVisAtt;
-    G4VisAttributes* PADVisAtt  ;
-    G4VisAttributes* FrameVisAtt ;
-    G4VisAttributes* ChamberVisAtt ;
-    G4VisAttributes* GuardRingVisAtt ;
-
-
 };
 #endif
