@@ -30,20 +30,14 @@ void Control(){
   cVertex->Divide(2,2);
   cond = "VertexX!=-1000";
   cVertex->cd(1);
-  PhysicsTree->Draw("VertexX:fRC_Vertex_Position_X",cond.c_str(),"col") ; 
-  TLine* lx = new TLine(-15,-15,15,15);
-  lx->Draw();
+  PhysicsTree->Draw("VertexX-fRC_Vertex_Position_X>>hx(500,-1,1)",cond.c_str(),"col") ; 
   cVertex->cd(2);
-  PhysicsTree->Draw("VertexY:fRC_Vertex_Position_Y",cond.c_str(),"col") ; 
-  TLine* ly = new TLine(-15,-15,15,15);
-  ly->Draw();
+  PhysicsTree->Draw("VertexY-fRC_Vertex_Position_Y>>hy(500,-1,1)",cond.c_str(),"col") ; 
   cVertex->cd(3);
-  PhysicsTree->Draw("VertexZ:fRC_Vertex_Position_Z",cond.c_str(),"col") ; 
-  TLine* lz = new TLine(-80,-80,80,80);
-  lz->Draw();
+  PhysicsTree->Draw("VertexZ-fRC_Vertex_Position_Z>>hz(500,-1,1)",cond.c_str(),"col") ; 
   cVertex->cd(4);
 
-  PhysicsTree->Draw("Distance", cond.c_str(),"");            
+  PhysicsTree->Draw("Distance>>hd(500,0,2)", cond.c_str(),"");            
   //PhysicsTree->Draw("VertexY:VertexX:VertexZ", cond.c_str(),"");            
 
 
