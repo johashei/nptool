@@ -387,12 +387,12 @@ G4LogicalVolume* Catana::BuildDetectorType3(){
   G4RotationMatrix* Rot= new G4RotationMatrix();
   // -- Al housing outside --
   //
-  double Dz = 107/2.*mm;
-  double Dy1 = 34.9/2.*mm;
-  double Dy2 = 55.4/2.*mm;//measured by ruler
-  double Dx1 = 57.1/2.*mm;
-  double Dx2 = 63.6/2.*mm;
-  double Dx3 = 84.5/2.*mm;//measured by ruler
+  double Dz = 127/2.*mm;
+  double Dy1 = 38.3/2.*mm;
+  double Dy2 = 64.7/2.*mm;
+  double Dx1 = 49.7/2.*mm;
+  double Dx2 = 58.5/2.*mm;
+  double Dx3 = 74.9/2.*mm;
   double Dx4 = Dx3 + (Dy2/Dy1)*(Dx2-Dx1);//planarity condition
   double Theta = 0.*deg;
   double Phi = 0.*deg;
@@ -414,14 +414,14 @@ G4LogicalVolume* Catana::BuildDetectorType3(){
 					Dx4, Alp2);
 
   // -- Al housing inside --
-  Dz  -= 0.5*mm;
+  Dz = 127./2.*mm;
   Dy1 -= 0.5*mm;
   Dy2 -= 0.5*mm;
   Dx1 -= 0.5*mm;
   Dx2 -= 0.5*mm;
   Dx3 -= 0.5*mm;
-
   Dx4 = Dx3 + (Dy2/Dy1)*(Dx2-Dx1);//planarity condition
+
   G4Trap* solidHousingIN3 = new G4Trap("solidHousingIN3",Dz, Theta, Phi,
 				       Dy1, Dx1, Dx2, Alp1, Dy2, Dx3,
 				       Dx4, Alp2);
@@ -441,7 +441,7 @@ G4LogicalVolume* Catana::BuildDetectorType3(){
           "CatanaHousingType3",m_DetectorType3,false,0);
 
   // -- Crystal -- 
-  Dz = 103./2.*mm;
+  Dz = 123./2.*mm;
   Dy1 -= 2.*mm;
   Dy2 -= 2.*mm;
   Dx1 -= 2.*mm;
