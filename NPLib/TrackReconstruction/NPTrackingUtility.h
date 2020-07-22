@@ -25,11 +25,8 @@ namespace NPL{
   double MinimumDistance(const TVector3& v1,const TVector3& v2, const TVector3& w1, const TVector3& w2, TVector3& BestPosition){
   TVector3 v = v2-v1;
   TVector3 w = w2-w1;
-  // let be n perpendicular to both line
-  TVector3 n = v.Cross(w);
-
   // Finding best position
-  TVector3 e = v2-w2;
+  TVector3 e = v1-w1;
   double A = -(v.Mag2()*w.Mag2()-(v.Dot(w)*v.Dot(w)));
   double s = (-v.Mag2()*(w.Dot(e))+(v.Dot(e))*(w.Dot(v)))/A;
   double t = (w.Mag2()*(v.Dot(e))-(w.Dot(e)*w.Dot(v)))/A;

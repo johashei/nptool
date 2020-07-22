@@ -26,6 +26,7 @@ using namespace std;
 #include"NPDetectorManager.h"
 #include"NPOptionManager.h"
 #include"NPFunction.h"
+#include"NPTrackingUtility.h"
 ////////////////////////////////////////////////////////////////////////////////
 Analysis::Analysis(){
 }
@@ -76,9 +77,11 @@ void Analysis::TreatEvent(){
       }
     
     // computing minimum distance of the two lines
-    TVector3 a;
-    TVector3 b;
-    
+    TVector3 Vertex;
+    Distance = NPL::MinimumDistance(InnerPos1,OuterPos1,InnerPos2,OuterPos2,Vertex);
+    VertexX=Vertex.X();
+    VertexY=Vertex.Y();
+    VertexZ=Vertex.Z();
     }
 }
 
@@ -91,6 +94,10 @@ void Analysis::InitOutputBranch() {
   RootOutput::getInstance()->GetTree()->Branch("ELab",&ELab,"ELab/D");
   RootOutput::getInstance()->GetTree()->Branch("ThetaLab",&ThetaLab,"ThetaLab/D");
   RootOutput::getInstance()->GetTree()->Branch("ThetaCM",&ThetaCM,"ThetaCM/D");
+  RootOutput::getInstance()->GetTree()->Branch("VerteX",&VertexX,"VertexX/D");
+  RootOutput::getInstance()->GetTree()->Branch("VerteY",&VertexY,"VertexY/D");
+  RootOutput::getInstance()->GetTree()->Branch("VerteZ",&VertexZ,"VertexZ/D");
+  RootOutput::getInstance()->GetTree()->Branch("Distance",&Distance,"Distance/D");
   RootOutput::getInstance()->GetTree()->Branch("InteractionCoordinates","TInteractionCoordinates",&DC);
   RootOutput::getInstance()->GetTree()->Branch("ReactionConditions","TReactionConditions",&RC);
 }
@@ -109,6 +116,7 @@ void Analysis::ReInitValue(){
   VertexX=-1000;
   VertexY=-1000;
   VertexZ=-1000;
+  Distance=-1000;
 }
 
 
