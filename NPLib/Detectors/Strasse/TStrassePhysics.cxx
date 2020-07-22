@@ -353,12 +353,11 @@ void TStrassePhysics::BuildSimplePhysicalEvent() {
 void TStrassePhysics::BuildPhysicalEvent() {
   // apply thresholds and calibration
   PreTreat();
-  
+ 
     if(1 /*CheckEvent() == 1*/){
       vector<TVector2> inner = MatchInner();
       vector<TVector2> outer = MatchOuter();
   
-      
       for(unsigned int i=0; i<inner.size(); i++){
         int N = m_PreTreatedData->GetInner_TE_DetectorNbr(inner[i].X());
         int innerT = m_PreTreatedData->GetInner_TE_StripNbr(inner[i].X());
@@ -383,19 +382,19 @@ void TStrassePhysics::BuildPhysicalEvent() {
           InnerStripT.push_back(innerT);
           InnerStripL.push_back(innerL);
           DE.push_back(TE);
-          InnerPosX.push_back(GetInnerPositionOfInteraction(i).x());
-          InnerPosY.push_back(GetInnerPositionOfInteraction(i).y());
-          InnerPosZ.push_back(GetInnerPositionOfInteraction(i).z());
+          InnerPosX.push_back(GetInnerPositionOfInteraction(EventMultiplicity-1).x());
+          InnerPosY.push_back(GetInnerPositionOfInteraction(EventMultiplicity-1).y());
+          InnerPosZ.push_back(GetInnerPositionOfInteraction(EventMultiplicity-1).z());
 
           OuterStripT.push_back(outerT);
           OuterStripL.push_back(outerL);
           E.push_back(outerE);
-          OuterPosX.push_back(GetOuterPositionOfInteraction(i).x());
-          OuterPosY.push_back(GetOuterPositionOfInteraction(i).y());
-          OuterPosZ.push_back(GetOuterPositionOfInteraction(i).z());
+          OuterPosX.push_back(GetOuterPositionOfInteraction(EventMultiplicity-1).x());
+          OuterPosY.push_back(GetOuterPositionOfInteraction(EventMultiplicity-1).y());
+          OuterPosZ.push_back(GetOuterPositionOfInteraction(EventMultiplicity-1).z());
         }
-      }
 
+      }
     }
    
 }
