@@ -92,16 +92,22 @@ void Catana::AddDummyDetector(double Z){
   m_Z.push_back(Z);
 }
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-void Catana::AddDetectorType1(double Z){
-  m_Z1.push_back(Z);
+void Catana::AddDetectorType1(double R, double Theta, double Phi){
+  m_R1.push_back(R);
+  m_Theta1.push_back(Theta);
+  m_Phi1.push_back(Phi);
 }
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-void Catana::AddDetectorType2(double Z){
-  m_Z2.push_back(Z);
+void Catana::AddDetectorType2(double R, double Theta, double Phi){
+  m_R2.push_back(R);
+  m_Theta2.push_back(Theta);
+  m_Phi2.push_back(Phi);
 }
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-void Catana::AddDetectorType3(double Z){
-  m_Z3.push_back(Z);
+void Catana::AddDetectorType3(double R, double Theta, double Phi){
+  m_R3.push_back(R);
+  m_Theta3.push_back(Theta);
+  m_Phi3.push_back(Phi);
 }
 
 
@@ -534,14 +540,16 @@ void Catana::ReadConfiguration(NPL::InputParser parser){
   if(NPOptionManager::getInstance()->GetVerboseLevel())
     cout << "//// " << blocks.size() << " detectors found " << endl; 
 
-  token = {"Z"};
+  token = {"R","Theta","Phi"};
 
   for(unsigned int i = 0 ; i < blocks.size() ; i++){
     if(blocks[i]->HasTokenList(token)){
       if(NPOptionManager::getInstance()->GetVerboseLevel())
         cout << endl << "////  Catana " << i+1 <<  endl;
-      double Z = blocks[i]->GetDouble("Z","mm");
-      AddDetectorType1(Z);
+      double R = blocks[i]->GetDouble("R","mm");
+      double Theta = blocks[i]->GetDouble("Theta","deg");
+      double Phi = blocks[i]->GetDouble("Phi","deg");
+      AddDetectorType1(R,Theta,Phi);
     }
     else{
       cout << "ERROR: check your input file formatting " << endl;
@@ -553,14 +561,14 @@ void Catana::ReadConfiguration(NPL::InputParser parser){
   if(NPOptionManager::getInstance()->GetVerboseLevel())
     cout << "//// " << blocks.size() << " detectors found " << endl; 
 
-  token = {"Z"};
-
   for(unsigned int i = 0 ; i < blocks.size() ; i++){
     if(blocks[i]->HasTokenList(token)){
       if(NPOptionManager::getInstance()->GetVerboseLevel())
         cout << endl << "////  Catana " << i+1 <<  endl;
-      double Z = blocks[i]->GetDouble("Z","mm");
-      AddDetectorType2(Z);
+      double R = blocks[i]->GetDouble("R","mm");
+      double Theta = blocks[i]->GetDouble("Theta","deg");
+      double Phi = blocks[i]->GetDouble("Phi","deg");
+      AddDetectorType2(R,Theta,Phi);
     }
     else{
       cout << "ERROR: check your input file formatting " << endl;
@@ -572,14 +580,15 @@ void Catana::ReadConfiguration(NPL::InputParser parser){
   if(NPOptionManager::getInstance()->GetVerboseLevel())
     cout << "//// " << blocks.size() << " detectors found " << endl; 
 
-  token = {"Z"};
-
   for(unsigned int i = 0 ; i < blocks.size() ; i++){
     if(blocks[i]->HasTokenList(token)){
       if(NPOptionManager::getInstance()->GetVerboseLevel())
         cout << endl << "////  Catana " << i+1 <<  endl;
-      double Z = blocks[i]->GetDouble("Z","mm");
-      AddDetectorType2(Z);
+      double R = blocks[i]->GetDouble("R","mm");
+      double Theta = blocks[i]->GetDouble("Theta","deg");
+      double Phi = blocks[i]->GetDouble("Phi","deg");
+      AddDetectorType3(R,Theta,Phi);
+
     }
     else{
       cout << "ERROR: check your input file formatting " << endl;
@@ -595,32 +604,44 @@ void Catana::ReadConfiguration(NPL::InputParser parser){
 // Construct detector and inialise sensitive part.
 // Called After DetecorConstruction::AddDetector Method
 void Catana::ConstructDetector(G4LogicalVolume* world){
-  for (unsigned short i = 0 ; i < m_Z1.size() ; i++) {
+  for (unsigned short i = 0 ; i < m_R1.size() ; i++) {
 
-    G4ThreeVector Det_pos = G4ThreeVector(0,0,m_Z1[i]) ;
+    G4ThreeVector Det_pos = G4ThreeVector(0,0,m_R1[i]) ;
+    Det_pos.setTheta(m_Theta1[i]);
+    Det_pos.setPhi(m_Phi1[i]);
     G4RotationMatrix* Rot = new G4RotationMatrix();
+    Rot->rotateY(m_Theta1[i]);
+    Rot->rotateZ(m_Phi1[i]);
     new G4PVPlacement(G4Transform3D(*Rot,Det_pos),
           BuildDetectorType1(),
           "CatanaType1",world,false,i+1);
   }
- for (unsigned short i = 0 ; i < m_Z2.size() ; i++) {
+  
+  for (unsigned short i = 0 ; i < m_R2.size() ; i++) {
 
-    G4ThreeVector Det_pos = G4ThreeVector(0,0,m_Z2[i]) ;
+    G4ThreeVector Det_pos = G4ThreeVector(0,0,m_R2[i]) ;
+    Det_pos.setTheta(m_Theta2[i]);
+    Det_pos.setPhi(m_Phi2[i]);
     G4RotationMatrix* Rot = new G4RotationMatrix();
+    Rot->rotateY(m_Theta2[i]);
+    Rot->rotateZ(m_Phi2[i]);
     new G4PVPlacement(G4Transform3D(*Rot,Det_pos),
           BuildDetectorType2(),
-          "CatanaType2",world,false,i+1);
+          "CatanaType2",world,false,i+2);
   }
   
- for (unsigned short i = 0 ; i < m_Z3.size() ; i++) {
+  for (unsigned short i = 0 ; i < m_R3.size() ; i++) {
 
-    G4ThreeVector Det_pos = G4ThreeVector(0,0,m_Z3[i]) ;
+    G4ThreeVector Det_pos = G4ThreeVector(0,0,m_R3[i]) ;
+    Det_pos.setTheta(m_Theta3[i]);
+    Det_pos.setPhi(m_Phi3[i]);
     G4RotationMatrix* Rot = new G4RotationMatrix();
+    Rot->rotateY(m_Theta3[i]);
+    Rot->rotateZ(m_Phi3[i]);
     new G4PVPlacement(G4Transform3D(*Rot,Det_pos),
           BuildDetectorType3(),
-          "CatanaType2",world,false,i+1);
+          "CatanaType3",world,false,i+3);
   }
-
 
 }
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

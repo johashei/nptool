@@ -51,10 +51,9 @@ class Catana : public NPS::VDetector{
   public:
     // Cartesian
     void AddDummyDetector(double Z);
-    void AddDetectorType1(double Z);
-    void AddDetectorType2(double Z);
-    void AddDetectorType3(double Z);
-
+    void AddDetectorType1(double R, double Theta, double Phi);
+    void AddDetectorType2(double R, double Theta, double Phi);
+    void AddDetectorType3(double R, double Theta, double Phi);
 
     G4LogicalVolume* BuildDummyDetector();
     G4LogicalVolume* BuildDetectorType1();
@@ -104,14 +103,16 @@ class Catana : public NPS::VDetector{
   private: // Geometry
     // Detector Coordinate 
     vector<double>  m_Z; 
-    vector<double>  m_Z1; 
-    vector<double>  m_Z2; 
-    vector<double>  m_Z3; 
+    vector<double>  m_R1; 
+    vector<double>  m_R2; 
+    vector<double>  m_R3; 
+    vector<double>  m_Theta1; 
+    vector<double>  m_Theta2; 
+    vector<double>  m_Theta3; 
+    vector<double>  m_Phi1; 
+    vector<double>  m_Phi2; 
+    vector<double>  m_Phi3; 
 
-    vector<double>  m_Type1R; 
-    vector<double>  m_Type1Theta; 
-    vector<double>  m_Type1Phi; 
-    
     // Visualisation Attribute
     G4VisAttributes* m_VisCrystal;
 

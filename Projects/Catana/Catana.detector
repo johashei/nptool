@@ -9,15 +9,20 @@ Target
  Z= 0 mm
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 Catana Type1 
- Z= 0 mm
+ R= 200 mm
+ Theta= 90 deg
+ Phi= 60 deg
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 Catana Type2 
- Z= 300 mm
+ R= 200 mm
+ Theta= 70 deg
+ Phi= 0 deg
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 Catana Type3 
- Z= 600 mm
-
-
+ R= 100 mm
+ Theta= 0 deg
+ Phi= 0 deg 
 % R= 100 mm
 % Theta=
 % Phi=
