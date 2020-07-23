@@ -128,4 +128,7 @@ Strasse Outer
   Z= 129 mm
   Phi= 300 deg
   Shift= -5 mm
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Catana CSV
+ Path= Catana.csv 
 

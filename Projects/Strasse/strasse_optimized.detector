@@ -98,7 +98,7 @@ Strasse Outer
 Strasse Chamber
   Z= -30 mm
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%Catana Dummy
-% Z= 300 mm
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Catana CSV
+ Path= Catana.csv 
 

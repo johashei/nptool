@@ -50,17 +50,15 @@ class Catana : public NPS::VDetector{
     ////////////////////////////////////////////////////
   public:
     // Cartesian
-    void AddDummyDetector(double Z);
-    void AddDetectorType1(double R, double Theta, double Phi);
-    void AddDetectorType2(double R, double Theta, double Phi);
-    void AddDetectorType3(double R, double Theta, double Phi);
+    void AddDetectorType1(double X, double Y, double Z, double Theta, double Phi, int ID);
+    void AddDetectorType2(double X, double Y, double Z, double Theta, double Phi, int ID);
+    void AddDetectorType3(double X, double Y, double Z, double Theta, double Phi, int ID);
+    void ReadCSV(string path);
 
-    G4LogicalVolume* BuildDummyDetector();
     G4LogicalVolume* BuildDetectorType1();
     G4LogicalVolume* BuildDetectorType2();
     G4LogicalVolume* BuildDetectorType3();
   private:
-    G4LogicalVolume* m_DummyDetector;
     G4LogicalVolume* m_DetectorType1;
     G4LogicalVolume* m_DetectorType2;
     G4LogicalVolume* m_DetectorType3;
@@ -102,19 +100,35 @@ class Catana : public NPS::VDetector{
     ////////////////////////////////////////////////////
   private: // Geometry
     // Detector Coordinate 
-    vector<double>  m_Z; 
-    vector<double>  m_R1; 
-    vector<double>  m_R2; 
-    vector<double>  m_R3; 
+    vector<double>  m_X1; 
+    vector<double>  m_X2; 
+    vector<double>  m_X3; 
+    vector<double>  m_Y1; 
+    vector<double>  m_Y2; 
+    vector<double>  m_Y3; 
+    vector<double>  m_Z1; 
+    vector<double>  m_Z2; 
+    vector<double>  m_Z3; 
     vector<double>  m_Theta1; 
     vector<double>  m_Theta2; 
     vector<double>  m_Theta3; 
     vector<double>  m_Phi1; 
     vector<double>  m_Phi2; 
     vector<double>  m_Phi3; 
-
+    vector<int>     m_ID1;
+    vector<int>     m_ID2;
+    vector<int>     m_ID3;
+    double m_DZ1;
+    double m_DZ2;
+    double m_DZ3;
     // Visualisation Attribute
-    G4VisAttributes* m_VisCrystal;
+    G4VisAttributes* m_VisCrystal1;
+    G4VisAttributes* m_VisCrystal2;
+    G4VisAttributes* m_VisCrystal3;
+    G4VisAttributes* m_VisCasing;
+    G4VisAttributes* m_VisTeflon;
+
+
 
   // Needed for dynamic loading of the library
   public:

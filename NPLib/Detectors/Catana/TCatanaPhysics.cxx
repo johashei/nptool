@@ -1,18 +1,18 @@
 /*****************************************************************************
- * Copyright (C) 2009-2020   this file is part of the NPTool Project       *
+ * Copyright (C) 2009-2020   this file is part of the NPTool Project         *
  *                                                                           *
  * For the licensing terms see $NPTOOL/Licence/NPTool_Licence                *
  * For the list of contributors see $NPTOOL/Licence/Contributors             *
  *****************************************************************************/
 
 /*****************************************************************************
- * Original Author: Adrien Matta  contact address: matta@lpccaen.in2p3.fr                        *
+ * Original Author: Adrien Matta  contact address: matta@lpccaen.in2p3.fr    *
  *                                                                           *
- * Creation Date  : July 2020                                           *
+ * Creation Date  : July 2020                                                *
  * Last update    :                                                          *
  *---------------------------------------------------------------------------*
  * Decription:                                                               *
- *  This class hold Catana Treated  data                               *
+ *  This class hold Catana Treated  data                                     *
  *                                                                           *
  *---------------------------------------------------------------------------*
  * Comment:                                                                  *
@@ -203,12 +203,9 @@ void TCatanaPhysics::Clear() {
 
 ///////////////////////////////////////////////////////////////////////////
 void TCatanaPhysics::ReadConfiguration(NPL::InputParser parser) {
-  vector<NPL::InputBlock*> blocks = parser.GetAllBlocksWithToken("Catana");
+ /* vector<NPL::InputBlock*> blocks = parser.GetAllBlocksWithToken("Catana");
   if(NPOptionManager::getInstance()->GetVerboseLevel())
     cout << "//// " << blocks.size() << " detectors found " << endl; 
-
-  vector<string> cart = {"POS","Shape"};
-  vector<string> sphe = {"R","Theta","Phi","Shape"};
 
   for(unsigned int i = 0 ; i < blocks.size() ; i++){
     if(blocks[i]->HasTokenList(cart)){
@@ -232,7 +229,7 @@ void TCatanaPhysics::ReadConfiguration(NPL::InputParser parser) {
       cout << "ERROR: check your input file formatting " << endl;
       exit(1);
     }
-  }
+  }*/
 }
 
 ///////////////////////////////////////////////////////////////////////////

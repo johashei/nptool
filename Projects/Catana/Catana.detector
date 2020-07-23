@@ -7,23 +7,27 @@ Target
  X= 0 mm
  Y= 0 mm
  Z= 0 mm
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-Catana Type1 
- R= 200 mm
- Theta= 90 deg
- Phi= 60 deg
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-Catana Type2 
- R= 200 mm
- Theta= 70 deg
- Phi= 0 deg
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-Catana Type3 
- R= 100 mm
- Theta= 0 deg
- Phi= 0 deg 
+Catana CSV
+ Path= CATANA_Detectors_samurai09.csv 
+ %Path= CATANAPLUS_Detectors.csv
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%Catana Type1 
+% R= 200 mm
+% Theta= 90 deg
+% Phi= 60 deg
+% ID= 1
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%Catana Type2 
+% R= 200 mm
+% Theta= 70 deg
+% Phi= 0 deg
+% ID= 2
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%Catana Type3 
 % R= 100 mm
-% Theta=
-% Phi=
-%
+% Theta= 0 deg
+% Phi= 0 deg 
+% ID= 3
