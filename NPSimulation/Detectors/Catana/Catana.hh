@@ -18,6 +18,8 @@
  *                                                                           *
  *---------------------------------------------------------------------------*
  * Comment:                                                                  *
+ * Geometry of crystal based on official catana simulation from Samurai      *
+ * Collaboration                                                             *
  *                                                                           *
  *****************************************************************************/
 
