@@ -25,7 +25,7 @@ void Control(){
   PhysicsTree->Draw("OuterPosZ:fDetected_Position_Z[3]",cond.c_str(),"col") ; 
   cOuter->cd(4);
   PhysicsTree->Draw("OuterPosY:OuterPosX:OuterPosZ", cond.c_str(),"");            
-*/
+
   TCanvas* cVertex = new TCanvas("ControlVertex","ControlVertex",1000,1000);
   cVertex->Divide(2,2);
   cond = "VertexX!=-1000";
@@ -44,14 +44,19 @@ void Control(){
   cdelta->Divide(2,2);
   cond = "deltaX!=-1000";
   cdelta->cd(1);
-  PhysicsTree->Draw("deltaX>>dx(500,-2,2)",cond.c_str(),"col") ; 
+  PhysicsTree->Draw("deltaX>>dx(500,-0.01,0.01)",cond.c_str(),"col") ; 
   cdelta->cd(2);
-  PhysicsTree->Draw("deltaY>>dy(500,-2,2)",cond.c_str(),"col") ; 
+  PhysicsTree->Draw("deltaY>>dy(500,-0.01,0.01)",cond.c_str(),"col") ; 
   cdelta->cd(3);
-  PhysicsTree->Draw("deltaZ>>dz(5000,-20,20)",cond.c_str(),"col") ; 
+  PhysicsTree->Draw("deltaZ>>dz(500,-0.01,0.01)",cond.c_str(),"col") ; 
   cdelta->cd(4);
-  PhysicsTree->Draw("Distance>>hd(500,0,80)", cond.c_str(),"");           
+  PhysicsTree->Draw("Distance>>hd(500,0,0.01)", cond.c_str(),"");           
+*/
+  TCanvas* ctheta= new TCanvas("ControlTheta","ControlTheta",1000,1000);
+  cond = "Theta12!=-1000";
+  PhysicsTree->Draw("Theta12>>ht",cond.c_str(),"col") ; 
  
+
 /*
   TCanvas* c2 = new TCanvas("Control 2", "Control2",500,500,2000,1000);  
   c2->Divide(2,1);

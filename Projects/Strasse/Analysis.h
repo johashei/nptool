@@ -53,7 +53,7 @@ class Analysis: public NPL::VAnalysis{
   private:
     double Ex;
     double ELab;
-    double ThetaLab;
+    double Theta12;
     double ThetaCM;
     double VertexX;
     double VertexY;

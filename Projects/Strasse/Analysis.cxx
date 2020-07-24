@@ -77,12 +77,13 @@ void Analysis::TreatEvent(){
 
     double deltaPhi = abs(Proton1.Phi()/deg-Proton2.Phi()/deg);
     double sumTheta = Proton1.Theta()/deg+Proton2.Theta()/deg;
-    double OpeningAngle = Proton1.Angle(Proton2)/deg;
+    Theta12  = Proton1.Angle(Proton2)/deg;
+
     // reject event that make no physical sense
-    if(deltaPhi<170 && sumTheta<80){
+    /*if(deltaPhi<170 && sumTheta<80){
       return;
       }
-    
+    */
     // computing minimum distance of the two lines
     TVector3 Vertex;
     TVector3 delta;
@@ -127,7 +128,7 @@ void Analysis::End(){
 void Analysis::InitOutputBranch() {
   RootOutput::getInstance()->GetTree()->Branch("Ex",&Ex,"Ex/D");
   RootOutput::getInstance()->GetTree()->Branch("ELab",&ELab,"ELab/D");
-  RootOutput::getInstance()->GetTree()->Branch("ThetaLab",&ThetaLab,"ThetaLab/D");
+  RootOutput::getInstance()->GetTree()->Branch("Theta12",&Theta12,"Theta12/D");
   RootOutput::getInstance()->GetTree()->Branch("ThetaCM",&ThetaCM,"ThetaCM/D");
   RootOutput::getInstance()->GetTree()->Branch("VertexX",&VertexX,"VertexX/D");
   RootOutput::getInstance()->GetTree()->Branch("VertexY",&VertexY,"VertexY/D");
@@ -150,7 +151,7 @@ void Analysis::InitInputBranch(){
 void Analysis::ReInitValue(){
   Ex = -1000 ;
   ELab = -1000;
-  ThetaLab = -1000;
+  Theta12 = -1000;
   ThetaCM = -1000;
   VertexX=-1000;
   VertexY=-1000;
@@ -158,7 +159,6 @@ void Analysis::ReInitValue(){
   deltaX=-1000;
   deltaY=-1000;
   deltaZ=-1000;
-
   Distance=-1000;
 }
 
