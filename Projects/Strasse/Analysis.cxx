@@ -45,11 +45,19 @@ void Analysis::Init(){
   InitInputBranch();
   
   Strasse = (TStrassePhysics*)  m_DetectorManager -> GetDetector("Strasse");
-  myReaction = new NPL::Reaction();
-  myReaction->ReadConfigurationFile(NPOptionManager::getInstance()->GetReactionFile());
+  // reaction properties
+  myQFS = new NPL::QFS();
+  myQFS->ReadConfigurationFile(NPOptionManager::getInstance()->GetReactionFile());
+  // reaction properties
+  myBeam = new NPL::Beam();
+  myBeam->ReadConfigurationFile(NPOptionManager::getInstance()->GetReactionFile());
+  InitialBeamEnergy = myBeam->GetEnergy() * myBeam->GetA();
   // target thickness
   TargetThickness = m_DetectorManager->GetTargetThickness();
   string TargetMaterial = m_DetectorManager->GetTargetMaterial();
+  // EnergyLoss Tables
+  string BeamName = NPL::ChangeNameToG4Standard(myBeam->GetName());
+  BeamTarget = NPL::EnergyLoss(BeamName+"_"+TargetMaterial+".G4Table","G4Table",10000);
 } 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -81,7 +89,31 @@ void Analysis::TreatEvent(){
     VertexX=Vertex.X();
     VertexY=Vertex.Y();
     VertexZ=Vertex.Z();
-    }
+  }
+
+    //double thickness_before = 0;
+    //double EA_vertex = BeamTarget.Slow(InitialBeamEnergy,thickness_before,0);
+
+    // setting up Lorentz Vector from measured trajectories and energies
+    //LV_A.SetVect(PA); LV_p1.SetE(EA_vertex); 
+    //LV_p1.SetVect(P1); LV_p1.SetE(E1); 
+    //LV_p2.SetVect(P2); LV_p1.SetE(E2); 
+
+    // computing Ex from Missing Mass
+    //double EB = LV_A.E() + LV_T.E() - LV_p1.E() - LV_p2.E();   
+    //TVector3 PB = LV_A.Vect() + LV_p1.Vect() - LV_p2.Vect();   
+    //Ex = TMath::Sqrt( EB*EB - PB.Mag2() ) - myQFS->GetNucleusB()->Mass();
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+TVector3 Analysis::InterpolateInPlaneZ(TVector3 V0, TVector3 V1, double Zproj){
+    TVector3 Vproj(-999,-999,-999);
+    double t = (Zproj - V1.Z()) / (V1.Z()-V0.Z());
+    double Xproj= V1.X() + (V1.X()-V0.X()) * t;
+    double Yproj= V1.Y() + (V1.Y()-V0.Y()) * t; 
+    Vproj.SetXYZ(Xproj,Yproj,Zproj);
+    return Vproj;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

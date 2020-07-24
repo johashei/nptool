@@ -90,7 +90,7 @@ Strasse Inner
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%1
 Strasse Outer
   Radius= @OuterRadius mm
-  Z= 91.0 mm
+  Z= 78.0 mm
   Phi= @OuterPhi deg
   Shift= @OuterShift mm
 
