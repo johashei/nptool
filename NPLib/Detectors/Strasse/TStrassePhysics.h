@@ -92,8 +92,8 @@ class TStrassePhysics : public TObject, public NPL::VDetector {
     void ReadConfiguration(NPL::InputParser);
 
     /// A usefull method to bundle all operation to add a detector
-    void AddInnerDetector(double R, double Z, double Phi,double Shift); 
-    void AddOuterDetector(double R, double Z, double Phi,double Shift); 
+    void AddInnerDetector(double R, double Z, double Phi,double Shift,TVector3 Ref); 
+    void AddOuterDetector(double R, double Z, double Phi,double Shift,TVector3 Ref); 
  
     // add parameters to the CalibrationManger
     void AddParameterToCalibrationManager();

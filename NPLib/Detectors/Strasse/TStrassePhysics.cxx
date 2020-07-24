@@ -107,7 +107,7 @@ ClassImp(TStrassePhysics)
   }
 
 ///////////////////////////////////////////////////////////////////////////
-void TStrassePhysics::AddInnerDetector(double R, double Z, double Phi, double Shift){
+void TStrassePhysics::AddInnerDetector(double R, double Z, double Phi, double Shift, TVector3 Ref){
   m_NumberOfInnerDetectors++;
   double ActiveWidth  = Inner_Wafer_Width-2.*Inner_Wafer_GuardRing;
   double ActiveLength = Inner_Wafer_Length-Inner_Wafer_PADExternal-Inner_Wafer_PADInternal-2*Inner_Wafer_GuardRing;
@@ -118,6 +118,7 @@ void TStrassePhysics::AddInnerDetector(double R, double Z, double Phi, double Sh
   // Vector C position of detector face center
   TVector3 C(Shift,R,Z);// center of the whole detector, including PCB
   C.RotateZ(-Phi);
+  C+=Ref;
 
   // Vector W normal to detector face (pointing to the back)
   TVector3 W(0,1,0);
@@ -203,7 +204,7 @@ void TStrassePhysics::AddInnerDetector(double R, double Z, double Phi, double Sh
 }
 
 ///////////////////////////////////////////////////////////////////////////
-void TStrassePhysics::AddOuterDetector(double R, double Z, double Phi, double Shift){
+void TStrassePhysics::AddOuterDetector(double R, double Z, double Phi, double Shift, TVector3 Ref){
   m_NumberOfOuterDetectors++;
   double ActiveWidth  = Outer_Wafer_Width-2.*Outer_Wafer_GuardRing;
   double ActiveLength = Outer_Wafer_Length-Outer_Wafer_PADExternal-Outer_Wafer_PADInternal-2*Outer_Wafer_GuardRing;
@@ -214,6 +215,7 @@ void TStrassePhysics::AddOuterDetector(double R, double Z, double Phi, double Sh
   // Vector C position of detector face center
   TVector3 C(Shift,R,Z);// center of the whole detector, including PCB
   C.RotateZ(-Phi);
+  C+=Ref;
 
   // Vector W normal to detector face (pointing to the back)
   TVector3 W(0,1,0);
@@ -738,7 +740,8 @@ void TStrassePhysics::ReadConfiguration(NPL::InputParser parser) {
       double Z= blocks_inner[i]->GetDouble("Z","mm");
       double Phi = blocks_inner[i]->GetDouble("Phi","deg");
       double Shift = blocks_inner[i]->GetDouble("Shift","mm");
-      AddInnerDetector(R,Z,Phi,Shift);
+      TVector3 Ref = blocks_inner[i]->GetTVector3("Ref","mm");
+      AddInnerDetector(R,Z,Phi,Shift,Ref);
     }
     else{
       cout << "ERROR: check your input file formatting on " << i+1 << " inner block " <<endl;
@@ -760,7 +763,8 @@ void TStrassePhysics::ReadConfiguration(NPL::InputParser parser) {
       double Z= blocks_outer[i]->GetDouble("Z","mm");
       double Phi = blocks_outer[i]->GetDouble("Phi","deg");
       double Shift = blocks_outer[i]->GetDouble("Shift","mm");
-      AddOuterDetector(R,Z,Phi,Shift);
+      TVector3 Ref = blocks_inner[i]->GetTVector3("Ref","mm");
+      AddOuterDetector(R,Z,Phi,Shift,Ref);
     }
     else{
 
