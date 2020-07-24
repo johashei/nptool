@@ -391,7 +391,7 @@ void Catana::ReadConfiguration(NPL::InputParser parser){
   if(NPOptionManager::getInstance()->GetVerboseLevel())
     cout << "//// " << blocks.size() << " CSV block found " << endl; 
 
-  vector<string> token = {"Path","Rshift"};
+  vector<string> token = {"Path","Pos","Rshift"};
 
   for(unsigned int i = 0 ; i < blocks.size() ; i++){
     if(blocks[i]->HasTokenList(token)){
@@ -399,6 +399,8 @@ void Catana::ReadConfiguration(NPL::InputParser parser){
         cout << endl << "////  Catana " << i+1 <<  endl;
       string path = blocks[i]->GetString("Path");
       double Rshift = blocks[i]->GetDouble("Rshift","micrometer");
+      // Reference position of the whole array
+      m_Ref = NPS::ConvertVector(blocks[i]->GetTVector3("Pos","mm"));
       ReadCSV(path,Rshift);
     }
     else{
@@ -453,7 +455,7 @@ void Catana::ConstructDetector(G4LogicalVolume* world){
     // had to add a 70micron in radius to avoid overlap when using official
     // csv simulation file
     Det_dir.setMag(m_Zoffset[m_Type[i]]+m_Rshift[i]);
-    Det_pos+=Det_dir;
+    Det_pos+=Det_dir+m_Ref;
     G4RotationMatrix* Rot = new G4RotationMatrix();
     Rot->rotateX(-m_Theta[i]);
     Rot->rotateZ(m_Phi[i]);

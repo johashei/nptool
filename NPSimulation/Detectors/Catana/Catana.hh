@@ -109,6 +109,7 @@ class Catana : public NPS::VDetector{
     vector<double>  m_Phi; 
     vector<int>     m_ID;
     vector<int>     m_Type;
+    G4ThreeVector   m_Ref;
     // this parameter is here because some csv file have very small overlap
     // due to difference between mechanical design and reality of the detector
     // a shift is apply to the position of the crystal to slightly icrease the radius
