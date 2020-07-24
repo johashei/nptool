@@ -64,6 +64,7 @@ Strasse Inner
   Z= 66.0 mm
   Phi= @InnerPhi deg
   Shift= 3 mm
+  Ref= 0 0 0 mm
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 Alias OuterPhi
@@ -76,6 +77,7 @@ Strasse Outer
   Z= 91.0 mm
   Phi= @OuterPhi deg
   Shift= 0 mm
+  Ref= 0 0 0 mm
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%1
 Strasse Chamber

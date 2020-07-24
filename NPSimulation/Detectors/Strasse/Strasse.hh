@@ -50,8 +50,8 @@ class Strasse : public NPS::VDetector{
     ////////////////////////////////////////////////////
   public:
     // Cylindrical coordinate
-    void AddInnerDetector(double R,double Z,double Phi, double Shift);  
-    void AddOuterDetector(double R,double Z,double Phi, double Shift);  
+    void AddInnerDetector(double R,double Z,double Phi, double Shift, G4ThreeVector Ref);  
+    void AddOuterDetector(double R,double Z,double Phi, double Shift, G4ThreeVector Ref);  
     void AddChamber(double Z);
 
     G4LogicalVolume* BuildInnerDetector();
@@ -131,11 +131,13 @@ class Strasse : public NPS::VDetector{
     vector<double>  m_Inner_Z;
     vector<double>  m_Inner_Phi; 
     vector<double>  m_Inner_Shift; 
+    vector<G4ThreeVector> m_Inner_Ref;
 
     vector<double>  m_Outer_R; 
     vector<double>  m_Outer_Z;
     vector<double>  m_Outer_Phi; 
     vector<double>  m_Outer_Shift; 
+    vector<G4ThreeVector> m_Outer_Ref;
 
     vector<double>  m_Chamber_Z;
 
