@@ -17,7 +17,9 @@
  *---------------------------------------------------------------------------*
  * Comment:                                                                  *
  * Geometry of crystal based on official catana simulation from Samurai      *
- * Collaboration                                                             *
+ * Collaboration package 5.2                                                 *
+ * http://be.nucl.ap.titech.ac.jp/~nebula/simulator.php                      *
+ * Thanks to Togano-san                                                      *
  *                                                                           *
  *****************************************************************************/
 
@@ -152,28 +154,28 @@ G4LogicalVolume* Catana::BuildDetector(int Type){
 
   // Define the requested geometry
     double x1,x2,x3,x4,y1,y2,z,crystalz;
-    int pmttype; // 1: H7195, 2:H11934
+    //int pmttype; // 1: H7195, 2:H11934
     double seal_dt = 12*mm, housing_dt = 0.5*mm, reflector_dt = 0.5*mm;
 
     if(Type == 1){ // crystal type 1
       x1 = 62.3*mm; x2 = 62.3*mm; x3 = 95.7*mm; y1 = 36.6*mm; y2 = 56.3*mm;
-      z = 107*mm; crystalz = 93.*mm; pmttype = 1;
+      z = 107*mm; crystalz = 93.*mm; //pmttype = 1;
     }
     if(Type == 2){ // crystal type 2
       x1 = 57.1*mm; x2 = 63.6*mm; x3 = 84.5*mm; y1 = 34.9*mm; y2 = 55.4*mm;
-      z = 117*mm; crystalz = 103.*mm; pmttype = 1;
+      z = 117*mm; crystalz = 103.*mm; //pmttype = 1;
     }
     if(Type == 3){ // crystal type 3
       x1 = 49.7*mm; x2 = 58.5*mm; x3 = 74.9*mm; y1 = 38.3*mm; y2 = 64.7*mm;
-      z = 137*mm; crystalz = 123.*mm; pmttype = 1;
+      z = 137*mm; crystalz = 123.*mm; //pmttype = 1;
     }
     if(Type == 4){ // crystal type 4
       x1 = 40.0*mm; x2 = 50.2*mm; x3 = 60.3*mm; y1 = 38.3*mm; y2 = 66.4*mm;
-      z = 152*mm; crystalz = 138.5*mm; pmttype = 1;
+      z = 152*mm; crystalz = 138.5*mm; //pmttype = 1;
     }
     if(Type == 5){ // crystal type 5
       x1 = 28.4*mm; x2 = 39.7*mm; x3 = 41.5*mm; y1 = 38.3*mm; y2 = 69.9*mm;
-      z = 162*mm; crystalz = 148.5*mm; pmttype = 2;
+      z = 162*mm; crystalz = 148.5*mm; //pmttype = 2;
     }
     x4 = x3 + (y2/y1)*(x2-x1); // planarity condition
     Double_t beta1 = 90*deg + std::atan((x2-x1)/(y1*2));// should be

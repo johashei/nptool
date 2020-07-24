@@ -19,7 +19,9 @@
  *---------------------------------------------------------------------------*
  * Comment:                                                                  *
  * Geometry of crystal based on official catana simulation from Samurai      *
- * Collaboration                                                             *
+ * Collaboration package 5.2                                                 *
+ * http://be.nucl.ap.titech.ac.jp/~nebula/simulator.php                      *
+ * Thanks to Togano-san                                                      *
  *                                                                           *
  *****************************************************************************/
 
