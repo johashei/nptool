@@ -72,7 +72,7 @@ Alias OuterPhi
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 Strasse Outer
   Radius= 60 mm
-  Z= 91.0 mm
+  Z= 78.0 mm
   Phi= @OuterPhi deg
   Shift= 0 mm
 
