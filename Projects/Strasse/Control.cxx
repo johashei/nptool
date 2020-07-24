@@ -40,7 +40,17 @@ void Control(){
   PhysicsTree->Draw("Distance>>hd(500,0,80)", cond.c_str(),"");            
   //PhysicsTree->Draw("VertexY:VertexX:VertexZ", cond.c_str(),"");            
 
-
+  TCanvas* cdelta= new TCanvas("ControlDelta","ControlDelta",1000,1000);
+  cdelta->Divide(2,2);
+  cond = "deltaX!=-1000";
+  cdelta->cd(1);
+  PhysicsTree->Draw("deltaX>>dx(500,-2,2)",cond.c_str(),"col") ; 
+  cdelta->cd(2);
+  PhysicsTree->Draw("deltaY>>dy(500,-2,2)",cond.c_str(),"col") ; 
+  cdelta->cd(3);
+  PhysicsTree->Draw("deltaZ>>dz(5000,-20,20)",cond.c_str(),"col") ; 
+  cdelta->cd(4);
+  PhysicsTree->Draw("Distance>>hd(500,0,80)", cond.c_str(),"");           
  
 /*
   TCanvas* c2 = new TCanvas("Control 2", "Control2",500,500,2000,1000);  

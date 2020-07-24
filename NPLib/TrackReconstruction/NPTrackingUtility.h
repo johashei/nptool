@@ -22,7 +22,7 @@ namespace NPL{
   // v1,v2 and w1 w1
   // Also compute the best crossing position BestPosition, i.e. average position
   // at the minimum distance.
-  double MinimumDistance(const TVector3& v1,const TVector3& v2, const TVector3& w1, const TVector3& w2, TVector3& BestPosition){
+  double MinimumDistance(const TVector3& v1,const TVector3& v2, const TVector3& w1, const TVector3& w2, TVector3& BestPosition, TVector3& delta){
   TVector3 v = v2-v1;
   TVector3 w = w2-w1;
   // Finding best position
@@ -31,9 +31,9 @@ namespace NPL{
   double s = (-v.Mag2()*(w.Dot(e))+(v.Dot(e))*(w.Dot(v)))/A;
   double t = (w.Mag2()*(v.Dot(e))-(w.Dot(e)*w.Dot(v)))/A;
   double d = sqrt((e+v*t-w*s).Mag2());
-  
+ 
   BestPosition = 0.5*(v1+t*v+w1+s*w);
-  
+  delta = (v1+t*v-w1-s*w);
   return d;
   }
 }

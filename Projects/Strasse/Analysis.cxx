@@ -57,7 +57,7 @@ void Analysis::Init(){
   string TargetMaterial = m_DetectorManager->GetTargetMaterial();
   // EnergyLoss Tables
   string BeamName = NPL::ChangeNameToG4Standard(myBeam->GetName());
-  BeamTarget = NPL::EnergyLoss(BeamName+"_"+TargetMaterial+".G4Table","G4Table",10000);
+  BeamTarget = NPL::EnergyLoss(BeamName+"_"+TargetMaterial+".G4table","G4Table",10000);
 } 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -85,10 +85,14 @@ void Analysis::TreatEvent(){
     
     // computing minimum distance of the two lines
     TVector3 Vertex;
-    Distance = NPL::MinimumDistance(InnerPos1,OuterPos1,InnerPos2,OuterPos2,Vertex);
+    TVector3 delta;
+    Distance = NPL::MinimumDistance(InnerPos1,OuterPos1,InnerPos2,OuterPos2,Vertex,delta);
     VertexX=Vertex.X();
     VertexY=Vertex.Y();
     VertexZ=Vertex.Z();
+    deltaX=delta.X();
+    deltaY=delta.Y();
+    deltaZ=delta.Z();
   }
 
     //double thickness_before = 0;
@@ -125,9 +129,13 @@ void Analysis::InitOutputBranch() {
   RootOutput::getInstance()->GetTree()->Branch("ELab",&ELab,"ELab/D");
   RootOutput::getInstance()->GetTree()->Branch("ThetaLab",&ThetaLab,"ThetaLab/D");
   RootOutput::getInstance()->GetTree()->Branch("ThetaCM",&ThetaCM,"ThetaCM/D");
-  RootOutput::getInstance()->GetTree()->Branch("VerteX",&VertexX,"VertexX/D");
-  RootOutput::getInstance()->GetTree()->Branch("VerteY",&VertexY,"VertexY/D");
-  RootOutput::getInstance()->GetTree()->Branch("VerteZ",&VertexZ,"VertexZ/D");
+  RootOutput::getInstance()->GetTree()->Branch("VertexX",&VertexX,"VertexX/D");
+  RootOutput::getInstance()->GetTree()->Branch("VertexY",&VertexY,"VertexY/D");
+  RootOutput::getInstance()->GetTree()->Branch("VertexZ",&VertexZ,"VertexZ/D");
+  RootOutput::getInstance()->GetTree()->Branch("deltaX",&deltaX,"deltaX/D");
+  RootOutput::getInstance()->GetTree()->Branch("deltaY",&deltaY,"deltaY/D");
+  RootOutput::getInstance()->GetTree()->Branch("deltaZ",&deltaZ,"deltaZ/D");
+
   RootOutput::getInstance()->GetTree()->Branch("Distance",&Distance,"Distance/D");
   RootOutput::getInstance()->GetTree()->Branch("InteractionCoordinates","TInteractionCoordinates",&DC);
   RootOutput::getInstance()->GetTree()->Branch("ReactionConditions","TReactionConditions",&RC);
@@ -147,6 +155,10 @@ void Analysis::ReInitValue(){
   VertexX=-1000;
   VertexY=-1000;
   VertexZ=-1000;
+  deltaX=-1000;
+  deltaY=-1000;
+  deltaZ=-1000;
+
   Distance=-1000;
 }
 
