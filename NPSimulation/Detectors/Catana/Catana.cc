@@ -84,11 +84,11 @@ Catana::Catana(){
   m_DetectorType5 = 0;
 
   // RGB Color + Transparency
-  m_VisCrystal1 = new G4VisAttributes(G4Colour(0.8, 0.3, 0.3, 0.3));   
-  m_VisCrystal2 = new G4VisAttributes(G4Colour(0.3, 0.8, 0.3, 0.3));   
-  m_VisCrystal3 = new G4VisAttributes(G4Colour(0.3, 0.3, 0.8, 0.3));   
-  m_VisCrystal4 = new G4VisAttributes(G4Colour(0.3, 0.8, 0.8, 0.3));   
-  m_VisCrystal5 = new G4VisAttributes(G4Colour(0.8, 0.3, 0.8, 0.3));   
+  m_VisCrystal1 = new G4VisAttributes(G4Colour(0.8, 0.3, 0.3, 1));   
+  m_VisCrystal2 = new G4VisAttributes(G4Colour(0.3, 0.8, 0.3, 1));   
+  m_VisCrystal3 = new G4VisAttributes(G4Colour(0.3, 0.3, 0.8, 1));   
+  m_VisCrystal4 = new G4VisAttributes(G4Colour(0.3, 0.8, 0.8, 1));   
+  m_VisCrystal5 = new G4VisAttributes(G4Colour(0.8, 0.3, 0.8, 1));   
   m_VisHousing = new G4VisAttributes(G4Colour(0.3, 0.3, 0.3, 0.2));   
   m_VisReflector = new G4VisAttributes(G4Colour(1, 1, 1, 0.1));   
 
