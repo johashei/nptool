@@ -118,7 +118,6 @@ void TStrassePhysics::AddInnerDetector(double R, double Z, double Phi, double Sh
   // Vector C position of detector face center
   TVector3 C(Shift,R,Z);// center of the whole detector, including PCB
   C.RotateZ(-Phi);
-  C+=Ref;
 
   // Vector W normal to detector face (pointing to the back)
   TVector3 W(0,1,0);
@@ -156,7 +155,7 @@ void TStrassePhysics::AddInnerDetector(double R, double Z, double Phi, double Sh
     lineY.clear();
     lineZ.clear();
     for(int j=0; j<Inner_Wafer_LongitudinalStrips; j++){
-      P = P_1_1 + i*U*TransversePitch + j*V*LongitudinalPitch;
+      P = P_1_1 + Ref + i*U*TransversePitch + j*V*LongitudinalPitch;
       lineX.push_back(P.X());
       lineY.push_back(P.Y());
       lineZ.push_back(P.Z());
@@ -189,7 +188,7 @@ void TStrassePhysics::AddInnerDetector(double R, double Z, double Phi, double Sh
     lineZ.clear();
 
     for(int j=0; j<Inner_Wafer_LongitudinalStrips; j++){
-      P = P_1_1 + i*U*TransversePitch + j*V*LongitudinalPitch;
+      P = P_1_1 + Ref + i*U*TransversePitch + j*V*LongitudinalPitch;
       lineX.push_back(P.X());
       lineY.push_back(P.Y());
       lineZ.push_back(P.Z());
@@ -215,7 +214,6 @@ void TStrassePhysics::AddOuterDetector(double R, double Z, double Phi, double Sh
   // Vector C position of detector face center
   TVector3 C(Shift,R,Z);// center of the whole detector, including PCB
   C.RotateZ(-Phi);
-  C+=Ref;
 
   // Vector W normal to detector face (pointing to the back)
   TVector3 W(0,1,0);
@@ -253,7 +251,7 @@ void TStrassePhysics::AddOuterDetector(double R, double Z, double Phi, double Sh
     lineY.clear();
     lineZ.clear();
     for(int j=0; j<Outer_Wafer_LongitudinalStrips; j++){
-      P = P_1_1 + i*U*TransversePitch + j*V*LongitudinalPitch;
+      P = P_1_1 + Ref + i*U*TransversePitch + j*V*LongitudinalPitch;
       lineX.push_back(P.X());
       lineY.push_back(P.Y());
       lineZ.push_back(P.Z());
@@ -286,7 +284,7 @@ void TStrassePhysics::AddOuterDetector(double R, double Z, double Phi, double Sh
     lineZ.clear();
 
     for(int j=0; j<Outer_Wafer_LongitudinalStrips; j++){
-      P = P_1_1 + i*U*TransversePitch + j*V*LongitudinalPitch;
+      P = P_1_1 + Ref + i*U*TransversePitch + j*V*LongitudinalPitch;
       lineX.push_back(P.X());
       lineY.push_back(P.Y());
       lineZ.push_back(P.Z());
@@ -763,7 +761,7 @@ void TStrassePhysics::ReadConfiguration(NPL::InputParser parser) {
       double Z= blocks_outer[i]->GetDouble("Z","mm");
       double Phi = blocks_outer[i]->GetDouble("Phi","deg");
       double Shift = blocks_outer[i]->GetDouble("Shift","mm");
-      TVector3 Ref = blocks_inner[i]->GetTVector3("Ref","mm");
+      TVector3 Ref = blocks_outer[i]->GetTVector3("Ref","mm");
       AddOuterDetector(R,Z,Phi,Shift,Ref);
     }
     else{
