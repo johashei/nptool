@@ -11,6 +11,7 @@ Target
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 Catana CSV
  Path= Catana.csv 
+ Rshift= 70 micrometer
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %Catana Detector  

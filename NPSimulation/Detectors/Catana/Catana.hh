@@ -52,8 +52,8 @@ class Catana : public NPS::VDetector{
     ////////////////////////////////////////////////////
   public:
     // Cartesian
-    void AddDetector(double X, double Y, double Z, double Theta, double Phi, int ID,int Type);
-    void ReadCSV(string path);
+    void AddDetector(double X, double Y, double Z, double Theta, double Phi, int ID,int Type,double Rshift=0);
+    void ReadCSV(string path,double Rshift);
 
     G4LogicalVolume* BuildDetector(int Type);
 
@@ -109,6 +109,12 @@ class Catana : public NPS::VDetector{
     vector<double>  m_Phi; 
     vector<int>     m_ID;
     vector<int>     m_Type;
+    // this parameter is here because some csv file have very small overlap
+    // due to difference between mechanical design and reality of the detector
+    // a shift is apply to the position of the crystal to slightly icrease the radius
+    // and avoid shift. Typical value shoulde be < 100um
+    vector<double>  m_Rshift;// additional shift to apply to csv file
+    // relative shift of crystal w/r to the housing
     map<int,double>  m_Zoffset;
 
     // Visualisation Attribute

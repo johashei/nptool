@@ -96,7 +96,7 @@ Catana::~Catana(){
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-void Catana::AddDetector(double X,double Y, double Z, double Theta, double Phi, int ID, int Type){
+void Catana::AddDetector(double X,double Y, double Z, double Theta, double Phi, int ID, int Type,double Rshift){
   m_X.push_back(X);
   m_Y.push_back(Y);
   m_Z.push_back(Z);
@@ -104,10 +104,11 @@ void Catana::AddDetector(double X,double Y, double Z, double Theta, double Phi, 
   m_Phi.push_back(Phi);
   m_ID.push_back(ID);
   m_Type.push_back(Type);
+  m_Rshift.push_back(Rshift);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-void Catana::ReadCSV(string path){
+void Catana::ReadCSV(string path,double Rshift){
   std::ifstream csv(path); 
   if(!csv.is_open()){
     std::ostringstream message;
@@ -122,7 +123,7 @@ void Catana::ReadCSV(string path){
   getline(csv,buffer);
   while(csv >> ID >> buffer >> type >> buffer >> layer >> buffer >> X >> buffer >> Y >> buffer >> Z >> buffer >> Theta >> buffer >> Phi){
       if(type<6)
-      AddDetector(X,Y,Z,Theta*deg,Phi*deg,ID,type);
+      AddDetector(X,Y,Z,Theta*deg,Phi*deg,ID,type,Rshift);
       else{
         // ignore other type for which I don't have the geometry
         }
@@ -390,14 +391,15 @@ void Catana::ReadConfiguration(NPL::InputParser parser){
   if(NPOptionManager::getInstance()->GetVerboseLevel())
     cout << "//// " << blocks.size() << " CSV block found " << endl; 
 
-  vector<string> token = {"Path"};
+  vector<string> token = {"Path","Rshift"};
 
   for(unsigned int i = 0 ; i < blocks.size() ; i++){
     if(blocks[i]->HasTokenList(token)){
       if(NPOptionManager::getInstance()->GetVerboseLevel())
         cout << endl << "////  Catana " << i+1 <<  endl;
       string path = blocks[i]->GetString("Path");
-      ReadCSV(path);
+      double Rshift = blocks[i]->GetDouble("Rshift","micrometer");
+      ReadCSV(path,Rshift);
     }
     else{
       cout << "ERROR: check your input file formatting " << endl;
@@ -450,7 +452,7 @@ void Catana::ConstructDetector(G4LogicalVolume* world){
     Det_dir.unit();
     // had to add a 70micron in radius to avoid overlap when using official
     // csv simulation file
-    Det_dir.setMag(m_Zoffset[m_Type[i]]+0.07);
+    Det_dir.setMag(m_Zoffset[m_Type[i]]+m_Rshift[i]);
     Det_pos+=Det_dir;
     G4RotationMatrix* Rot = new G4RotationMatrix();
     Rot->rotateX(-m_Theta[i]);
