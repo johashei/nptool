@@ -7,23 +7,56 @@ Target
  X= 0 mm
  Y= 0 mm
  Z= 0 mm
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-Catana Type1 
- R= 200 mm
- Theta= 90 deg
- Phi= 60 deg
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-Catana Type2 
- R= 200 mm
- Theta= 70 deg
- Phi= 0 deg
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-Catana Type3 
- R= 100 mm
- Theta= 0 deg
- Phi= 0 deg 
-% R= 100 mm
-% Theta=
-% Phi=
+Catana CSV
+ Path= Catana.csv 
+ Pos= 0 0 500 mm
+ Rshift= 70 micrometer
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%Catana Detector  
+% X= 100 mm
+% Y= 100 mm
+% Z= 100 mm
+% Theta= 0 deg
+% Phi= 0 deg
+% ID= 1
+% Type= 1
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%Catana Detector  
+% X= 300 mm
+% Y= 300 mm
+% Z= 300 mm
+% Theta= 0 deg
+% Phi= 0 deg
+% ID= 1
+% Type= 2
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%Catana Detector  
+% X= 600 mm
+% Y= 600 mm
+% Z= 600 mm
+% Theta= 0 deg
+% Phi= 0 deg
+% ID= 1
+% Type= 3
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%Catana Detector  
+% X= 900 mm
+% Y= 900 mm
+% Z= 900 mm
+% Theta= 0 deg
+% Phi= 0 deg
+% ID= 1
+% Type= 4
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%Catana Detector  
+% X= 1200 mm
+% Y= 1200 mm
+% Z= 1200 mm
+% Theta= 0 deg
+% Phi= 0 deg
+% ID= 1
+% Type= 5
 %

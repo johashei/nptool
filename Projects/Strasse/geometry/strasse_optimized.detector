@@ -11,8 +11,8 @@ Target
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%1
 Strasse Info
-  Inner_Wafer_Length= 124 mm
-  Inner_Wafer_Width= 30 mm
+  Inner_Wafer_Length= 127 mm
+  Inner_Wafer_Width= 33 mm
   Inner_Wafer_Thickness= 200 micrometer
   Inner_Wafer_AlThickness= 0.4 micrometer
   Inner_Wafer_PADExternal= 0 mm
@@ -22,13 +22,13 @@ Strasse Info
   Inner_Wafer_LongitudinalStrips= 150
   Inner_PCB_PortWidth= 1 mm
   Inner_PCB_StarboardWidth= 1 mm
-  Inner_PCB_BevelAngle=  45 deg
+  Inner_PCB_BevelAngle=  90 deg
   Inner_PCB_UpstreamWidth= 1 mm
   Inner_PCB_DownstreamWidth= 1 mm
   Inner_PCB_MidWidth= 1 mm
   Inner_PCB_Thickness= 1.6 mm
-  Outer_Wafer_Length= 121 mm
-  Outer_Wafer_Width= 65 mm
+  Outer_Wafer_Length= 124 mm
+  Outer_Wafer_Width= 68 mm
   Outer_Wafer_Thickness= 300 micrometer
   Outer_Wafer_AlThickness= 0.4 micrometer
   Outer_Wafer_PADExternal= 0 mm
@@ -53,50 +53,40 @@ Strasse Info
   Chamber_Sphere_Radius= 220 mm 
   Chamber_Sphere_Shift= 60 mm
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%1
-Alias InnerShift
-  Action= Replace 
-  Value= 3 
-
-Alias InnerRadius
-  Action= Replace 
-  Value= 27 
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 Alias InnerPhi
   Action= Copy
   Value= 0 60 120 180 240 300
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%1
-Alias OuterShift
-  Action= Replace 
-  Value= 0 
 
-Alias OuterRadius
-  Action= Replace 
-  Value= 61 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Strasse Inner
+  Radius= 27 mm
+  Z= 66.0 mm
+  Phi= @InnerPhi deg
+  Shift= 3 mm
+  Ref= 0 0 0 mm
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 Alias OuterPhi
   Action= Copy
   Value= 5 65 125 185 245 305
 
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%1
-Strasse Inner
-  Radius= @InnerRadius mm
-  Z= 68.5 mm
-  Phi= @InnerPhi deg
-  Shift= @InnerShift mm
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%1
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 Strasse Outer
-  Radius= @OuterRadius mm
-  Z= 93.5 mm
+  Radius= 61 mm
+  Z= 91.0 mm
   Phi= @OuterPhi deg
-  Shift= @OuterShift mm
+  Shift= 0 mm
+  Ref= 0 0 0 mm
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%1
 Strasse Chamber
   Z= -30 mm
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-Catana Dummy
- Z= 100 mm
+Catana CSV
+ Path= geometry/Catana.csv 
+ Pos= 0 0 100 mm
+ Rshift= 100 micrometer
+
 

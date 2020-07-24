@@ -18,6 +18,8 @@
  *                                                                           *
  *---------------------------------------------------------------------------*
  * Comment:                                                                  *
+ * Geometry of crystal based on official catana simulation from Samurai      *
+ * Collaboration                                                             *
  *                                                                           *
  *****************************************************************************/
 
@@ -50,21 +52,19 @@ class Catana : public NPS::VDetector{
     ////////////////////////////////////////////////////
   public:
     // Cartesian
-    void AddDummyDetector(double Z);
-    void AddDetectorType1(double R, double Theta, double Phi);
-    void AddDetectorType2(double R, double Theta, double Phi);
-    void AddDetectorType3(double R, double Theta, double Phi);
+    void AddDetector(double X, double Y, double Z, double Theta, double Phi, int ID,int Type,double Rshift=0);
+    void ReadCSV(string path,double Rshift);
 
-    G4LogicalVolume* BuildDummyDetector();
-    G4LogicalVolume* BuildDetectorType1();
-    G4LogicalVolume* BuildDetectorType2();
-    G4LogicalVolume* BuildDetectorType3();
+    G4LogicalVolume* BuildDetector(int Type);
+
   private:
-    G4LogicalVolume* m_DummyDetector;
     G4LogicalVolume* m_DetectorType1;
     G4LogicalVolume* m_DetectorType2;
     G4LogicalVolume* m_DetectorType3;
+    G4LogicalVolume* m_DetectorType4;
+    G4LogicalVolume* m_DetectorType5;
     
+
     ////////////////////////////////////////////////////
     //////  Inherite from NPS::VDetector class /////////
     ////////////////////////////////////////////////////
@@ -102,19 +102,33 @@ class Catana : public NPS::VDetector{
     ////////////////////////////////////////////////////
   private: // Geometry
     // Detector Coordinate 
+    vector<double>  m_X; 
+    vector<double>  m_Y; 
     vector<double>  m_Z; 
-    vector<double>  m_R1; 
-    vector<double>  m_R2; 
-    vector<double>  m_R3; 
-    vector<double>  m_Theta1; 
-    vector<double>  m_Theta2; 
-    vector<double>  m_Theta3; 
-    vector<double>  m_Phi1; 
-    vector<double>  m_Phi2; 
-    vector<double>  m_Phi3; 
+    vector<double>  m_Theta; 
+    vector<double>  m_Phi; 
+    vector<int>     m_ID;
+    vector<int>     m_Type;
+    G4ThreeVector   m_Ref;
+    // this parameter is here because some csv file have very small overlap
+    // due to difference between mechanical design and reality of the detector
+    // a shift is apply to the position of the crystal to slightly icrease the radius
+    // and avoid shift. Typical value shoulde be < 100um
+    vector<double>  m_Rshift;// additional shift to apply to csv file
+    // relative shift of crystal w/r to the housing
+    map<int,double>  m_Zoffset;
 
     // Visualisation Attribute
-    G4VisAttributes* m_VisCrystal;
+    G4VisAttributes* m_VisCrystal1;
+    G4VisAttributes* m_VisCrystal2;
+    G4VisAttributes* m_VisCrystal3;
+    G4VisAttributes* m_VisCrystal4;
+    G4VisAttributes* m_VisCrystal5;
+
+    G4VisAttributes* m_VisHousing;
+    G4VisAttributes* m_VisReflector;
+
+
 
   // Needed for dynamic loading of the library
   public:

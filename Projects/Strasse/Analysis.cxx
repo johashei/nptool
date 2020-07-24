@@ -62,35 +62,34 @@ void Analysis::Init(){
 
 ////////////////////////////////////////////////////////////////////////////////
 void Analysis::TreatEvent(){
-    // Reinitiate calculated variable
-    ReInitValue();
-    unsigned int size = Strasse->GetEventMultiplicity();
-    if(size==2){ // 2 proton detected
-        // Proton 1
-        TVector3 InnerPos1 = Strasse->GetInnerPositionOfInteraction(0);
-        TVector3 OuterPos1 = Strasse->GetOuterPositionOfInteraction(0);
-        TVector3 Proton1 = OuterPos1-InnerPos1;
-        // Proton 2
-        TVector3 InnerPos2 = Strasse->GetInnerPositionOfInteraction(1);
-        TVector3 OuterPos2 = Strasse->GetOuterPositionOfInteraction(1);
-        TVector3 Proton2 = OuterPos2-InnerPos2;
+  // Reinitiate calculated variable
+  ReInitValue();
+  unsigned int size = Strasse->GetEventMultiplicity();
+  if(size==2){ // 2 proton detected
+    // Proton 1
+    TVector3 InnerPos1 = Strasse->GetInnerPositionOfInteraction(0);
+    TVector3 OuterPos1 = Strasse->GetOuterPositionOfInteraction(0);
+    TVector3 Proton1 = OuterPos1-InnerPos1;
+    // Proton 2
+    TVector3 InnerPos2 = Strasse->GetInnerPositionOfInteraction(1);
+    TVector3 OuterPos2 = Strasse->GetOuterPositionOfInteraction(1);
+    TVector3 Proton2 = OuterPos2-InnerPos2;
 
-        double deltaPhi = abs(Proton1.Phi()/deg-Proton2.Phi()/deg);
-        double sumTheta = Proton1.Theta()/deg+Proton2.Theta()/deg;
-        double OpeningAngle = Proton1.Angle(Proton2)/deg;
-        cout << OpeningAngle << endl;  
-        // reject event that make no physical sense
-        if(deltaPhi<170 && sumTheta<80){
-            return;
-        }
-
-        // computing minimum distance of the two lines
-        TVector3 Vertex;
-        Distance = NPL::MinimumDistance(InnerPos1,OuterPos1,InnerPos2,OuterPos2,Vertex);
-        VertexX=Vertex.X();
-        VertexY=Vertex.Y();
-        VertexZ=Vertex.Z();
-    }
+    double deltaPhi = abs(Proton1.Phi()/deg-Proton2.Phi()/deg);
+    double sumTheta = Proton1.Theta()/deg+Proton2.Theta()/deg;
+    double OpeningAngle = Proton1.Angle(Proton2)/deg;
+    // reject event that make no physical sense
+    if(deltaPhi<170 && sumTheta<80){
+      return;
+      }
+    
+    // computing minimum distance of the two lines
+    TVector3 Vertex;
+    Distance = NPL::MinimumDistance(InnerPos1,OuterPos1,InnerPos2,OuterPos2,Vertex);
+    VertexX=Vertex.X();
+    VertexY=Vertex.Y();
+    VertexZ=Vertex.Z();
+  }
 
     //double thickness_before = 0;
     //double EA_vertex = BeamTarget.Slow(InitialBeamEnergy,thickness_before,0);

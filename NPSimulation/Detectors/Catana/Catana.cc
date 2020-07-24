@@ -16,11 +16,14 @@
  *                                                                           *
  *---------------------------------------------------------------------------*
  * Comment:                                                                  *
+ * Geometry of crystal based on official catana simulation from Samurai      *
+ * Collaboration                                                             *
  *                                                                           *
  *****************************************************************************/
 
 // C++ headers
 #include <sstream>
+#include <fstream>
 #include <cmath>
 #include <limits>
 //G4 Geometry object
@@ -62,8 +65,6 @@ namespace Catana_NS{
   const double EnergyThreshold = 0.1*MeV;
   const double ResoTime = 4.5*ns ;
   const double ResoEnergy = 1.0*MeV ;
-  double DummyInnerRadius = 200*mm ; 
-  double DummyOuterRadius = 600*mm ; 
   double Length = 600*mm ;
   string Material = "CsI";
 }
@@ -74,13 +75,20 @@ namespace Catana_NS{
 Catana::Catana(){
   m_Event = new TCatanaData() ;
   m_CatanaScorer = 0;
-  m_DummyDetector = 0;
   m_DetectorType1 = 0;
   m_DetectorType2 = 0;
   m_DetectorType3 = 0;
+  m_DetectorType4 = 0;
+  m_DetectorType5 = 0;
 
   // RGB Color + Transparency
-  m_VisCrystal = new G4VisAttributes(G4Colour(1, 0.8, 0, 0.2));   
+  m_VisCrystal1 = new G4VisAttributes(G4Colour(0.8, 0.3, 0.3, 0.3));   
+  m_VisCrystal2 = new G4VisAttributes(G4Colour(0.3, 0.8, 0.3, 0.3));   
+  m_VisCrystal3 = new G4VisAttributes(G4Colour(0.3, 0.3, 0.8, 0.3));   
+  m_VisCrystal4 = new G4VisAttributes(G4Colour(0.3, 0.8, 0.8, 0.3));   
+  m_VisCrystal5 = new G4VisAttributes(G4Colour(0.8, 0.3, 0.8, 0.3));   
+  m_VisHousing = new G4VisAttributes(G4Colour(0.3, 0.3, 0.3, 0.2));   
+  m_VisReflector = new G4VisAttributes(G4Colour(1, 1, 1, 0.1));   
 
 }
 
@@ -88,424 +96,287 @@ Catana::~Catana(){
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-void Catana::AddDummyDetector(double Z){
+void Catana::AddDetector(double X,double Y, double Z, double Theta, double Phi, int ID, int Type,double Rshift){
+  m_X.push_back(X);
+  m_Y.push_back(Y);
   m_Z.push_back(Z);
-}
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-void Catana::AddDetectorType1(double R, double Theta, double Phi){
-  m_R1.push_back(R);
-  m_Theta1.push_back(Theta);
-  m_Phi1.push_back(Phi);
-}
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-void Catana::AddDetectorType2(double R, double Theta, double Phi){
-  m_R2.push_back(R);
-  m_Theta2.push_back(Theta);
-  m_Phi2.push_back(Phi);
-}
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-void Catana::AddDetectorType3(double R, double Theta, double Phi){
-  m_R3.push_back(R);
-  m_Theta3.push_back(Theta);
-  m_Phi3.push_back(Phi);
+  m_Theta.push_back(Theta);
+  m_Phi.push_back(Phi);
+  m_ID.push_back(ID);
+  m_Type.push_back(Type);
+  m_Rshift.push_back(Rshift);
 }
 
-
-
-
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-G4LogicalVolume* Catana::BuildDummyDetector(){
-  if(!m_DummyDetector){
-    G4Tubs* tub = new G4Tubs("Catana_Dummy",Catana_NS::DummyInnerRadius,Catana_NS::DummyOuterRadius,Catana_NS::Length*0.5,0,360*deg);
-
-    G4Material* DetectorMaterial = MaterialManager::getInstance()->GetMaterialFromLibrary(Catana_NS::Material);
-    m_DummyDetector = new G4LogicalVolume(tub,DetectorMaterial,"logic_Catana_tub",0,0,0);
-    m_DummyDetector->SetVisAttributes(m_VisCrystal);
-    m_DummyDetector->SetSensitiveDetector(m_CatanaScorer);
-
+void Catana::ReadCSV(string path,double Rshift){
+  std::ifstream csv(path); 
+  if(!csv.is_open()){
+    std::ostringstream message;
+    message << "Catana csv file " << path << " not found " << std::endl;
   }
-  return m_DummyDetector;
+
+
+  int ID, type,layer;
+  double X,Y,Z,Theta,Phi;
+  string buffer;
+  // ignore first line
+  getline(csv,buffer);
+  while(csv >> ID >> buffer >> type >> buffer >> layer >> buffer >> X >> buffer >> Y >> buffer >> Z >> buffer >> Theta >> buffer >> Phi){
+      if(type<6)
+      AddDetector(X,Y,Z,Theta*deg,Phi*deg,ID,type,Rshift);
+      else{
+        // ignore other type for which I don't have the geometry
+        }
+  }
+
+  return;
 }
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-G4LogicalVolume* Catana::BuildDetectorType1(){
+G4LogicalVolume* Catana::BuildDetector(int Type){
+  // Check if the requested detector already exist
+  if(Type==1 && m_DetectorType1)
+      return m_DetectorType1;
+  
+  else if(Type==2 && m_DetectorType2)
+      return m_DetectorType2;
+  
+  else if(Type==3 && m_DetectorType3)
+      return m_DetectorType3;
 
-  if(!m_DetectorType1){
+  else if(Type==4 && m_DetectorType4)
+      return m_DetectorType4;
+
+  else if(Type==5 && m_DetectorType5)
+      return m_DetectorType5;
+
+
+  // Define the requested geometry
+    double x1,x2,x3,x4,y1,y2,z,crystalz;
+    int pmttype; // 1: H7195, 2:H11934
+    double seal_dt = 12*mm, housing_dt = 0.5*mm, reflector_dt = 0.5*mm;
+
+    if(Type == 1){ // crystal type 1
+      x1 = 62.3*mm; x2 = 62.3*mm; x3 = 95.7*mm; y1 = 36.6*mm; y2 = 56.3*mm;
+      z = 107*mm; crystalz = 93.*mm; pmttype = 1;
+    }
+    if(Type == 2){ // crystal type 2
+      x1 = 57.1*mm; x2 = 63.6*mm; x3 = 84.5*mm; y1 = 34.9*mm; y2 = 55.4*mm;
+      z = 117*mm; crystalz = 103.*mm; pmttype = 1;
+    }
+    if(Type == 3){ // crystal type 3
+      x1 = 49.7*mm; x2 = 58.5*mm; x3 = 74.9*mm; y1 = 38.3*mm; y2 = 64.7*mm;
+      z = 137*mm; crystalz = 123.*mm; pmttype = 1;
+    }
+    if(Type == 4){ // crystal type 4
+      x1 = 40.0*mm; x2 = 50.2*mm; x3 = 60.3*mm; y1 = 38.3*mm; y2 = 66.4*mm;
+      z = 152*mm; crystalz = 138.5*mm; pmttype = 1;
+    }
+    if(Type == 5){ // crystal type 5
+      x1 = 28.4*mm; x2 = 39.7*mm; x3 = 41.5*mm; y1 = 38.3*mm; y2 = 69.9*mm;
+      z = 162*mm; crystalz = 148.5*mm; pmttype = 2;
+    }
+    x4 = x3 + (y2/y1)*(x2-x1); // planarity condition
+    Double_t beta1 = 90*deg + std::atan((x2-x1)/(y1*2));// should be
+    Double_t beta2 = 90*deg + std::atan((x4-x3)/(y2*2));// beta1 = beta2
+    if(std::abs(beta1-beta2)>1e-4){
+      std::cout << "Housing type " << Type << " is not planar" << std::endl;
+    }
+
+    // Define Material
+    G4Material* CsI = MaterialManager::getInstance()->GetMaterialFromLibrary("CsI");
+    G4Material* Al = MaterialManager::getInstance()->GetMaterialFromLibrary("Al");
+    G4Material* Vacuum= MaterialManager::getInstance()->GetMaterialFromLibrary("Vacuum");
+    G4Material* Teflon= MaterialManager::getInstance()->GetMaterialFromLibrary("G4_TEFLON");
+    G4RotationMatrix* Rot= new G4RotationMatrix();
+
+
+    // Parameters for G4Trap
+    double pDz, pDy1, pDy2, pDx1, pDx2, pDx3, pDx4;
+    double pTheta=0.*deg, pPhi=0.*deg, pAlp1=0.*deg, pAlp2=0*deg;
+
+    // housing outside
+    pDz  = z*0.5; 
+    pDy1 = y1*0.5;
+    pDy2 = y2*0.5;
+    pDx1 = x1*0.5;
+    pDx2 = x2*0.5;
+    pDx3 = x3*0.5;
+    pDx4 = x4*0.5;
+    
+    G4Trap *solidHousingOUT = new G4Trap("solidHousingOut", pDz, pTheta, pPhi,
+					 pDy1, pDx1, pDx2, pAlp1, pDy2, pDx3,
+					 pDx4, pAlp2);
+
+    G4LogicalVolume* result = 0;
+    if(Type==1){
+      m_DetectorType1  = new G4LogicalVolume(solidHousingOUT,
+        Vacuum,
+        "logicDetectorType1",
+        0,0,0);
+      result = m_DetectorType1; 
+      }
+    else if(Type==2){
+      m_DetectorType2  = new G4LogicalVolume(solidHousingOUT,
+        Vacuum,
+        "logicDetectorType2",
+        0,0,0);
+      result = m_DetectorType2; 
+      }
+
+
+    else if(Type==3){
+      m_DetectorType3  = new G4LogicalVolume(solidHousingOUT,
+        Vacuum,
+        "logicDetectorType3",
+        0,0,0);
+      result = m_DetectorType3; 
+      }
+
+
+    else if(Type==4){
+      m_DetectorType4  = new G4LogicalVolume(solidHousingOUT,
+        Vacuum,
+        "logicDetectorType4",
+        0,0,0);
+      result = m_DetectorType4; 
+      }
    
-  G4Material* CsI = MaterialManager::getInstance()->GetMaterialFromLibrary("CsI");
-  G4Material* Al = MaterialManager::getInstance()->GetMaterialFromLibrary("Al");
-  G4Material* Vacuum= MaterialManager::getInstance()->GetMaterialFromLibrary("Vacuum");
-  G4Material* Teflon= MaterialManager::getInstance()->GetMaterialFromLibrary("G4_TEFLON");
-  G4RotationMatrix* Rot= new G4RotationMatrix();
-  // -- Al housing outside --
-  double Dz = 98/2.*mm;
-  double Theta = 0.*deg;
-  double Phi = 0.*deg;
-  double Dy1 = 36.6/2*mm;
-  double Dx1 = 62.3/2*mm;
-  double Dx2 = Dx1;
-  double Alp1 = 0*deg;
-  double Dy2 = 54.0/2*mm;
-  double Dx3 = 92.1/2*mm;
-  double Dx4 = Dx3;
-  double Alp2 = 0*deg;
-
-  G4Trap *solidDetectorType1 = new G4Trap("CatanaDetectorType1",Dz, Theta, Phi,
-					Dy1, Dx1,Dx2, Alp1, Dy2, Dx3,
-					Dx4, Alp2);
-
-  m_DetectorType1  = new G4LogicalVolume(solidDetectorType1,
-					   Vacuum,
-					   "logicDetectorType1",
-					   0,0,0);
-  
-  G4Trap *solidHousingOUT1 = new G4Trap("solidHousingOUT1",Dz, Theta, Phi,
-					Dy1, Dx1,Dx2, Alp1, Dy2, Dx3,
-					Dx4, Alp2);
-
-  // -- Al housing inside --
-  Dz = 97./2.*mm;
-  Theta = 0*deg;
-  Phi = 0*deg;
-  Dy1 = 35.6/2.*mm;
-  Dx1 = 61.3/2.*mm;
-  Dx2 = Dx1;
-  Alp1 = 0*deg;
-  Dy2 = 53.0/2.*mm;
-  Dx3 = 91.1/2.*mm;
-  Dx4 = Dx3;
-  Alp2 = 0*deg;
-
-  G4Trap* solidHousingIN1 = new G4Trap("solidHousingIN1",Dz, Theta, Phi,
-				       Dy1, Dx1, Dx2, Alp1, Dy2, Dx3,
-				       Dx4, Alp2);
-  
-  G4SubtractionSolid* solidHousing1 =
-    new G4SubtractionSolid("solidHousing1",solidHousingOUT1,// mother
-			   solidHousingIN1, Rot,
-			   G4ThreeVector(0.,0.,0.));
-
-  G4LogicalVolume* LogicType1Housing = new G4LogicalVolume(solidHousing1,
-					   Al,
-					   "logicHousing1",
-					   0,0,0);
-  
-   new G4PVPlacement(G4Transform3D(*Rot,G4ThreeVector(0,0,0)),
-          LogicType1Housing,
-          "CatanaHousingType1",m_DetectorType1,false,0);
-
-  // -- Crystal -- 
-  Dz = 93./2.*mm;
-  Theta = 0*deg;
-  Phi = 0*deg;
-  Dy1 = 31.6/2.*mm;
-  Dx1 = 57.3/2.*mm;
-  Dx2 = Dx1;
-  Alp1 = 0*deg;
-  Dy2 = 49.0/2.*mm;
-  Dx3 = 87.1/2.*mm;
-  Dx4 = Dx3;
-  Alp2 = 0*deg;
-
-  G4Trap* solidCrystal1 = new G4Trap("solidCrystal1",Dz, Theta, Phi,
-				     Dy1, Dx1, Dx2, Alp1, Dy2, Dx3,
-				     Dx4, Alp2);
-
-  G4LogicalVolume* logicCrystal1 = new G4LogicalVolume(solidCrystal1,// solid
-					   CsI, // Material
-					   "logicCrystal1", // name
-					   0,0,0);
-
-    m_DetectorType1->SetVisAttributes(m_VisCrystal);
-    m_DetectorType1->SetSensitiveDetector(m_CatanaScorer);
-
-  new G4PVPlacement(G4Transform3D(*Rot,G4ThreeVector(0,0,0)),
-          logicCrystal1,
-          "CatanaCrystalType1",m_DetectorType1,false,0);
+   else if(Type==5){
+      m_DetectorType5  = new G4LogicalVolume(solidHousingOUT,
+        Vacuum,
+        "logicDetectorType5",
+        0,0,0);
+      result = m_DetectorType5; 
+      }
 
 
-  // -- Teflon reflector: thickness is 0.25mm
-  Dz += 0.25*mm;
-  Dy1 += 0.25*mm;
-  Dx1 += 0.25*mm;
-  Dx2 = Dx1;
-  Dy2 += 0.25*mm;
-  Dx3 += 0.25*mm;
-  Dx4 = Dx3;
-
-  G4Trap* solidReflectorOUT1 = new G4Trap("solidReflectorOUT1",Dz, Theta,
-					  Phi, Dy1, Dx1, Dx2, Alp1,
-					  Dy2, Dx3, Dx4, Alp2);
-
-  G4RotationMatrix rotmat(0,0,0);
-  G4SubtractionSolid* solidReflector1 =
-    new G4SubtractionSolid("solidReflector1",solidReflectorOUT1,// mother
-			   solidCrystal1, &rotmat,
-			   G4ThreeVector(0.,0.,0.));
-
-  G4LogicalVolume* logicReflectorType1 = new G4LogicalVolume(solidReflector1,
-					     Teflon,
-					     "logicReflector1",
-					     0,0,0);
-  
-  new G4PVPlacement(G4Transform3D(*Rot,G4ThreeVector(0,0,0)),
-          logicReflectorType1,
-          "CatanaReflectorType1",m_DetectorType1,false,0);
+    result->SetVisAttributes(G4VisAttributes::Invisible);
 
 
-  }
-  return m_DetectorType1;
+    // -- Al housing inside
+    double length = z;
+    double ax1 = pDx1;
+    double bx1 = pDx3;
+    double ax2 = pDx2;
+    double bx2 = pDx4;
+    double ay1 = pDy1;
+    double by1 = pDy2;
+
+    pDz = (length - seal_dt - housing_dt)/2.;
+    pDy1 = (by1-ay1)/length * housing_dt + ay1 - housing_dt;
+    pDx1 = (bx1-ax1)/length * housing_dt + ax1 - housing_dt;
+    pDx2 = (bx2-ax2)/length * housing_dt + ax2 - housing_dt;
+    pDy2 = (by1-ay1)/length * (length - seal_dt) + ay1 - housing_dt;
+    pDx3 = (bx1-ax1)/length * (length - seal_dt) + ax1 - housing_dt;
+    //pDx4 = (bx2-ax2)/length * (length - seal_dt) + ax2 - housing_dt;
+    pDx4 = pDx3 + (pDy2 / pDy1)*(pDx2 - pDx1); // planarity condition
+    
+    G4Trap* solidHousingIN = new G4Trap("solidHousingIN", pDz, pTheta, pPhi,
+					pDy1, pDx1, pDx2, pAlp1, pDy2, pDx3,
+					pDx4, pAlp2);
+ 
+
+    double offset = -(length*0.5 - pDz - housing_dt);
+    G4SubtractionSolid* solidHousing = 
+      new G4SubtractionSolid("solidHousing", solidHousingOUT,// mother
+			     solidHousingIN, Rot,
+			     G4ThreeVector(0.,0.,offset));
+
+    G4LogicalVolume* LogicHousing = new G4LogicalVolume(solidHousing, Al,"logicHousing",0,0,0);
+    LogicHousing->SetVisAttributes(m_VisHousing);
+
+    // -- Crystal --
+    double space = 2.*mm; // space btw. crystal and housing
+    length = pDz * 2.; // housing inner z length
+    ax1 = pDx1;
+    bx1 = pDx3;
+    ax2 = pDx2;
+    bx2 = pDx4;
+    ay1 = pDy1;
+    by1 = pDy2;
+
+    pDz = crystalz*0.5;    
+    pDy1 = (by1-ay1)/length * reflector_dt + ay1 - space;
+    pDx1 = (bx1-ax1)/length * reflector_dt + ax1 - space;
+    pDx2 = (bx2-ax2)/length * reflector_dt + ax2 - space;
+    pDy2 = (by1-ay1)/length * (reflector_dt + crystalz) + ay1 - space;
+    pDx3 = (bx1-ax1)/length * (reflector_dt + crystalz) + ax1 - space;
+    //pDx4 = (bx2-ax2)/length * (reflector_dt + crystalz) + ax2 - space;
+    pDx4 = pDx3 + (pDy2 / pDy1)*(pDx2 - pDx1); // planarity condition
+    
+    G4Trap* solidCrystal = new G4Trap("solidCrystal", pDz, pTheta, pPhi,
+				      pDy1, pDx1, pDx2, pAlp1, pDy2, pDx3,
+				      pDx4, pAlp2);
+
+    G4LogicalVolume* LogicCrystal = new G4LogicalVolume(solidCrystal,// solid
+					       CsI,
+					       "SolidCrystal",
+					       0,0,0);
+    if(Type==1)
+      LogicCrystal->SetVisAttributes(m_VisCrystal1);
+    
+    else if(Type==2)
+      LogicCrystal->SetVisAttributes(m_VisCrystal2);
+    
+    else if(Type==3)
+      LogicCrystal->SetVisAttributes(m_VisCrystal3);
+
+    else if(Type==4)
+      LogicCrystal->SetVisAttributes(m_VisCrystal4);
+
+    else if(Type==5)
+      LogicCrystal->SetVisAttributes(m_VisCrystal5);
+
+
+    LogicCrystal->SetSensitiveDetector(m_CatanaScorer);
+
+    // -- Teflon reflector
+    length = crystalz;
+    ax1 = pDx1;
+    bx1 = pDx3;
+    ax2 = pDx2;
+    bx2 = pDx4;
+    ay1 = pDy1;
+    by1 = pDy2;
+
+    pDz = crystalz*0.5 + reflector_dt;
+    pDy1 = (by1-ay1)/length * -reflector_dt + ay1 + reflector_dt;
+    pDx1 = (bx1-ax1)/length * -reflector_dt + ax1 + reflector_dt;
+    pDx2 = (bx2-ax2)/length * -reflector_dt + ax2 + reflector_dt;
+    pDy2 = (by1-ay1)/length * (reflector_dt + crystalz) + ay1 + reflector_dt;
+    pDx3 = (bx1-ax1)/length * (reflector_dt + crystalz) + ax1 + reflector_dt;
+    //pDx4 = (bx2-ax2)/length * (reflector_dt + crystalz) + ax2 + reflector_dt;
+    pDx4 = pDx3 + (pDy2 / pDy1)*(pDx2 - pDx1); // planarity condition
+
+    G4Trap* solidReflector = new G4Trap("solidReflector",pDz, pTheta,
+					   pPhi, pDy1, pDx1, pDx2, pAlp1,
+					   pDy2, pDx3, pDx4, pAlp2);
+ 
+    G4LogicalVolume* LogicReflector = new G4LogicalVolume(solidReflector, Teflon,
+						 "logicReflector",
+						 0,0,0);
+
+    LogicReflector->SetVisAttributes(m_VisReflector);
+
+    // Place volume in each other:
+     new G4PVPlacement(G4Transform3D(*Rot,G4ThreeVector(0,0,0)),
+        LogicHousing,
+        "CatanaHousing",result,false,0);
+     
+
+     m_Zoffset[Type] = (z - crystalz)*0.5 - housing_dt - reflector_dt;
+
+     new G4PVPlacement(G4Transform3D(*Rot,G4ThreeVector(0,0,-m_Zoffset[Type])),
+        LogicReflector,
+        "CatanaReflector",result,false,0);
+     
+     new G4PVPlacement(G4Transform3D(*Rot,G4ThreeVector(0,0,0)),
+        LogicCrystal,
+        "CatanaCrystal",LogicReflector,false,0);
+     
+  return result;
+
 }
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-G4LogicalVolume* Catana::BuildDetectorType2(){
-
-  if(!m_DetectorType2){
-   
-  G4Material* CsI = MaterialManager::getInstance()->GetMaterialFromLibrary("CsI");
-  G4Material* Al = MaterialManager::getInstance()->GetMaterialFromLibrary("Al");
-  G4Material* Vacuum= MaterialManager::getInstance()->GetMaterialFromLibrary("Vacuum");
-  G4Material* Teflon= MaterialManager::getInstance()->GetMaterialFromLibrary("G4_TEFLON");
-  G4RotationMatrix* Rot= new G4RotationMatrix();
-  // -- Al housing outside --
-  //
-  double Dz = 107/2.*mm;
-  double Dy1 = 34.9/2.*mm;
-  double Dy2 = 55.4/2.*mm;//measured by ruler
-  double Dx1 = 57.1/2.*mm;
-  double Dx2 = 63.6/2.*mm;
-  double Dx3 = 84.5/2.*mm;//measured by ruler
-  double Dx4 = Dx3 + (Dy2/Dy1)*(Dx2-Dx1);//planarity condition
-  double Theta = 0.*deg;
-  double Phi = 0.*deg;
-  double Alp1 = 0*deg;
-  double Alp2 = 0*deg;
-
-
-  G4Trap *solidDetectorType2 = new G4Trap("CatanaDetectorType2",Dz, Theta, Phi,
-					Dy1, Dx1,Dx2, Alp1, Dy2, Dx3,
-					Dx4, Alp2);
-
-  m_DetectorType2  = new G4LogicalVolume(solidDetectorType2,
-					   Vacuum,
-					   "logicDetectorType2",
-					   0,0,0);
-  
-  G4Trap *solidHousingOUT2 = new G4Trap("solidHousingOUT2",Dz, Theta, Phi,
-					Dy1, Dx1,Dx2, Alp1, Dy2, Dx3,
-					Dx4, Alp2);
-
-  // -- Al housing inside --
-  Dz  -= 0.5*mm;
-  Dy1 -= 0.5*mm;
-  Dy2 -= 0.5*mm;
-  Dx1 -= 0.5*mm;
-  Dx2 -= 0.5*mm;
-  Dx3 -= 0.5*mm;
-
-  Dx4 = Dx3 + (Dy2/Dy1)*(Dx2-Dx1);//planarity condition
-  G4Trap* solidHousingIN2 = new G4Trap("solidHousingIN2",Dz, Theta, Phi,
-				       Dy1, Dx1, Dx2, Alp1, Dy2, Dx3,
-				       Dx4, Alp2);
-  
-  G4SubtractionSolid* solidHousing2 =
-    new G4SubtractionSolid("solidHousing2",solidHousingOUT2,// mother
-			   solidHousingIN2, Rot,
-			   G4ThreeVector(0.,0.,0.));
-
-  G4LogicalVolume* LogicType2Housing = new G4LogicalVolume(solidHousing2,
-					   Al,
-					   "logicHousing2",
-					   0,0,0);
-  
-   new G4PVPlacement(G4Transform3D(*Rot,G4ThreeVector(0,0,0)),
-          LogicType2Housing,
-          "CatanaHousingType2",m_DetectorType2,false,0);
-
-  // -- Crystal -- 
-  Dz = 103./2.*mm;
-  Dy1 -= 2.*mm;
-  Dy2 -= 2.*mm;
-  Dx1 -= 2.*mm;
-  Dx2 -= 2.*mm;
-  Dx3 -= 2.*mm;
-  Dx4 = Dx3 + (Dy2/Dy1)*(Dx2-Dx1);//planarity condition
-
-  G4Trap* solidCrystal2= new G4Trap("solidCrystal2",Dz, Theta, Phi,
-				     Dy1, Dx1, Dx2, Alp1, Dy2, Dx3,
-				     Dx4, Alp2);
-
-  G4LogicalVolume* logicCrystal2 = new G4LogicalVolume(solidCrystal2,// solid
-					   CsI, // Material
-					   "logicCrystal1", // name
-					   0,0,0);
-
-    m_DetectorType2->SetVisAttributes(m_VisCrystal);
-    m_DetectorType2->SetSensitiveDetector(m_CatanaScorer);
-
-  new G4PVPlacement(G4Transform3D(*Rot,G4ThreeVector(0,0,0)),
-          logicCrystal2,
-          "CatanaCrystalType2",m_DetectorType2,false,0);
-
-
-  // -- Teflon reflector: thickness is 0.25mm
-  Dz += 0.25*mm;
-  Dy1 += 0.25*mm;
-  Dy2 += 0.25*mm;
-  Dx1 += 0.25*mm;
-  Dx2 += 0.25*mm;
-  Dx3 += 0.25*mm;
-  Dx4 = Dx3 + (Dy2/Dy1)*(Dx2-Dx1);//planarity condition
-
-  G4Trap* solidReflectorOUT2 = new G4Trap("solidReflectorOUT2",Dz, Theta,
-					  Phi, Dy1, Dx1, Dx2, Alp1,
-					  Dy2, Dx3, Dx4, Alp2);
-
-  G4RotationMatrix rotmat(0,0,0);
-  G4SubtractionSolid* solidReflector2 =
-    new G4SubtractionSolid("solidReflector2",solidReflectorOUT2,// mother
-			   solidCrystal2, &rotmat,
-			   G4ThreeVector(0.,0.,0.));
-
-  G4LogicalVolume* logicReflectorType2 = new G4LogicalVolume(solidReflector2,
-					     Teflon,
-					     "logicReflector2",
-					     0,0,0);
-  
-  new G4PVPlacement(G4Transform3D(*Rot,G4ThreeVector(0,0,0)),
-          logicReflectorType2,
-          "CatanaReflectorType2",m_DetectorType2,false,0);
-
-
-  }
-  return m_DetectorType2;
-}
-
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-G4LogicalVolume* Catana::BuildDetectorType3(){
-
-  if(!m_DetectorType3){
-   
-  G4Material* CsI = MaterialManager::getInstance()->GetMaterialFromLibrary("CsI");
-  G4Material* Al = MaterialManager::getInstance()->GetMaterialFromLibrary("Al");
-  G4Material* Vacuum= MaterialManager::getInstance()->GetMaterialFromLibrary("Vacuum");
-  G4Material* Teflon= MaterialManager::getInstance()->GetMaterialFromLibrary("G4_TEFLON");
-  G4RotationMatrix* Rot= new G4RotationMatrix();
-  // -- Al housing outside --
-  //
-  double Dz = 127/2.*mm;
-  double Dy1 = 38.3/2.*mm;
-  double Dy2 = 64.7/2.*mm;
-  double Dx1 = 49.7/2.*mm;
-  double Dx2 = 58.5/2.*mm;
-  double Dx3 = 74.9/2.*mm;
-  double Dx4 = Dx3 + (Dy2/Dy1)*(Dx2-Dx1);//planarity condition
-  double Theta = 0.*deg;
-  double Phi = 0.*deg;
-  double Alp1 = 0*deg;
-  double Alp2 = 0*deg;
-
-
-  G4Trap *solidDetectorType3 = new G4Trap("CatanaDetectorType3",Dz, Theta, Phi,
-					Dy1, Dx1,Dx2, Alp1, Dy2, Dx3,
-					Dx4, Alp2);
-
-  m_DetectorType3  = new G4LogicalVolume(solidDetectorType3,
-					   Vacuum,
-					   "logicDetectorType3",
-					   0,0,0);
-  
-  G4Trap *solidHousingOUT3 = new G4Trap("solidHousingOUT3",Dz, Theta, Phi,
-					Dy1, Dx1,Dx2, Alp1, Dy2, Dx3,
-					Dx4, Alp2);
-
-  // -- Al housing inside --
-  Dz = 127./2.*mm;
-  Dy1 -= 0.5*mm;
-  Dy2 -= 0.5*mm;
-  Dx1 -= 0.5*mm;
-  Dx2 -= 0.5*mm;
-  Dx3 -= 0.5*mm;
-  Dx4 = Dx3 + (Dy2/Dy1)*(Dx2-Dx1);//planarity condition
-
-  G4Trap* solidHousingIN3 = new G4Trap("solidHousingIN3",Dz, Theta, Phi,
-				       Dy1, Dx1, Dx2, Alp1, Dy2, Dx3,
-				       Dx4, Alp2);
-  
-  G4SubtractionSolid* solidHousing3 =
-    new G4SubtractionSolid("solidHousing3",solidHousingOUT3,// mother
-			   solidHousingIN3, Rot,
-			   G4ThreeVector(0.,0.,0.));
-
-  G4LogicalVolume* LogicType3Housing = new G4LogicalVolume(solidHousing3,
-					   Al,
-					   "logicHousing3",
-					   0,0,0);
-  
-   new G4PVPlacement(G4Transform3D(*Rot,G4ThreeVector(0,0,0)),
-          LogicType3Housing,
-          "CatanaHousingType3",m_DetectorType3,false,0);
-
-  // -- Crystal -- 
-  Dz = 123./2.*mm;
-  Dy1 -= 2.*mm;
-  Dy2 -= 2.*mm;
-  Dx1 -= 2.*mm;
-  Dx2 -= 2.*mm;
-  Dx3 -= 2.*mm;
-  Dx4 = Dx3 + (Dy2/Dy1)*(Dx2-Dx1);//planarity condition
-
-  G4Trap* solidCrystal3= new G4Trap("solidCrystal3",Dz, Theta, Phi,
-				     Dy1, Dx1, Dx2, Alp1, Dy2, Dx3,
-				     Dx4, Alp2);
-
-  G4LogicalVolume* logicCrystal3 = new G4LogicalVolume(solidCrystal3,// solid
-					   CsI, // Material
-					   "logicCrystal3", // name
-					   0,0,0);
-
-    m_DetectorType3->SetVisAttributes(m_VisCrystal);
-    m_DetectorType3->SetSensitiveDetector(m_CatanaScorer);
-
-  new G4PVPlacement(G4Transform3D(*Rot,G4ThreeVector(0,0,0)),
-          logicCrystal3,
-          "CatanaCrystalType3",m_DetectorType3,false,0);
-
-
-  // -- Teflon reflector: thickness is 0.25mm
-  Dz += 0.25*mm;
-  Dy1 += 0.25*mm;
-  Dy2 += 0.25*mm;
-  Dx1 += 0.25*mm;
-  Dx2 += 0.25*mm;
-  Dx3 += 0.25*mm;
-  Dx4 = Dx3 + (Dy2/Dy1)*(Dx2-Dx1);//planarity condition
-
-  G4Trap* solidReflectorOUT3 = new G4Trap("solidReflectorOUT3",Dz, Theta,
-					  Phi, Dy1, Dx1, Dx2, Alp1,
-					  Dy2, Dx3, Dx4, Alp2);
-
-  G4RotationMatrix rotmat(0,0,0);
-  G4SubtractionSolid* solidReflector3 =
-    new G4SubtractionSolid("solidReflector3",solidReflectorOUT3,// mother
-			   solidCrystal3, &rotmat,
-			   G4ThreeVector(0.,0.,0.));
-
-  G4LogicalVolume* logicReflectorType3 = new G4LogicalVolume(solidReflector3,
-					     Teflon,
-					     "logicReflector3",
-					     0,0,0);
-  
-  new G4PVPlacement(G4Transform3D(*Rot,G4ThreeVector(0,0,0)),
-          logicReflectorType3,
-          "CatanaReflectorType3",m_DetectorType3,false,0);
-
-
-  }
-  return m_DetectorType3;
-}
-
-
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -515,80 +386,48 @@ G4LogicalVolume* Catana::BuildDetectorType3(){
 // Read stream at Configfile to pick-up parameters of detector (Position,...)
 // Called in DetecorConstruction::ReadDetextorConfiguration Method
 void Catana::ReadConfiguration(NPL::InputParser parser){
-  // Dummy
-  vector<NPL::InputBlock*> blocks = parser.GetAllBlocksWithTokenAndValue("Catana","Dummy");
+  // CSV config
+  vector<NPL::InputBlock*> blocks = parser.GetAllBlocksWithTokenAndValue("Catana","CSV");
   if(NPOptionManager::getInstance()->GetVerboseLevel())
-    cout << "//// " << blocks.size() << " detectors found " << endl; 
+    cout << "//// " << blocks.size() << " CSV block found " << endl; 
 
-  vector<string> token = {"Z"};
+  vector<string> token = {"Path","Pos","Rshift"};
 
   for(unsigned int i = 0 ; i < blocks.size() ; i++){
     if(blocks[i]->HasTokenList(token)){
       if(NPOptionManager::getInstance()->GetVerboseLevel())
         cout << endl << "////  Catana " << i+1 <<  endl;
-      double Z = blocks[i]->GetDouble("Z","mm");
-      AddDummyDetector(Z);
+      string path = blocks[i]->GetString("Path");
+      double Rshift = blocks[i]->GetDouble("Rshift","micrometer");
+      // Reference position of the whole array
+      m_Ref = NPS::ConvertVector(blocks[i]->GetTVector3("Pos","mm"));
+      ReadCSV(path,Rshift);
     }
     else{
       cout << "ERROR: check your input file formatting " << endl;
       exit(1);
     }
   }
-
+ 
   // Type 1
-  blocks = parser.GetAllBlocksWithTokenAndValue("Catana","Type1");
+  blocks = parser.GetAllBlocksWithTokenAndValue("Catana","Detector");
   if(NPOptionManager::getInstance()->GetVerboseLevel())
     cout << "//// " << blocks.size() << " detectors found " << endl; 
 
-  token = {"R","Theta","Phi"};
+  token = {"X","Y","Z","Theta","Phi","ID","Type"};
 
   for(unsigned int i = 0 ; i < blocks.size() ; i++){
     if(blocks[i]->HasTokenList(token)){
       if(NPOptionManager::getInstance()->GetVerboseLevel())
         cout << endl << "////  Catana " << i+1 <<  endl;
-      double R = blocks[i]->GetDouble("R","mm");
+      double X = blocks[i]->GetDouble("X","mm");
+      double Y = blocks[i]->GetDouble("Y","mm");
+      double Z = blocks[i]->GetDouble("Z","mm");
       double Theta = blocks[i]->GetDouble("Theta","deg");
       double Phi = blocks[i]->GetDouble("Phi","deg");
-      AddDetectorType1(R,Theta,Phi);
-    }
-    else{
-      cout << "ERROR: check your input file formatting " << endl;
-      exit(1);
-    }
-  }
- // Type 2
-  blocks = parser.GetAllBlocksWithTokenAndValue("Catana","Type2");
-  if(NPOptionManager::getInstance()->GetVerboseLevel())
-    cout << "//// " << blocks.size() << " detectors found " << endl; 
-
-  for(unsigned int i = 0 ; i < blocks.size() ; i++){
-    if(blocks[i]->HasTokenList(token)){
-      if(NPOptionManager::getInstance()->GetVerboseLevel())
-        cout << endl << "////  Catana " << i+1 <<  endl;
-      double R = blocks[i]->GetDouble("R","mm");
-      double Theta = blocks[i]->GetDouble("Theta","deg");
-      double Phi = blocks[i]->GetDouble("Phi","deg");
-      AddDetectorType2(R,Theta,Phi);
-    }
-    else{
-      cout << "ERROR: check your input file formatting " << endl;
-      exit(1);
-    }
-  }
-   // Type 2
-  blocks = parser.GetAllBlocksWithTokenAndValue("Catana","Type3");
-  if(NPOptionManager::getInstance()->GetVerboseLevel())
-    cout << "//// " << blocks.size() << " detectors found " << endl; 
-
-  for(unsigned int i = 0 ; i < blocks.size() ; i++){
-    if(blocks[i]->HasTokenList(token)){
-      if(NPOptionManager::getInstance()->GetVerboseLevel())
-        cout << endl << "////  Catana " << i+1 <<  endl;
-      double R = blocks[i]->GetDouble("R","mm");
-      double Theta = blocks[i]->GetDouble("Theta","deg");
-      double Phi = blocks[i]->GetDouble("Phi","deg");
-      AddDetectorType3(R,Theta,Phi);
-
+      int    ID  = blocks[i]->GetInt("ID");
+      int    Type =  blocks[i]->GetInt("Type"); 
+      AddDetector(X,Y,Z,Theta,Phi,ID,Type);
     }
     else{
       cout << "ERROR: check your input file formatting " << endl;
@@ -604,45 +443,26 @@ void Catana::ReadConfiguration(NPL::InputParser parser){
 // Construct detector and inialise sensitive part.
 // Called After DetecorConstruction::AddDetector Method
 void Catana::ConstructDetector(G4LogicalVolume* world){
-  for (unsigned short i = 0 ; i < m_R1.size() ; i++) {
-
-    G4ThreeVector Det_pos = G4ThreeVector(0,0,m_R1[i]) ;
-    Det_pos.setTheta(m_Theta1[i]);
-    Det_pos.setPhi(m_Phi1[i]);
+  for (unsigned short i = 0 ; i < m_X.size() ; i++) {
+    if(m_Type[i]>5)
+      exit(1);
+    BuildDetector(m_Type[i]);
+    // Reference coordinate given for center of crystal
+    G4ThreeVector Det_pos = G4ThreeVector(m_X[i],m_Y[i],m_Z[i]) ;
+    // But placed volume is casing which is shifted w/respect to crystal 
+    G4ThreeVector Det_dir = Det_pos;
+    Det_dir.unit();
+    // had to add a 70micron in radius to avoid overlap when using official
+    // csv simulation file
+    Det_dir.setMag(m_Zoffset[m_Type[i]]+m_Rshift[i]);
+    Det_pos+=Det_dir+m_Ref;
     G4RotationMatrix* Rot = new G4RotationMatrix();
-    Rot->rotateY(m_Theta1[i]);
-    Rot->rotateZ(m_Phi1[i]);
+    Rot->rotateX(-m_Theta[i]);
+    Rot->rotateZ(m_Phi[i]);
     new G4PVPlacement(G4Transform3D(*Rot,Det_pos),
-          BuildDetectorType1(),
-          "CatanaType1",world,false,i+1);
+          BuildDetector(m_Type[i]),
+          "Catana",world,false,m_ID[i]);
   }
-  
-  for (unsigned short i = 0 ; i < m_R2.size() ; i++) {
-
-    G4ThreeVector Det_pos = G4ThreeVector(0,0,m_R2[i]) ;
-    Det_pos.setTheta(m_Theta2[i]);
-    Det_pos.setPhi(m_Phi2[i]);
-    G4RotationMatrix* Rot = new G4RotationMatrix();
-    Rot->rotateY(m_Theta2[i]);
-    Rot->rotateZ(m_Phi2[i]);
-    new G4PVPlacement(G4Transform3D(*Rot,Det_pos),
-          BuildDetectorType2(),
-          "CatanaType2",world,false,i+2);
-  }
-  
-  for (unsigned short i = 0 ; i < m_R3.size() ; i++) {
-
-    G4ThreeVector Det_pos = G4ThreeVector(0,0,m_R3[i]) ;
-    Det_pos.setTheta(m_Theta3[i]);
-    Det_pos.setPhi(m_Phi3[i]);
-    G4RotationMatrix* Rot = new G4RotationMatrix();
-    Rot->rotateY(m_Theta3[i]);
-    Rot->rotateZ(m_Phi3[i]);
-    new G4PVPlacement(G4Transform3D(*Rot,Det_pos),
-          BuildDetectorType3(),
-          "CatanaType3",world,false,i+3);
-  }
-
 }
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 // Add Detector branch to the EventTree.
