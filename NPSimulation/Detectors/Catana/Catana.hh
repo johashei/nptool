@@ -52,19 +52,19 @@ class Catana : public NPS::VDetector{
     ////////////////////////////////////////////////////
   public:
     // Cartesian
-    void AddDetectorType1(double X, double Y, double Z, double Theta, double Phi, int ID);
-    void AddDetectorType2(double X, double Y, double Z, double Theta, double Phi, int ID);
-    void AddDetectorType3(double X, double Y, double Z, double Theta, double Phi, int ID);
+    void AddDetector(double X, double Y, double Z, double Theta, double Phi, int ID,int Type);
     void ReadCSV(string path);
 
-    G4LogicalVolume* BuildDetectorType1();
-    G4LogicalVolume* BuildDetectorType2();
-    G4LogicalVolume* BuildDetectorType3();
+    G4LogicalVolume* BuildDetector(int Type);
+
   private:
     G4LogicalVolume* m_DetectorType1;
     G4LogicalVolume* m_DetectorType2;
     G4LogicalVolume* m_DetectorType3;
+    G4LogicalVolume* m_DetectorType4;
+    G4LogicalVolume* m_DetectorType5;
     
+
     ////////////////////////////////////////////////////
     //////  Inherite from NPS::VDetector class /////////
     ////////////////////////////////////////////////////
@@ -102,33 +102,24 @@ class Catana : public NPS::VDetector{
     ////////////////////////////////////////////////////
   private: // Geometry
     // Detector Coordinate 
-    vector<double>  m_X1; 
-    vector<double>  m_X2; 
-    vector<double>  m_X3; 
-    vector<double>  m_Y1; 
-    vector<double>  m_Y2; 
-    vector<double>  m_Y3; 
-    vector<double>  m_Z1; 
-    vector<double>  m_Z2; 
-    vector<double>  m_Z3; 
-    vector<double>  m_Theta1; 
-    vector<double>  m_Theta2; 
-    vector<double>  m_Theta3; 
-    vector<double>  m_Phi1; 
-    vector<double>  m_Phi2; 
-    vector<double>  m_Phi3; 
-    vector<int>     m_ID1;
-    vector<int>     m_ID2;
-    vector<int>     m_ID3;
-    double m_DZ1;
-    double m_DZ2;
-    double m_DZ3;
+    vector<double>  m_X; 
+    vector<double>  m_Y; 
+    vector<double>  m_Z; 
+    vector<double>  m_Theta; 
+    vector<double>  m_Phi; 
+    vector<int>     m_ID;
+    vector<int>     m_Type;
+    map<int,double>  m_Zoffset;
+
     // Visualisation Attribute
     G4VisAttributes* m_VisCrystal1;
     G4VisAttributes* m_VisCrystal2;
     G4VisAttributes* m_VisCrystal3;
-    G4VisAttributes* m_VisCasing;
-    G4VisAttributes* m_VisTeflon;
+    G4VisAttributes* m_VisCrystal4;
+    G4VisAttributes* m_VisCrystal5;
+
+    G4VisAttributes* m_VisHousing;
+    G4VisAttributes* m_VisReflector;
 
 
 
