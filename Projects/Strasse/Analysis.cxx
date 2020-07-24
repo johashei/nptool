@@ -8,7 +8,7 @@
 /*****************************************************************************
  * Original Author: Adrien MATTA  contact address: a.matta@surrey.ac.uk      *
  *                                                                           *
- * Creation Date  : march 2012                                               *
+ * Creation Date  : july  2020                                               *
  * Last update    :                                                          *
  *---------------------------------------------------------------------------*
  * Decription:                                                               *
@@ -75,8 +75,8 @@ void Analysis::TreatEvent(){
     TVector3 OuterPos2 = Strasse->GetOuterPositionOfInteraction(1);
     TVector3 Proton2 = OuterPos2-InnerPos2;
 
-    double deltaPhi = abs(Proton1.Phi()/deg-Proton2.Phi()/deg);
-    double sumTheta = Proton1.Theta()/deg+Proton2.Theta()/deg;
+    deltaPhi = abs(Proton1.Phi()/deg-Proton2.Phi()/deg);
+    sumTheta = Proton1.Theta()/deg+Proton2.Theta()/deg;
     Theta12  = Proton1.Angle(Proton2)/deg;
 
     // reject event that make no physical sense
@@ -136,6 +136,9 @@ void Analysis::InitOutputBranch() {
   RootOutput::getInstance()->GetTree()->Branch("deltaX",&deltaX,"deltaX/D");
   RootOutput::getInstance()->GetTree()->Branch("deltaY",&deltaY,"deltaY/D");
   RootOutput::getInstance()->GetTree()->Branch("deltaZ",&deltaZ,"deltaZ/D");
+  RootOutput::getInstance()->GetTree()->Branch("deltaPhi",&deltaPhi,"deltaPhi/D");
+  RootOutput::getInstance()->GetTree()->Branch("sumTheta",&sumTheta,"sumTheta/D");
+
 
   RootOutput::getInstance()->GetTree()->Branch("Distance",&Distance,"Distance/D");
   RootOutput::getInstance()->GetTree()->Branch("InteractionCoordinates","TInteractionCoordinates",&DC);
@@ -160,6 +163,8 @@ void Analysis::ReInitValue(){
   deltaY=-1000;
   deltaZ=-1000;
   Distance=-1000;
+  sumTheta=-1000;
+  deltaPhi=-1000;
 }
 
 

@@ -62,6 +62,8 @@ class Analysis: public NPL::VAnalysis{
     double deltaY;
     double deltaZ;
     double Distance;
+    double deltaPhi;
+    double sumTheta;
     TLorentzVector LV_A;
     TLorentzVector LV_T;
     TLorentzVector LV_B;
