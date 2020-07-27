@@ -512,7 +512,7 @@ void Catana::InitializeScorers() {
     return ;
 
   // Otherwise the scorer is initialised
-  vector<int> level; level.push_back(0);
+  vector<int> level; level.push_back(2);
   G4VPrimitiveScorer* Calorimeter= new CalorimeterScorers::PS_Calorimeter("Calorimeter",level, 0) ;
   G4VPrimitiveScorer* Interaction= new InteractionScorers::PS_Interactions("Interaction",ms_InterCoord, 0) ;
   //and register it to the multifunctionnal detector

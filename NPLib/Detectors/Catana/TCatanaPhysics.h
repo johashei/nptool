@@ -1,20 +1,20 @@
 #ifndef TCatanaPHYSICS_H
 #define TCatanaPHYSICS_H
 /*****************************************************************************
- * Copyright (C) 2009-2020   this file is part of the NPTool Project       *
+ * Copyright (C) 2009-2020   this file is part of the NPTool Project         *
  *                                                                           *
  * For the licensing terms see $NPTOOL/Licence/NPTool_Licence                *
  * For the list of contributors see $NPTOOL/Licence/Contributors             *
  *****************************************************************************/
 
 /*****************************************************************************
- * Original Author: Adrien Matta  contact address: matta@lpccaen.in2p3.fr                        *
+ * Original Author: Adrien Matta  contact address: matta@lpccaen.in2p3.fr    *
  *                                                                           *
- * Creation Date  : July 2020                                           *
+ * Creation Date  : July 2020                                                *
  * Last update    :                                                          *
  *---------------------------------------------------------------------------*
  * Decription:                                                               *
- *  This class hold Catana Treated data                                *
+ *  This class hold Catana Treated data                                      *
  *                                                                           *
  *---------------------------------------------------------------------------*
  * Comment:                                                                  *
@@ -67,9 +67,18 @@ class TCatanaPhysics : public TObject, public NPL::VDetector {
     vector<double>   Time;
 
   /// A usefull method to bundle all operation to add a detector
-  void AddDetector(TVector3 POS, string shape); 
-  void AddDetector(double R, double Theta, double Phi, string shape); 
-  
+  void AddDetector(double X, double Y, double Z, double Theta, double Phi, int ID, int Type); 
+  void ReadCSV(string path); 
+
+  // Position method and variable
+  public:
+    map<int,TVector3> m_Position;//!
+    map<int,double> m_Theta;//!
+    map<int,double> m_Phi;//!
+    map<int,int> m_Type;//!
+    TVector3     m_Ref;//!
+    TVector3 GetPositionOfInteraction(int& i);//!
+
   //////////////////////////////////////////////////////////////
   // methods inherited from the VDetector ABC class
   public:

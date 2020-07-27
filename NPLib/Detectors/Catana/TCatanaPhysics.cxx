@@ -35,6 +35,8 @@ using namespace std;
 #include "RootOutput.h"
 #include "NPDetectorFactory.h"
 #include "NPOptionManager.h"
+#include "NPSystemOfUnits.h"
+using namespace NPUNITS;
 
 //   ROOT
 #include "TChain.h"
@@ -53,22 +55,16 @@ TCatanaPhysics::TCatanaPhysics()
      m_NumberOfDetectors(0) {
 }
 
-///////////////////////////////////////////////////////////////////////////
-/// A usefull method to bundle all operation to add a detector
-void TCatanaPhysics::AddDetector(TVector3 , string ){
-  // In That simple case nothing is done
-  // Typically for more complex detector one would calculate the relevant 
-  // positions (stripped silicon) or angles (gamma array)
-  m_NumberOfDetectors++;
-} 
 
 ///////////////////////////////////////////////////////////////////////////
-void TCatanaPhysics::AddDetector(double R, double Theta, double Phi, string shape){
-  // Compute the TVector3 corresponding
-  TVector3 Pos(R*sin(Theta)*cos(Phi),R*sin(Theta)*sin(Phi),R*cos(Theta));
-  // Call the cartesian method
-  AddDetector(Pos,shape);
-} 
+void TCatanaPhysics::AddDetector(double X, double Y, double Z, double Theta, double Phi, int ID, int Type){
+  m_NumberOfDetectors++;
+  TVector3 Pos(X,Y,Z);
+  m_Position[ID]=Pos+m_Ref;
+  m_Theta[ID]=Theta;
+  m_Phi[ID]=Phi;
+  m_Type[ID]=Type;
+}
   
 ///////////////////////////////////////////////////////////////////////////
 void TCatanaPhysics::BuildSimplePhysicalEvent() {
@@ -76,7 +72,29 @@ void TCatanaPhysics::BuildSimplePhysicalEvent() {
 }
 
 
+///////////////////////////////////////////////////////////////////////////
+void TCatanaPhysics::ReadCSV(string path){
+  std::ifstream csv(path); 
+  if(!csv.is_open()){
+    std::ostringstream message;
+    message << "Catana csv file " << path << " not found " << std::endl;
+  }
 
+  int ID, type,layer;
+  double X,Y,Z,Theta,Phi;
+  string buffer;
+  // ignore first line
+  getline(csv,buffer);
+  while(csv >> ID >> buffer >> type >> buffer >> layer >> buffer >> X >> buffer >> Y >> buffer >> Z >> buffer >> Theta >> buffer >> Phi){
+      if(type<6)
+      AddDetector(X,Y,Z,Theta*deg,Phi*deg,ID,type);
+      else{
+        // ignore other type for which I don't have the geometry
+        }
+  }
+
+  return;
+}
 ///////////////////////////////////////////////////////////////////////////
 void TCatanaPhysics::BuildPhysicalEvent() {
   // apply thresholds and calibration
@@ -202,35 +220,59 @@ void TCatanaPhysics::Clear() {
 
 
 ///////////////////////////////////////////////////////////////////////////
-void TCatanaPhysics::ReadConfiguration(NPL::InputParser parser) {
- /* vector<NPL::InputBlock*> blocks = parser.GetAllBlocksWithToken("Catana");
+void TCatanaPhysics::ReadConfiguration(NPL::InputParser parser){
+  // CSV config
+  vector<NPL::InputBlock*> blocks = parser.GetAllBlocksWithTokenAndValue("Catana","CSV");
   if(NPOptionManager::getInstance()->GetVerboseLevel())
-    cout << "//// " << blocks.size() << " detectors found " << endl; 
+    cout << "//// " << blocks.size() << " CSV block found " << endl; 
+
+  vector<string> token = {"Path","Pos","Rshift"};
 
   for(unsigned int i = 0 ; i < blocks.size() ; i++){
-    if(blocks[i]->HasTokenList(cart)){
+    if(blocks[i]->HasTokenList(token)){
       if(NPOptionManager::getInstance()->GetVerboseLevel())
         cout << endl << "////  Catana " << i+1 <<  endl;
-    
-      TVector3 Pos = blocks[i]->GetTVector3("POS","mm");
-      string Shape = blocks[i]->GetString("Shape");
-      AddDetector(Pos,Shape);
-    }
-    else if(blocks[i]->HasTokenList(sphe)){
-      if(NPOptionManager::getInstance()->GetVerboseLevel())
-        cout << endl << "////  Catana " << i+1 <<  endl;
-      double R = blocks[i]->GetDouble("R","mm");
-      double Theta = blocks[i]->GetDouble("Theta","deg");
-      double Phi = blocks[i]->GetDouble("Phi","deg");
-      string Shape = blocks[i]->GetString("Shape");
-      AddDetector(R,Theta,Phi,Shape);
+      string path = blocks[i]->GetString("Path");
+      //double Rshift = blocks[i]->GetDouble("Rshift","micrometer");
+      // Reference position of the whole array
+      m_Ref = blocks[i]->GetTVector3("Pos","mm");
+      ReadCSV(path);
     }
     else{
       cout << "ERROR: check your input file formatting " << endl;
       exit(1);
     }
-  }*/
+  }
+ 
+  // Type 1
+  blocks = parser.GetAllBlocksWithTokenAndValue("Catana","Detector");
+  if(NPOptionManager::getInstance()->GetVerboseLevel())
+    cout << "//// " << blocks.size() << " detectors found " << endl; 
+
+  token = {"X","Y","Z","Theta","Phi","ID","Type"};
+
+  for(unsigned int i = 0 ; i < blocks.size() ; i++){
+    if(blocks[i]->HasTokenList(token)){
+      if(NPOptionManager::getInstance()->GetVerboseLevel())
+        cout << endl << "////  Catana " << i+1 <<  endl;
+      double X = blocks[i]->GetDouble("X","mm");
+      double Y = blocks[i]->GetDouble("Y","mm");
+      double Z = blocks[i]->GetDouble("Z","mm");
+      double Theta = blocks[i]->GetDouble("Theta","deg");
+      double Phi = blocks[i]->GetDouble("Phi","deg");
+      int    ID  = blocks[i]->GetInt("ID");
+      int    Type =  blocks[i]->GetInt("Type"); 
+      AddDetector(X,Y,Z,Theta,Phi,ID,Type);
+    }
+    else{
+      cout << "ERROR: check your input file formatting " << endl;
+      exit(1);
+    }
+  }
+
 }
+
+
 
 ///////////////////////////////////////////////////////////////////////////
 void TCatanaPhysics::InitSpectra() {
