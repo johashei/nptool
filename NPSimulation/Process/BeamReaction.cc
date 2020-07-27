@@ -482,10 +482,10 @@ void NPS::BeamReaction::DoIt(const G4FastTrack& fastTrack,
 
     TLorentzVector* P_A = m_QFS.GetEnergyImpulsionLab_A();
     TLorentzVector* P_B = m_QFS.GetEnergyImpulsionLab_B();
-
+    
     G4ThreeVector momentum_kineB_beam( P_B->Px(), P_B->Py(), P_B->Pz() );
     momentum_kineB_beam = momentum_kineB_beam.unit();
-    TKEB = m_QFS.GetEnergyImpulsionLab_B()->Energy() - m_QFS.GetNucleusB()->Mass();
+    TKEB = P_B->Energy() - m_QFS.GetNucleusB()->Mass();
     G4ThreeVector momentum_kineB_world =  momentum_kineB_beam;
     momentum_kineB_world.rotate(Beam_theta, V); // rotation of Beam_theta on Y axis
     momentum_kineB_world.rotate(Beam_phi, ZZ); // rotation of Beam_phi on Z axis
@@ -549,15 +549,15 @@ void NPS::BeamReaction::DoIt(const G4FastTrack& fastTrack,
     m_ReactionConditions->SetInternalMomentum(m_QFS.GetInternalMomentum());
     //m_ReactionConditions->SetExcitationEnergy3(m_QFS.GetExcitation3());
     //m_ReactionConditions->SetExcitationEnergy4(m_QFS.GetExcitation4());
-    // Momuntum X 3 and 4 //
+    // Momuntum X 1,2 and B //
     m_ReactionConditions->SetMomentumDirectionX(momentum_kine1_world.x());
     m_ReactionConditions->SetMomentumDirectionX(momentum_kine2_world.x());
     m_ReactionConditions->SetMomentumDirectionX(momentum_kineB_world.x());
-    // Momuntum Y 3 and 4 //
+    // Momuntum Y 1,2 and B //
     m_ReactionConditions->SetMomentumDirectionY(momentum_kine1_world.y());
     m_ReactionConditions->SetMomentumDirectionY(momentum_kine2_world.y());
     m_ReactionConditions->SetMomentumDirectionY(momentum_kineB_world.y());
-    // Momuntum Z 3 and 4 //
+    // Momuntum Z 1,2 and B //
     m_ReactionConditions->SetMomentumDirectionZ(momentum_kine1_world.z());
     m_ReactionConditions->SetMomentumDirectionZ(momentum_kine2_world.z());
     m_ReactionConditions->SetMomentumDirectionZ(momentum_kineB_world.z());

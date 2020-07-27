@@ -27,6 +27,7 @@ using namespace std;
 #include"NPOptionManager.h"
 #include"NPFunction.h"
 #include"NPTrackingUtility.h"
+#include"NPPhysicalConstants.h"
 ////////////////////////////////////////////////////////////////////////////////
 Analysis::Analysis(){
 }
@@ -40,19 +41,18 @@ void Analysis::Init(){
   DC= new TInteractionCoordinates;
   RC= new TReactionConditions;
   
-
   InitOutputBranch();
   InitInputBranch();
   
   Strasse = (TStrassePhysics*)  m_DetectorManager -> GetDetector("Strasse");
   Catana = (TCatanaPhysics*)  m_DetectorManager -> GetDetector("Catana");
   // reaction properties
-  myQFS = new NPL::QFS();
-  myQFS->ReadConfigurationFile(NPOptionManager::getInstance()->GetReactionFile());
+  m_QFS = new NPL::QFS();
+  m_QFS->ReadConfigurationFile(NPOptionManager::getInstance()->GetReactionFile());
   // reaction properties
   myBeam = new NPL::Beam();
   myBeam->ReadConfigurationFile(NPOptionManager::getInstance()->GetReactionFile());
-  InitialBeamEnergy = myBeam->GetEnergy() * myBeam->GetA();
+  InitialBeamEnergy = myBeam->GetEnergy()/* * myBeam->GetA()*/;
   // target thickness
   TargetThickness = m_DetectorManager->GetTargetThickness();
   string TargetMaterial = m_DetectorManager->GetTargetMaterial();
@@ -62,8 +62,7 @@ void Analysis::Init(){
   protonTarget = NPL::EnergyLoss("proton_"+TargetMaterial+".G4table","G4Table",100);
   protonAl = NPL::EnergyLoss("proton_Al.G4table","G4Table",100);
   protonSi = NPL::EnergyLoss("proton_Si.G4table","G4Table",100);
-
-
+  LV_T.SetVectM(TVector3(0,0,0),NPUNITS::proton_mass_c2);
 } 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -109,20 +108,28 @@ void Analysis::TreatEvent(){
     if(i1!=i2){
       E1 = ReconstructProtonEnergy(Vertex,Proton1,Catana->Energy[i1]); 
       E2 = ReconstructProtonEnergy(Vertex,Proton2,Catana->Energy[i2]);
+      double TA = BeamTarget.Slow(InitialBeamEnergy,abs(VertexZ-75),0);
+      //double TA = RC->GetBeamEnergy();
+      // setting up Lorentz Vector from measured trajectories and energies
+      TVector3 PA(0,0,sqrt(TA*(TA+2*m_QFS->GetNucleusA()->Mass()))); // for like there is no BDC
+      Proton1=E1*Proton1.Unit();
+      Proton2=E2*Proton2.Unit();
+      
+      LV_A.SetVectM(PA,m_QFS->GetNucleusA()->Mass());
+      double P1= sqrt(E1*(E1+2*NPUNITS::proton_mass_c2));
+      double P2= sqrt(E2*(E2+2*NPUNITS::proton_mass_c2));
+
+      LV_p1.SetVectM(Proton1.Unit()*P1,NPUNITS::proton_mass_c2); 
+      LV_p2.SetVectM(Proton2.Unit()*P2,NPUNITS::proton_mass_c2); 
+
+      // computing Ex from Missing Mass
+      LV_B = LV_A + LV_T - LV_p1 - LV_p2;
+      //LV_B = RC->GetParticleMomentum(2);
+      Ex = LV_B.M() - m_QFS->GetNucleusB()->Mass();
+      cout << Ex << " " << m_QFS->GetNucleusB()->Mass() << endl;
     }
+    
   }
-    //double thickness_before = 0;
-    //double EA_vertex = BeamTarget.Slow(InitialBeamEnergy,thickness_before,0);
-
-    // setting up Lorentz Vector from measured trajectories and energies
-    //LV_A.SetVect(PA); LV_p1.SetE(EA_vertex); 
-    //LV_p1.SetVect(P1); LV_p1.SetE(E1); 
-    //LV_p2.SetVect(P2); LV_p1.SetE(E2); 
-
-    // computing Ex from Missing Mass
-    //double EB = LV_A.E() + LV_T.E() - LV_p1.E() - LV_p2.E();   
-    //TVector3 PB = LV_A.Vect() + LV_p1.Vect() - LV_p2.Vect();   
-    //Ex = TMath::Sqrt( EB*EB - PB.Mag2() ) - myQFS->GetNucleusB()->Mass();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

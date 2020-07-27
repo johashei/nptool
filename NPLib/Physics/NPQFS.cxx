@@ -215,7 +215,7 @@ void QFS::CalculateVariables(){
     //cout<<"---- COMPUTE ------"<<endl;
    // cout<<"--CM--"<<endl; 
 
-    mA = fNucleiA.Mass();            // Beam mass in MeV
+    mA =  fNucleiA.Mass();           // Beam mass in MeV
     mT =  fNucleiT.Mass();           // Target mass in MeV 
     mB =  fNucleiB.Mass();           // Heavy residual mass in MeV 
     m1 =  mT;                        // scattered target nucleon (same mass);
@@ -307,7 +307,7 @@ void QFS::KineRelativistic(double& ThetaLab1, double& PhiLab1, double& KineticEn
                                         pCM_2*sin(thetaCM_2)*sin(phiCM_2),
                                         pCM_2*cos(thetaCM_2),
                                         ECM_2);
-
+  
     fEnergyImpulsionCM_1	= fTotalEnergyImpulsionCM - fEnergyImpulsionCM_2;
 
     //-- Boost in the direction of the moving cluster "a" --//
@@ -346,7 +346,6 @@ void QFS::KineRelativistic(double& ThetaLab1, double& PhiLab1, double& KineticEn
     // Kinetic Energy in the lab frame
     KineticEnergyLab1 = fEnergyImpulsionLab_1.E() - m1;
     KineticEnergyLab2 = fEnergyImpulsionLab_2.E() - m2;
-
     // test for total energy conversion
     //if (fabs(fTotalEnergyImpulsionLab.E() - (fEnergyImpulsionLab_1.E()+fEnergyImpulsionLab_2.E())) > 1e-6)
     //    cout << "Problem for energy conservation" << endl;
