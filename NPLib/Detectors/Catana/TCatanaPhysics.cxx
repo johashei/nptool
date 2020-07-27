@@ -37,6 +37,7 @@ using namespace std;
 #include "NPOptionManager.h"
 #include "NPSystemOfUnits.h"
 using namespace NPUNITS;
+#include "NPTrackingUtility.h"
 
 //   ROOT
 #include "TChain.h"
@@ -46,14 +47,14 @@ ClassImp(TCatanaPhysics)
 
 ///////////////////////////////////////////////////////////////////////////
 TCatanaPhysics::TCatanaPhysics()
-   : m_EventData(new TCatanaData),
-     m_PreTreatedData(new TCatanaData),
-     m_EventPhysics(this),
-     m_Spectra(0),
-     m_E_RAW_Threshold(0), // adc channels
-     m_E_Threshold(0),     // MeV
-     m_NumberOfDetectors(0) {
-}
+  : m_EventData(new TCatanaData),
+  m_PreTreatedData(new TCatanaData),
+  m_EventPhysics(this),
+  m_Spectra(0),
+  m_E_RAW_Threshold(0), // adc channels
+  m_E_Threshold(0),     // MeV
+  m_NumberOfDetectors(0) {
+  }
 
 
 ///////////////////////////////////////////////////////////////////////////
@@ -65,13 +66,17 @@ void TCatanaPhysics::AddDetector(double X, double Y, double Z, double Theta, dou
   m_Phi[ID]=Phi;
   m_Type[ID]=Type;
 }
-  
+
 ///////////////////////////////////////////////////////////////////////////
 void TCatanaPhysics::BuildSimplePhysicalEvent() {
   BuildPhysicalEvent();
 }
 
 
+///////////////////////////////////////////////////////////////////////////
+TVector3 TCatanaPhysics::GetPositionOfInteraction(int& i){
+  return m_Position[DetectorNumber[i]];  
+}
 ///////////////////////////////////////////////////////////////////////////
 void TCatanaPhysics::ReadCSV(string path){
   std::ifstream csv(path); 
@@ -86,11 +91,11 @@ void TCatanaPhysics::ReadCSV(string path){
   // ignore first line
   getline(csv,buffer);
   while(csv >> ID >> buffer >> type >> buffer >> layer >> buffer >> X >> buffer >> Y >> buffer >> Z >> buffer >> Theta >> buffer >> Phi){
-      if(type<6)
+    if(type<6)
       AddDetector(X,Y,Z,Theta*deg,Phi*deg,ID,type);
-      else{
-        // ignore other type for which I don't have the geometry
-        }
+    else{
+      // ignore other type for which I don't have the geometry
+    }
   }
 
   return;
@@ -114,6 +119,25 @@ void TCatanaPhysics::BuildPhysicalEvent() {
   }
 }
 
+///////////////////////////////////////////////////////////////////////////
+unsigned int TCatanaPhysics::FindClosestHitToLine(const TVector3& v1, const TVector3& v2,double& d){
+
+  d = 1e32;
+  unsigned result = 0; 
+  unsigned int size = DetectorNumber.size();
+  for(unsigned int i = 0 ; i < size ; i++){
+    double current_d = NPL::MinimumDistancePointLine(v1,v2,m_Position[DetectorNumber[i]]) ;
+    if(current_d < d){
+      d=current_d;
+      result=i; 
+    }
+  }
+
+  if(d==1e32)
+    d=-1000;
+
+  return result;
+}
 ///////////////////////////////////////////////////////////////////////////
 void TCatanaPhysics::PreTreat() {
   // This method typically applies thresholds and calibrations
@@ -243,7 +267,7 @@ void TCatanaPhysics::ReadConfiguration(NPL::InputParser parser){
       exit(1);
     }
   }
- 
+
   // Type 1
   blocks = parser.GetAllBlocksWithTokenAndValue("Catana","Detector");
   if(NPOptionManager::getInstance()->GetVerboseLevel())
@@ -370,14 +394,14 @@ NPL::VDetector* TCatanaPhysics::Construct() {
 //            Registering the construct method to the factory                 //
 ////////////////////////////////////////////////////////////////////////////////
 extern "C"{
-class proxy_Catana{
-  public:
-    proxy_Catana(){
-      NPL::DetectorFactory::getInstance()->AddToken("Catana","Catana");
-      NPL::DetectorFactory::getInstance()->AddDetector("Catana",TCatanaPhysics::Construct);
-    }
-};
+  class proxy_Catana{
+    public:
+      proxy_Catana(){
+        NPL::DetectorFactory::getInstance()->AddToken("Catana","Catana");
+        NPL::DetectorFactory::getInstance()->AddDetector("Catana",TCatanaPhysics::Construct);
+      }
+  };
 
-proxy_Catana p_Catana;
+  proxy_Catana p_Catana;
 }
 

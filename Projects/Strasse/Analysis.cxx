@@ -45,6 +45,7 @@ void Analysis::Init(){
   InitInputBranch();
   
   Strasse = (TStrassePhysics*)  m_DetectorManager -> GetDetector("Strasse");
+  Catana = (TCatanaPhysics*)  m_DetectorManager -> GetDetector("Catana");
   // reaction properties
   myQFS = new NPL::QFS();
   myQFS->ReadConfigurationFile(NPOptionManager::getInstance()->GetReactionFile());
@@ -57,7 +58,12 @@ void Analysis::Init(){
   string TargetMaterial = m_DetectorManager->GetTargetMaterial();
   // EnergyLoss Tables
   string BeamName = NPL::ChangeNameToG4Standard(myBeam->GetName());
-  BeamTarget = NPL::EnergyLoss(BeamName+"_"+TargetMaterial+".G4table","G4Table",10000);
+  BeamTarget = NPL::EnergyLoss(BeamName+"_"+TargetMaterial+".G4table","G4Table",100);
+  protonTarget = NPL::EnergyLoss("proton_"+TargetMaterial+".G4table","G4Table",100);
+  protonAl = NPL::EnergyLoss("proton_Al.G4table","G4Table",100);
+  protonSi = NPL::EnergyLoss("proton_Si.G4table","G4Table",100);
+
+
 } 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -87,15 +93,24 @@ void Analysis::TreatEvent(){
     // computing minimum distance of the two lines
     TVector3 Vertex;
     TVector3 delta;
-    Distance = NPL::MinimumDistance(InnerPos1,OuterPos1,InnerPos2,OuterPos2,Vertex,delta);
+    Distance = NPL::MinimumDistanceTwoLines(InnerPos1,OuterPos1,InnerPos2,OuterPos2,Vertex,delta);
     VertexX=Vertex.X();
     VertexY=Vertex.Y();
     VertexZ=Vertex.Z();
     deltaX=delta.X();
     deltaY=delta.Y();
     deltaZ=delta.Z();
+    
+    // Look for associated Catana event
+    double d1,d2;
+    unsigned int i1,i2;
+    i1 = Catana->FindClosestHitToLine(InnerPos1,OuterPos1,d1);
+    i2 = Catana->FindClosestHitToLine(InnerPos2,OuterPos2,d2);
+    if(i1!=i2){
+      E1 = ReconstructProtonEnergy(Vertex,Proton1,Catana->Energy[i1]); 
+      E2 = ReconstructProtonEnergy(Vertex,Proton2,Catana->Energy[i2]);
+    }
   }
-
     //double thickness_before = 0;
     //double EA_vertex = BeamTarget.Slow(InitialBeamEnergy,thickness_before,0);
 
@@ -109,6 +124,31 @@ void Analysis::TreatEvent(){
     //TVector3 PB = LV_A.Vect() + LV_p1.Vect() - LV_p2.Vect();   
     //Ex = TMath::Sqrt( EB*EB - PB.Mag2() ) - myQFS->GetNucleusB()->Mass();
 }
+
+////////////////////////////////////////////////////////////////////////////////
+double Analysis::ReconstructProtonEnergy(const TVector3& x0, const TVector3& dir,const double& Ecatana){
+    TVector3 Normal = TVector3(0,0,1);
+    Normal.SetPhi(dir.Phi());
+    double Theta = dir.Angle(Normal);  
+    // Catana Al housing 
+    double E = protonAl.EvaluateInitialEnergy(Ecatana,0.5*mm,Theta);
+    // Strasse Chamber
+    E = protonAl.EvaluateInitialEnergy(E,3*mm,Theta);
+    // Outer Barrel
+    E = protonSi.EvaluateInitialEnergy(E,400*micrometer,Theta);
+    // Inner Barrel
+    E = protonSi.EvaluateInitialEnergy(E,200*micrometer,Theta);
+    // LH2 target
+    static TVector3 x1;
+    x1= x0+dir;
+    TVector3 T1(0,30,0);
+    TVector3 T2(0,30,1);
+    T1.SetPhi(dir.Phi());
+    T2.SetPhi(dir.Phi());
+    TVector3 Vertex,delta;
+    double d = NPL::MinimumDistanceTwoLines(x0,x1,T1,T2,Vertex,delta);
+    E = protonTarget.EvaluateInitialEnergy(E,d,Theta);
+  }
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -127,7 +167,8 @@ void Analysis::End(){
 ////////////////////////////////////////////////////////////////////////////////
 void Analysis::InitOutputBranch() {
   RootOutput::getInstance()->GetTree()->Branch("Ex",&Ex,"Ex/D");
-  RootOutput::getInstance()->GetTree()->Branch("ELab",&ELab,"ELab/D");
+  RootOutput::getInstance()->GetTree()->Branch("E1",&E1,"E1/D");
+  RootOutput::getInstance()->GetTree()->Branch("E2",&E2,"E2/D");
   RootOutput::getInstance()->GetTree()->Branch("Theta12",&Theta12,"Theta12/D");
   RootOutput::getInstance()->GetTree()->Branch("ThetaCM",&ThetaCM,"ThetaCM/D");
   RootOutput::getInstance()->GetTree()->Branch("VertexX",&VertexX,"VertexX/D");
@@ -153,7 +194,8 @@ void Analysis::InitInputBranch(){
 ////////////////////////////////////////////////////////////////////////////////
 void Analysis::ReInitValue(){
   Ex = -1000 ;
-  ELab = -1000;
+  E1= -1000;
+  E2 = -1000;
   Theta12 = -1000;
   ThetaCM = -1000;
   VertexX=-1000;

@@ -69,7 +69,7 @@ class TCatanaPhysics : public TObject, public NPL::VDetector {
   /// A usefull method to bundle all operation to add a detector
   void AddDetector(double X, double Y, double Z, double Theta, double Phi, int ID, int Type); 
   void ReadCSV(string path); 
-
+  
   // Position method and variable
   public:
     map<int,TVector3> m_Position;//!
@@ -78,6 +78,8 @@ class TCatanaPhysics : public TObject, public NPL::VDetector {
     map<int,int> m_Type;//!
     TVector3     m_Ref;//!
     TVector3 GetPositionOfInteraction(int& i);//!
+    // Return index of the closest hit to line defined by v1 and v2
+    unsigned int FindClosestHitToLine(const TVector3& v1, const TVector3& v2, double& d);
 
   //////////////////////////////////////////////////////////////
   // methods inherited from the VDetector ABC class

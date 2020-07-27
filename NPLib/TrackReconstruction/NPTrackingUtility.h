@@ -18,11 +18,12 @@
  *****************************************************************************/
 
 namespace NPL{
+  //////////////////////////////////////////////////////////////////////////////
   // return the minimum distance between v and w defined respectively by points 
   // v1,v2 and w1 w1
   // Also compute the best crossing position BestPosition, i.e. average position
   // at the minimum distance.
-  double MinimumDistance(const TVector3& v1,const TVector3& v2, const TVector3& w1, const TVector3& w2, TVector3& BestPosition, TVector3& delta){
+  double MinimumDistanceTwoLines(const TVector3& v1,const TVector3& v2, const TVector3& w1, const TVector3& w2, TVector3& BestPosition, TVector3& delta){
   TVector3 v = v2-v1;
   TVector3 w = w2-w1;
   // Finding best position
@@ -36,6 +37,17 @@ namespace NPL{
   delta = (v1+t*v-w1-s*w);
   return d;
   }
+
+  //////////////////////////////////////////////////////////////////////////////
+  // return the minimum distance between the line defines by v1,v2 and the point
+  // in space x
+  // demo is here: https://mathworld.wolfram.com/Point-LineDistance3-Dimensional.html
+  double MinimumDistancePointLine(const TVector3& v1, const TVector3& v2, const TVector3& x){
+    TVector3 w1 = x-v1;
+    TVector3 w2 = x-v2;
+    TVector3 w = w1.Cross(w2);
+    return w.Mag()/(v2-v1).Mag();
+    }
 }
 
 
