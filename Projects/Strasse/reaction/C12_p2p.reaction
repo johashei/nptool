@@ -4,10 +4,10 @@ Beam
   Particle= 12C
   Energy= 4800 MeV
   SigmaEnergy= 0 MeV
-  SigmaThetaX= 0 deg
-  SigmaPhiY= 0 deg
-  SigmaX= 0 mm
-  SigmaY= 0 mm
+  SigmaThetaX= 0.1 deg
+  SigmaPhiY= 0.1 deg
+  SigmaX= 5 mm
+  SigmaY= 5 mm
   MeanThetaX= 0 deg
   MeanPhiY= 0 deg
   MeanX= 0 mm
@@ -22,7 +22,7 @@ QFSReaction
  Heavy= 11B
  ExcitationEnergyBeam= 0.0 MeV
  ExcitationEnergyHeavy= 0.0 MeV
- MomentumSigma= 0.0 
+ MomentumSigma= 50.0 
  ShootHeavy= 1
  ShootLight= 1
   

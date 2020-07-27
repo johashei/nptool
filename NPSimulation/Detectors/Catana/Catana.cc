@@ -66,7 +66,7 @@ namespace Catana_NS{
   // Energy and time Resolution
   const double EnergyThreshold = 0.1*MeV;
   const double ResoTime = 4.5*ns ;
-  const double ResoEnergy = 1.0*MeV ;
+  const double ResoEnergy = 0.08*MeV ;
   double Length = 600*mm ;
   string Material = "CsI";
 }

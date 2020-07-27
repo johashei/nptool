@@ -109,7 +109,6 @@ void Analysis::TreatEvent(){
       E1 = ReconstructProtonEnergy(Vertex,Proton1,Catana->Energy[i1]); 
       E2 = ReconstructProtonEnergy(Vertex,Proton2,Catana->Energy[i2]);
       double TA = BeamTarget.Slow(InitialBeamEnergy,abs(VertexZ-75),0);
-      //double TA = RC->GetBeamEnergy();
       // setting up Lorentz Vector from measured trajectories and energies
       TVector3 PA(0,0,sqrt(TA*(TA+2*m_QFS->GetNucleusA()->Mass()))); // for like there is no BDC
       Proton1=E1*Proton1.Unit();
@@ -126,7 +125,6 @@ void Analysis::TreatEvent(){
       LV_B = LV_A + LV_T - LV_p1 - LV_p2;
       //LV_B = RC->GetParticleMomentum(2);
       Ex = LV_B.M() - m_QFS->GetNucleusB()->Mass();
-      cout << Ex << " " << m_QFS->GetNucleusB()->Mass() << endl;
     }
     
   }
@@ -142,7 +140,7 @@ double Analysis::ReconstructProtonEnergy(const TVector3& x0, const TVector3& dir
     // Strasse Chamber
     E = protonAl.EvaluateInitialEnergy(E,3*mm,Theta);
     // Outer Barrel
-    E = protonSi.EvaluateInitialEnergy(E,400*micrometer,Theta);
+    E = protonSi.EvaluateInitialEnergy(E,300*micrometer,Theta);
     // Inner Barrel
     E = protonSi.EvaluateInitialEnergy(E,200*micrometer,Theta);
     // LH2 target
