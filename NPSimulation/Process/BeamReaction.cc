@@ -100,6 +100,7 @@ G4bool NPS::BeamReaction::IsApplicable(const G4ParticleDefinition& particleType)
 
   static std::string particleName;
   particleName = particleType.GetParticleName();
+  if(particleName=="neutron") particleName="n1";
   if (particleName.find(m_BeamName) != std::string::npos) {
     return true;
   }

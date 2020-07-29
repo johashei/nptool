@@ -52,6 +52,13 @@ void TSconeData::Clear() {
   fScone_T_DetectorNbr.clear();
   fScone_T_PlasticNbr.clear();
   fScone_Time.clear();
+  // Flah for simulation
+  fScone_HasCaptured.clear();
+  fScone_CaptureTime.clear();
+  fScone_GammaEnergy.clear();
+  fScone_ProtonEnergy.clear();
+  fScone_ProtonTime.clear();
+  fScone_FCProcess.clear();
 }
 
 

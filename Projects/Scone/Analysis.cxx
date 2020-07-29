@@ -84,9 +84,23 @@ void Analysis::TreatEvent(){
       E_sum += Scone->Energy[i];
     }
   }
-  E_sum = E_sum - E_init;
+  //E_sum = E_sum - E_init;
   //if(Time_max>50) m_DetectedNeutron++;
   if(Time_max>50 && E_sum>0) m_DetectedNeutron++;
+  
+  if(Scone->GammaEnergy.size()>0) E_sum_gamma = 0;
+  else E_sum_gamma = -100;
+  for(int i=0; i<Scone->GammaEnergy.size(); i++){
+    E_sum_gamma += Scone->GammaEnergy[i];
+  }
+  
+  if(Scone->ProtonEnergy.size()>0) E_sum_proton = 0;
+  else E_sum_proton = -100;
+  for(int i=0; i<Scone->ProtonEnergy.size(); i++){
+    E_sum_proton += Scone->ProtonEnergy[i];
+  }
+  if(Scone->ProtonEnergy.size()>0) E_mean_proton = E_sum_proton/Scone->ProtonEnergy.size();
+
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -94,6 +108,7 @@ void Analysis::ReInitValue(){
   E_init = -10000;
   E_max = -10000;
   Time_max = -10000;
+  E_mean_proton = -100;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -102,6 +117,9 @@ void Analysis::InitOutputBranch()
   RootOutput::getInstance()->GetTree()->Branch("E_init",&E_init,"E_init/D");
   RootOutput::getInstance()->GetTree()->Branch("E_max",&E_max,"E_max/D");
   RootOutput::getInstance()->GetTree()->Branch("E_sum",&E_sum,"E_sum/D");
+  RootOutput::getInstance()->GetTree()->Branch("E_sum_gamma",&E_sum_gamma,"E_sum_gamma/D");
+  RootOutput::getInstance()->GetTree()->Branch("E_sum_proton",&E_sum_proton,"E_sum_proton/D");
+  RootOutput::getInstance()->GetTree()->Branch("E_mean_proton",&E_mean_proton,"E_mean_proton/D");
   RootOutput::getInstance()->GetTree()->Branch("Time_max",&Time_max,"Time_max/D");
 }
 ////////////////////////////////////////////////////////////////////////////////
@@ -116,7 +134,7 @@ void Analysis::End(){
   // For last energy //
   vDetectedNeutron.push_back(m_DetectedNeutron);
   
-  cout << "Number of Init energy treated: " << vE_init.size() << endl;
+  /*cout << "Number of Init energy treated: " << vE_init.size() << endl;
   cout << "With initial energy: " << endl;
   for(int i=0; i< vE_init.size(); i++)
     cout << "* " << vE_init[i] << endl;
@@ -125,15 +143,15 @@ void Analysis::End(){
   cout << "DetectedNeutron: " << endl;
 
   ofstream ofile;
-  ofile.open("macro/eff_scone_natGd25um.txt");
-  //ofile.open("macro/eff_scone_menate.txt");
+  ofile.open("macro/eff_scone_test.txt");
+  //ofile.open("macro/eff_scone_natGd25um.txt");
   for(int i=0; i< vDetectedNeutron.size(); i++){
     //cout << "* " << vE_init[i] << " / " << vDetectedNeutron[i]/vDetectedNeutron[0]*99.4 << endl;
     cout << "* " << vE_init[i] << " / " << vDetectedNeutron[i]/1e5*100 << endl;
     //ofile << vE_init[i] << "  " << vDetectedNeutron[i]/vDetectedNeutron[0]*99.4 << endl;
     ofile << vE_init[i] << "  " << vDetectedNeutron[i]/1e5*100 << endl;
   }
-  ofile.close();
+  ofile.close();*/
 }
 
 

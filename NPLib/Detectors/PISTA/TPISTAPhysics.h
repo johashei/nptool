@@ -69,8 +69,10 @@ class TPISTAPhysics : public TObject, public NPL::VDetector {
     vector<int>     DetectorNumber;
     vector<double>  E;
     vector<double>  DE;
-    vector<int>     StripX;
-    vector<int>     StripY;
+    vector<int>     DE_StripX;
+    vector<int>     DE_StripY;
+    vector<int>     E_StripY;
+    vector<int>     E_StripX;
     vector<double>  Time;
 
     vector<double> PosX;

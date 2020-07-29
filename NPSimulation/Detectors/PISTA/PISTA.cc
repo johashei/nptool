@@ -61,6 +61,7 @@ namespace PISTA_NS{
   const double EnergyThreshold = 0.1*MeV;
   const double ResoTime = 0.2*ns ;
   const double ResoEnergy = 0.015*MeV ;
+  const double DE_ResoEnergy = 0.015*MeV ;
 
   // Trapezoid dimension
   //const double TrapezoidBaseLarge = 95*mm;
@@ -72,9 +73,9 @@ namespace PISTA_NS{
   const double TrapezoidLength = 1*cm;
   const double FirstStageThickness = 100*um;
   const double SecondStageThickness = 1*mm;
-  const double DistanceBetweenSi = 7*mm;
-  //const double FirstStageNbrOfStrips = 128;
-  //const double SecondStageNbrOfStrips = 16;
+  const double DistanceBetweenSi = 5*mm;
+  //const double FirstStageNbrOfStrips = 97;
+  //const double SecondStageNbrOfStrips = 122;
 }
 using namespace PISTA_NS;
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -120,7 +121,7 @@ G4LogicalVolume* PISTA::BuildTrapezoidDetector(){
         "PISTA",
         0,0,0);
 
-    G4VisAttributes* TrapezoidVisAtt = new G4VisAttributes(G4Colour(0.90, 0.90, 0.90));
+    G4VisAttributes* TrapezoidVisAtt = new G4VisAttributes(G4Colour(0.2, 0.80, 0.50));
     TrapezoidVisAtt->SetForceWireframe(true);
     logicTrapezoid->SetVisAttributes(TrapezoidVisAtt);
 
@@ -146,7 +147,7 @@ G4LogicalVolume* PISTA::BuildTrapezoidDetector(){
     logicFirstStage->SetSensitiveDetector(m_FirstStageScorer);
 
     // Visualisation of First Stage strips
-    G4VisAttributes* FirstStageVisAtt = new G4VisAttributes(G4Colour(0.3,0.3,0.3));
+    G4VisAttributes* FirstStageVisAtt = new G4VisAttributes(G4Colour(0.2,0.8,0.5));
     logicFirstStage->SetVisAttributes(FirstStageVisAtt);
 
     //////
@@ -172,7 +173,7 @@ G4LogicalVolume* PISTA::BuildTrapezoidDetector(){
     logicSecondStage->SetSensitiveDetector(m_SecondStageScorer);
 
     // Visualisation of Second Stage strips
-    G4VisAttributes* SecondStageVisAtt = new G4VisAttributes(G4Colour(0.4,0.5,0.5));
+    G4VisAttributes* SecondStageVisAtt = new G4VisAttributes(G4Colour(0.2,0.8,0.5));
     logicSecondStage->SetVisAttributes(SecondStageVisAtt);
 
 
@@ -276,7 +277,7 @@ void PISTA::ReadSensitive(const G4Event* ){
 
   unsigned int sizeFront = FirstStageScorer->GetLengthMult(); 
   for(unsigned int i = 0 ; i < sizeFront ; i++){
-    double Energy = RandGauss::shoot(FirstStageScorer->GetEnergyLength(i), ResoEnergy);   
+    double Energy = RandGauss::shoot(FirstStageScorer->GetEnergyLength(i), DE_ResoEnergy);   
     if(Energy>EnergyThreshold){
       double Time = RandGauss::shoot(FirstStageScorer->GetTimeLength(i), ResoTime);
       int DetNbr  = FirstStageScorer->GetDetectorLength(i);
@@ -287,13 +288,13 @@ void PISTA::ReadSensitive(const G4Event* ){
   }
   unsigned int sizeBack = FirstStageScorer->GetWidthMult(); 
   for(unsigned int i = 0 ; i < sizeBack ; i++){
-    double Energy = RandGauss::shoot(FirstStageScorer->GetEnergyWidth(i), ResoEnergy);   
+    double Energy = RandGauss::shoot(FirstStageScorer->GetEnergyWidth(i), DE_ResoEnergy);   
     if(Energy>EnergyThreshold){
       double Time = RandGauss::shoot(FirstStageScorer->GetTimeWidth(i), ResoTime);
       int DetNbr  = FirstStageScorer->GetDetectorWidth(i);
-      int StripFront = FirstStageScorer->GetStripWidth(i);
-      m_Event->SetFirstStageYE(DetNbr, StripFront, Energy);
-      m_Event->SetFirstStageYT(DetNbr, StripFront, Time);
+      int StripBack = FirstStageScorer->GetStripWidth(i);
+      m_Event->SetFirstStageYE(DetNbr, StripBack, Energy);
+      m_Event->SetFirstStageYT(DetNbr, StripBack, Time);
     }
   }
   FirstStageScorer->clear();
@@ -319,9 +320,9 @@ void PISTA::ReadSensitive(const G4Event* ){
     if(Energy>EnergyThreshold){
       double Time = RandGauss::shoot(SecondStageScorer->GetTimeWidth(i), ResoTime);
       int DetNbr  = SecondStageScorer->GetDetectorWidth(i);
-      int StripFront = SecondStageScorer->GetStripWidth(i);
-      m_Event->SetSecondStageYE(DetNbr, StripFront, Energy);
-      m_Event->SetSecondStageYT(DetNbr, StripFront, Time);
+      int StripBack = SecondStageScorer->GetStripWidth(i);
+      m_Event->SetSecondStageYE(DetNbr, StripBack, Energy);
+      m_Event->SetSecondStageYT(DetNbr, StripBack, Time);
     }
   }
   SecondStageScorer->clear();
@@ -344,11 +345,11 @@ void PISTA::InitializeScorers() {
   G4VPrimitiveScorer* FirstStageScorer = new DSSDScorers::PS_Rectangle("FirstStageScorer",1,
       TrapezoidBaseLarge,
       TrapezoidHeight,
-      128,128);
+      122,97);
   G4VPrimitiveScorer* SecondStageScorer = new DSSDScorers::PS_Rectangle("SecondStageScorer",1,
       TrapezoidBaseLarge,
       TrapezoidHeight,
-      16,16);
+      122,97);
 
   G4VPrimitiveScorer* InteractionFirstStage = new InteractionScorers::PS_Interactions("InteractionFirstStage",ms_InterCoord,0);
   G4VPrimitiveScorer* InteractionSecondStage = new InteractionScorers::PS_Interactions("InteractionSecondStage",ms_InterCoord,0);

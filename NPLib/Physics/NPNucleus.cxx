@@ -288,6 +288,7 @@ void Nucleus::Extract(string line){
   // life time
   string s_lt_units = line.substr(69,3); 
   string s_LifeTime = line.substr(57,12);
+  string s_LifeTimeErr = line.substr(72,7);
   // Remove star
   replace (s_LifeTime.begin(), s_LifeTime.end(), '*' , ' ');
   // Remove <
@@ -301,45 +302,81 @@ void Nucleus::Extract(string line){
 
   // Remove space
   s_LifeTime.erase( std::remove_if( s_LifeTime.begin(), s_LifeTime.end(), ::isspace ), s_LifeTime.end() );
+  s_LifeTimeErr.erase( std::remove_if( s_LifeTimeErr.begin(), s_LifeTimeErr.end(), ::isspace ), s_LifeTimeErr.end() );
   s_lt_units.erase( std::remove_if( s_lt_units.begin(), s_lt_units.end(), ::isspace ), s_lt_units.end() );
 
-  if(s_LifeTime=="stbl")
+  if(s_LifeTime=="stbl"){
     fLifeTime=-1;
-  else
+    fLifeTimeErr=-1;
+  }
+  else{
     fLifeTime=atof(s_LifeTime.data());
-
-  if(s_lt_units=="ms")
+    fLifeTimeErr=atof(s_LifeTimeErr.data());
+  }
+  if(s_lt_units=="ms"){
     fLifeTime*=1e-3;
-  else if(s_lt_units=="us")
+    fLifeTimeErr*=1e-3;
+  }
+  else if(s_lt_units=="us"){
     fLifeTime*=1e-6;
-  else if(s_lt_units=="ns")
+    fLifeTimeErr*=1e-6;
+  }
+  else if(s_lt_units=="ns"){
     fLifeTime*=1e-9;
-  else if(s_lt_units=="ps")
+    fLifeTimeErr*=1e-9;
+  }
+  else if(s_lt_units=="ps"){
     fLifeTime*=1e-12;
-  else if(s_lt_units=="fs")
+    fLifeTimeErr*=1e-12;
+  }
+  else if(s_lt_units=="fs"){
     fLifeTime*=1e-15;
-  else if(s_lt_units=="as")
+    fLifeTimeErr*=1e-15;
+  }
+  else if(s_lt_units=="as"){
     fLifeTime*=1e-18;
-  else if(s_lt_units=="zs")
+    fLifeTimeErr*=1e-18;
+  }
+  else if(s_lt_units=="zs"){
     fLifeTime*=1e-21;
-  else if(s_lt_units=="ys")
+    fLifeTimeErr*=1e-21;
+  }
+  else if(s_lt_units=="ys"){
     fLifeTime*=1e-24;
-  else if(s_lt_units=="m")
+    fLifeTimeErr*=1e-24;
+  }
+  else if(s_lt_units=="m"){
     fLifeTime*=60;
-  else if(s_lt_units=="h")
+    fLifeTimeErr*=60;
+  }
+  else if(s_lt_units=="h"){
     fLifeTime*=3600;
-  else if(s_lt_units=="d")
+    fLifeTimeErr*=3600;
+  }
+  else if(s_lt_units=="d"){
     fLifeTime*=3600*24;
-  else if(s_lt_units=="y")
+    fLifeTimeErr*=3600*24;
+  }
+  else if(s_lt_units=="y"){
     fLifeTime*=3600*24*365.25;
-  else if(s_lt_units=="ky")
+    fLifeTimeErr*=3600*24*365.25;
+  }
+  else if(s_lt_units=="ky"){
     fLifeTime*=3600*24*365.25*1e3;
-  else if(s_lt_units=="My")
+    fLifeTimeErr*=3600*24*365.25*1e3;
+  }
+  else if(s_lt_units=="My"){
     fLifeTime*=3600*24*365.25*1e6;
-  else if(s_lt_units=="Gy")
+    fLifeTimeErr*=3600*24*365.25*1e6;
+  }
+  else if(s_lt_units=="Gy"){
     fLifeTime*=3600*24*365.25*1e9;
-  else if(s_lt_units=="Py")
+    fLifeTimeErr*=3600*24*365.25*1e6;
+  }
+  else if(s_lt_units=="Py"){
     fLifeTime*=3600*24*365.25*1e12;
+    fLifeTimeErr*=3600*24*365.25*1e12;
+  }
   
   // spin and parity
   string s_spinparity = line.substr(79,14);

@@ -44,27 +44,33 @@ class TSconeData : public TObject {
     vector<UShort_t>   fScone_T_PlasticNbr;
     vector<Double_t>   fScone_Time;
 
-
-  //////////////////////////////////////////////////////////////
-  // Constructor and destructor
+    // Flag for simulation
+    vector<UShort_t>   fScone_HasCaptured; //=1 for neutron capture on H, 2 on Gd 0 otherwise
+    vector<double>     fScone_CaptureTime; 
+    vector<double>     fScone_GammaEnergy;
+    vector<double>     fScone_ProtonEnergy;
+    vector<double>     fScone_ProtonTime;
+    vector<int>        fScone_FCProcess;
+    //////////////////////////////////////////////////////////////
+    // Constructor and destructor
   public: 
     TSconeData();
     ~TSconeData();
-    
 
-  //////////////////////////////////////////////////////////////
-  // Inherited from TObject and overriden to avoid warnings
+
+    //////////////////////////////////////////////////////////////
+    // Inherited from TObject and overriden to avoid warnings
   public:
     void Clear();
     void Clear(const Option_t*) {};
     void Dump() const;
 
 
-  //////////////////////////////////////////////////////////////
-  // Getters and Setters
-  // Prefer inline declaration to avoid unnecessary called of 
-  // frequently used methods
-  // add //! to avoid ROOT creating dictionnary for the methods
+    //////////////////////////////////////////////////////////////
+    // Getters and Setters
+    // Prefer inline declaration to avoid unnecessary called of 
+    // frequently used methods
+    // add //! to avoid ROOT creating dictionnary for the methods
   public:
     //////////////////////    SETTERS    ////////////////////////
     // Energy
@@ -82,31 +88,73 @@ class TSconeData : public TObject {
     };//!
 
 
+    // Flag for simulation
+    inline void SetCapture(const UShort_t& capture){
+      fScone_HasCaptured.push_back(capture);
+    };//
+    inline void SetCaptureTime(double capture_time){
+      fScone_CaptureTime.push_back(capture_time);
+    };//
+    inline void SetGammaEnergy(double energy){
+      fScone_GammaEnergy.push_back(energy);
+    };//
+    inline void SetProtonEnergy(double energy){
+      fScone_ProtonEnergy.push_back(energy);
+    };//
+    inline void SetProtonTime(double time){
+      fScone_ProtonTime.push_back(time);
+    };//
+    inline void SetFCProcess(int val){
+      fScone_FCProcess.push_back(val);
+    };//
+
+
     //////////////////////    GETTERS    ////////////////////////
     // Energy
     inline UShort_t GetMultEnergy() const
-      {return fScone_E_DetectorNbr.size();}
+    {return fScone_E_DetectorNbr.size();}
     inline UShort_t GetE_DetectorNbr(const unsigned int &i) const 
-      {return fScone_E_DetectorNbr[i];}//!
+    {return fScone_E_DetectorNbr[i];}//!
     inline UShort_t GetE_PlasticNbr(const unsigned int &i) const 
-      {return fScone_E_PlasticNbr[i];}//!
+    {return fScone_E_PlasticNbr[i];}//!
     inline Double_t Get_Energy(const unsigned int &i) const 
-      {return fScone_Energy[i];}//!
+    {return fScone_Energy[i];}//!
 
     // Time
     inline UShort_t GetMultTime() const
-      {return fScone_T_DetectorNbr.size();}
+    {return fScone_T_DetectorNbr.size();}
     inline UShort_t GetT_DetectorNbr(const unsigned int &i) const 
-      {return fScone_T_DetectorNbr[i];}//!
+    {return fScone_T_DetectorNbr[i];}//!
     inline UShort_t GetT_PlasticNbr(const unsigned int &i) const 
-      {return fScone_T_PlasticNbr[i];}//!
+    {return fScone_T_PlasticNbr[i];}//!
     inline Double_t Get_Time(const unsigned int &i) const 
-      {return fScone_Time[i];}//!
+    {return fScone_Time[i];}//!
 
+    // Flag for simulation
+    inline UShort_t GetCapture(const unsigned int &i) const
+    {return fScone_HasCaptured[i];}//!
+    inline double GetCaptureTime(const unsigned int &i) const
+    {return fScone_CaptureTime[i];}//!
+    inline UShort_t GetGammaMult() const
+    {return fScone_GammaEnergy.size();}
+    inline double GetGammaEnergy(const unsigned int &i) const
+    {return fScone_GammaEnergy[i];}//!
+    
+    inline UShort_t GetProtonMult() const
+    {return fScone_ProtonEnergy.size();}
+    inline double GetProtonEnergy(const unsigned int &i) const
+    {return fScone_ProtonEnergy[i];}//!
+    inline double GetProtonTime(const unsigned int &i) const
+    {return fScone_ProtonTime[i];}//!
 
-  //////////////////////////////////////////////////////////////
-  // Required for ROOT dictionnary
-  ClassDef(TSconeData,1)  // SconeData structure
+    inline UShort_t GetFCProcessMult() const
+    {return fScone_FCProcess.size();}//!
+    inline int GetFCProcess(const unsigned int &i) const
+    {return fScone_FCProcess[i];}//!
+ 
+    //////////////////////////////////////////////////////////////
+    // Required for ROOT dictionnary
+    ClassDef(TSconeData,1)  // SconeData structure
 };
 
 #endif

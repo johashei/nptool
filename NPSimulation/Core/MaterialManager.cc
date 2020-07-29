@@ -251,9 +251,13 @@ G4Material* MaterialManager::GetMaterialFromLibrary(string Name,
     else if (Name == "EJ200") {
       if (!density)
         density            = 1.023 * g / cm3;
-      G4Material* material = new G4Material("NPS_" + Name, density, 2);
-      material->AddElement(GetElementFromLibrary("C"), 5);
-      material->AddElement(GetElementFromLibrary("H"), 4);
+      G4Material* material = new G4Material("NPS_" + Name, density, 2, kStateSolid, 293*kelvin);
+      G4Element* C = new G4Element("C","C",6, 12*g/mole);
+      G4Element* H = new G4Element("TS_H_of_Polyethylene","H",1.,1.0079*g/mole);
+      material->AddElement(C,5);
+      material->AddElement(H,4);
+      //material->AddElement(GetElementFromLibrary("C"), 5);
+      //material->AddElement(GetElementFromLibrary("H"), 4);
       m_Material[Name] = material;
       return material;
     }
@@ -277,6 +281,17 @@ G4Material* MaterialManager::GetMaterialFromLibrary(string Name,
       m_Material[Name] = material;
       return material;
     }
+
+
+    else if (Name == "F" || Name == "Fluor") {
+      if (!density)
+        density            = 1.11 * g / cm3;
+      G4Material* material = new G4Material("NPS_" + Name, density, 1);
+      material->AddElement(GetElementFromLibrary("F"), 1);
+      m_Material[Name] = material;
+      return material;
+    }
+
 
     else if(Name == "235U"){
       if(!density)
