@@ -12,13 +12,9 @@
 #include "G4UItcsh.hh"
 #include "G4VisManager.hh"
 
-#ifdef G4VIS_USE
 #include "G4VisExecutive.hh"
-#endif
 
-#ifdef G4UI_USE
 #include "G4UIExecutive.hh"
-#endif
 
 // G4 local source
 #include "DetectorConstruction.hh"
@@ -104,9 +100,7 @@ int main(int argc, char** argv){
     // Get the pointer to the User Interface manager
     G4cout << "//////////// Starting UI ////////////"<< endl;
     G4UImanager* UImanager = G4UImanager::GetUIpointer();
-#ifdef G4UI_USE
     G4UIExecutive* ui = new G4UIExecutive(argc, argv);
-#endif
     
     
     ///////////////////////////////////////////////////////////////
@@ -131,21 +125,19 @@ int main(int argc, char** argv){
     
     G4VisManager* visManager=NULL;
 
-#ifdef G4UI_USE
     if(!OptionManager->GetG4BatchMode()){
         string Path_Macro = getenv("NPTOOL");
         Path_Macro+="/NPSimulation/ressources/macro/";
         UImanager->ApplyCommand("/control/execute " +Path_Macro+"verbose.mac");
 
-  #ifdef G4VIS_USE
         UImanager->ApplyCommand("/control/execute " +Path_Macro+"aliases.mac");
         visManager = new G4VisExecutive("Quiet");
         visManager->Initialize();
         UImanager->ApplyCommand("/control/execute " +Path_Macro+"vis.mac");
-  #endif
         if (ui->IsGUI()){
             UImanager->ApplyCommand("/control/execute " +Path_Macro+"gui.mac");
         }
+
   #ifdef __APPLE__
         string command= "osascript ";
         command+= getenv("NPTOOL");
@@ -155,7 +147,7 @@ int main(int argc, char** argv){
   #endif
     }
     else{// if batch mode do not accumulate any track
-       UImanager->ApplyCommand("/vis/scene/endOfEventAction accumulate 0");
+        UImanager->ApplyCommand("/vis/scene/endOfEventAction accumulate 0");
       }
     // Execute user macro
     if(!OptionManager->IsDefault("G4MacroPath")){
@@ -168,12 +160,9 @@ int main(int argc, char** argv){
     
     
     delete ui;
-#endif
     
-#ifdef G4VIS_USE
     if(visManager)
         delete visManager;
-#endif
     
     ///////////////////////////////////////////////////////////////
     ////////////////////// Job termination ////////////////////////

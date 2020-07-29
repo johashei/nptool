@@ -68,6 +68,7 @@ private:
     vector<double> fRC_Momentum_Direction_X;
     vector<double> fRC_Momentum_Direction_Y;
     vector<double> fRC_Momentum_Direction_Z;
+    vector<TVector3> fRC_Momentum;
 
     
 public:
@@ -103,6 +104,12 @@ public:
     void SetMomentumDirectionX (const double & Momentum_Direction_X)  {fRC_Momentum_Direction_X.push_back(Momentum_Direction_X);}//!
     void SetMomentumDirectionY (const double & Momentum_Direction_Y)  {fRC_Momentum_Direction_Y.push_back(Momentum_Direction_Y);}//!
     void SetMomentumDirectionZ (const double & Momentum_Direction_Z)  {fRC_Momentum_Direction_Z.push_back(Momentum_Direction_Z);}//!
+    void SetMomentum (const TVector3 & Momentum)  {
+      Momentum.Unit();
+      SetMomentumDirectionX(Momentum.X());
+      SetMomentumDirectionY(Momentum.Y());
+      SetMomentumDirectionZ(Momentum.Z());
+    }//!
     
     /////////////////////           GETTERS           ////////////////////////
     // Beam parameter
@@ -131,6 +138,7 @@ public:
     double GetMomentumDirectionX  (const int &i) const {return fRC_Momentum_Direction_X[i];}//!
     double GetMomentumDirectionY  (const int &i) const {return fRC_Momentum_Direction_Y[i];}//!
     double GetMomentumDirectionZ  (const int &i) const {return fRC_Momentum_Direction_Z[i];}//!
+    TVector3 GetParticleMomentum  (const int &i) const {return TVector3(fRC_Momentum_Direction_X[i],fRC_Momentum_Direction_Y[i],fRC_Momentum_Direction_Z[i]).Unit();}//!
 
     TVector3 GetBeamDirection         () const ;
     TVector3 GetParticleDirection     (const int i) const ; 

@@ -1,6 +1,6 @@
 
-if(Geant4_VERSION_MAJOR GREATER_EQUAL 10)
-  if(Geant4_VERSION_MINOR GREATER_EQUAL 5)
+if(Geant4_VERSION_MAJOR GREATER 9)
+  if(Geant4_VERSION_MINOR GREATER 4)
 
   message("Compiling with NeutronHPphysics")
 add_library(NPSProcess SHARED Decay.cc BeamReaction.cc FastDriftElectron.cc NPIonIonInelasticPhysic.cc PhysicsList.cc G4DriftElectron.cc G4IonizationWithDE.cc G4DriftElectronPhysics.cc G4DEAbsorption.cc G4DEAmplification.cc G4DETransport.cc menate_R.cc NeutronHPphysics.cc NeutronHPMessenger.cc)

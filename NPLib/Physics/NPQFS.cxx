@@ -17,11 +17,11 @@
  *  or a nucleon is removed from a projectile  by interaction with a target  *
  *  nucleon (proton target in general)                                       *
  *                                                                           *
- *  First step (dissociation):  A -> B + c                                   *
- *  Second step (scattering) :  c + T -> 1 + 2                               *
+ *  First step (dissociation):  A -> B + a                                   *
+ *  Second step (scattering) :  a + T -> 1 + 2                               *
  *  Labeling is:                                                             *
  *                                                                           *
- *              A --> T  ==> B + (c -> T) =>  B + 1 + 2                      *
+ *              A --> T  ==> B + (a -> T) =>  B + 1 + 2                      *
  *                                                                           *
  *  where:                                                                   *
  *    +  A is the beam nucleus                                               *
@@ -29,7 +29,7 @@
  *                                                                           *
  *    +  B is the residual fragment (beam-like)                              *
  *    +  1 is the scattered target nucleon  (former T)                       *
- *    +  2 is the knocked-out cluster/nucleon (noted c) in the intermediate  *
+ *    +  2 is the knocked-out cluster/nucleon (noted a) in the intermediate  *
  *---------------------------------------------------------------------------*
  * Comment:                                                                  *
  *    +  Adapted from original event generator from V. Panin (R3B collab)    *
@@ -82,6 +82,9 @@ QFS::QFS(){
 
     fTheta2VsTheta1 = 0;
     fPhi2VsPhi1 = 0;
+
+    fPerpMomentumHist = NULL;
+    fParMomentumHist = NULL;
 
 }
 
@@ -153,6 +156,16 @@ void QFS::ReadConfigurationFile(NPL::InputParser parser){
           fshoot1 = blocks[i]->GetInt("ShootLight");
           fshoot2 = blocks[i]->GetInt("ShootLight");
       }
+      if(blocks[i]->HasToken("PerpMomentumPath")){
+          vector<string> file_perp = blocks[i]->GetVectorString("PerpMomentumPath");
+          TH1F* Perptemp = Read1DProfile(file_perp[0], file_perp[1]);
+          SetPerpMomentumHist(Perptemp);
+      }
+      if(blocks[i]->HasToken("ParMomentumPath")){
+          vector<string> file_par = blocks[i]->GetVectorString("ParMomentumPath");
+          TH1F* Partemp = Read1DProfile(file_par[0], file_par[1]);
+          SetParMomentumHist(Partemp);
+      }
   }
 
   cout << "\033[0m" ;
@@ -202,7 +215,7 @@ void QFS::CalculateVariables(){
     //cout<<"---- COMPUTE ------"<<endl;
    // cout<<"--CM--"<<endl; 
 
-    mA = fNucleiA.Mass();            // Beam mass in MeV
+    mA =  fNucleiA.Mass();           // Beam mass in MeV
     mT =  fNucleiT.Mass();           // Target mass in MeV 
     mB =  fNucleiB.Mass();           // Heavy residual mass in MeV 
     m1 =  mT;                        // scattered target nucleon (same mass);
@@ -214,17 +227,13 @@ void QFS::CalculateVariables(){
     double EA = sqrt(mA*mA + PA*PA);         // Beam total energy
     fEnergyImpulsionLab_A = TLorentzVector(0.,0.,PA,EA);
     
-    //Internal momentum of removed cluster/nucleon
-    //gRandom->SetSeed(0);
-    //Pa.SetX(gRandom->Gaus(0.,fMomentumSigma));
-    //Pa.SetY(gRandom->Gaus(0.,fMomentumSigma));
-    //Pa.SetZ(gRandom->Gaus(0.,fMomentumSigma));
-    Pa.SetX(fInternalMomentum.X());
-    Pa.SetY(fInternalMomentum.Y());
-    Pa.SetZ(fInternalMomentum.Z());
-
-    //Internal momentum of heavy recoil after removal
-    PB.SetXYZ( (-Pa.X()) , (-Pa.Y()) , (-Pa.Z()) );
+    // Internal momentum of removed cluster/nucleon (Pa) and recoil (PB)
+    // here fInternalMomentum contains PB (recoil fragment momentum)
+    // readout from the input file (theoretical)
+    PB.SetX(fInternalMomentum.X());
+    PB.SetY(fInternalMomentum.Y());
+    PB.SetZ(fInternalMomentum.Z());
+    Pa.SetXYZ( (-PB.X()) , (-PB.Y()) , (-PB.Z()) );
 
     // Off-shell mass of the bound nucleon from E conservation
     // in virtual dissociation of A -> B + a
@@ -298,7 +307,7 @@ void QFS::KineRelativistic(double& ThetaLab1, double& PhiLab1, double& KineticEn
                                         pCM_2*sin(thetaCM_2)*sin(phiCM_2),
                                         pCM_2*cos(thetaCM_2),
                                         ECM_2);
-
+  
     fEnergyImpulsionCM_1	= fTotalEnergyImpulsionCM - fEnergyImpulsionCM_2;
 
     //-- Boost in the direction of the moving cluster "a" --//
@@ -312,7 +321,7 @@ void QFS::KineRelativistic(double& ThetaLab1, double& PhiLab1, double& KineticEn
     TVector3 direction = Pa_lab.Unit();
     fEnergyImpulsionLab_1.RotateUz(direction);
     fEnergyImpulsionLab_2.RotateUz(direction);
-
+/*
     // Angle in the Lab frame
     ThetaLab1 = fEnergyImpulsionLab_1.Angle(fEnergyImpulsionLab_A.Vect());
     //ThetaLab1 = fEnergyImpulsionLab_1.Angle(z_axis);
@@ -327,11 +336,16 @@ void QFS::KineRelativistic(double& ThetaLab1, double& PhiLab1, double& KineticEn
     if (fabs(PhiLab1) < 1e-6) PhiLab1 = 0;
     PhiLab2 = M_PI + fEnergyImpulsionLab_2.Vect().Phi(); 
     if (fabs(PhiLab2) < 1e-6) PhiLab2 = 0;
+*/
+
+    ThetaLab1 = fEnergyImpulsionLab_1.Angle(fEnergyImpulsionLab_A.Vect());
+    ThetaLab2 = fEnergyImpulsionLab_2.Angle(fEnergyImpulsionLab_A.Vect());
+    PhiLab1 = fEnergyImpulsionLab_1.Vect().Phi(); 
+    PhiLab2 = fEnergyImpulsionLab_2.Vect().Phi(); 
 
     // Kinetic Energy in the lab frame
     KineticEnergyLab1 = fEnergyImpulsionLab_1.E() - m1;
     KineticEnergyLab2 = fEnergyImpulsionLab_2.E() - m2;
-
     // test for total energy conversion
     //if (fabs(fTotalEnergyImpulsionLab.E() - (fEnergyImpulsionLab_1.E()+fEnergyImpulsionLab_2.E())) > 1e-6)
     //    cout << "Problem for energy conservation" << endl;
@@ -400,10 +414,39 @@ void QFS::Dump(){
 }
 ////////////////////////////////////////////////////////////////////////////////////////////
 
-double QFS::ShootRandomThetaCM(){
-  // TO DO //
-  double theta =0;
-  return theta;
+TVector3 QFS::ShootInternalMomentum(){
+
+  //Shoot a momentum (vector) for the internal cluster in the beam-at-rest frame
+  // (1) if only a width is provided: shoot in 3 independant Gaussian
+  // (2) if input histos are provided: use them instead of option (1)  
+  // Remark : if both width and input histos are provided only histos are considered 
+
+  TVector3 momentum = {0,0,0};
+  double  PerpMomentum =0;
+  double  ParMomentum =0;
+  double  angle_tmp =0;
+
+  momentum.SetX(gRandom->Gaus(0.,fMomentumSigma));
+  momentum.SetY(gRandom->Gaus(0.,fMomentumSigma));
+  momentum.SetZ(gRandom->Gaus(0.,fMomentumSigma));
+
+  if(fPerpMomentumHist){
+      PerpMomentum=fPerpMomentumHist->GetRandom();
+      angle_tmp = gRandom->Rndm()*2*M_PI;
+      momentum.SetX(PerpMomentum * TMath::Cos(angle_tmp));
+      momentum.SetY(PerpMomentum * TMath::Sin(angle_tmp));
+  }
+  if(fParMomentumHist){
+      ParMomentum=fParMomentumHist->GetRandom();
+      momentum.SetZ(ParMomentum);
+  }
+
+  //cout << " Shooting Random Momentum: "  << endl;
+  //cout<<"Px:"<<momentum.X() << endl;
+  //cout<<"Py:"<<momentum.Y() << endl;
+  //cout<<"Pz:"<<momentum.Z() << endl;
+  SetInternalMomentum(momentum);
+  return momentum;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////

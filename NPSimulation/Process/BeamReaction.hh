@@ -48,12 +48,16 @@ namespace NPS{
       NPL::QFS m_QFS;
       string m_BeamName;
       string m_ReactionType;
-      double m_PreviousEnergy;
-      double m_PreviousLength;
       bool   m_active;// is the process active
+      bool   m_shoot;
       double m_StepSize;
+      double m_Z;
+      double m_rand;
+      double m_length;
       int    m_Parent_ID;
-   
+      double SlowDownBeam(const G4ParticleDefinition* Beam, double IncidentEnergy, double Thickness,G4Material* Material);
+
+  
    private:
      TReactionConditions* m_ReactionConditions;
  

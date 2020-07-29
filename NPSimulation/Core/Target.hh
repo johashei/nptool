@@ -75,9 +75,6 @@ public:
   //   (interaction coordinates) are well located inside the target volume
   bool IsInsideTarget() {return false;};
   
-  // Return the slow down beam energy after interaction at ZInteraction with initial beam energy before target IncidentEnergy
-  G4double SlowDownBeam(G4ParticleDefinition* Beam, G4double IncidentEnergy, G4double ZInteraction, G4double IncidentTheta);
-  
   // Used to simulate beam emmitance effect
   void RandomGaussian2D(double MeanX, double MeanY, double SigmaX, double SigmaY, double &X, double &Y, double NumberOfSigma = 10000);
   
@@ -94,7 +91,7 @@ public:
   G4double            GetTargetY()           {return m_TargetY;}
   G4double            GetTargetZ()           {return m_TargetZ;}
   G4ThreeVector       GetTargetPosition()    {return G4ThreeVector(m_TargetX,m_TargetY,m_TargetZ);}
-  G4int               GetTargetNbLayers()    {return m_TargetNbLayers;}
+  G4double            GetTargetNbSlices()    {return m_TargetNbSlices;}
   G4Tubs*             GetTargetSolid()       {return m_TargetSolid;}
   G4LogicalVolume*    GetTargetLogic()       {return m_TargetLogic;}  
   
@@ -113,7 +110,7 @@ private:
   G4double    m_TargetRadius;
   G4double    m_TargetAngle;
   G4Material* m_TargetMaterial;
-  G4int       m_TargetNbLayers;
+  G4double    m_TargetNbSlices;
   G4Material* m_TargetBackingMaterial; 
   G4double    m_TargetBackingThickness; 
   

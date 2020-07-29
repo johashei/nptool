@@ -956,10 +956,7 @@ G4Material* MaterialManager::GetMaterialFromLibrary(string Name,
         = {35. * cm, 35. * cm, 35. * cm, 35. * cm, 35. * cm,
           35. * cm, 35. * cm, 35. * cm, 35. * cm, 35. * cm,
           35. * cm, 35. * cm, 35. * cm, 35. * cm, 35. * cm};
-      /*G4double THICK_ABSL[NUMENTRIES]  =
-        {0.01*mm,0.01*mm,0.01*mm,0.01*mm,0.01*mm,0.01*mm,0.01*mm,0.01*mm,
-        0.01*mm,0.01*mm,0.01*mm,0.01*mm,0.01*mm,0.01*mm,0.01*mm};*/
-
+      
       G4MaterialPropertiesTable* myMPT2 = new G4MaterialPropertiesTable();
       myMPT2->AddProperty("RINDEX", PMMA_PP, PMMA_RIND, NUMENTRIES);
       myMPT2->AddProperty("ABSLENGTH", PMMA_PP, PMMA_ABSL, NUMENTRIES);
@@ -1018,11 +1015,18 @@ G4Material* MaterialManager::GetMaterialFromLibrary(string Name,
     }
 
     else {
-      G4cout << "ERROR: Material requested \"" << Name
-        << "\" is not available in the Material Library, trying with NIST"
-        << G4endl;
+      cout << "INFO: trying to get " << Name << " material from NIST" << endl;
       G4NistManager* man = G4NistManager::Instance();
-      return man->FindOrBuildMaterial(Name.c_str());
+      G4Material* material = man->FindOrBuildMaterial(Name.c_str());
+      m_Material[Name] = material;
+      material->SetName("NPS_"+material->GetName());
+      if(!material){
+        cout << "ERROR: Material requested \"" << Name
+        << "\" is not available in the nptool material library or NIST"
+        << endl;
+        exit(1);
+      }
+       return material;
     }
   }
 
@@ -1152,16 +1156,6 @@ G4Material* MaterialManager::GetGasFromLibrary(string Name, double Pressure, dou
       m_Material[newName]=material;
       return material;
     }
-
-    /* if(Name == "mixMINOS"){ */
-    /*     density	= (2*2.0140/Vm)*mg/cm3; */
-    /*     G4Material* material = new G4Material("NPS_"+newName,density,1,kStateGas,Temperature,Pressure); */
-    /*     material->AddElement(GetElementFromLibrary("D"), 2); */
-    /*     //material->AddElement(GetElementFromLibrary("D"), 1); */
-    /*     m_Material[newName]=material; */
-    /*     return material; */
-    /* } */
-
 
     else{
       exit(1);
@@ -1322,7 +1316,7 @@ void MaterialManager::WriteCrossSectionTable(std::set<string> Particle, G4double
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 void MaterialManager::CreateSampleVolumes(G4LogicalVolume* world_log) {
 
-  // Crate a micrometer big cube for each material
+  // Create a micrometer size cube for each material
   G4double SampleSize = 1 * um;
   G4double WorldSize  = 10.0 * m;
   G4Box*   sample_box

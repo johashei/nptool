@@ -56,10 +56,10 @@ class CalibrationManager{
 
     // call like : myCalibrationManager->ApplyCalibration( "MUST2/Telescope5_Si_X38_E" , RawEnergy )
     // return the Calibrated value
-    double ApplyCalibration (const std::string& ParameterPath , const double& RawValue) const ;
+    double ApplyCalibration (const std::string& ParameterPath , const double& RawValue, double random=0) const ;
     double ApplyResistivePositionCalibration (const std::string& ParameterPath , const double& RawValue) const ;
     // Same but with debug information outputs
-    double ApplyCalibrationDebug (const std::string& ParameterPath , const double& RawValue) const ;
+    double ApplyCalibrationDebug (const std::string& ParameterPath , const double& RawValue, double random=0) const ;
     double ApplyResistivePositionCalibrationDebug (const std::string& ParameterPath , const double& RawValue) const ;
 
     bool ApplyThreshold (const std::string& ParameterPath, const double& RawValue) const ;

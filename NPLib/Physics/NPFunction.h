@@ -58,7 +58,7 @@ namespace NPL{
   void RandomGaussian2D(double MeanX, double MeanY, double SigmaX, double SigmaY, double &X, double &Y);
   
   // Change nucleus name from G4 standard to Physics standard (11Li vs Li11)
-  string ChangeNameToG4Standard(string name);
+  string ChangeNameToG4Standard(string name,bool excited=false);
   string ChangeNameFromG4Standard(string name);
 
   // Hyperbolic shape generator for cryogenic target deformation

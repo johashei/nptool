@@ -1,18 +1,18 @@
 /*****************************************************************************
- * Copyright (C) 2009-2018   this file is part of the NPTool Project       *
+ * Copyright (C) 2009-2018   this file is part of the NPTool Project         *
  *                                                                           *
  * For the licensing terms see $NPTOOL/Licence/NPTool_Licence                *
  * For the list of contributors see $NPTOOL/Licence/Contributors             *
  *****************************************************************************/
 
 /*****************************************************************************
- * Original Author: Greg Christian  contact address: gchristian@tamu.edu                        *
+ * Original Author: Greg Christian  contact address: gchristian@tamu.edu     *
  *                                                                           *
- * Creation Date  : July 2018                                           *
+ * Creation Date  : July 2018                                                *
  * Last update    :                                                          *
  *---------------------------------------------------------------------------*
  * Decription:                                                               *
- *  This class describe  LightPipe simulation                             *
+ *  This class describe  LightPipe simulation                                *
  *                                                                           *
  *---------------------------------------------------------------------------*
  * Comment:                                                                  *
@@ -75,7 +75,8 @@ LightPipe::LightPipe(){
 	m_VisPD     = new G4VisAttributes(G4Colour(0.1, 0.2, 0.3));
 	m_ScintillatorMaterial = CreateScintillatorMaterial();
 	m_PipeMaterial = CreatePipeMaterial();
-	//m_Wrapping = CreateWrappingMaterial();
+	//m_WrappingMaterial = CreateWrappingMaterial();
+//  m_WrappingMaterial =  NULL;
 	m_ReflectiveSurface = CreateReflectiveSurface();
 
 	m_VisSquare->SetForceWireframe(true);

@@ -1353,7 +1353,7 @@ double fSi_X_E(const TMust2Data* m_EventData, const int& i) {
   name += NPL::itoa(m_EventData->GetMMStripXEStripNbr(i));
   name += "_E";
   return CalibrationManager::getInstance()->ApplyCalibration(
-      name, m_EventData->GetMMStripXEEnergy(i));
+      name, m_EventData->GetMMStripXEEnergy(i),1);
 }
 
 double fSi_X_T(const TMust2Data* m_EventData, const int& i) {
@@ -1364,7 +1364,7 @@ double fSi_X_T(const TMust2Data* m_EventData, const int& i) {
   name += NPL::itoa(m_EventData->GetMMStripXTStripNbr(i));
   name += "_T";
   return CalibrationManager::getInstance()->ApplyCalibration(
-      name, m_EventData->GetMMStripXTTime(i));
+      name, m_EventData->GetMMStripXTTime(i),1);
 }
 
 //   Y
@@ -1376,7 +1376,7 @@ double fSi_Y_E(const TMust2Data* m_EventData, const int& i) {
   name += NPL::itoa(m_EventData->GetMMStripYEStripNbr(i));
   name += "_E";
   return CalibrationManager::getInstance()->ApplyCalibration(
-      name, m_EventData->GetMMStripYEEnergy(i));
+      name, m_EventData->GetMMStripYEEnergy(i),1);
 }
 
 double fSi_Y_T(const TMust2Data* m_EventData, const int& i) {
@@ -1387,7 +1387,7 @@ double fSi_Y_T(const TMust2Data* m_EventData, const int& i) {
   name += NPL::itoa(m_EventData->GetMMStripYTStripNbr(i));
   name += "_T";
   return CalibrationManager::getInstance()->ApplyCalibration(
-      name, m_EventData->GetMMStripYTTime(i));
+      name, m_EventData->GetMMStripYTTime(i),1);
 }
 
 //   SiLi
@@ -1400,7 +1400,7 @@ double fSiLi_E(const TMust2Data* m_EventData, const int& i) {
   name += "_E";
 
   return CalibrationManager::getInstance()->ApplyCalibration(
-      name, m_EventData->GetMMSiLiEEnergy(i));
+      name, m_EventData->GetMMSiLiEEnergy(i),1);
 }
 
 double fSiLi_T(const TMust2Data* m_EventData, const int& i) {
@@ -1411,7 +1411,7 @@ double fSiLi_T(const TMust2Data* m_EventData, const int& i) {
   name += NPL::itoa(m_EventData->GetMMSiLiTPadNbr(i));
   name += "_T";
   return CalibrationManager::getInstance()->ApplyCalibration(
-      name, m_EventData->GetMMSiLiTTime(i));
+      name, m_EventData->GetMMSiLiTTime(i),1);
 }
 
 //   CsI
@@ -1423,7 +1423,7 @@ double fCsI_E(const TMust2Data* m_EventData, const int& i) {
   name += NPL::itoa(m_EventData->GetMMCsIECristalNbr(i));
   name += "_E";
   return CalibrationManager::getInstance()->ApplyCalibration(
-      name, m_EventData->GetMMCsIEEnergy(i));
+      name, m_EventData->GetMMCsIEEnergy(i),1);
 }
 
 double fCsI_T(const TMust2Data* m_EventData, const int& i) {
@@ -1434,7 +1434,7 @@ double fCsI_T(const TMust2Data* m_EventData, const int& i) {
   name += NPL::itoa(m_EventData->GetMMCsITCristalNbr(i));
   name += "_T";
   return CalibrationManager::getInstance()->ApplyCalibration(
-      name, m_EventData->GetMMCsITTime(i));
+      name, m_EventData->GetMMCsITTime(i),1);
 }
 } // namespace MUST2_LOCAL
 
