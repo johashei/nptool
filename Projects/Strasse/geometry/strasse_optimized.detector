@@ -3,7 +3,7 @@ Target
  THICKNESS= 150 mm
  ANGLE= 0 deg
  RADIUS= 15 mm
- MATERIAL= LH2
+ MATERIAL= LH2 
  X= 0 mm
  Y= 0 mm
  Z= 0 mm

@@ -59,7 +59,6 @@ void TReactionConditions::Clear(){
     fRC_Momentum_Direction_X.clear();
     fRC_Momentum_Direction_Y.clear();
     fRC_Momentum_Direction_Z.clear();
-    fRC_Momentum.clear();
 }
 ////////////////////////////////////////////////////////////////////////////////
 void TReactionConditions::Dump() const{
