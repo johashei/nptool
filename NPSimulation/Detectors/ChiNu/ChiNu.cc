@@ -62,7 +62,7 @@ using namespace CLHEP;
 namespace ChiNu_NS{
   // EJ309 Scintillator - Energy and time Resolution
   const double EnergyThreshold = 0.*MeV;
-  const double ResoTime = 1*ns ;
+  const double ResoTime = 0.5*ns ;
   const double ResoEnergy = 0.1*MeV ;
   const double Radius = 8.90*cm ; 
   const double Thickness = 5.08*cm ; 
@@ -446,7 +446,7 @@ void ChiNu::ConstructDetector(G4LogicalVolume* world){
 
   G4RotationMatrix* Rot_FC = new G4RotationMatrix(0,0,0);
   G4ThreeVector Pos_FC = G4ThreeVector(0,0,0) ;
-  BuildFissionChamber()->MakeImprint(world,Pos_FC,Rot_FC,0);
+  //BuildFissionChamber()->MakeImprint(world,Pos_FC,Rot_FC,0);
 
 
 }

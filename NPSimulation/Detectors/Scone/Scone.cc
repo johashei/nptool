@@ -44,6 +44,7 @@
 // NPTool header
 #include "Scone.hh"
 #include "CalorimeterScorers.hh"
+#include "ProcessScorers.hh"
 #include "InteractionScorers.hh"
 #include "RootOutput.h"
 #include "MaterialManager.hh"
@@ -80,11 +81,15 @@ Scone::Scone(){
   InitializeMaterial();
   m_Event = new TSconeData() ;
   m_SconeScorer = 0;
+  m_GdScorer = 0;
+  m_FCScorer = 0;
 
   m_SquareDetector = 0;
+  m_FissionChamberVolume = 0;
 
   m_BuildRing1 = 1;
   m_BuildRing2 = 1;
+  m_BuildFissionChamber = 0;
 
   m_NumberOfInnerDetector = 16;
   m_NumberOfRing1Detector = 8;
@@ -144,6 +149,7 @@ G4LogicalVolume* Scone::Build2x2Assembly(int DetNumber){
 
   G4LogicalVolume* Gd_layer_volume = new G4LogicalVolume(Gd_layer, Gd_Material,"Gd_layer_volume",0,0,0);
   Gd_layer_volume->SetVisAttributes(m_VisGd);
+  Gd_layer_volume->SetSensitiveDetector(m_GdScorer);
 
   double posX = 0;
   double posY = 0;
@@ -211,7 +217,7 @@ G4LogicalVolume* Scone::Build6x6Assembly(int DetNumber, double plastic_length){
 
   G4LogicalVolume* Gd_layer_volume = new G4LogicalVolume(Gd_layer, Gd_Material,"Gd_layer_volume",0,0,0);
   Gd_layer_volume->SetVisAttributes(m_VisGd);
-
+  Gd_layer_volume->SetSensitiveDetector(m_GdScorer);
 
   double posX = 0;
   double posY = 0;
@@ -270,7 +276,7 @@ void Scone::ReadConfiguration(NPL::InputParser parser){
   if(NPOptionManager::getInstance()->GetVerboseLevel())
     cout << "//// " << blocks.size() << " detectors found " << endl; 
 
-  vector<string> cart = {"POS","Ring1","Ring2"};
+  vector<string> cart = {"POS","Ring1","Ring2","FissionChamber"};
 
   for(unsigned int i = 0 ; i < blocks.size() ; i++){
     if(blocks[i]->HasTokenList(cart)){
@@ -280,6 +286,7 @@ void Scone::ReadConfiguration(NPL::InputParser parser){
       G4ThreeVector Pos = NPS::ConvertVector(blocks[i]->GetTVector3("POS","mm"));
       m_BuildRing1 = blocks[i]->GetInt("Ring1");
       m_BuildRing2 = blocks[i]->GetInt("Ring2");
+      m_BuildFissionChamber = blocks[i]->GetInt("FissionChamber");
       AddDetector(Pos);
     }
     else{
@@ -302,7 +309,79 @@ void Scone::ConstructDetector(G4LogicalVolume* world){
 
   if(m_BuildRing2==1)
     BuildRing2(world);
+
+  if(m_BuildFissionChamber==1){
+    G4RotationMatrix* Rot_FC = new G4RotationMatrix(0,0,0);
+    G4ThreeVector Pos_FC = G4ThreeVector(0,0,0);
+    BuildFissionChamber()->MakeImprint(world,Pos_FC,Rot_FC,0);
+  }
 }
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+G4AssemblyVolume* Scone::BuildFissionChamber(){
+  if(!m_FissionChamberVolume){
+    m_FissionChamberVolume = new G4AssemblyVolume();
+
+    G4RotationMatrix* Rv = new G4RotationMatrix(0,0,0);
+    G4ThreeVector Tv;
+    Tv.setX(0); Tv.setY(0); Tv.setZ(0);
+
+    // Gas Volume //
+    double gas_box_width = 5.*cm;
+    double gas_box_height = 5.*cm;
+    double gas_box_length = 10.*cm;
+    
+    G4Box* gas_box = new G4Box("gas_box",0.5*gas_box_width,0.5*gas_box_height,0.5*gas_box_length);
+    
+    G4Material* CF4 = MaterialManager::getInstance()->GetGasFromLibrary("CF4", 1.1*bar, 293*kelvin);
+    G4LogicalVolume* gas_box_logic = new G4LogicalVolume(gas_box, CF4, "gas_box_logic",0,0,0);
+  
+    G4VisAttributes* Vis_gas = new G4VisAttributes(G4Colour(0.776, 0.662, 0.662, 0.5));
+    gas_box_logic->SetVisAttributes(Vis_gas);
+    gas_box_logic->SetSensitiveDetector(m_FCScorer);
+
+    m_FissionChamberVolume->AddPlacedVolume(gas_box_logic, Tv, Rv);
+
+    // Al // 
+    double Al_box_width = 5.*cm;
+    double Al_box_height = 5.*cm;
+    double Al_box_length = 0.15*um;
+
+    G4Box* box1 = new G4Box("box1", 0.5*Al_box_width, 0.5*Al_box_height, 0.5*Al_box_length);
+    
+    G4Material* Al_material = MaterialManager::getInstance()->GetMaterialFromLibrary("Al");
+    G4LogicalVolume* Al_box_logic = new G4LogicalVolume(box1, Al_material, "Al_box_logic",0,0,0);
+    
+    G4VisAttributes* VisAl = new G4VisAttributes(G4Colour(0.839, 0.803, 0.803, 1));
+    Al_box_logic->SetVisAttributes(VisAl);
+
+    Tv.setZ(-0.5*gas_box_length-0.5*Al_box_length);
+    //m_FissionChamberVolume->AddPlacedVolume(Al_box_logic,Tv,Rv);
+    Tv.setZ(0.5*gas_box_length+0.5*Al_box_length);
+    //m_FissionChamberVolume->AddPlacedVolume(Al_box_logic,Tv,Rv);
+  
+    // Kapton // 
+    double kapton_box_width = 5.*cm;
+    double kapton_box_height = 5.*cm;
+    double kapton_box_length = 50*um;
+
+    G4Box* box2 = new G4Box("box2", 0.5*kapton_box_width, 0.5*kapton_box_height, 0.5*kapton_box_length);
+    
+    G4Material* kapton_material = MaterialManager::getInstance()->GetMaterialFromLibrary("Kapton");
+    G4LogicalVolume* kapton_box_logic = new G4LogicalVolume(box2, kapton_material, "kapton_box_logic",0,0,0);
+    
+    G4VisAttributes* VisKapton = new G4VisAttributes(G4Colour(0.539, 0.503, 0.503, 1));
+    kapton_box_logic->SetVisAttributes(VisKapton);
+
+    Tv.setZ(-0.5*gas_box_length-0.5*Al_box_length-0.5*kapton_box_length);
+    //m_FissionChamberVolume->AddPlacedVolume(Al_box_logic,Tv,Rv);
+    Tv.setZ(0.5*gas_box_length+0.5*Al_box_length+0.5*kapton_box_length);
+    //m_FissionChamberVolume->AddPlacedVolume(kapton_box_logic,Tv,Rv);
+
+  }
+  return m_FissionChamberVolume;
+}
+
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 void Scone::Build2x2Block(G4LogicalVolume* world){
 
@@ -321,6 +400,7 @@ void Scone::Build2x2Block(G4LogicalVolume* world){
   G4ThreeVector Det_pos;
 
   for(int i=0; i<m_NumberOfInnerDetector; i++){
+  //for(int i=0; i<8; i++){
     m_Assembly++;
     G4String Name = "2x2block_" + to_string(m_Assembly);
     Det_pos = G4ThreeVector(posX[i], posY[i], posZ[i]);
@@ -459,6 +539,69 @@ void Scone::ReadSensitive(const G4Event* ){
       m_Event->SetTime(DetectorNbr,PlasticNbr,Time); 
     }
   }
+  Scorer->clear();
+
+  ///////////
+  // Process scorer for plastic bar
+  ProcessScorers::PS_Process* Process_scorer = (ProcessScorers::PS_Process*) m_SconeScorer->GetPrimitive(2);
+  unsigned int ProcessMult = Process_scorer->GetMult();
+  bool kPlasticCapture = false;
+  double PlasticCaptureTime = 0;
+  for(unsigned int i=0; i<ProcessMult; i++){
+    string process_name = Process_scorer->GetProcessName(i);
+    if(process_name=="nCapture"){
+      kPlasticCapture = true;
+      PlasticCaptureTime = Process_scorer->GetProcessTime(i);
+    }
+  }
+  vector<double> gamma_energy;
+  gamma_energy = Process_scorer->GetGammaEnergy();
+  for(unsigned int i=0; i< gamma_energy.size(); i++){
+    m_Event->SetGammaEnergy(gamma_energy[i]);
+  }
+  vector<double> proton_energy;
+  vector<double> proton_time;
+  proton_energy = Process_scorer->GetProtonEnergy();
+  proton_time = Process_scorer->GetProtonTime();
+  for(unsigned int i=0; i<proton_energy.size(); i++){
+    m_Event->SetProtonEnergy(proton_energy[i]);
+    m_Event->SetProtonTime(proton_time[i]);
+  }
+
+  Process_scorer->clear();
+
+  ///////////
+  // Process scorer for Gd
+  ProcessScorers::PS_Process* GdProcess_scorer = (ProcessScorers::PS_Process*) m_GdScorer->GetPrimitive(0);
+  ProcessMult = GdProcess_scorer->GetMult();
+  bool kGdCapture = false;
+  double GdCaptureTime = 0;
+  for(unsigned int i=0; i<ProcessMult; i++){
+    string process_name = GdProcess_scorer->GetProcessName(i);
+    if(process_name=="nCapture"){
+      kGdCapture = true;
+      GdCaptureTime = GdProcess_scorer->GetProcessTime(i);
+    }
+  }
+  if(kPlasticCapture){
+    m_Event->SetCapture(1);
+    m_Event->SetCaptureTime(PlasticCaptureTime);
+  }
+  else if(kGdCapture){
+    m_Event->SetCapture(2);
+    m_Event->SetCaptureTime(GdCaptureTime);
+  }
+  //else m_Event->SetCapture(0);
+  GdProcess_scorer->clear();
+
+  ///////////
+  // Process scorer for fission chamber
+  ProcessScorers::PS_Process* FCProcess_scorer = (ProcessScorers::PS_Process*) m_FCScorer->GetPrimitive(0);
+  vector<int> FC_process = FCProcess_scorer->GetFCProcess();
+  for(unsigned int i=0; i<FC_process.size(); i++){
+    m_Event->SetFCProcess(FC_process[i]);
+  }
+  FCProcess_scorer->clear();
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -466,7 +609,9 @@ void Scone::ReadSensitive(const G4Event* ){
 void Scone::InitializeScorers() { 
   // This check is necessary in case the geometry is reloaded
   bool already_exist = false; 
-  m_SconeScorer = CheckScorer("SconeScorer",already_exist) ;
+  m_SconeScorer = CheckScorer("SconeScorer",already_exist);
+  m_GdScorer = CheckScorer("GdScorer",already_exist);
+  m_FCScorer = CheckScorer("FCScorer",already_exist);
 
   if(already_exist) 
     return ;
@@ -475,13 +620,24 @@ void Scone::InitializeScorers() {
   vector<int> level; 
   level.push_back(1);
   level.push_back(0);
-  //G4VPrimitiveScorer* Calorimeter= new CalorimeterScorers::PS_Calorimeter("Calorimeter",level, 0) ;
   G4VPrimitiveScorer* Calorimeter= new CalorimeterScorers::PS_Calorimeter("Calorimeter",level) ;
-  G4VPrimitiveScorer* Interaction= new InteractionScorers::PS_Interactions("Interaction",ms_InterCoord, 0) ;
+  G4VPrimitiveScorer* Interaction= new InteractionScorers::PS_Interactions("Interaction",ms_InterCoord,0) ;
+  G4VPrimitiveScorer* Process= new ProcessScorers::PS_Process("Process",0) ;
   //and register it to the multifunctionnal detector
   m_SconeScorer->RegisterPrimitive(Calorimeter);
   m_SconeScorer->RegisterPrimitive(Interaction);
+  m_SconeScorer->RegisterPrimitive(Process);
   G4SDManager::GetSDMpointer()->AddNewDetector(m_SconeScorer) ;
+
+  G4VPrimitiveScorer* GdProcess= new ProcessScorers::PS_Process("GdProcess",0) ;
+  m_GdScorer->RegisterPrimitive(GdProcess);
+  G4SDManager::GetSDMpointer()->AddNewDetector(m_GdScorer) ;
+
+  G4VPrimitiveScorer* FCProcess= new ProcessScorers::PS_Process("FCProcess",0) ;
+  m_FCScorer->RegisterPrimitive(FCProcess);
+  G4SDManager::GetSDMpointer()->AddNewDetector(m_FCScorer) ;
+
+
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

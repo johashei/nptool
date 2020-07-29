@@ -59,11 +59,13 @@ class Scone : public NPS::VDetector{
     void Build2x2Block(G4LogicalVolume* world);
     void BuildRing1(G4LogicalVolume* world);
     void BuildRing2(G4LogicalVolume* world);
-  
+    G4AssemblyVolume* BuildFissionChamber();
+
   private:
     G4LogicalVolume* m_2x2Assembly;
     G4LogicalVolume* m_6x6Assembly;
     G4LogicalVolume* m_SquareDetector;
+    G4AssemblyVolume* m_FissionChamberVolume;
     
     ////////////////////////////////////////////////////
     //////  Inherite from NPS::VDetector class /////////
@@ -86,11 +88,13 @@ class Scone : public NPS::VDetector{
     void ReadSensitive(const G4Event* event) ;
 
   public:   // Scorer
-    //   Initialize all Scorer used by the MUST2Array
+    //   Initialize all Scorer used 
     void InitializeScorers() ;
 
     //   Associated Scorer
     G4MultiFunctionalDetector* m_SconeScorer ;
+    G4MultiFunctionalDetector* m_GdScorer ;
+    G4MultiFunctionalDetector* m_FCScorer ;
     ////////////////////////////////////////////////////
     ///////////Event class to store Data////////////////
     ////////////////////////////////////////////////////
@@ -108,6 +112,7 @@ class Scone : public NPS::VDetector{
     
     int m_BuildRing1;
     int m_BuildRing2;
+    int m_BuildFissionChamber;
     int m_NumberOfInnerDetector;
     int m_NumberOfRing1Detector;
     int m_NumberOfRing2Detector;

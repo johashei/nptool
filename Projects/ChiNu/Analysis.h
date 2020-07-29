@@ -25,7 +25,10 @@
 #include "TChiNuPhysics.h"
 #include "TInitialConditions.h"
 #include "TInteractionCoordinates.h"
+#include "TReactionConditions.h"
 #include "NPNucleus.h"
+#include "NPReaction.h"
+#include "TRandom3.h"
 
 class Analysis: public NPL::VAnalysis{
   public:
@@ -43,7 +46,9 @@ class Analysis: public NPL::VAnalysis{
 
 private:
 	double Einit;
-	vector<double> Elab;
+	vector<double> ThetaLab;
+        vector<double> Ex;
+        vector<double> Elab;
 	vector<double> E;
 	vector<double> T;
 	vector<double> Distance;
@@ -53,8 +58,11 @@ private:
 	TChiNuPhysics* m_ChiNu;
 	TInitialConditions* InitialConditions;
 	TInteractionCoordinates* InteractionCoordinates;
-    
+        TReactionConditions* ReactionConditions;
+
+        NPL::Reaction* my_Reaction;
    	NPL::Nucleus* neutron;
 
+        TRandom3 ra;
 };
 #endif

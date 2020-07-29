@@ -57,6 +57,7 @@ class Analysis: public NPL::VAnalysis{
     double ThetaCM;
     double OptimumEx;
     double Ex;
+    double PID;
     double OriginalThetaLab;
     NPL::Reaction* Transfer;
 
