@@ -52,6 +52,7 @@ namespace NPS{
       bool   m_shoot;
       double m_StepSize;
       double m_Z;
+      double m_S;
       double m_rand;
       double m_length;
       int    m_Parent_ID;
