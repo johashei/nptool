@@ -61,8 +61,12 @@ void Decay::ReadConfiguration(){
   m_Decay.ReadConfiguration(input);
   std::set<std::string> Mother = m_Decay.GetAllMotherName();
   std::set<std::string>::iterator it ;
-  for(it = Mother.begin() ; it != Mother.end() ; it++)
+  for(it = Mother.begin() ; it != Mother.end() ; it++){
+    // ground state name, e.g. deuteron
     m_MotherName.insert(NPL::ChangeNameToG4Standard(*it));
+    // excited state name e.g. H2
+    m_MotherName.insert(NPL::ChangeNameToG4Standard(*it,true));
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -130,6 +134,7 @@ void Decay::DoIt(const G4FastTrack& fastTrack,G4FastStep& fastStep){
  
   G4ParticleDefinition* DaughterDef; 
   unsigned int size = Daughter.size();
+
   if(size == 0)
     return;
   for(unsigned int i = 0 ; i < size ; i++){

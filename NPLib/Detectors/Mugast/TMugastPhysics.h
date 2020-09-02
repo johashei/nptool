@@ -204,7 +204,7 @@ class TMugastPhysics : public TObject, public NPL::VDetector {
 
   double GetEnergyDeposit(const int i) const { return TotalEnergy[i]; };
 
-  TVector3 GetPositionOfInteraction(const int i) ;
+  TVector3 GetPositionOfInteraction(const int i,bool random=false) ;
   TVector3 GetTelescopeNormal(const int i) ;
 
   private: //   Parameter used in the analysis

@@ -53,6 +53,7 @@ private:
     double fRC_Beam_Emittance_Theta;
     double fRC_Beam_Emittance_Phi;
     double fRC_Beam_Reaction_Energy;
+
     double fRC_Vertex_Position_X;
     double fRC_Vertex_Position_Y;
     double fRC_Vertex_Position_Z;
@@ -68,7 +69,6 @@ private:
     vector<double> fRC_Momentum_Direction_X;
     vector<double> fRC_Momentum_Direction_Y;
     vector<double> fRC_Momentum_Direction_Z;
-
     
 public:
     TReactionConditions();
@@ -81,7 +81,7 @@ public:
     /////////////////////           SETTERS           ////////////////////////
     // Beam parameter
     void SetBeamParticleName   (const string & Beam_Particle_Name)   {fRC_Beam_Particle_Name = Beam_Particle_Name;}//!
-    void SetBeamReactionEnergy  (const double & Beam_Reaction_Energy) {fRC_Beam_Reaction_Energy  = Beam_Reaction_Energy;}//!
+    void SetBeamReactionEnergy (const double & Beam_Reaction_Energy) {fRC_Beam_Reaction_Energy  = Beam_Reaction_Energy;}//!
     void SetBeamEmittanceTheta (const double & Beam_Emittance_Theta) {fRC_Beam_Emittance_Theta = Beam_Emittance_Theta;}//!
     void SetBeamEmittancePhi   (const double & Beam_Emittance_Phi)   {fRC_Beam_Emittance_Phi   = Beam_Emittance_Phi;}//!
     void SetBeamEmittanceThetaX (const double & Beam_Emittance_ThetaX) {fRC_Beam_Emittance_ThetaX = Beam_Emittance_ThetaX;}//!
@@ -103,6 +103,12 @@ public:
     void SetMomentumDirectionX (const double & Momentum_Direction_X)  {fRC_Momentum_Direction_X.push_back(Momentum_Direction_X);}//!
     void SetMomentumDirectionY (const double & Momentum_Direction_Y)  {fRC_Momentum_Direction_Y.push_back(Momentum_Direction_Y);}//!
     void SetMomentumDirectionZ (const double & Momentum_Direction_Z)  {fRC_Momentum_Direction_Z.push_back(Momentum_Direction_Z);}//!
+    void SetMomentum (const TVector3 & Momentum)  {
+      Momentum.Unit();
+      SetMomentumDirectionX(Momentum.X());
+      SetMomentumDirectionY(Momentum.Y());
+      SetMomentumDirectionZ(Momentum.Z());
+    }//!
     
     /////////////////////           GETTERS           ////////////////////////
     // Beam parameter
@@ -117,6 +123,8 @@ public:
     double GetVertexPositionX     () const {return fRC_Vertex_Position_X     ;}//!
     double GetVertexPositionY     () const {return fRC_Vertex_Position_Y     ;}//!
     double GetVertexPositionZ     () const {return fRC_Vertex_Position_Z     ;}//!
+    TVector3 GetVertexPosition    () const {
+      return TVector3(fRC_Vertex_Position_X,fRC_Vertex_Position_Y,fRC_Vertex_Position_Z)     ;}//!
     double GetExcitation3         () const {return fRC_ExcitationEnergy3     ;}//!       
     double GetExcitation4         () const {return fRC_ExcitationEnergy4     ;}//!       
     double GetThetaCM             () const {return fRC_ThetaCM;}//!
@@ -131,6 +139,8 @@ public:
     double GetMomentumDirectionX  (const int &i) const {return fRC_Momentum_Direction_X[i];}//!
     double GetMomentumDirectionY  (const int &i) const {return fRC_Momentum_Direction_Y[i];}//!
     double GetMomentumDirectionZ  (const int &i) const {return fRC_Momentum_Direction_Z[i];}//!
+    TVector3 GetParticleMomentum  (const int &i) const {
+      return TVector3(fRC_Momentum_Direction_X[i],fRC_Momentum_Direction_Y[i],fRC_Momentum_Direction_Z[i]).Unit();}//!
 
     TVector3 GetBeamDirection         () const ;
     TVector3 GetParticleDirection     (const int i) const ; 

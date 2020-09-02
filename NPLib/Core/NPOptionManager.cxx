@@ -168,6 +168,8 @@ void NPOptionManager::ReadTheInputArgument(int argc, char** argv){
 
     else if (argument == "--circular")                            {fCircularTree = true;}
 
+    else if (argument == "--definition" && argc >= i + 1)         {std::string def= argv[++i];fDefinition.insert(def);}
+
     else{
     SendErrorAndExit(argument.c_str()); 
     }
@@ -401,6 +403,7 @@ void NPOptionManager::DisplayHelp(){
   std::cout << "\t--event-generator　-E <arg>\tSet arg as the event generator file" << std::endl ;
   std::cout << "\t--output　-O <arg>\t\tSet arg as the Output File Name (output tree)" << std::endl ;
   std::cout << "\t--tree-name <arg>\t\tSet arg as the Output Tree Name " << std::endl ;
+  std::cout << "\t--definition <definition> \tAdd <definition> to the list of definition" << std::endl  ;
   std::cout << "\t--verbose -V <arg>\t\tSet the verbose level, 0 for nothing, 1 for normal printout."<<std::endl;
 	std::cout  << "\t\t\t\t\tError and warning are not affected" << std::endl ;
   std::cout << std::endl << "NPAnalysis only:"<<std::endl;

@@ -77,7 +77,7 @@ void CheckSimu(const char * fname = "Example5"){
 
   TH2F *hEmE1VsE2 = new TH2F("hEmE1VsE2", " E1 VS E2 (reaction frame)", 300, 0, 300,300,0,300);
   TH2F *hEmTheta1VsTheta2 = new TH2F("hEmTheta1VsTheta2", " Theta1 VS Theta2 (reaction frame)", 360, 0, 90,360,0,90);
-  TH2F *hEmPhi1VsPhi2 = new TH2F("hEmPhi1VsPhi2", " Phi1 VS Phi2 (reaction frame)", 360, 0, 360,360,0,360);
+  TH2F *hEmPhi1VsPhi2 = new TH2F("hEmPhi1VsPhi2", " Phi1 VS Phi2 (reaction frame)", 360, -180, 180,360,-180,180);
 
   // Read the TTree
   Int_t nentries = tree->GetEntries();

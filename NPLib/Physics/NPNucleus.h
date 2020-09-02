@@ -68,6 +68,7 @@ namespace NPL {
     double fSpin;         // Nucleus spin
     string fParity;       // Nucleus parity
     double fLifeTime;     // life time
+    double fLifeTimeErr;     // life time error
     double fExcitationEnergy; // Excitation Energy
     //kinematic properties
     double fKineticEnergy;
@@ -108,6 +109,7 @@ namespace NPL {
     double			   GetSpin()			      const	{return fSpin;}
     string   		   GetParity()			      const	{return fParity;}
     double           GetLifeTime()           const {return fLifeTime;}
+    double           GetLifeTimeError()           const {return fLifeTimeErr;}
     double			   GetEnergy()			      const	{return fKineticEnergy;}
     double			   GetBrho()			      const	{return fBrho;}
     double			   GetTimeOfFlight()	      const {return fTimeOfFlight;}
@@ -124,6 +126,7 @@ namespace NPL {
     void				SetSpin(double spin) {fSpin = spin;}
     void				SetParity(const char* parity)	{fParity = parity;}
     void          SetLifeTime(double LifeTime) {fLifeTime=LifeTime;}
+    void          SetLifeTimeError(double LifeTimeErr) {fLifeTimeErr=LifeTimeErr;}
     void				SetKineticEnergy(double energy)	{fKineticEnergy = energy; EnergyToBrho(); EnergyToTof(); EnergyToBeta(); BetaToGamma();BetaToVelocity();}
     void				SetBrho(double brho) {fBrho = brho; BrhoToEnergy(); BrhoToTof(); EnergyToBeta(); BetaToGamma();BetaToVelocity();}
     void				SetTimeOfFlight(double tof) {fTimeOfFlight = tof; TofToEnergy(); TofToBrho(); EnergyToBeta(); BetaToGamma();BetaToVelocity();}

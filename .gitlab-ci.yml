@@ -23,7 +23,7 @@ building-NPLib:
     - NPLib/bin
     - NPLib/ClassList.txt
     - NPLib/NPLibConfig.cmake
-  expire_in: 1 hour
+  expire_in: 2 hour
   
 building-NPSimulation:
  stage: build-NPSimulation
@@ -40,7 +40,7 @@ building-NPSimulation:
     - NPSimulation/include
     - NPSimulation/bin
     - NPSimulation/ressources
-  expire_in: 1 hour
+  expire_in: 2 hour
 
 testing:
  stage: test

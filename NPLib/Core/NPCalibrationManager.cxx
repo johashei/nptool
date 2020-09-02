@@ -24,6 +24,7 @@
 #include "TAsciiFile.h"
 #include "RootOutput.h"
 #include "NPCore.h"
+#include "TRandom.h"
 //   STL
 #include <cstdlib>
 #include <limits>
@@ -199,7 +200,7 @@ void CalibrationManager::LoadParameterFromFile(){
 }
 
 //////////////////////////////////////////////////////////////////
-double CalibrationManager::ApplyCalibration(const std::string& ParameterPath , const double& RawValue) const {
+double CalibrationManager::ApplyCalibration(const std::string& ParameterPath , const double& RawValue, double random) const {
   std::map< std::string , std::vector<double> >::const_iterator it ;
   static std::map< std::string , std::vector<double> >::const_iterator ite = fCalibrationCoeff.end();
 
@@ -208,24 +209,29 @@ double CalibrationManager::ApplyCalibration(const std::string& ParameterPath , c
   it = fCalibrationCoeff.find(ParameterPath)  ;
   // If the find methods return the end iterator it's mean the parameter was not found
   if(it == ite ){
-//by Shuya 170222
-//std::cout << ParameterPath << "!" << std::endl;
     return RawValue ;
   }
+
+  double val ;
+  if(random){
+    val=RawValue + gRandom->Uniform(random);
+    }
+  else
+    val=RawValue;
 
   // The std::vector size give the degree of calibration
   // We just apply the coeff it->second and returned the calibrated value
   double CalibratedValue = 0 ;
   unsigned int mysize = it->second.size(); 
   for(unsigned int i = 0 ; i < mysize ; i++){
-    CalibratedValue += it->second[i]*pow(RawValue, (double)i);
+    CalibratedValue += it->second[i]*pow(val, (double)i);
   }
 
   return CalibratedValue ;
 
 }
 //////////////////////////////////////////////////////////////////
-double CalibrationManager::ApplyCalibrationDebug(const std::string& ParameterPath , const double& RawValue) const{
+double CalibrationManager::ApplyCalibrationDebug(const std::string& ParameterPath , const double& RawValue, double random) const{
   std::map< std::string , std::vector<double> >::const_iterator it ;
   static std::map< std::string , std::vector<double> >::const_iterator ite = fCalibrationCoeff.end();
 
@@ -239,9 +245,17 @@ double CalibrationManager::ApplyCalibrationDebug(const std::string& ParameterPat
     return RawValue ;
   }
 
+  double val ;
+  if(random){
+    val=RawValue + gRandom->Uniform(random);
+    }
+  else
+    val=RawValue;
+
+
   // Else we take the second part of the element (first is index, ie: parameter path)
   // Second is the std::vector of Coeff
-  std::cout << it->first << " :  raw = " << RawValue << " coeff = "  ;
+  std::cout << it->first << " :  raw = " << RawValue << "  randomize = " << val <<  "  coeff = "  ;
   std::vector<double> Coeff = it->second  ;
 
   // The std::vector size give the degree of calibration

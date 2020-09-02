@@ -87,13 +87,24 @@ void TSconePhysics::BuildPhysicalEvent() {
   // match energy and time together
   unsigned int mysizeE = m_PreTreatedData->GetMultEnergy();
   unsigned int mysizeT = m_PreTreatedData->GetMultTime();
+  vector<double> tmp_energy;
+  vector<int> tmp_det;
+  vector<int> tmp_plastic;
+  tmp_energy.clear();
+  tmp_det.clear();
+  tmp_plastic.clear();
   //for (UShort_t e = 0; e < mysizeE ; e++) {
   if (mysizeE == mysizeT) {
     for (UShort_t t = 0; t < mysizeT ; t++) {
       if (m_PreTreatedData->GetE_DetectorNbr(t) == m_PreTreatedData->GetT_DetectorNbr(t)) {
         int det = m_PreTreatedData->GetE_DetectorNbr(t);
+        
+        tmp_energy.push_back(m_PreTreatedData->Get_Energy(t));
+        tmp_det.push_back(m_PreTreatedData->GetE_DetectorNbr(t));
+        tmp_plastic.push_back(m_PreTreatedData->GetE_PlasticNbr(t));
+
         Energy_det[det-1] += m_PreTreatedData->Get_Energy(t);
-        //cout << det << " " << Energy_det[det-1] << " " << m_PreTreatedData->GetE_PlasticNbr(t) << endl;
+        
         if(m_PreTreatedData->Get_Time(t)>Time_det[det-1]){
           Time_det[det-1] = m_PreTreatedData->Get_Time(t);
         }
@@ -111,8 +122,33 @@ void TSconePhysics::BuildPhysicalEvent() {
       DetectorNumber.push_back(i+1);
       Energy.push_back(Energy_det[i]);
       Time.push_back(Time_det[i]);
+
+     /*if(Energy_det[i]>15){
+        cout << "**********************************" << endl;
+        cout << "event with E<15 MeV !!!!" << endl;
+        double Esum=0;
+        for(unsigned int k=0; k<tmp_energy.size(); k++){
+          if(tmp_det[k]==i+1) {
+            cout << i+1 << " / " <<tmp_det[k] << " / " << tmp_plastic[k] << " / " << tmp_energy[k] << endl;
+            Esum += tmp_energy[k];
+          }
+        }
+        cout << "final-> " << Energy_det[i] << " / " << Esum << endl;
+      }*/
     }
   }
+
+  // Capture Flag
+  HasCaptured = m_PreTreatedData->GetCapture(0);
+
+  for(UShort_t i=0; i< m_PreTreatedData->GetGammaMult(); i++){
+    GammaEnergy.push_back(m_PreTreatedData->GetGammaEnergy(i));
+  }
+  for(UShort_t i=0; i< m_PreTreatedData->GetProtonMult(); i++){
+    ProtonEnergy.push_back(m_PreTreatedData->GetProtonEnergy(i));
+    ProtonTime.push_back(m_PreTreatedData->GetProtonTime(i));
+  }
+
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -143,6 +179,17 @@ void TSconePhysics::PreTreat() {
     Double_t Time= Cal->ApplyCalibration("Scone/TIME"+NPL::itoa(m_EventData->GetT_DetectorNbr(i)),m_EventData->Get_Time(i));
     m_PreTreatedData->SetTime(m_EventData->GetT_DetectorNbr(i), m_EventData->GetT_PlasticNbr(i), Time);
   }
+
+  // Capture Flag;
+  m_PreTreatedData->SetCapture(m_EventData->GetCapture(0));
+  for(UShort_t i=0; i< m_EventData->GetGammaMult(); i++){
+    m_PreTreatedData->SetGammaEnergy(m_EventData->GetGammaEnergy(i));
+  }
+  for(UShort_t i=0; i< m_EventData->GetProtonMult(); i++){
+    m_PreTreatedData->SetProtonEnergy(m_EventData->GetProtonEnergy(i));
+    m_PreTreatedData->SetProtonTime(m_EventData->GetProtonTime(i));
+  }
+
 }
 
 
@@ -216,6 +263,10 @@ void TSconePhysics::Clear() {
   DetectorNumber.clear();
   Energy.clear();
   Time.clear();
+  HasCaptured = 0;
+  GammaEnergy.clear();
+  ProtonEnergy.clear();
+  ProtonTime.clear();
 }
 
 

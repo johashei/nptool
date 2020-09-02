@@ -1,6 +1,5 @@
 ConfigMugast
  TAKE_E_X= 1 
- %raw channel 86 corresponds to stripY 46
  DISABLE_CHANNEL_Y= 3 123
  MAX_STRIP_MULTIPLICITY= 100
  STRIP_ENERGY_MATCHING= 1 MeV

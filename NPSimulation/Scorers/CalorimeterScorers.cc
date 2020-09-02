@@ -74,7 +74,6 @@ G4bool PS_Calorimeter::ProcessHits(G4Step* aStep, G4TouchableHistory*){
     else{
       m_Data.Set(t_Energy,t_Time,t_Level);  
     }
-
   return TRUE;
 }
 

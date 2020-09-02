@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 2.8)
+cmake_minimum_required (VERSION 3.0)
 include(CheckCXXCompilerFlag)
 
 # Setting the policy to match Cmake version
@@ -59,7 +59,6 @@ endif()
 if(Geant4_gdml_FOUND)  
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DNPS_GDML")     
 endif()
-
 
 # set the Geant4 version info
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -DNPS_GEANT4_VERSION_MAJOR=${NPS_GEANT4_VERSION_MAJOR}") 

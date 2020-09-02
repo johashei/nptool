@@ -38,18 +38,18 @@ TReactionConditions::~TReactionConditions(){
 void TReactionConditions::Clear(){
     // Beam beam parameter
     fRC_Beam_Particle_Name="";
-    fRC_Beam_Emittance_ThetaX = -1;
-    fRC_Beam_Emittance_PhiY = -1;
-    fRC_Beam_Emittance_Theta = -1;
-    fRC_Beam_Emittance_Phi = -1;
-    fRC_Beam_Reaction_Energy = -1;
+    fRC_Beam_Emittance_ThetaX = -1000;
+    fRC_Beam_Emittance_PhiY = -1000;
+    fRC_Beam_Emittance_Theta = -1000;
+    fRC_Beam_Emittance_Phi = -1000;
+    fRC_Beam_Reaction_Energy = -1000;
 
-    fRC_Vertex_Position_X = -1;
-    fRC_Vertex_Position_Y = -1;
-    fRC_Vertex_Position_Z = -1;
+    fRC_Vertex_Position_X = -1000;
+    fRC_Vertex_Position_Y = -1000;
+    fRC_Vertex_Position_Z = -1000;
     
-    fRC_ThetaCM = -1;
-    fRC_Internal_Momentum = {-1, -1, -1};
+    fRC_ThetaCM = -1000;
+    fRC_Internal_Momentum = {-1000, -1000, -1000};
     
     // emmitted particles
     fRC_Particle_Name.clear();
@@ -114,4 +114,5 @@ TVector3 TReactionConditions::GetParticleDirection (const int i) const {
                     fRC_Momentum_Direction_Y[i],
                     fRC_Momentum_Direction_Z[i]);
 }
+////////////////////////////////////////////////////////////////////////////////
 

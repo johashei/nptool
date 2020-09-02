@@ -64,7 +64,7 @@ using namespace CLHEP;
 namespace Mugast_NS{
   // Resolution
   const G4double SigmaTime    = 0.212765957 ;// = 500ps
-  const G4double SigmaEnergy  = 0.0149      ;// 0.0223 = 52keV of Resolution //   Unit is MeV/2.35  14.861996
+  const G4double SigmaEnergy  = 0.019      ;// 
 //  const G4double TimeOffset   = 500         ;// 500 ns stop
 
   // Threshold
@@ -72,7 +72,7 @@ namespace Mugast_NS{
 
   // Geometry
   //const G4double AluStripThickness = 0.4*micrometer ;
-  const G4double SiliconThickness  = 3000*micrometer ;
+  const G4double SiliconThickness  = 300*micrometer ;
 
   // Square
 
@@ -230,6 +230,7 @@ G4LogicalVolume* Mugast::BuildTrapezoidDetector(){
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 G4LogicalVolume* Mugast::BuildAnnularDetector(){
+
   if(!m_AnnularDetector){
     G4Material* Silicon = MaterialManager::getInstance()->GetMaterialFromLibrary("Si");
     G4Material* Vacuum  = MaterialManager::getInstance()->GetMaterialFromLibrary("Vacuum");
@@ -382,7 +383,6 @@ G4LogicalVolume* Mugast::BuildAnnularDetector(){
     // Set Silicon strip sensible
     logicActiveWafer->SetSensitiveDetector(m_AnnularScorer);
   }
-
   return m_AnnularDetector;
 }
 

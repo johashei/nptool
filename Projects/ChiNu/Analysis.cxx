@@ -36,41 +36,59 @@ Analysis::~Analysis(){
 
 ////////////////////////////////////////////////////////////////////////////////
 void Analysis::Init(){
-    	m_ChiNu= (TChiNuPhysics*) m_DetectorManager->GetDetector("ChiNu");
-	InitialConditions = new TInitialConditions();
-	InteractionCoordinates = new TInteractionCoordinates();
-	
-	InitInputBranch();
-	InitOutputBranch();
-    
-	neutron = new NPL::Nucleus("1n");
+  m_ChiNu= (TChiNuPhysics*) m_DetectorManager->GetDetector("ChiNu");
+  InitialConditions = new TInitialConditions();
+  InteractionCoordinates = new TInteractionCoordinates();
+  ReactionConditions = new TReactionConditions();
+
+  InitInputBranch();
+  InitOutputBranch();
+
+  my_Reaction = new NPL::Reaction("1n(238U,1n)238U@1.5");
+
+  neutron = new NPL::Nucleus("1n");
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 void Analysis::TreatEvent(){
-	ReInitValue();
-	Einit = InitialConditions->GetKineticEnergy(0);
-	
-	double Xtarget = InitialConditions->GetIncidentPositionX();
-	double Ytarget = InitialConditions->GetIncidentPositionY();
-	double Ztarget = InitialConditions->GetIncidentPositionZ();
-        TVector3 TargetPos = TVector3(Xtarget,Ytarget,Ztarget);
-	    
-   	for(int i=0; i<m_ChiNu->Energy.size(); i++){
-		if(m_ChiNu->Energy.size()>0){
-			double Rdet, R;
-			Rdet = m_ChiNu->GetDetectorPosition(m_ChiNu->DetectorNumber[i]);
-			TVector3 DetPos = m_ChiNu->GetVectorDetectorPosition(m_ChiNu->DetectorNumber[i]);
-			TVector3 HitPos = DetPos-TargetPos;
-			R= HitPos.Mag()*1e-3;
-        		Distance.push_back(R);	
-			Det.push_back(m_ChiNu->DetectorNumber[i]); 
-			T.push_back(m_ChiNu->Time[i]);
-        		neutron->SetTimeOfFlight(m_ChiNu->Time[i]*1e-9/R);
-			E.push_back(m_ChiNu->Energy[i]);
-        		Elab.push_back(neutron->GetEnergy());
-		}
-    	}
+  ReInitValue();
+  Einit = InitialConditions->GetKineticEnergy(0);
+  double init_ThetaLab = ReactionConditions->GetTheta(0)*deg;
+  double init_BeamEnergy = ReactionConditions->GetBeamEnergy();
+  neutron->SetKineticEnergy(init_BeamEnergy);
+  double beam_TOF = neutron->GetTimeOfFlight();
+
+  double Xtarget = InitialConditions->GetIncidentPositionX();
+  double Ytarget = InitialConditions->GetIncidentPositionY();
+  double Ztarget = 0;//InitialConditions->GetIncidentPositionZ();
+  TVector3 TargetPos = TVector3(Xtarget,Ytarget,Ztarget);
+
+  for(int i=0; i<m_ChiNu->Energy.size(); i++){
+    if(m_ChiNu->Energy.size()>0){
+      double Rdet, R;
+      Rdet = m_ChiNu->GetDetectorPosition(m_ChiNu->DetectorNumber[i]);
+      TVector3 DetPos = m_ChiNu->GetVectorDetectorPosition(m_ChiNu->DetectorNumber[i]);
+      TVector3 HitPos = DetPos-TargetPos;
+      //R= HitPos.Mag()*1e-3;
+      R= Rdet*mm;
+      
+      Distance.push_back(R);	
+      Det.push_back(m_ChiNu->DetectorNumber[i]); 
+      T.push_back(m_ChiNu->Time[i]);
+      double T_stop = m_ChiNu->Time[i]*1e-9;
+      neutron->SetTimeOfFlight((T_stop-beam_TOF)/(Rdet*1e-3));
+      E.push_back(m_ChiNu->Energy[i]);
+      Elab.push_back(neutron->GetEnergy());
+
+
+      double DeltaTheta = atan(89.0/Rdet);
+      double random_ThetaLab = ra.Uniform(init_ThetaLab-DeltaTheta, init_ThetaLab+DeltaTheta);
+      double dEx = my_Reaction->ReconstructRelativistic(Elab[i], init_ThetaLab);
+      
+      ThetaLab.push_back(random_ThetaLab/deg);
+      Ex.push_back(dEx);
+    }
+  }
 
 
 
@@ -78,29 +96,37 @@ void Analysis::TreatEvent(){
 
 ///////////////////////////////////////////////////////////////////////////////
 void Analysis::InitOutputBranch() {
-	RootOutput::getInstance()->GetTree()->Branch("Einit",&Einit,"Einit/D");
-	RootOutput::getInstance()->GetTree()->Branch("Elab",&Elab);   
-	RootOutput::getInstance()->GetTree()->Branch("E",&E);   
-	RootOutput::getInstance()->GetTree()->Branch("T",&T);   
-	RootOutput::getInstance()->GetTree()->Branch("Distance",&Distance);   
-	RootOutput::getInstance()->GetTree()->Branch("Det",&Det);   
+  RootOutput::getInstance()->GetTree()->Branch("Einit",&Einit,"Einit/D");
+  RootOutput::getInstance()->GetTree()->Branch("ThetaLab",&ThetaLab);
+  RootOutput::getInstance()->GetTree()->Branch("Elab",&Elab);   
+  RootOutput::getInstance()->GetTree()->Branch("E",&E);   
+  RootOutput::getInstance()->GetTree()->Branch("Ex",&Ex);   
+  RootOutput::getInstance()->GetTree()->Branch("T",&T);   
+  RootOutput::getInstance()->GetTree()->Branch("Distance",&Distance);   
+  RootOutput::getInstance()->GetTree()->Branch("Det",&Det);   
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 void Analysis::InitInputBranch(){
-  	RootInput:: getInstance()->GetChain()->SetBranchStatus("InitialConditions",true );
-  	RootInput:: getInstance()->GetChain()->SetBranchStatus("fIC_*",true );
-  	RootInput:: getInstance()->GetChain()->SetBranchAddress("InitialConditions",&InitialConditions);
+  RootInput:: getInstance()->GetChain()->SetBranchStatus("InitialConditions",true );
+  RootInput:: getInstance()->GetChain()->SetBranchStatus("fIC_*",true );
+  RootInput:: getInstance()->GetChain()->SetBranchAddress("InitialConditions",&InitialConditions);
+
+  RootInput:: getInstance()->GetChain()->SetBranchStatus("ReactionConditions",true );
+  RootInput:: getInstance()->GetChain()->SetBranchStatus("fRC_*",true );
+  RootInput:: getInstance()->GetChain()->SetBranchAddress("ReactionConditions",&ReactionConditions);
 }
 
 ////////////////////////////////////////////////////////////////////////////////     
 void Analysis::ReInitValue(){
-	Einit      = -100;
-	Elab.clear();
-	E.clear();
-	T.clear();
-	Distance.clear();
-	Det.clear();
+  Einit      = -100;
+  Ex.clear();
+  ThetaLab.clear();
+  Elab.clear();
+  E.clear();
+  T.clear();
+  Distance.clear();
+  Det.clear();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -119,13 +145,13 @@ NPL::VAnalysis* Analysis::Construct(){
 //            Registering the construct method to the factory                 //
 ////////////////////////////////////////////////////////////////////////////////
 extern "C"{
-class proxy{
-  public:
-    proxy(){
-      NPL::AnalysisFactory::getInstance()->SetConstructor(Analysis::Construct);
-    }
-};
+  class proxy{
+    public:
+      proxy(){
+        NPL::AnalysisFactory::getInstance()->SetConstructor(Analysis::Construct);
+      }
+  };
 
-proxy p;
+  proxy p;
 }
 

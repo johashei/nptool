@@ -65,6 +65,10 @@ class TSconePhysics : public TObject, public NPL::VDetector {
     vector<int>      DetectorNumber;
     vector<double>   Energy;
     vector<double>   Time;
+    int              HasCaptured;
+    vector<double>   GammaEnergy;
+    vector<double>   ProtonEnergy;
+    vector<double>   ProtonTime;
 
   /// A usefull method to bundle all operation to add a detector
   void AddDetector(TVector3 POS); 

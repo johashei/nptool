@@ -46,6 +46,9 @@ class Analysis: public NPL::VAnalysis{
     double E_init;
     double E_max;
     double E_sum;
+    double E_sum_gamma;
+    double E_sum_proton;
+    double E_mean_proton;
   
   private:
     TSconePhysics* Scone;

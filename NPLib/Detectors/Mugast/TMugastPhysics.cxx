@@ -997,7 +997,8 @@ void TMugastPhysics::AddTelescope(MG_DetectorType type,double theta, double phi,
   m_StripPositionZ.push_back(OneTelescopeStripPositionZ);
 }
 
-TVector3 TMugastPhysics::GetPositionOfInteraction(const int i) {
+///////////////////////////////////////////////////////////////////////////////
+TVector3 TMugastPhysics::GetPositionOfInteraction(const int i,bool random) {
   TVector3 Position
     = TVector3(GetStripPositionX(TelescopeNumber[i], DSSD_X[i], DSSD_Y[i]),
         GetStripPositionY(TelescopeNumber[i], DSSD_X[i], DSSD_Y[i]),
@@ -1006,6 +1007,7 @@ TVector3 TMugastPhysics::GetPositionOfInteraction(const int i) {
   return Position;
 }
 
+///////////////////////////////////////////////////////////////////////////////
 TVector3 TMugastPhysics::GetTelescopeNormal(const int i) {
   TVector3 U = TVector3(GetStripPositionX(TelescopeNumber[i], 128, 1),
       GetStripPositionY(TelescopeNumber[i], 128, 1),
@@ -1040,7 +1042,7 @@ namespace MUGAST_LOCAL {
     name += NPL::itoa(m_EventData->GetDSSDXEStripNbr(i));
     name += "_E";
     return CalibrationManager::getInstance()->ApplyCalibration(
-        name, m_EventData->GetDSSDXEEnergy(i));
+        name, m_EventData->GetDSSDXEEnergy(i),1);
   }
 
   double fDSSD_X_T(const TMugastData* m_EventData, const int& i) {
@@ -1051,7 +1053,7 @@ namespace MUGAST_LOCAL {
     name += NPL::itoa(m_EventData->GetDSSDXTStripNbr(i));
     name += "_T";
     return CalibrationManager::getInstance()->ApplyCalibration(
-        name, m_EventData->GetDSSDXTTime(i));
+        name, m_EventData->GetDSSDXTTime(i),1);
   }
 
   //   Y
@@ -1063,7 +1065,7 @@ namespace MUGAST_LOCAL {
     name += NPL::itoa(m_EventData->GetDSSDYEStripNbr(i));
     name += "_E";
     return CalibrationManager::getInstance()->ApplyCalibration(
-        name, m_EventData->GetDSSDYEEnergy(i));
+        name, m_EventData->GetDSSDYEEnergy(i),1);
   }
 
   double fDSSD_Y_T(const TMugastData* m_EventData, const int& i) {
@@ -1074,7 +1076,7 @@ namespace MUGAST_LOCAL {
     name += NPL::itoa(m_EventData->GetDSSDYTStripNbr(i));
     name += "_T";
     return CalibrationManager::getInstance()->ApplyCalibration(
-        name, m_EventData->GetDSSDYTTime(i));
+        name, m_EventData->GetDSSDYTTime(i),1);
   }
 
   //   SecondLayer
@@ -1086,7 +1088,7 @@ namespace MUGAST_LOCAL {
     name += NPL::itoa(m_EventData->GetSecondLayerEStripNbr(i));
     name += "_E";
     return CalibrationManager::getInstance()->ApplyCalibration(
-        name, m_EventData->GetSecondLayerEEnergy(i));
+        name, m_EventData->GetSecondLayerEEnergy(i),1);
   }
 
   double fSecondLayer_T(const TMugastData* m_EventData, const int& i) {
@@ -1097,7 +1099,7 @@ namespace MUGAST_LOCAL {
     name += NPL::itoa(m_EventData->GetSecondLayerTStripNbr(i));
     name += "_T";
     return CalibrationManager::getInstance()->ApplyCalibration(
-        name, m_EventData->GetSecondLayerTTime(i));
+        name, m_EventData->GetSecondLayerTTime(i),1);
   }
 }
 
