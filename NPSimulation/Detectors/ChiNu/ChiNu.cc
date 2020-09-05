@@ -420,7 +420,10 @@ void ChiNu::ReadConfiguration(NPL::InputParser parser){
 // Construct detector and inialise sensitive part.
 // Called After DetecorConstruction::AddDetector Method
 void ChiNu::ConstructDetector(G4LogicalVolume* world){
-  
+ 
+  G4Material* Air = MaterialManager::getInstance()->GetMaterialFromLibrary("Air");
+  //world->SetMaterial(Air);
+
   for (unsigned short i = 0 ; i < m_R.size() ; i++) {
 
     G4double wX = m_R[i] * sin(m_Theta[i] ) * cos(m_Phi[i] ) ;
