@@ -50,7 +50,7 @@ class Analysis: public NPL::VAnalysis{
     void ReInitValue();
     static NPL::VAnalysis* Construct();
     TVector3 InterpolateInPlaneZ(TVector3,TVector3,double);
- 
+
   private:
     double Ex;
     double E1;
@@ -66,6 +66,17 @@ class Analysis: public NPL::VAnalysis{
     double Distance;
     double deltaPhi;
     double sumTheta;
+    double alpha;
+    double Theta1=-1000;
+    double Phi1=-1000;
+    double Theta2=-1000;
+    double Phi2=-1000;
+    double Theta1s=-1000;
+    double Phi1s=-1000;
+    double Theta2s=-1000;
+    double Phi2s=-1000;
+
+
     TLorentzVector LV_A;
     TLorentzVector LV_T;
     TLorentzVector LV_B;
