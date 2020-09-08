@@ -182,6 +182,7 @@ namespace NPL{
     bool     GetShoot2()         const        {return fshoot2;}
     bool     GetShootB()         const        {return fshootB;}
     double   GetThetaCM()        const        {return fThetaCM;}
+    double   GetPhiCM()          const        {return fPhiCM;}
     double   GetMomentumSigma()  const        {return fMomentumSigma;}
     TVector3 GetInternalMomentum() const   {return fInternalMomentum;}
  

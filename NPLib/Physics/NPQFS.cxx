@@ -156,6 +156,12 @@ void QFS::ReadConfigurationFile(NPL::InputParser parser){
           fshoot1 = blocks[i]->GetInt("ShootLight");
           fshoot2 = blocks[i]->GetInt("ShootLight");
       }
+      if(blocks[i]->HasToken("ShootLight1")){
+          fshoot1 = blocks[i]->GetInt("ShootLight1");
+      }
+      if(blocks[i]->HasToken("ShootLight2")){
+          fshoot2 = blocks[i]->GetInt("ShootLight2");
+      }
       if(blocks[i]->HasToken("PerpMomentumPath")){
           vector<string> file_perp = blocks[i]->GetVectorString("PerpMomentumPath");
           TH1F* Perptemp = Read1DProfile(file_perp[0], file_perp[1]);
