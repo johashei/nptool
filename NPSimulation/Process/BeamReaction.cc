@@ -127,8 +127,12 @@ G4bool NPS::BeamReaction::ModelTrigger(const G4FastTrack& fastTrack) {
   bool is_first = (to_entrance==0);
 
   if(is_first && m_shoot){
-    std::cout << "Something went wrong in beam reaction, m_shoot cannot be true at beginning of event" << std::endl;
+ /*   std::cout << "Something went wrong in beam reaction, m_shoot cannot be true at beginning of event" << std::endl;
     std::cout << "rand: " << m_rand << std::endl;
+    std::cout << "length: " << m_length << std::endl;
+    std::cout << "step: " << m_StepSize << std::endl;
+    std::cout << "Z: " << m_Z << std::endl;
+    std::cout << "S: " << m_S << std::endl;*/
     m_shoot = false;
   }
 
@@ -141,9 +145,11 @@ G4bool NPS::BeamReaction::ModelTrigger(const G4FastTrack& fastTrack) {
     m_shoot=true;
   }
   
-  // curviligne coordinate along beam patch
-  double S = to_entrance - 0.5*(to_exit+to_entrance); 
-  m_length = m_Z-S;
+  // curviligne coordinate along beam path
+  m_S = to_entrance - 0.5*(to_exit+to_entrance); 
+  m_length = m_Z-m_S;
+
+  m_StepSize = PrimaryTrack->GetStepLength();
   // If the condition is met, the event is generated
   if (m_shoot && m_length < m_StepSize) {
     if(m_ReactionType=="QFSReaction"){
@@ -176,7 +182,7 @@ void NPS::BeamReaction::DoIt(const G4FastTrack& fastTrack,
 
   // std::cout << "DOIT" << std::endl; 
   m_shoot=false;
-
+  m_length=abs(m_length);
   // Get the track info
   const G4Track* PrimaryTrack = fastTrack.GetPrimaryTrack();
   G4ThreeVector  pdirection   = PrimaryTrack->GetMomentum().unit();

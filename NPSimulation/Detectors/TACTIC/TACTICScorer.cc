@@ -1,5 +1,12 @@
+//#define USE_Garfield //only use if compiled with Garfield
+
 #include "TACTICScorer.hh"
 #include "G4UnitsTable.hh"
+
+#ifdef USE_Garfield
+#include "GARFDRIFT.h"
+#endif
+
 using namespace TACTICScorer;
 
 Gas_Scorer::Gas_Scorer(G4String name,G4int Level,G4double ScorerLength,G4int NumberOfSegments, G4int depth) //what do level and depth do?       
@@ -8,7 +15,6 @@ Gas_Scorer::Gas_Scorer(G4String name,G4int Level,G4double ScorerLength,G4int Num
   m_NumberOfSegments = NumberOfSegments;
   m_SegmentLength = m_ScorerLength / m_NumberOfSegments;
   m_Level = Level;
-
   m_Position = G4ThreeVector(-1000,-1000,-1000);
   m_SegmentNumber = -1;
   m_Index = -1;
@@ -19,6 +25,7 @@ Gas_Scorer::~Gas_Scorer(){}
 G4bool Gas_Scorer::ProcessHits(G4Step* aStep, G4TouchableHistory*){
 
   G4double* Infos = new G4double[12];
+  //G4double w_value = 26.31*eV;
   m_Position  = aStep->GetPreStepPoint()->GetPosition();
   
   Infos[0] = aStep->GetTrack()->GetTrackID();
@@ -49,16 +56,55 @@ G4bool Gas_Scorer::ProcessHits(G4Step* aStep, G4TouchableHistory*){
   m_DetectorNumber = aStep->GetPreStepPoint()->GetTouchableHandle()->GetCopyNumber(m_Level);
   m_Index = m_DetectorNumber * 1e3 + m_SegmentNumber * 1e6;
 
+  //Infos[12] = 0.;
+  //Infos[13] = 0.;
+  
+  //Infos[14] = 0.;
+
+  //cout << "\n" << "PAD " << Infos[5] <<  " first_step = " << first_step << endl;
+  
+  //double TOA_min, TOA_max;
+  //if(PAD==1000) PAD = Infos[5];
+  //if(PAD!=Infos[5]) TOA_PAD.clear(); // if new pad clear the TOA vec
+#ifdef USE_Garfield
+  G4ThreeVector delta_Position = aStep->GetDeltaPosition();
+  //  bool last_step;
+  //if(aStep->GetTrack()->GetTrackStatus()!=fAlive) last_step = 1; else last_step = 0;
+  //vector<double> TOA_vec = GARFDRIFT(Infos[4]/eV, Infos[2], m_Position/cm, delta_Position/cm, Infos[7]/cm, Infos[5], Infos[1], m_ScorerLength/cm, m_SegmentLength/cm, last_step); //Ionization Energy Deposit, Global Time, x, y, z,R, ParticleID //Garfield works in cm, both G4 and Garfield work in ns.
+
+  GARFDRIFT(Infos[4]/eV, Infos[2], m_Position/cm, delta_Position/cm, Infos[7]/cm, Infos[5], Infos[1], m_ScorerLength/cm, m_SegmentLength/cm);
+#endif
+  /*
+  for(int t=0; t<TOA_vec.size(); t++) TOA_PAD.push_back(TOA_vec[t]);
+  sort(TOA_PAD.begin(), TOA_PAD.end());
+  reverse(TOA_PAD.begin(), TOA_PAD.end());
+  if(TOA_PAD.size() > 42) TOA_max = TOA_PAD[42], TOA_min = *min_element(TOA_PAD.begin(), TOA_PAD.end()); //threshold of 42 (420 e- ~10 mV threshold)
+  else TOA_min = 1.e06, TOA_max = 0.;
+  cout << "\n" << "PAD: " << Infos[5] << " vec size: " << TOA_PAD.size() << " TOA_min: " << TOA_min << " TOA_max " << TOA_max << endl; 
+
+  
+#else
+  TOA_min =1.e06;
+  TOA_max = 0.;
+#endif
+  */
+  
   map<G4int, G4double**>::iterator it;
   it= EvtMap->GetMap()->find(m_Index);
-  if(it!=EvtMap->GetMap()->end()){ //accumulate ionisation energy deposit
+  if(it!=EvtMap->GetMap()->end()){
     G4double* dummy = *(it->second);
-    Infos[4]+=dummy[4];
+    /*
+    if(TOA_min < 1.e06) Infos[12] = TOA_max - TOA_min;
+    if(Infos[12] < dummy[12]) Infos[12] = dummy[12]; //Ensures that max risetime is maintained
+    PAD = Infos[5];
+    */
+    
+    Infos[4]+=dummy[4]; //accumulate ionisation energy deposit to get total accross pad
     delete dummy;
   }
   
   EvtMap->set(m_Index, Infos);
-  
+
   return TRUE;
 
 }
@@ -92,4 +138,3 @@ void Gas_Scorer::PrintAll(){
     G4cout << " PrimitiveScorer " << GetName() << G4endl               ;
     G4cout << " Number of entries " << EvtMap->entries() << G4endl     ;
 }
-

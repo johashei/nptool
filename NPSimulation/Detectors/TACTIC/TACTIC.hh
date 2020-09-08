@@ -91,7 +91,7 @@ public:   // Scorer
   void InitializeScorers() ;
   
   //   Associated Scorer
-    G4MultiFunctionalDetector* m_Scorer ;
+  G4MultiFunctionalDetector* m_Scorer ;
   ////////////////////////////////////////////////////
   ///////////Event class to store Data////////////////
   ////////////////////////////////////////////////////

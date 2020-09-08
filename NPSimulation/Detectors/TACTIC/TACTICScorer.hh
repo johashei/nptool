@@ -36,6 +36,10 @@ namespace TACTICScorer {
     G4double m_SegmentLength;
     // Level at which to find the copy number linked to the detector number                                                                                 
     G4int    m_Level;
+
+    //bool first_step = 1;
+    //vector<double> TOA_PAD;
+    //int PAD = 1000;
     
   private: // inherited from G4VPrimitiveScorer                                                                                                             
     G4int HCID;

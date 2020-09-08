@@ -97,7 +97,7 @@ G4AssemblyVolume* Miniball::BuildClusterDetector(){
 
     G4LogicalVolume* World = m_gdmlparser.GetVolume("MexpHall_log");  
     string name;
-    for(int i = 0 ; i < World->GetNoDaughters () ;i++){
+    for(unsigned int i = 0 ; i < World->GetNoDaughters () ;i++){
       G4VPhysicalVolume* VPV = World->GetDaughter(i);
       name = VPV->GetLogicalVolume()->GetName();
       if(name == "cluster0_0_HPGe_A_0_det_env_log"){

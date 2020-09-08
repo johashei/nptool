@@ -44,7 +44,7 @@ void Analysis::Init(){
   InitInputBranch();
   InitOutputBranch();
 
-  my_Reaction = new NPL::Reaction("1n(238U,1n)238U@1.5");
+  my_Reaction = new NPL::Reaction("1n(238U,1n)238U@0.75");
 
   neutron = new NPL::Nucleus("1n");
 }
@@ -83,7 +83,7 @@ void Analysis::TreatEvent(){
 
       double DeltaTheta = atan(89.0/Rdet);
       double random_ThetaLab = ra.Uniform(init_ThetaLab-DeltaTheta, init_ThetaLab+DeltaTheta);
-      double dEx = my_Reaction->ReconstructRelativistic(Elab[i], init_ThetaLab);
+      double dEx = my_Reaction->ReconstructRelativistic(Elab[i], random_ThetaLab);
       
       ThetaLab.push_back(random_ThetaLab/deg);
       Ex.push_back(dEx);

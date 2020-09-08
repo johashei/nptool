@@ -177,8 +177,8 @@ int main(int argc, char** argv){
     aFile->Append(".geant4_random_state");
     RootOutput::getInstance()->GetFile()->cd();
     aFile->Write(0,TAsciiFile::kOverwrite);
-    int dummy=0;
-    dummy= system("rm .geant4_random_state");
+    int dummy = system("rm .geant4_random_state");
+    dummy*=2;
     // delete primary; delete detector;
     
     delete runManager;

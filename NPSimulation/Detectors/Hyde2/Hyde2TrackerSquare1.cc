@@ -958,7 +958,7 @@ void Hyde2TrackerSquare1::ReadSensitive(const G4Event* event)
 
             // Pos X
             Pos_X_itr = PosXHitMap->GetMap()->begin();
-            for (G4int h = 0; h < PosXHitMap->entries(); h++) {
+            for (unsigned int h = 0; h < PosXHitMap->entries(); h++) {
                G4int PosXTrackID =   Pos_X_itr->first - N    ;
                G4double PosX     = *(Pos_X_itr->second)      ;
                if (PosXTrackID == NTrackID) {
@@ -969,7 +969,7 @@ void Hyde2TrackerSquare1::ReadSensitive(const G4Event* event)
 
             // Pos Y
             Pos_Y_itr = PosYHitMap->GetMap()->begin();
-            for (G4int h = 0; h < PosYHitMap->entries(); h++) {
+            for (unsigned int h = 0; h < PosYHitMap->entries(); h++) {
                G4int PosYTrackID =   Pos_Y_itr->first - N    ;
                G4double PosY     = *(Pos_Y_itr->second)      ;
                if (PosYTrackID == NTrackID) {
@@ -980,7 +980,7 @@ void Hyde2TrackerSquare1::ReadSensitive(const G4Event* event)
 
             // Pos Z
             Pos_Z_itr = PosZHitMap->GetMap()->begin();
-            for (G4int h = 0; h < PosZHitMap->entries(); h++) {
+            for (unsigned int h = 0; h < PosZHitMap->entries(); h++) {
                G4int PosZTrackID =   Pos_Z_itr->first - N    ;
                G4double PosZ     = *(Pos_Z_itr->second)      ;
                if (PosZTrackID == NTrackID) {
@@ -991,7 +991,7 @@ void Hyde2TrackerSquare1::ReadSensitive(const G4Event* event)
 
             // Angle Theta
             Ang_Theta_itr = AngThetaHitMap->GetMap()->begin();
-            for (G4int h = 0; h < AngThetaHitMap->entries(); h++) {
+            for (unsigned int h = 0; h < AngThetaHitMap->entries(); h++) {
                G4int AngThetaTrackID =   Ang_Theta_itr->first - N    ;
                G4double AngTheta     = *(Ang_Theta_itr->second)      ;
                if (AngThetaTrackID == NTrackID) {
@@ -1002,7 +1002,7 @@ void Hyde2TrackerSquare1::ReadSensitive(const G4Event* event)
 
             // Angle Phi
             Ang_Phi_itr = AngPhiHitMap->GetMap()->begin();
-            for (G4int h = 0; h < AngPhiHitMap->entries(); h++) {
+            for (unsigned int h = 0; h < AngPhiHitMap->entries(); h++) {
                G4int AngPhiTrackID =   Ang_Phi_itr->first - N    ;
                G4double AngPhi     = *(Ang_Phi_itr->second)      ;
                if (AngPhiTrackID == NTrackID) {
@@ -1013,7 +1013,7 @@ void Hyde2TrackerSquare1::ReadSensitive(const G4Event* event)
 
             // Second Stage
                SecondStageEnergy_itr = SecondStageEnergyHitMap->GetMap()->begin() ;
-               for (G4int h = 0 ; h < SecondStageEnergyHitMap->entries() ; h++) {
+               for (unsigned int h = 0 ; h < SecondStageEnergyHitMap->entries() ; h++) {
                   G4int SecondStageEnergyTrackID =   SecondStageEnergy_itr->first - N;
                   G4double SecondStageEnergy     = *(SecondStageEnergy_itr->second);
 
@@ -1031,7 +1031,7 @@ void Hyde2TrackerSquare1::ReadSensitive(const G4Event* event)
 
             // Third Stage
                ThirdStageEnergy_itr = ThirdStageEnergyHitMap->GetMap()->begin()  ;
-               for (G4int h = 0 ; h < ThirdStageEnergyHitMap->entries() ; h++) {
+               for (unsigned int h = 0 ; h < ThirdStageEnergyHitMap->entries() ; h++) {
                   G4int ThirdStageEnergyTrackID  =   ThirdStageEnergy_itr->first - N;
                   G4double ThirdStageEnergy      = *(ThirdStageEnergy_itr->second)    ;
 
@@ -1049,7 +1049,7 @@ void Hyde2TrackerSquare1::ReadSensitive(const G4Event* event)
 
             // Fourth Stage
                FourthStageEnergy_itr = FourthStageEnergyHitMap->GetMap()->begin()  ;
-               for (G4int h = 0 ; h < FourthStageEnergyHitMap->entries() ; h++) {
+               for (unsigned int h = 0 ; h < FourthStageEnergyHitMap->entries() ; h++) {
                   G4int FourthStageEnergyTrackID  =   FourthStageEnergy_itr->first - N;
                   G4double FourthStageEnergy      = *(FourthStageEnergy_itr->second)    ;
 
@@ -1067,7 +1067,7 @@ void Hyde2TrackerSquare1::ReadSensitive(const G4Event* event)
 
             // Fifth Stage
                FifthStageEnergy_itr = FifthStageEnergyHitMap->GetMap()->begin()  ;
-               for (G4int h = 0 ; h < FifthStageEnergyHitMap->entries() ; h++) {
+               for (unsigned int h = 0 ; h < FifthStageEnergyHitMap->entries() ; h++) {
                   G4int FifthStageEnergyTrackID  =   FifthStageEnergy_itr->first - N;
                   G4double FifthStageEnergy      = *(FifthStageEnergy_itr->second)    ;
 
@@ -1085,7 +1085,7 @@ void Hyde2TrackerSquare1::ReadSensitive(const G4Event* event)
 
             // Sixth Stage
                SixthStageEnergy_itr = SixthStageEnergyHitMap->GetMap()->begin()  ;
-               for (G4int h = 0 ; h < SixthStageEnergyHitMap->entries() ; h++) {
+               for (unsigned int h = 0 ; h < SixthStageEnergyHitMap->entries() ; h++) {
                   G4int SixthStageEnergyTrackID  =   SixthStageEnergy_itr->first - N;
                   G4double SixthStageEnergy      = *(SixthStageEnergy_itr->second)    ;
 

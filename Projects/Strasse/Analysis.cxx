@@ -75,10 +75,12 @@ void Analysis::TreatEvent(){
     TVector3 InnerPos1 = Strasse->GetInnerPositionOfInteraction(0);
     TVector3 OuterPos1 = Strasse->GetOuterPositionOfInteraction(0);
     TVector3 Proton1 = OuterPos1-InnerPos1;
+    Proton1=Proton1.Unit();
     // Proton 2
     TVector3 InnerPos2 = Strasse->GetInnerPositionOfInteraction(1);
     TVector3 OuterPos2 = Strasse->GetOuterPositionOfInteraction(1);
     TVector3 Proton2 = OuterPos2-InnerPos2;
+    Proton2=Proton2.Unit();
 
     deltaPhi = abs(Proton1.Phi()/deg-Proton2.Phi()/deg);
     sumTheta = Proton1.Theta()/deg+Proton2.Theta()/deg;
@@ -105,34 +107,75 @@ void Analysis::TreatEvent(){
     unsigned int i1,i2;
     i1 = Catana->FindClosestHitToLine(InnerPos1,OuterPos1,d1);
     i2 = Catana->FindClosestHitToLine(InnerPos2,OuterPos2,d2);
-    if(i1!=i2){
+    //if(i1!=i2){
+    if(true){
+      double TA = BeamTarget.Slow(InitialBeamEnergy,abs(VertexZ-75),RC->GetBeamDirection().Angle(TVector3(0,0,1)));
+       
+      ////////////////////////////////////
+      // From Reaction Conditions
+      double E1s = RC->GetKineticEnergy(0); 
+      double E2s = RC->GetKineticEnergy(1); 
+      TVector3 Proton1s=RC->GetParticleMomentum(0).Unit();
+      TVector3 Proton2s=RC->GetParticleMomentum(1).Unit();
+      // Matching the right energy with the right proton
+      if((Proton1s-Proton1).Mag()<(Proton1s-Proton2).Mag()){
+        E1=E1s;
+        E2=E2s;
+        alpha=Proton1s.Angle(Proton1)/deg;
+        Theta1=Proton1.Theta();
+        Phi1=Proton1.Phi();
+        Theta2=Proton2.Theta();
+        Phi2=Proton2.Phi();
+        Theta1s=Proton1s.Theta();
+        Phi1s=Proton1s.Phi();
+        Theta2s=Proton2s.Theta();
+        Phi2s=Proton2s.Phi();
+        
+        }
+      else{
+        E2=E1s;
+        E1=E2s;
+        alpha=Proton2s.Angle(Proton1)/deg;
+        Theta1=Proton1.Theta()/deg;
+        Phi1=Proton1.Phi()/deg;
+        Theta2=Proton2.Theta()/deg;
+        Phi2=Proton2.Phi()/deg;
+        Theta1s=Proton2s.Theta()/deg;
+        Phi1s=Proton2s.Phi()/deg;
+        Theta2s=Proton1s.Theta()/deg;
+        Phi2s=Proton1s.Phi()/deg;
+        }
+      // From detectors
       E1 = ReconstructProtonEnergy(Vertex,Proton1,Catana->Energy[i1]); 
       E2 = ReconstructProtonEnergy(Vertex,Proton2,Catana->Energy[i2]);
-      double TA = BeamTarget.Slow(InitialBeamEnergy,abs(VertexZ-75),0);
-      // setting up Lorentz Vector from measured trajectories and energies
-      TVector3 PA(0,0,sqrt(TA*(TA+2*m_QFS->GetNucleusA()->Mass()))); // for like there is no BDC
-      Proton1=E1*Proton1.Unit();
-      Proton2=E2*Proton2.Unit();
+
+     // Vertex = RC->GetVertexPosition();  
+      //TA = RC->GetBeamEnergy();
+      //////////////////////////////////// 
       
+     // setting up Lorentz Vector from measured trajectories and energies
+     // TVector3 PA(0,0,sqrt(TA*(TA+2*m_QFS->GetNucleusA()->Mass()))); // for like there is no BDC
+     double beam_mom=sqrt(TA*(TA+2*m_QFS->GetNucleusA()->Mass()));
+    // TVector3 PA(0,0,beam_mom); // for like there is no BDC
+       TVector3 PA=beam_mom*RC->GetBeamDirection().Unit();
+
       LV_A.SetVectM(PA,m_QFS->GetNucleusA()->Mass());
       double P1= sqrt(E1*(E1+2*NPUNITS::proton_mass_c2));
       double P2= sqrt(E2*(E2+2*NPUNITS::proton_mass_c2));
 
       LV_p1.SetVectM(Proton1.Unit()*P1,NPUNITS::proton_mass_c2); 
       LV_p2.SetVectM(Proton2.Unit()*P2,NPUNITS::proton_mass_c2); 
-
       // computing Ex from Missing Mass
       LV_B = LV_A + LV_T - LV_p1 - LV_p2;
       //LV_B = RC->GetParticleMomentum(2);
       Ex = LV_B.M() - m_QFS->GetNucleusB()->Mass();
     }
-    
   }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 double Analysis::ReconstructProtonEnergy(const TVector3& x0, const TVector3& dir,const double& Ecatana){
-    TVector3 Normal = TVector3(0,0,1);
+    TVector3 Normal = TVector3(0,1,0);
     Normal.SetPhi(dir.Phi());
     double Theta = dir.Angle(Normal);  
     // Catana Al housing 
@@ -146,12 +189,11 @@ double Analysis::ReconstructProtonEnergy(const TVector3& x0, const TVector3& dir
     // LH2 target
     static TVector3 x1;
     x1= x0+dir;
-    TVector3 T1(0,30,0);
-    TVector3 T2(0,30,1);
+    TVector3 T1(0,15,0);
+    TVector3 T2(0,15,1);
     T1.SetPhi(dir.Phi());
     T2.SetPhi(dir.Phi());
-    TVector3 Vertex,delta;
-    double d = NPL::MinimumDistanceTwoLines(x0,x1,T1,T2,Vertex,delta);
+    double d = NPL::MinimumDistancePointLine(T1,T2,x0);
     E = protonTarget.EvaluateInitialEnergy(E,d,Theta);
   }
 
@@ -185,6 +227,17 @@ void Analysis::InitOutputBranch() {
   RootOutput::getInstance()->GetTree()->Branch("deltaPhi",&deltaPhi,"deltaPhi/D");
   RootOutput::getInstance()->GetTree()->Branch("sumTheta",&sumTheta,"sumTheta/D");
 
+  RootOutput::getInstance()->GetTree()->Branch("alpha",&alpha,"alpha/D");
+
+  RootOutput::getInstance()->GetTree()->Branch("Theta1",&Theta1,"Theta1/D");
+  RootOutput::getInstance()->GetTree()->Branch("Phi1",&Phi1,"Phi1/D");
+  RootOutput::getInstance()->GetTree()->Branch("Theta2",&Theta2,"Theta2/D");
+  RootOutput::getInstance()->GetTree()->Branch("Phi2",&Phi2,"Phi2/D");
+  RootOutput::getInstance()->GetTree()->Branch("Theta1s",&Theta1s,"Theta1s/D");
+  RootOutput::getInstance()->GetTree()->Branch("Phi1s",&Phi1s,"Phi1s/D");
+  RootOutput::getInstance()->GetTree()->Branch("Theta2s",&Theta2s,"Theta2s/D");
+  RootOutput::getInstance()->GetTree()->Branch("Phi2s",&Phi2s,"Phi2s/D");
+
 
   RootOutput::getInstance()->GetTree()->Branch("Distance",&Distance,"Distance/D");
   RootOutput::getInstance()->GetTree()->Branch("InteractionCoordinates","TInteractionCoordinates",&DC);
@@ -212,6 +265,15 @@ void Analysis::ReInitValue(){
   Distance=-1000;
   sumTheta=-1000;
   deltaPhi=-1000;
+  alpha=-1000;
+  Theta1=-1000;
+  Phi1=-1000;
+  Theta2=-1000;
+  Phi2=-1000;
+  Theta1s=-1000;
+  Phi1s=-1000;
+  Theta2s=-1000;
+  Phi2s=-1000;
 }
 
 
