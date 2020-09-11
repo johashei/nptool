@@ -12,7 +12,7 @@ Target
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%1
 Strasse Info
   Inner_Wafer_Length= 127 mm
-  Inner_Wafer_Width= 33 mm
+  Inner_Wafer_Width= 30.6 mm
   Inner_Wafer_Thickness= 200 micrometer
   Inner_Wafer_AlThickness= 0.4 micrometer
   Inner_Wafer_PADExternal= 0 mm
@@ -28,7 +28,7 @@ Strasse Info
   Inner_PCB_MidWidth= 1 mm
   Inner_PCB_Thickness= 1.6 mm
   Outer_Wafer_Length= 124 mm
-  Outer_Wafer_Width= 68 mm
+  Outer_Wafer_Width= 65.6 mm
   Outer_Wafer_Thickness= 300 micrometer
   Outer_Wafer_AlThickness= 0.4 micrometer
   Outer_Wafer_PADExternal= 0 mm
@@ -84,9 +84,9 @@ Strasse Chamber
   Z= -30 mm
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-Catana CSV
- Path= geometry/Catana.csv 
- Pos= 0 0 100 mm
- Rshift= 100 micrometer
+%Catana CSV
+% Path= geometry/Catana.csv 
+% Pos= 0 0 100 mm
+% Rshift= 100 micrometer
 
 

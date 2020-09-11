@@ -442,7 +442,8 @@ void NPS::BeamReaction::DoIt(const G4FastTrack& fastTrack,
     /////////////////////////////////////////////////////////////////
 
     // Shoot and Set a Random ThetaCM
-    double theta = G4RandFlat::shoot() *  pi;
+    double costheta = G4RandFlat::shoot() * 2 - 1;
+    double theta = acos(costheta);
     double phi = G4RandFlat::shoot() * 2. * pi - pi; //rand in [-pi,pi]
     m_QFS.SetThetaCM(theta);
     m_QFS.SetPhiCM(phi);
