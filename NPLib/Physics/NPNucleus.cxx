@@ -199,7 +199,7 @@ void Nucleus::SetUp(string isotope){
 	
   ifstream inFile;
   string Path = getenv("NPTOOL") ;
-  string FileName = Path + "/NPLib/Physics/nubtab12.asc";
+  string FileName = Path + "/NPLib/Physics/nubtab16.asc";
   inFile.open(FileName.c_str());
 
   // reading the file
