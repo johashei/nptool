@@ -64,6 +64,7 @@ namespace NPL {
     int    fCharge;       // Nucleus charge
     int    fAtomicWeight; // Nucleus atomic weight
     double fMassExcess;   // Nucleus mass excess in keV
+    double fMass;
     string fSpinParity;   // Nucleus spin and parity
     double fSpin;         // Nucleus spin
     string fParity;       // Nucleus parity
@@ -85,14 +86,14 @@ namespace NPL {
   public:
     void EnergyToBrho(double Q=-1000);
     void EnergyToTof();
-    void	BetaToVelocity();
+    void BetaToVelocity();
     void BrhoToEnergy(double Q=-1000);
     void BrhoToTof()    {BrhoToEnergy(); EnergyToTof();}
-    void	TofToEnergy();
-    void	TofToBrho()    {TofToEnergy(); EnergyToBrho();}
-    void	EnergyToBeta();
-    void	BetaToEnergy();
-    void	BetaToGamma();
+    void TofToEnergy();
+    void TofToBrho()    {TofToEnergy(); EnergyToBrho();}
+    void EnergyToBeta();
+    void BetaToEnergy();
+    void BetaToGamma();
     double DopplerCorrection(double EnergyLabGamma, double ThetaLabGamma);
     
     
@@ -101,23 +102,23 @@ namespace NPL {
     
     public :
     void				   GetNucleusName();
-    string			   GetName()			      const	{return fNucleusName;}
+    string			   GetName()			      const	{return fName;}
     int			  	   GetZ()				      const	{return fCharge;}
     int			  	   GetA()				      const	{return fAtomicWeight;}
     double			   GetMassExcess()		   const {return fMassExcess;}
     string   		   GetSpinParity()		   const	{return fSpinParity;}
     double			   GetSpin()			      const	{return fSpin;}
     string   		   GetParity()			      const	{return fParity;}
-    double           GetLifeTime()           const {return fLifeTime;}
-    double           GetLifeTimeError()           const {return fLifeTimeErr;}
+    double         GetLifeTime()           const {return fLifeTime;}
+    double         GetLifeTimeError()           const {return fLifeTimeErr;}
     double			   GetEnergy()			      const	{return fKineticEnergy;}
     double			   GetBrho()			      const	{return fBrho;}
     double			   GetTimeOfFlight()	      const {return fTimeOfFlight;}
     double			   GetBeta()			      const	{return fBeta;}
     double			   GetGamma()			      const	{return fGamma;}
     double			   GetVelocity()	   	   const	{return fVelocity;}
-    TLorentzVector	GetEnergyImpulsion()    const {return fEnergyImpulsion;}
-    double           GetExcitationEnergy()   const {return fExcitationEnergy;}
+    TLorentzVector GetEnergyImpulsion()    const {return fEnergyImpulsion;}
+    double         GetExcitationEnergy()   const {return fExcitationEnergy;}
     void				SetName(const char* name)	{fName = name;}
     void				SetZ(int charge)					{fCharge = charge;}
     void				SetA(int mass)						{fAtomicWeight = mass;}

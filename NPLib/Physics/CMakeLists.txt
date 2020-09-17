@@ -26,5 +26,4 @@ target_link_libraries(NPInteractionCoordinates ${ROOT_LIBRARIES} )
 add_library(NPReactionConditions SHARED TReactionConditions.cxx TReactionConditionsDict.cxx)
 target_link_libraries(NPReactionConditions ${ROOT_LIBRARIES} ) 
 
-
 install(FILES NPDecay.h NPBeam.h NPEnergyLoss.h NPFunction.h NPNucleus.h NPReaction.h  NPQFS.h TInitialConditions.h TInteractionCoordinates.h TReactionConditions.h DESTINATION ${CMAKE_INCLUDE_OUTPUT_DIRECTORY})

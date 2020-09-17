@@ -101,6 +101,7 @@ G4bool NPS::BeamReaction::IsApplicable(const G4ParticleDefinition& particleType)
   static std::string particleName;
   particleName = particleType.GetParticleName();
   if(particleName=="neutron") particleName="n1";
+  else if(particleName=="e-") particleName="electron";
   if (particleName.find(m_BeamName) != std::string::npos) {
     return true;
   }
@@ -127,12 +128,12 @@ G4bool NPS::BeamReaction::ModelTrigger(const G4FastTrack& fastTrack) {
   bool is_first = (to_entrance==0);
 
   if(is_first && m_shoot){
- /*   std::cout << "Something went wrong in beam reaction, m_shoot cannot be true at beginning of event" << std::endl;
-    std::cout << "rand: " << m_rand << std::endl;
-    std::cout << "length: " << m_length << std::endl;
-    std::cout << "step: " << m_StepSize << std::endl;
-    std::cout << "Z: " << m_Z << std::endl;
-    std::cout << "S: " << m_S << std::endl;*/
+    /*   std::cout << "Something went wrong in beam reaction, m_shoot cannot be true at beginning of event" << std::endl;
+         std::cout << "rand: " << m_rand << std::endl;
+         std::cout << "length: " << m_length << std::endl;
+         std::cout << "step: " << m_StepSize << std::endl;
+         std::cout << "Z: " << m_Z << std::endl;
+         std::cout << "S: " << m_S << std::endl;*/
     m_shoot = false;
   }
 
@@ -144,7 +145,7 @@ G4bool NPS::BeamReaction::ModelTrigger(const G4FastTrack& fastTrack) {
     m_ReactionConditions->Clear();
     m_shoot=true;
   }
-  
+
   // curviligne coordinate along beam path
   m_S = to_entrance - 0.5*(to_exit+to_entrance); 
   m_length = m_Z-m_S;
@@ -194,18 +195,18 @@ void NPS::BeamReaction::DoIt(const G4FastTrack& fastTrack,
     ->GetVolume()
     ->GetLogicalVolume()
     ->GetMaterial();
- 
+
   double energy = PrimaryTrack->GetKineticEnergy();
   double speed  = PrimaryTrack->GetVelocity();
   double time   = PrimaryTrack->GetGlobalTime()+m_length/speed;
-   
+
 
   double reac_energy = SlowDownBeam (
-    PrimaryTrack->GetParticleDefinition(),
-    energy,
-    m_length,
-    material);
-  
+      PrimaryTrack->GetParticleDefinition(),
+      energy,
+      m_length,
+      material);
+
 
   G4ThreeVector ldir = pdirection;
   ldir *= m_length;
@@ -225,26 +226,31 @@ void NPS::BeamReaction::DoIt(const G4FastTrack& fastTrack,
     ///////////////////////////////
     // Two-Body Reaction Case /////
     ///////////////////////////////
-
-    //////Define the kind of particle to shoot////////
-    // Nucleus 3
-    int LightZ = m_Reaction.GetNucleus3()->GetZ();
-    int LightA = m_Reaction.GetNucleus3()->GetA();
     static G4IonTable* IonTable
       = G4ParticleTable::GetParticleTable()->GetIonTable();
 
+    //////Define the kind of particle to shoot////////
+    // Particle 3
     G4ParticleDefinition* LightName;
-
-    if (LightZ == 0 && LightA == 1) // neutron is special case
-    {
-      LightName = G4Neutron::Definition();
-    } else {
-      if (m_Reaction.GetUseExInGeant4())
-        LightName
-          = IonTable->GetIon(LightZ, LightA, m_Reaction.GetExcitation3() * MeV);
-      else
-        LightName = IonTable->GetIon(LightZ, LightA);
+    if(m_Reaction.GetNucleus3()->GetName()=="electron"){
+      LightName=G4Electron::Definition();
     }
+    else{
+      int LightZ = m_Reaction.GetNucleus3()->GetZ();
+      int LightA = m_Reaction.GetNucleus3()->GetA();
+      if (LightZ == 0 && LightA == 1){
+        LightName = G4Neutron::Definition();
+      } 
+      else {
+        if (m_Reaction.GetUseExInGeant4())
+          LightName
+            = IonTable->GetIon(LightZ, LightA, m_Reaction.GetExcitation3() * MeV);
+        else
+          LightName = IonTable->GetIon(LightZ, LightA);
+      }
+
+    }
+
 
     // Nucleus 4
     G4int HeavyZ = m_Reaction.GetNucleus4()->GetZ();
@@ -490,7 +496,7 @@ void NPS::BeamReaction::DoIt(const G4FastTrack& fastTrack,
 
     TLorentzVector* P_A = m_QFS.GetEnergyImpulsionLab_A();
     TLorentzVector* P_B = m_QFS.GetEnergyImpulsionLab_B();
-    
+
     G4ThreeVector momentum_kineB_beam( P_B->Px(), P_B->Py(), P_B->Pz() );
     momentum_kineB_beam = momentum_kineB_beam.unit();
     TKEB = P_B->Energy() - m_QFS.GetNucleusB()->Mass();

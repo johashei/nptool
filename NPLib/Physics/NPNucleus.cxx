@@ -52,6 +52,7 @@ Nucleus::Nucleus(){
   fCharge= 0;
   fAtomicWeight= 0;
   fMassExcess= 0;
+  fMass=0;
   fExcitationEnergy=0;
   fSpinParity= "";
   fSpin= 0;
@@ -60,14 +61,14 @@ Nucleus::Nucleus(){
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo...... 
-Nucleus::Nucleus(string isotope){
-  SetUp(isotope);
+Nucleus::Nucleus(string name){
+  SetUp(name);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo...... 
-Nucleus::Nucleus(string isotope, const string& path){
-  SetUp(isotope);
-  LoadENSDF(isotope, path);
+Nucleus::Nucleus(string name, const string& path){
+  SetUp(name);
+  LoadENSDF(name, path);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo...... 
@@ -92,6 +93,7 @@ Nucleus::Nucleus(string name, vector<string> subpart, double binding,double Ex, 
   fSpin= Spin;
   fParity= Parity;
   fLifeTime = LifeTime;
+  fMass=Mass;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo...... 
@@ -177,21 +179,50 @@ void Nucleus::LoadENSDF(const string& isotope, const string& pathENSDF)
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo...... 
-void Nucleus::SetUp(string isotope){
+void Nucleus::SetUp(string name){
+  if(name=="electron"){
+   fName = "electron";
+   fCharge = -1;
+   fAtomicWeight = 0;
+   fMassExcess = 0;
+   fMass = electron_mass_c2;
+   fExcitationEnergy =0;
+   fSpinParity = "0.5";
+   fSpin = 0.5;
+   fParity = "";
+   fLifeTime = -1;
+   return;
+  }
+  
+  else if(name=="gamma"){
+   fName = "gamma";
+   fCharge = 0;
+   fAtomicWeight = 0;
+   fMassExcess = 0;
+   fMass = 0;
+   fExcitationEnergy =0;
+   fSpinParity = "0";
+   fSpin = 0;
+   fParity = "";
+   fLifeTime = -1;
+   return;
+  }
+
+
   //----------- Constructor Using nubtab12.asc by name----------
   // open the file to read and check if it is open
   fExcitationEnergy=0; 
   // Replace the n,p,d,t,a by there standard name:
-  if(isotope=="p") isotope="1H";
-	else if(isotope=="n") isotope="1n";
-  else if(isotope=="d") isotope="2H";
-  else if(isotope=="t") isotope="3H";
-  else if(isotope=="a") isotope="4He";
-  else if(isotope=="n") isotope="1n";
-  else if(isotope=="neutron") isotope="1n";
-  else if(isotope=="g") isotope="gamma";
-  else if(isotope=="gamma") isotope="gamma";
-	else if(isotope=="4n"){ // tetraneutron @Eres = 0
+  if(name=="p") name="1H";
+	else if(name=="n") name="1n";
+  else if(name=="d") name="2H";
+  else if(name=="t") name="3H";
+  else if(name=="a") name="4He";
+  else if(name=="n") name="1n";
+  else if(name=="neutron") name="1n";
+  else if(name=="g") name="gamma";
+  else if(name=="gamma") name="gamma";
+	else if(name=="4n"){ // tetraneutron @Eres = 0
 		string line = "004 0000   4n      32285.268   0.0005                       219.4    ys 0.6    1/2+          00 02PaDGt   B-=100";
 		Extract(line.data());
 		return;
@@ -213,7 +244,7 @@ void Nucleus::SetUp(string isotope){
       space = s_name.find_first_of(" ");
       s_name.resize(space);
 
-      if (s_name.find(isotope) != string::npos && s_name.length() == isotope.length()) break;
+      if (s_name.find(name) != string::npos && s_name.length() == name.length()) break;
     }
     Extract(line.data());
   }
@@ -410,7 +441,7 @@ void Nucleus::Extract(string line){
   if (s_spinparity.find("19/2") != string::npos) fSpin = 9.5   ;
   if (s_spinparity.find("21/2") != string::npos) fSpin = 10.5 ;
   GetNucleusName();
-
+  fMass=Mass();
 } 
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo...... 
@@ -635,27 +666,4 @@ void Nucleus::PrintThreshold() const {
    cout << "  S3He : "  << GetS3He()  << " MeV" << endl;
    cout << "  Sa   : "  << GetSa()    << " MeV" << endl;
   }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 

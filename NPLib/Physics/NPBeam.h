@@ -111,7 +111,7 @@ namespace NPL{
     TH1F*     GetEnergyHist  () const {return fEnergyHist;}
     TH2F*     GetXThetaXHist () const {return fXThetaXHist;}
     TH2F*     GetYPhiYHist   () const {return fYPhiYHist;}
-    int      GetVerboseLevel()  const {return fVerboseLevel;}
+    int       GetVerboseLevel() const {return fVerboseLevel;}
 
   private: // Event Generation private variable
     double fTargetSize;
