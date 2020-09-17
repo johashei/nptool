@@ -12,7 +12,7 @@
  * Last update    : may 2012 morfouac@ipno.in2p3.fr                          *
  *---------------------------------------------------------------------------*
  * Decription:                                                               *
- *  This class manage a nucleus, data are read in the nubtab12.asc file      *
+ *  This class manage a particle, data are read in the nubtab12.asc file     *
  *                                                                           *
  *---------------------------------------------------------------------------*
  * Comment:                                                                  *
@@ -22,7 +22,7 @@
  *****************************************************************************/
 
 // NPTOOL headers
-#include "NPNucleus.h"
+#include "NPParticle.h"
 #include "NPCore.h"
 using namespace NPL;
 
@@ -43,10 +43,10 @@ using namespace std;
 
 
 
-ClassImp(Nucleus)
+ClassImp(Particle)
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo...... 
-Nucleus::Nucleus(){
+Particle::Particle(){
   //----------- Default Constructor ----------
   fName= "XX DEFAULT XX";
   fCharge= 0;
@@ -61,25 +61,25 @@ Nucleus::Nucleus(){
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo...... 
-Nucleus::Nucleus(string name){
+Particle::Particle(string name){
   SetUp(name);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo...... 
-Nucleus::Nucleus(string name, const string& path){
+Particle::Particle(string name, const string& path){
   SetUp(name);
   LoadENSDF(name, path);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo...... 
-Nucleus::Nucleus(string name, vector<string> subpart, double binding,double Ex, string SpinParity, double Spin, string Parity, double LifeTime){
+Particle::Particle(string name, vector<string> subpart, double binding,double Ex, string SpinParity, double Spin, string Parity, double LifeTime){
   fName= name;
   fCharge= 0;
   fAtomicWeight= 0;
   unsigned int size = subpart.size();
   double Mass = 0;
   for(unsigned int i = 0 ; i < size ; i++){
-    Nucleus N = Nucleus(subpart[i]);
+    Particle N = Particle(subpart[i]);
     Mass+= N.Mass();
     fAtomicWeight+= N.GetA();
     fCharge+= N.GetZ(); 
@@ -97,7 +97,7 @@ Nucleus::Nucleus(string name, vector<string> subpart, double binding,double Ex, 
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo...... 
-void Nucleus::LoadENSDF(const string& isotope, const string& pathENSDF)
+void Particle::LoadENSDF(const string& isotope, const string& pathENSDF)
 {
    // open file to read                                                         
    TString fileName = Form("%s/AR_%s.ens", pathENSDF.c_str(), isotope.c_str()); 
@@ -179,7 +179,7 @@ void Nucleus::LoadENSDF(const string& isotope, const string& pathENSDF)
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo...... 
-void Nucleus::SetUp(string name){
+void Particle::SetUp(string name){
   if(name=="electron"){
    fName = "electron";
    fCharge = -1;
@@ -254,7 +254,7 @@ void Nucleus::SetUp(string name){
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo...... 
-Nucleus::Nucleus(int Z, int A)
+Particle::Particle(int Z, int A)
 {
   //----------- Constructor Using nubtab12.asc by Z and A----------
 
@@ -298,12 +298,12 @@ Nucleus::Nucleus(int Z, int A)
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo...... 
-Nucleus::~Nucleus()
+Particle::~Particle()
 {
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo...... 
-void Nucleus::Extract(string line){
+void Particle::Extract(string line){
   // name of the isotope
   fName = line.substr(11,7);
   // charge and mass
@@ -440,12 +440,12 @@ void Nucleus::Extract(string line){
   if (s_spinparity.find("17/2") != string::npos) fSpin = 8.5   ;
   if (s_spinparity.find("19/2") != string::npos) fSpin = 9.5   ;
   if (s_spinparity.find("21/2") != string::npos) fSpin = 10.5 ;
-  GetNucleusName();
+  GetParticleName();
   fMass=Mass();
 } 
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo...... 
-void Nucleus::Print() const
+void Particle::Print() const
 {
   //------------ Imprime a l'ecran les caracteristiques d'un noyau -------
   cout << endl;
@@ -456,12 +456,12 @@ void Nucleus::Print() const
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo...... 
-void Nucleus::GetNucleusName() {
-    fNucleusName.assign(fName);
+void Particle::GetParticleName() {
+    fParticleName.assign(fName);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo...... 
-void Nucleus::EnergyToBrho(double Q){
+void Particle::EnergyToBrho(double Q){
   if(Q==-1000)
      Q=GetZ();
 
@@ -470,19 +470,19 @@ void Nucleus::EnergyToBrho(double Q){
 
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo...... 
-void Nucleus::EnergyToTof(){
+void Particle::EnergyToTof(){
   fTimeOfFlight = 1/sqrt(1-(Mass()*Mass())/(fKineticEnergy+Mass())/(fKineticEnergy+Mass()))/(c_light*1e6);
 }
 
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo...... 
-void Nucleus::TofToEnergy() {
+void Particle::TofToEnergy() {
   double Energy =  sqrt( Mass()*Mass()/(1-pow((1/((c_light*1e6)*fTimeOfFlight)),2)) );
   fKineticEnergy = Energy - Mass();
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo...... 
-void Nucleus::BrhoToEnergy(double Q ){
+void Particle::BrhoToEnergy(double Q ){
  if(Q==-1000)
     Q=GetZ();
 
@@ -491,27 +491,27 @@ void Nucleus::BrhoToEnergy(double Q ){
 
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo...... 
-void Nucleus::EnergyToBeta(){
+void Particle::EnergyToBeta(){
   fBeta = sqrt(pow(fKineticEnergy,2) + 2*fKineticEnergy*Mass())/(fKineticEnergy + Mass());
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo...... 
-void Nucleus::BetaToEnergy(){
+void Particle::BetaToEnergy(){
   fKineticEnergy = Mass()/sqrt(1-pow(fBeta,2)) - Mass();
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo...... 
-void Nucleus::BetaToGamma(){
+void Particle::BetaToGamma(){
   fGamma = 1/sqrt(1-pow(fBeta,2));
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo...... 
-void Nucleus::BetaToVelocity(){
+void Particle::BetaToVelocity(){
   fVelocity = (c_light*1e6)*fBeta*1e-7;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo...... 
-double Nucleus::DopplerCorrection(double EnergyLabGamma, double ThetaLabGamma){
+double Particle::DopplerCorrection(double EnergyLabGamma, double ThetaLabGamma){
   double EnergyGammaCorrected = EnergyLabGamma*(1-fBeta*cos(ThetaLabGamma))/( sqrt(1-pow(fBeta,2)) );
 
   return EnergyGammaCorrected;
@@ -519,7 +519,7 @@ double Nucleus::DopplerCorrection(double EnergyLabGamma, double ThetaLabGamma){
 
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-double Nucleus::GetEnergyCM(double EnergyLab, double ThetaLab, double PhiLab, double relativisticboost){
+double Particle::GetEnergyCM(double EnergyLab, double ThetaLab, double PhiLab, double relativisticboost){
     SetKineticEnergy(EnergyLab);
     double EnergyCM;
     double ImpulsionLab;
@@ -547,7 +547,7 @@ double Nucleus::GetEnergyCM(double EnergyLab, double ThetaLab, double PhiLab, do
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-double Nucleus::GetThetaCM(double EnergyLab, double ThetaLab, double PhiLab, double relativisticboost){
+double Particle::GetThetaCM(double EnergyLab, double ThetaLab, double PhiLab, double relativisticboost){
     SetKineticEnergy(EnergyLab);
     double EnergyCM;
     double ThetaCM;
@@ -577,18 +577,18 @@ double Nucleus::GetThetaCM(double EnergyLab, double ThetaLab, double PhiLab, dou
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-void Nucleus::DefineMassByThreshold(const vector<string>& v){
+void Particle::DefineMassByThreshold(const vector<string>& v){
   // Define the mass as the sum of the mass of the particle named in v
   unsigned int size = v.size();
-  vector<NPL::Nucleus> N;
+  vector<NPL::Particle> N;
   for(unsigned int i = 0 ; i < size ; i++)
-    N.push_back(NPL::Nucleus(v[i]));
+    N.push_back(NPL::Particle(v[i]));
 
   DefineMassByThreshold(N);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-void Nucleus::DefineMassByThreshold(const vector<NPL::Nucleus>& N){
+void Particle::DefineMassByThreshold(const vector<NPL::Particle>& N){
   // Define the mass as the sum of the mass of the particle defined in N
   unsigned int size = N.size();
   double Mass = 0;
@@ -601,7 +601,7 @@ void Nucleus::DefineMassByThreshold(const vector<NPL::Nucleus>& N){
   }
   // Check the threshold make any sense (same A, same Z):
   if(A!=GetA()|| Z!=GetZ()){
-    NPL::SendWarning("NPL::Nucleus","Mass and charge is not conserved in DefineMassByThreshold! Doing no change to nucleus");
+    NPL::SendWarning("NPL::Particle","Mass and charge is not conserved in DefineMassByThreshold! Doing no change to particle");
     return;
   } 
 
@@ -611,52 +611,52 @@ void Nucleus::DefineMassByThreshold(const vector<NPL::Nucleus>& N){
 
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-double Nucleus::GetSXn(unsigned int X) const {
- Nucleus N(GetZ(),GetA()-X);
+double Particle::GetSXn(unsigned int X) const {
+ Particle N(GetZ(),GetA()-X);
   return N.Mass()+X*neutron_mass_c2-Mass();
   }
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-double Nucleus::GetSXp(unsigned int X) const {
- Nucleus N(GetZ()-X,GetA()-X);
+double Particle::GetSXp(unsigned int X) const {
+ Particle N(GetZ()-X,GetA()-X);
   return N.Mass()+X*proton_mass_c2-Mass();
   }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-double Nucleus::GetSn() const {
+double Particle::GetSn() const {
   return GetSXn(1);
   }
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-double Nucleus::GetSp() const {
+double Particle::GetSp() const {
   return GetSXp(1);
   }
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-double Nucleus::GetS2n() const {
+double Particle::GetS2n() const {
   return GetSXn(2);
   }
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-double Nucleus::GetS2p() const {
+double Particle::GetS2p() const {
   return GetSXp(2);
   }
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-double Nucleus::GetSt() const {
- Nucleus N(GetZ()-1,GetA()-3);
- Nucleus A(1,3);
+double Particle::GetSt() const {
+ Particle N(GetZ()-1,GetA()-3);
+ Particle A(1,3);
   return N.Mass()+A.Mass()-Mass();
   }
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-double Nucleus::GetS3He() const {
- Nucleus N(GetZ()-2,GetA()-3);
- Nucleus A(2,3);
+double Particle::GetS3He() const {
+ Particle N(GetZ()-2,GetA()-3);
+ Particle A(2,3);
   return N.Mass()+A.Mass()-Mass();
   }
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-double Nucleus::GetSa() const {
- Nucleus N(GetZ()-2,GetA()-4);
- Nucleus A(2,4);
+double Particle::GetSa() const {
+ Particle N(GetZ()-2,GetA()-4);
+ Particle A(2,4);
   return N.Mass()+A.Mass()-Mass();
   }
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-void Nucleus::PrintThreshold() const {
+void Particle::PrintThreshold() const {
    cout << GetName() << " thresholds : " << endl;
    cout << "  Sn   : "  << GetSn()    << " MeV" << endl;
    cout << "  Sp   : "  << GetSp()    << " MeV" << endl;

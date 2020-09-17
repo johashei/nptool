@@ -35,13 +35,11 @@
 using namespace std;
 
 // NPL header
-#include "NPNucleus.h"
+#include "NPParticle.h"
 #include "NPInputParser.h"
-using namespace NPL;
 
 namespace NPL{
-  
-  class Beam:public NPL::Nucleus{
+  class Beam:public NPL::Particle{
     
   public:  // Constructors and Destructors
     Beam();
@@ -56,7 +54,7 @@ namespace NPL{
     int fVerboseLevel;
   
   private:
-    //Nucleus* fBeamNucleus;
+    //Particle* fBeamParticle;
     double fEnergy;
     double fExcitationEnergy;
     double fSigmaEnergy;
@@ -78,7 +76,7 @@ namespace NPL{
   public:
     // Getters and Setters
     // Set
-    // void SetBeamNucleus (Nucleus* BeamNucleus)  {delete fBeamNucleus ; fBeamNucleus = new Nucleus(BeamNucleus->GetZ(),BeamNucleus->GetA());}
+    // void SetBeamParticle (Particle* BeamParticle)  {delete fBeamParticle ; fBeamParticle = new Particle(BeamParticle->GetZ(),BeamParticle->GetA());}
     void SetEnergy      (double Energy)         {fEnergy=Energy;}
     void SetExcitationEnergy(double Excitation) {fExcitationEnergy=Excitation;}
     void SetSigmaEnergy (double SigmaEnergy)    {fSigmaEnergy=SigmaEnergy;}
@@ -96,7 +94,7 @@ namespace NPL{
     void SetVerboseLevel(int verbose)           {fVerboseLevel = verbose;}
 
     // Get
-    // Nucleus*  GetNucleus     () const {return fBeamNucleus;}
+    // Particle*  GetParticle     () const {return fBeamParticle;}
     double    GetEnergy      () const {return fEnergy;}
     double    GetExcitationEnergy() const {return fExcitationEnergy;}
     double    GetSigmaEnergy () const {return fSigmaEnergy;}
