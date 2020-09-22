@@ -47,7 +47,7 @@ int main(int argc, char** argv){
         cout << line << endl;
         cout << "NPSimulation version: npsimulation-"<< NPS::version_major <<"-" << NPS::version_minor << "-" << NPS::version_dets <<endl;
         cout << " Copyright: NPTool Collaboration "<<endl;
-        cout << " GitHub: http://github.com/adrien-matta/nptool"<<endl; ;
+        cout << " Gitlab: https://gitlab.in2p3.fr/np/nptool "<<endl; ;
         cout << line << endl;
     }
     
