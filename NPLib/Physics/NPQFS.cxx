@@ -126,15 +126,15 @@ void QFS::ReadConfigurationFile(NPL::InputParser parser){
       if(blocks[i]->HasTokenList(token1)){
           int v = NPOptionManager::getInstance()->GetVerboseLevel();
           NPOptionManager::getInstance()->SetVerboseLevel(0);
-          fNucleiA.ReadConfigurationFile(parser);
+          fParticleA.ReadConfigurationFile(parser);
           NPOptionManager::getInstance()->SetVerboseLevel(v);
 
-          fBeamEnergy= fNucleiA.GetEnergy();
-          GetNucleus(blocks[i]->GetString("Beam"),parser);
-          fNucleiT = GetNucleus(blocks[i]->GetString("Target"),parser);
-          fNucleiB = GetNucleus(blocks[i]->GetString("Heavy"),parser);
-          fNuclei1 = GetNucleus(blocks[i]->GetString("Scattered"),parser);
-          fNuclei2 = GetNucleus(blocks[i]->GetString("KnockedOut"),parser);
+          fBeamEnergy= fParticleA.GetEnergy();
+          GetParticle(blocks[i]->GetString("Beam"),parser);
+          fParticleT = GetParticle(blocks[i]->GetString("Target"),parser);
+          fParticleB = GetParticle(blocks[i]->GetString("Heavy"),parser);
+          fParticle1 = GetParticle(blocks[i]->GetString("Scattered"),parser);
+          fParticle2 = GetParticle(blocks[i]->GetString("KnockedOut"),parser);
       }
       else{
           cout << "ERROR: check your input file formatting \033[0m" << endl;
@@ -156,6 +156,12 @@ void QFS::ReadConfigurationFile(NPL::InputParser parser){
           fshoot1 = blocks[i]->GetInt("ShootLight");
           fshoot2 = blocks[i]->GetInt("ShootLight");
       }
+      if(blocks[i]->HasToken("ShootLight1")){
+          fshoot1 = blocks[i]->GetInt("ShootLight1");
+      }
+      if(blocks[i]->HasToken("ShootLight2")){
+          fshoot2 = blocks[i]->GetInt("ShootLight2");
+      }
       if(blocks[i]->HasToken("PerpMomentumPath")){
           vector<string> file_perp = blocks[i]->GetVectorString("PerpMomentumPath");
           TH1F* Perptemp = Read1DProfile(file_perp[0], file_perp[1]);
@@ -172,17 +178,17 @@ void QFS::ReadConfigurationFile(NPL::InputParser parser){
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-Nucleus QFS::GetNucleus(string name, NPL::InputParser parser){
+Particle QFS::GetParticle(string name, NPL::InputParser parser){
 
-  vector<NPL::InputBlock*> blocks = parser.GetAllBlocksWithTokenAndValue("DefineNucleus",name);
+  vector<NPL::InputBlock*> blocks = parser.GetAllBlocksWithTokenAndValue("DefineParticle",name);
   unsigned int size = blocks.size();
   if(size==0)
-    return NPL::Nucleus(name);
+    return NPL::Particle(name);
   else if(size==1){
     cout << " -- User defined nucleus " << name << " -- " << endl;
     vector<string> token = {"SubPart","BindingEnergy"};
     if(blocks[0]->HasTokenList(token)){
-      NPL::Nucleus N(name,blocks[0]->GetVectorString("SubPart"),blocks[0]->GetDouble("BindingEnergy","MeV"));
+      NPL::Particle N(name,blocks[0]->GetVectorString("SubPart"),blocks[0]->GetDouble("BindingEnergy","MeV"));
       if(blocks[0]->HasToken("ExcitationEnergy"))
         N.SetExcitationEnergy(blocks[0]->GetDouble("ExcitationEnergy","MeV"));
       if(blocks[0]->HasToken("SpinParity"))
@@ -200,9 +206,9 @@ Nucleus QFS::GetNucleus(string name, NPL::InputParser parser){
   }
   else{
     NPL::SendErrorAndExit("NPL::QFS","Too many nuclei define with the same name");
-    return NPL::Nucleus();
+    return NPL::Particle();
   }
-  return NPL::Nucleus();
+  return NPL::Particle();
 }
 
 
@@ -215,11 +221,11 @@ void QFS::CalculateVariables(){
     //cout<<"---- COMPUTE ------"<<endl;
    // cout<<"--CM--"<<endl; 
 
-    mA =  fNucleiA.Mass();           // Beam mass in MeV
-    mT =  fNucleiT.Mass();           // Target mass in MeV 
-    mB =  fNucleiB.Mass();           // Heavy residual mass in MeV 
+    mA =  fParticleA.Mass();           // Beam mass in MeV
+    mT =  fParticleT.Mass();           // Target mass in MeV 
+    mB =  fParticleB.Mass();           // Heavy residual mass in MeV 
     m1 =  mT;                        // scattered target nucleon (same mass);
-    m2 =  fNuclei2.Mass();           // knocked out cluster mass in MeV 
+    m2 =  fParticle2.Mass();           // knocked out cluster mass in MeV 
     ma =  m2;                        // intermediate cluster mass in MeV (same);
  
     double TA = fBeamEnergy;                 // Beam kinetic energy
@@ -492,8 +498,8 @@ TGraph* QFS::GetPhi2VsPhi1(double AngleStep_CM){
 ///////////////////////////////////////////////////////////////////////////////
 // Check whenever the reaction is allowed at a given energy
 bool QFS::IsAllowed(){//double Energy){
-  //double AvailableEnergy = Energy + fNuclei1.Mass() + fNuclei2.Mass();
-  //double RequiredEnergy  = fNuclei3.Mass() + fNuclei4.Mass();
+  //double AvailableEnergy = Energy + fParticle1.Mass() + fParticle2.Mass();
+  //double RequiredEnergy  = fParticle3.Mass() + fParticle4.Mass();
 
   //if(AvailableEnergy>RequiredEnergy)
     return true;
@@ -519,11 +525,11 @@ void QFS::CalculateVariablesOld(){
     //cout<<"---- COMPUTE ------"<<endl;
    // cout<<"--CM--"<<endl; 
 
-    mA = fNucleiA.Mass();            // Beam mass in MeV
-    mT =  fNucleiT.Mass();           // Target mass in MeV 
-    mB =  fNucleiB.Mass();           // Heavy residual mass in MeV 
+    mA = fParticleA.Mass();            // Beam mass in MeV
+    mT =  fParticleT.Mass();           // Target mass in MeV 
+    mB =  fParticleB.Mass();           // Heavy residual mass in MeV 
     m1 =  mT;                        // scattered target nucleon (same mass);
-    m2 =  fNuclei2.Mass();           // knocked out cluster mass in MeV 
+    m2 =  fParticle2.Mass();           // knocked out cluster mass in MeV 
     ma =  m2;                        // intermediate cluster mass in MeV (same);
  
     double TA = fBeamEnergy;                 // Beam kinetic energy

@@ -14,7 +14,7 @@
  *---------------------------------------------------------------------------*
  * Decription:                                                               *
  *  This class deal with Two Body transfert Reaction                         *
- *  Physical parameter (Nuclei mass) are loaded from the nubtab03.asc file   *
+ *  Physical parameter (Particle mass) are loaded from the nubtab03.asc file   *
  *  (2003 nuclear table of isotopes mass).                                   *
  *                                                                           *
  *  KineRelativistic: Used in NPSimulation                                   *
@@ -132,10 +132,10 @@ Reaction::Reaction(string reaction){
   fLineBrho3 = 0;
   fTheta3VsTheta4 = 0;
   fAngleLine = 0;
-  fNuclei1 = Beam(A);
-  fNuclei2 = Nucleus(b);
-  fNuclei3 = Nucleus(c);
-  fNuclei4 = Nucleus(D);
+  fParticle1 = Beam(A);
+  fParticle2 = Particle(b);
+  fParticle3 = Particle(c);
+  fParticle4 = Particle(D);
   fBeamEnergy = atof(E.c_str());
   fThetaCM              = 0;
   fExcitation1          = 0;
@@ -289,7 +289,7 @@ double Reaction::ReconstructRelativistic(double EnergyLab, double ThetaLab){
   fEnergyImpulsionLab_4 = fTotalEnergyImpulsionLab - fEnergyImpulsionLab_3;
 
 
-  double Eex = fEnergyImpulsionLab_4.Mag() - fNuclei4.Mass();
+  double Eex = fEnergyImpulsionLab_4.Mag() - fParticle4.Mass();
 
   return Eex;
 }
@@ -375,14 +375,14 @@ double  Reaction::EnergyLabFromThetaLab(double ThetaLab){
 void Reaction::Print() const{
   // Print informations concerning the reaction
 
-  cout << "Reaction : " << fNuclei2.GetName() << "(" << fNuclei1.GetName()
-    << "," << fNuclei3.GetName() << ")" << fNuclei4.GetName() << "  @  "
+  cout << "Reaction : " << fParticle2.GetName() << "(" << fParticle1.GetName()
+    << "," << fParticle3.GetName() << ")" << fParticle4.GetName() << "  @  "
     << fBeamEnergy << " MeV"
     << endl   ;
 
-  cout << "Exc Nuclei 1 = " << fExcitation1 << " MeV" << endl;
-  cout << "Exc Nuclei 3 = " << fExcitation3 << " MeV" << endl;
-  cout << "Exc Nuclei 4 = " << fExcitation4 << " MeV" << endl;
+  cout << "Exc Particle 1 = " << fExcitation1 << " MeV" << endl;
+  cout << "Exc Particle 3 = " << fExcitation3 << " MeV" << endl;
+  cout << "Exc Particle 4 = " << fExcitation4 << " MeV" << endl;
   cout << "Qgg = " << fQValue << " MeV" << endl;
 }
 
@@ -403,16 +403,16 @@ void Reaction::ReadConfigurationFile(string Path){
   ReadConfigurationFile(parser);
 }
 ////////////////////////////////////////////////////////////////////////////////
-Nucleus Reaction::GetNucleus(string name, NPL::InputParser parser){
-  vector<NPL::InputBlock*> blocks = parser.GetAllBlocksWithTokenAndValue("DefineNucleus",name);
+Particle Reaction::GetParticle(string name, NPL::InputParser parser){
+  vector<NPL::InputBlock*> blocks = parser.GetAllBlocksWithTokenAndValue("DefineParticle",name);
   unsigned int size = blocks.size();
   if(size==0)
-    return NPL::Nucleus(name);
+    return NPL::Particle(name);
   else if(size==1){
     cout << " -- User defined nucleus " << name << " -- " << endl;
     vector<string> token = {"SubPart","BindingEnergy"};
     if(blocks[0]->HasTokenList(token)){
-      NPL::Nucleus N(name,blocks[0]->GetVectorString("SubPart"),blocks[0]->GetDouble("BindingEnergy","MeV"));
+      NPL::Particle N(name,blocks[0]->GetVectorString("SubPart"),blocks[0]->GetDouble("BindingEnergy","MeV"));
       if(blocks[0]->HasToken("ExcitationEnergy"))
         N.SetExcitationEnergy(blocks[0]->GetDouble("ExcitationEnergy","MeV"));
       if(blocks[0]->HasToken("SpinParity"))
@@ -432,7 +432,7 @@ Nucleus Reaction::GetNucleus(string name, NPL::InputParser parser){
     NPL::SendErrorAndExit("NPL::Reaction","Too many nuclei define with the same name");
   }
 
-  return (NPL::Nucleus());
+  return (NPL::Particle());
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -443,29 +443,29 @@ void Reaction::ReadConfigurationFile(NPL::InputParser parser){
     cout << endl << "\033[1;35m//// Two body reaction found " << endl;
 
   vector<string> token1 = {"Beam","Target","Light","Heavy"};
-  vector<string> token2 = {"Beam","Target","Nuclei3","Nuclei4"};
+  vector<string> token2 = {"Beam","Target","Particle3","Particle4"};
   double CSHalfOpenAngleMin= 0*deg ;
   double CSHalfOpenAngleMax= 180*deg;
   for(unsigned int i = 0 ; i < blocks.size() ; i++){
     if(blocks[i]->HasTokenList(token1)){
       int v = NPOptionManager::getInstance()->GetVerboseLevel();
       NPOptionManager::getInstance()->SetVerboseLevel(0);
-      fNuclei1.ReadConfigurationFile(parser);
+      fParticle1.ReadConfigurationFile(parser);
       NPOptionManager::getInstance()->SetVerboseLevel(v);
 
-      fBeamEnergy= fNuclei1.GetEnergy();
-      fNuclei2 = GetNucleus(blocks[i]->GetString("Target"),parser);
-      fNuclei3 = GetNucleus(blocks[i]->GetString("Light"),parser);
-      fNuclei4 = GetNucleus(blocks[i]->GetString("Heavy"),parser);
+      fBeamEnergy= fParticle1.GetEnergy();
+      fParticle2 = GetParticle(blocks[i]->GetString("Target"),parser);
+      fParticle3 = GetParticle(blocks[i]->GetString("Light"),parser);
+      fParticle4 = GetParticle(blocks[i]->GetString("Heavy"),parser);
     }
     else if(blocks[i]->HasTokenList(token2)){
-      fNuclei1.SetVerboseLevel(0);
-      fNuclei1.ReadConfigurationFile(parser);
-      fBeamEnergy= fNuclei1.GetEnergy();
+      fParticle1.SetVerboseLevel(0);
+      fParticle1.ReadConfigurationFile(parser);
+      fBeamEnergy= fParticle1.GetEnergy();
 
-      fNuclei2 = GetNucleus(blocks[i]->GetString("Target"),parser);
-      fNuclei3 = GetNucleus(blocks[i]->GetString("Nuclei3"),parser);
-      fNuclei4 = GetNucleus(blocks[i]->GetString("Nuclei4"),parser);
+      fParticle2 = GetParticle(blocks[i]->GetString("Target"),parser);
+      fParticle3 = GetParticle(blocks[i]->GetString("Particle3"),parser);
+      fParticle4 = GetParticle(blocks[i]->GetString("Particle4"),parser);
     }
     else{
       cout << "ERROR: check your input file formatting \033[0m" << endl;
@@ -573,13 +573,13 @@ void Reaction::initializePrecomputeVariable(){
   if(fBeamEnergy < 0)
     fBeamEnergy = 0 ;
 
-  if(fExcitation1>=0) fNuclei1.SetExcitationEnergy(fExcitation1); // Write over the beam excitation energy
+  if(fExcitation1>=0) fParticle1.SetExcitationEnergy(fExcitation1); // Write over the beam excitation energy
 
-  //fNuclei1.GetExcitationEnergy() is a copy of fExcitation1
-  m1 = fNuclei1.Mass() + fNuclei1.GetExcitationEnergy();// in case of isomeric state, 
-  m2 = fNuclei2.Mass(); // Target
-  m3 = fNuclei3.Mass() + fExcitation3;
-  m4 = fNuclei4.Mass() + fExcitation4;
+  //fParticle1.GetExcitationEnergy() is a copy of fExcitation1
+  m1 = fParticle1.Mass() + fParticle1.GetExcitationEnergy();// in case of isomeric state, 
+  m2 = fParticle2.Mass(); // Target
+  m3 = fParticle3.Mass() + fExcitation3;
+  m4 = fParticle4.Mass() + fExcitation4;
   fQValue =m1+m2-m3-m4;
 
   s = m1*m1 + m2*m2 + 2*m2*(fBeamEnergy + m1);
@@ -615,14 +615,14 @@ void Reaction::initializePrecomputeVariable(){
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////
-void Reaction::SetNuclei3(double EnergyLab, double ThetaLab){
+void Reaction::SetParticle3(double EnergyLab, double ThetaLab){
   double p3 = sqrt(pow(EnergyLab,2) + 2*m3*EnergyLab);
 
   fEnergyImpulsionLab_3 = TLorentzVector(p3*sin(ThetaLab),0,p3*cos(ThetaLab),EnergyLab+m3);
   fEnergyImpulsionLab_4 = fTotalEnergyImpulsionLab - fEnergyImpulsionLab_3;
 
-  fNuclei3.SetEnergyImpulsion(fEnergyImpulsionLab_3);
-  fNuclei4.SetEnergyImpulsion(fEnergyImpulsionLab_4);
+  fParticle3.SetEnergyImpulsion(fEnergyImpulsionLab_3);
+  fParticle4.SetEnergyImpulsion(fEnergyImpulsionLab_4);
 
   fThetaCM = EnergyLabToThetaCM(EnergyLab, ThetaLab);
   fExcitation4 = ReconstructRelativistic(EnergyLab, ThetaLab);
@@ -638,7 +638,7 @@ TGraph* Reaction::GetKinematicLine3(double AngleStep_CM){
   for (double angle=0 ; angle < 360 ; angle+=AngleStep_CM){
     SetThetaCM(angle*deg);
     KineRelativistic(theta3, E3, theta4, E4);
-    fNuclei3.SetKineticEnergy(E3);
+    fParticle3.SetKineticEnergy(E3);
 
     if(E3>0){
       vx.push_back(theta3/deg);
@@ -660,7 +660,7 @@ TGraph* Reaction::GetKinematicLine4(double AngleStep_CM){
   for (double angle=0 ; angle < 360 ; angle+=AngleStep_CM){
     SetThetaCM(angle*deg);
     KineRelativistic(theta3, E3, theta4, E4);
-    fNuclei4.SetKineticEnergy(E4);
+    fParticle4.SetKineticEnergy(E4);
     if(E4>0){
       vx.push_back(theta4/deg);
       vy.push_back(E4);
@@ -701,8 +701,8 @@ TGraph* Reaction::GetBrhoLine3(double AngleStep_CM){
   for (double angle=0 ; angle < 360 ; angle+=AngleStep_CM){
     SetThetaCM(angle*deg);
     KineRelativistic(theta3, E3, theta4, E4);
-    fNuclei3.SetKineticEnergy(E3);
-    Brho = fNuclei3.GetBrho();
+    fParticle3.SetKineticEnergy(E3);
+    Brho = fParticle3.GetBrho();
 
     vx.push_back(theta3/deg);
     vy.push_back(Brho);
@@ -772,11 +772,11 @@ void Reaction::PrintKinematic(){
     SetThetaCM(((double)i)/2*deg);
     KineRelativistic(theta3, E3, theta4, E4);
 
-    fNuclei3.SetKineticEnergy(E3);
-    Brho3 = fNuclei3.GetBrho();
+    fParticle3.SetKineticEnergy(E3);
+    Brho3 = fParticle3.GetBrho();
 
-    fNuclei4.SetKineticEnergy(E4);
-    Brho4 = fNuclei4.GetBrho();
+    fParticle4.SetKineticEnergy(E4);
+    Brho4 = fParticle4.GetBrho();
 
     cout << (double)i/2 << "	" << theta3/deg << "	" << E3 << "	" << Brho3 << "		" << E4 << "	" << Brho4 << endl;
   }
@@ -796,8 +796,8 @@ void Reaction::SetCSAngle(double CSHalfOpenAngleMin,double CSHalfOpenAngleMax){
 ///////////////////////////////////////////////////////////////////////////////
 // Check whenever the reaction is allowed at the given energy
 bool Reaction::IsAllowed(double Energy){
-  double AvailableEnergy = Energy + fNuclei1.Mass() + fNuclei2.Mass();
-  double RequiredEnergy  = fNuclei3.Mass() + fNuclei4.Mass();
+  double AvailableEnergy = Energy + fParticle1.Mass() + fParticle2.Mass();
+  double RequiredEnergy  = fParticle3.Mass() + fParticle4.Mass();
 
   if(AvailableEnergy>RequiredEnergy)
     return true;

@@ -42,7 +42,7 @@
 #include <string>
 
 // NPL
-#include "NPNucleus.h"
+#include "NPParticle.h"
 #include "NPBeam.h"
 #include "NPInputParser.h"
 using namespace NPL;
@@ -67,11 +67,11 @@ namespace NPL{
 
     private:
     int fVerboseLevel;
-    Beam     fNucleiA;                 // Beam (A)
-    Nucleus  fNucleiT;                 // Target (T)
-    Nucleus  fNucleiB;                 // Beam-like ejectile (B)
-    Nucleus  fNuclei1;                 // Target-like ejectile (1)
-    Nucleus  fNuclei2;                 // Knocked-out nucleon/cluster (2)
+    Beam     fParticleA;                 // Beam (A)
+    Particle  fParticleT;                 // Target (T)
+    Particle  fParticleB;                 // Beam-like ejectile (B)
+    Particle  fParticle1;                 // Target-like ejectile (1)
+    Particle  fParticle2;                 // Knocked-out nucleon/cluster (2)
     double   fQValue;                  // Q-value in MeV
     double   fEcm;                     // Ecm in MeV
     double   fThetaCM;                 // Center-of-mass theta angle in radian
@@ -94,7 +94,7 @@ namespace NPL{
     bool fshoot2; // shoot light ejectile 2
     
     public:
-    Nucleus GetNucleus(string name, NPL::InputParser parser);
+    Particle GetParticle(string name, NPL::InputParser parser);
     void ReadConfigurationFile(string Path);
     void ReadConfigurationFile(NPL::InputParser);
     void CalculateVariables();
@@ -173,15 +173,16 @@ namespace NPL{
         {delete fParMomentumHist; fParMomentumHist   = ParMomentumHist;}
 
     //GETTERS
-    Nucleus*  GetNucleusA()               {return &fNucleiA;}
-    Nucleus*  GetNucleusT()               {return &fNucleiT;}
-    Nucleus*  GetNucleusB()               {return &fNucleiB;}
-    Nucleus*  GetNucleus1()               {return &fNuclei1;}
-    Nucleus*  GetNucleus2()               {return &fNuclei2;}
+    Particle*  GetParticleA()               {return &fParticleA;}
+    Particle*  GetParticleT()               {return &fParticleT;}
+    Particle*  GetParticleB()               {return &fParticleB;}
+    Particle*  GetParticle1()               {return &fParticle1;}
+    Particle*  GetParticle2()               {return &fParticle2;}
     bool     GetShoot1()         const        {return fshoot1;}
     bool     GetShoot2()         const        {return fshoot2;}
     bool     GetShootB()         const        {return fshootB;}
     double   GetThetaCM()        const        {return fThetaCM;}
+    double   GetPhiCM()          const        {return fPhiCM;}
     double   GetMomentumSigma()  const        {return fMomentumSigma;}
     TVector3 GetInternalMomentum() const   {return fInternalMomentum;}
  

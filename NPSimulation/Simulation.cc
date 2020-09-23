@@ -47,7 +47,7 @@ int main(int argc, char** argv){
         cout << line << endl;
         cout << "NPSimulation version: npsimulation-"<< NPS::version_major <<"-" << NPS::version_minor << "-" << NPS::version_dets <<endl;
         cout << " Copyright: NPTool Collaboration "<<endl;
-        cout << " GitHub: http://github.com/adrien-matta/nptool"<<endl; ;
+        cout << " Gitlab: https://gitlab.in2p3.fr/np/nptool "<<endl; ;
         cout << line << endl;
     }
     
@@ -177,8 +177,8 @@ int main(int argc, char** argv){
     aFile->Append(".geant4_random_state");
     RootOutput::getInstance()->GetFile()->cd();
     aFile->Write(0,TAsciiFile::kOverwrite);
-    int dummy=0;
-    dummy= system("rm .geant4_random_state");
+    int dummy = system("rm .geant4_random_state");
+    dummy*=2;
     // delete primary; delete detector;
     
     delete runManager;

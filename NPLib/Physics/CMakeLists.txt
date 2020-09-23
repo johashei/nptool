@@ -1,4 +1,4 @@
-add_custom_command(OUTPUT NPNucleusDict.cxx COMMAND ${CMAKE_BINARY_DIR}/scripts/build_dict.sh NPNucleus.h NPNucleusDict.cxx NPNucleus.rootmap libNPPhysics.so NPNucleusLinkDef.h DEPENDS NPNucleus.h NPNucleusLinkDef.h) 
+add_custom_command(OUTPUT NPParticleDict.cxx COMMAND ${CMAKE_BINARY_DIR}/scripts/build_dict.sh NPParticle.h NPParticleDict.cxx NPParticle.rootmap libNPPhysics.so NPParticleLinkDef.h DEPENDS NPParticle.h NPParticleLinkDef.h) 
 
 add_custom_command(OUTPUT NPReactionDict.cxx COMMAND ${CMAKE_BINARY_DIR}/scripts/build_dict.sh NPReaction.h NPReactionDict.cxx NPReaction.rootmap libNPPhysics.so NPReactionLinkDef.h DEPENDS NPReaction.h NPReactionLinkDef.h) 
 
@@ -14,7 +14,7 @@ add_custom_command(OUTPUT TInteractionCoordinatesDict.cxx COMMAND ${CMAKE_BINARY
 
 add_custom_command(OUTPUT TReactionConditionsDict.cxx COMMAND ${CMAKE_BINARY_DIR}/scripts/build_dict.sh TReactionConditions.h TReactionConditionsDict.cxx TReactionConditions.rootmap libNPReactionConditions.so DEPENDS TReactionConditions.h)
 
-add_library(NPPhysics SHARED NPDecay.cxx NPBeam.cxx NPEnergyLoss.cxx NPFunction.cxx NPNucleus.cxx NPReaction.cxx NPQFS.cxx NPNucleusDict.cxx NPReactionDict.cxx NPQFSDict.cxx NPEnergyLossDict.cxx )
+add_library(NPPhysics SHARED NPDecay.cxx NPBeam.cxx NPEnergyLoss.cxx NPFunction.cxx NPParticle.cxx NPReaction.cxx NPQFS.cxx NPParticleDict.cxx NPReactionDict.cxx NPQFSDict.cxx NPEnergyLossDict.cxx )
 target_link_libraries(NPPhysics ${ROOT_LIBRARIES} Physics NPCore) 
 
 add_library(NPInitialConditions  SHARED  TInitialConditions.cxx TInitialConditionsDict.cxx )
@@ -26,5 +26,4 @@ target_link_libraries(NPInteractionCoordinates ${ROOT_LIBRARIES} )
 add_library(NPReactionConditions SHARED TReactionConditions.cxx TReactionConditionsDict.cxx)
 target_link_libraries(NPReactionConditions ${ROOT_LIBRARIES} ) 
 
-
-install(FILES NPDecay.h NPBeam.h NPEnergyLoss.h NPFunction.h NPNucleus.h NPReaction.h  NPQFS.h TInitialConditions.h TInteractionCoordinates.h TReactionConditions.h DESTINATION ${CMAKE_INCLUDE_OUTPUT_DIRECTORY})
+install(FILES NPDecay.h NPBeam.h NPEnergyLoss.h NPFunction.h NPParticle.h NPNucleus.h NPReaction.h  NPQFS.h TInitialConditions.h TInteractionCoordinates.h TReactionConditions.h DESTINATION ${CMAKE_INCLUDE_OUTPUT_DIRECTORY})
