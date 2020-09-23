@@ -88,12 +88,6 @@ namespace ChiNu_NS{
   // Lead shield
   const double Lead_Radius = 9*cm;
   const double Lead_Thickness = 2*mm;
-
-  // Fission Chamber
-  const string FCWall_Material = "CH2";
-  const double Cu_Thickness = 17*micrometer;
- // const double Al_Thickness = 12*micrometer;
-  const double Kapton_Thickness = 50*micrometer;
 }
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -110,8 +104,6 @@ ChiNu::ChiNu(){
 
   m_BuildLeadShield = 0;
 
-  m_FissionChamberWall = 0;
-  m_FissionChamberVolume = 0;
 
   // RGB Color + Transparency
   m_VisCylinder = new G4VisAttributes(G4Colour(0.0, 0.5, 1, 1));   
@@ -143,178 +135,7 @@ void ChiNu::AddDetector(double  R, double  Theta, double  Phi){
   m_Theta.push_back(Theta);
   m_Phi.push_back(Phi);
 }
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-G4AssemblyVolume* ChiNu::BuildFissionChamber(){
-  if(!m_FissionChamberVolume){
-    m_FissionChamberVolume = new G4AssemblyVolume();
-    
-    G4RotationMatrix *Rv=new G4RotationMatrix(0,0,0);
-    G4ThreeVector Tv;
-    Tv.setX(0); Tv.setY(0); Tv.setZ(0);
-
-    // Bottom PCB plate //
-    double PCB_width = 18.*cm;
-    double PCB_length = 33.*cm;
-    double PCB_Rogers_height = 1.6*mm;
-    double PCB_Cu_height = 6*35.*um;
-    double PCB_PosY = -8.5*cm; 
-    // Cu layers
-    G4Box* PCB_Cu_solid = new G4Box("PCB_Cu_solid",0.5*PCB_width,0.5*PCB_Cu_height,0.5*PCB_length); 
-    G4Material* Cu_material = MaterialManager::getInstance()->GetMaterialFromLibrary("Cu");
-    G4LogicalVolume* PCB_Cu_vol = new G4LogicalVolume(PCB_Cu_solid, Cu_material,"PCB_Cu_logic",0,0,0);
-    PCB_Cu_vol->SetVisAttributes(m_VisCu);
-    Tv.setY(PCB_PosY);
-    m_FissionChamberVolume->AddPlacedVolume(PCB_Cu_vol, Tv, Rv);
-
-    // Rogers 4003C layers
-    G4Box* PCB_Rogers_solid = new G4Box("PCB_Rogers_solid",0.5*PCB_width,0.5*PCB_Rogers_height,0.5*PCB_length); 
-    G4Material* Rogers_material = MaterialManager::getInstance()->GetMaterialFromLibrary("Rogers4003C");
-    G4LogicalVolume* PCB_Rogers_vol = new G4LogicalVolume(PCB_Rogers_solid, Rogers_material,"PCB_Rogers_logic",0,0,0);
-    PCB_Rogers_vol->SetVisAttributes(m_VisRogers4003C);
-    Tv.setY(PCB_PosY + 0.5*PCB_Cu_height + 0.5*PCB_Rogers_height);
-    m_FissionChamberVolume->AddPlacedVolume(PCB_Rogers_vol, Tv, Rv);
-
-    //Al frame //
-    double frame1_width = 18.*cm;
-    double frame1_height = 5.*mm;
-    double frame1_length = 33.*cm;
-    double frame2_width = 15.2*cm;
-    double frame2_height = 5.1*mm;
-    double frame2_length = 30.2*cm;
-
-    G4Box* frame1 = new G4Box("frame1", 0.5*frame1_width, 0.5*frame1_height, 0.5*frame1_length);
-    G4Box* frame2 = new G4Box("frame2", 0.5*frame2_width, 0.5*frame2_height, 0.5*frame2_length);
-    G4VSolid* Al_frame = (G4VSolid*) new G4SubtractionSolid("Al_frame",frame1,frame2,0,G4ThreeVector(0,0,0));
-    G4Material* Al_material = MaterialManager::getInstance()->GetMaterialFromLibrary("Al");
-    G4LogicalVolume* Al_frame_vol = new G4LogicalVolume(Al_frame,Al_material,"Al_frame_logic",0,0,0);
-    Al_frame_vol->SetVisAttributes(m_VisAl);
-    Tv.setY(PCB_PosY+ 0.5*PCB_Cu_height + PCB_Rogers_height + 0.5*frame1_height);
-    m_FissionChamberVolume->AddPlacedVolume(Al_frame_vol, Tv, Rv);
-    Tv.setY(PCB_PosY- 0.5*PCB_Cu_height - 0.5*frame1_height);
-    m_FissionChamberVolume->AddPlacedVolume(Al_frame_vol, Tv, Rv);
-    
-    double box1_width = 15.*cm;
-    double box1_height = 16.*cm;
-    double box1_length = 30.*cm;
-    double box2_width = 14.8*cm;
-    double box2_height = 15.8*cm;
-    double box2_length = 29.8*cm;
-    double box3_width = 12.5*cm;
-    double box3_height = 11.7*cm;
-    double box3_length = 30.1*cm;
-    double box4_width = 15.1*cm;
-    double box4_height = 11.8*cm;
-    double box4_length = 27.4*cm;
-    double box5_width = 12.4*cm;
-    double box5_height = 16.1*cm;
-    double box5_length = 27.4*cm;
-
-    G4Box* box1 = new G4Box("box1", 0.5*box1_width, 0.5*box1_height, 0.5*box1_length);
-    G4Box* box2 = new G4Box("box2", 0.5*box2_width, 0.5*box2_height, 0.5*box2_length);
-    G4Box* box3 = new G4Box("box3", 0.5*box3_width, 0.5*box3_height, 0.5*box3_length);
-    G4Box* box4 = new G4Box("box4", 0.5*box4_width, 0.5*box4_height, 0.5*box4_length);
-    G4Box* box5 = new G4Box("box5", 0.5*box5_width, 0.5*box5_height, 0.5*box5_length);
-
-    G4VSolid* box_int1 = (G4VSolid*) new G4SubtractionSolid("box_int1",box1,box2,0,G4ThreeVector(0,0,0));
-    G4VSolid* box_int2 = (G4VSolid*) new G4SubtractionSolid("box_int2",box_int1,box3,0,G4ThreeVector(0,0,0));
-    G4VSolid* box_int3 = (G4VSolid*) new G4SubtractionSolid("box_int3",box_int2,box4,0,G4ThreeVector(0,0,0));
-    G4VSolid* box_int4 = (G4VSolid*) new G4SubtractionSolid("box_int4",box_int3,box5,0,G4ThreeVector(0,0,0));
-
-    G4LogicalVolume* full_box_vol = new G4LogicalVolume(box_int4, Al_material, "full_box_logic", 0,0,0);
-    full_box_vol->SetVisAttributes(m_VisAl);
-    Tv.setY(0);
-    m_FissionChamberVolume->AddPlacedVolume(full_box_vol, Tv, Rv);
-
-    // Ti foils //
-    double foil1_width = 13*cm;
-    double foil1_length = 29*cm;
-    double foil1_thickness = 100*um;
-    double foil2_width = 13*cm;
-    double foil2_height = 14*cm;
-    double foil2_thickness = 50*um;
-
-    G4Material* Ti_material = MaterialManager::getInstance()->GetMaterialFromLibrary("Ti");
-    G4Box* foil1_solid = new G4Box("foil1", 0.5*foil1_width, 0.5*foil1_thickness, 0.5*foil1_length);
-    G4LogicalVolume* foil1_vol = new G4LogicalVolume(foil1_solid, Ti_material, "foil1_logic", 0, 0, 0);
-    foil1_vol->SetVisAttributes(m_VisTi);
-    Tv.setY(0.5*box2_height);
-    m_FissionChamberVolume->AddPlacedVolume(foil1_vol, Tv, Rv);
-    Tv.setY(0);
-    Tv.setX(-0.5*box2_width);
-    Rv->rotateZ(90*deg);
-    m_FissionChamberVolume->AddPlacedVolume(foil1_vol, Tv, Rv);
-    Tv.setX(0.5*box2_width);
-    m_FissionChamberVolume->AddPlacedVolume(foil1_vol, Tv, Rv);
-
-    G4Box* foil2_solid = new G4Box("foil2", 0.5*foil2_width, 0.5*foil2_height, 0.5*foil2_thickness);
-    G4LogicalVolume* foil2_vol = new G4LogicalVolume(foil2_solid, Ti_material, "foil2_logic", 0, 0, 0); 
-    foil2_vol->SetVisAttributes(m_VisTi);
-    Tv.setX(0);Tv.setY(0);Tv.setZ(-0.5*box2_length);
-    m_FissionChamberVolume->AddPlacedVolume(foil2_vol, Tv, Rv);
-    Tv.setZ(0.5*box2_length);
-    m_FissionChamberVolume->AddPlacedVolume(foil2_vol, Tv, Rv);
-
-    // Cathode and Anode //
-    BuildCathode(-27.5);
-    double origine_anode = -25*mm;
-    double origine_cathode = -22.5*mm;
-    for(int i=0; i<11; i++){
-	BuildAnode(origine_anode+i*5*mm); 
-    }
-    for(int i=0; i<10; i++){
-	BuildCathode(origine_cathode+i*5*mm);
-    }
-    BuildCathode(27.5);
-
-
-  }
-  return m_FissionChamberVolume;
-} 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-void ChiNu::BuildCathode(double Zpos){
-    // Al plate: 12 um
-    G4Tubs* Al_plate_solid = new G4Tubs("Al_plate",0,40*mm,12*micrometer,0,360*deg);
-    G4Material* Al_material = MaterialManager::getInstance()->GetMaterialFromLibrary("Al");
-    G4LogicalVolume* Al_vol = new G4LogicalVolume(Al_plate_solid, Al_material,"logic_Al",0,0,0);
-    Al_vol->SetVisAttributes(m_VisAl);
-     
-    G4RotationMatrix *Rv=new G4RotationMatrix(0,0,0);
-    G4ThreeVector Tv;
-    Tv.setX(0); Tv.setY(0); Tv.setZ(0);
-
-    Tv.setZ(Zpos);
-    m_FissionChamberVolume->AddPlacedVolume(Al_vol, Tv, Rv);
-    
-} 
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-void ChiNu::BuildAnode(double Zpos){
-    // Cu plate: 17 um
-    G4Tubs* Cu_plate_solid = new G4Tubs("Cu_plate",0,40*mm,0.5*ChiNu_NS::Cu_Thickness,0,360*deg);
-    G4Material* Cu_material = MaterialManager::getInstance()->GetMaterialFromLibrary("Cu");
-    G4LogicalVolume* Cu_vol = new G4LogicalVolume(Cu_plate_solid, Cu_material,"logic_Cu",0,0,0);
-    Cu_vol->SetVisAttributes(m_VisCu);
-   
-    // Kapton: 50 um
-    G4Tubs* Kapton_solid = new G4Tubs("Kapton",0,40*mm,0.5*ChiNu_NS::Kapton_Thickness,0,360*deg);
-    G4Material* Kapton_material = MaterialManager::getInstance()->GetMaterialFromLibrary("Kapton");
-    G4LogicalVolume* Kapton_vol = new G4LogicalVolume(Kapton_solid, Kapton_material,"logic_Kapton",0,0,0);
-    Kapton_vol->SetVisAttributes(m_VisFCWall);
-    
-    G4RotationMatrix *Rv=new G4RotationMatrix(0,0,0);
-    G4ThreeVector Tv;
-    Tv.setX(0); Tv.setY(0); Tv.setZ(0);
-
-    Tv.setZ(Zpos);
-    m_FissionChamberVolume->AddPlacedVolume(Kapton_vol, Tv, Rv);
-    Tv.setZ(Zpos-0.5*ChiNu_NS::Kapton_Thickness-0.5*ChiNu_NS::Cu_Thickness);
-    m_FissionChamberVolume->AddPlacedVolume(Cu_vol, Tv, Rv);
-    Tv.setZ(Zpos+0.5*ChiNu_NS::Kapton_Thickness+0.5*ChiNu_NS::Cu_Thickness);
-    m_FissionChamberVolume->AddPlacedVolume(Cu_vol, Tv, Rv);
-
-
-} 
+ 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 G4AssemblyVolume* ChiNu::BuildDetector(){
   if(!m_CylindricalDetector){
@@ -422,7 +243,7 @@ void ChiNu::ReadConfiguration(NPL::InputParser parser){
 void ChiNu::ConstructDetector(G4LogicalVolume* world){
  
   G4Material* Air = MaterialManager::getInstance()->GetMaterialFromLibrary("Air");
-  //world->SetMaterial(Air);
+  world->SetMaterial(Air);
 
   for (unsigned short i = 0 ; i < m_R.size() ; i++) {
 
@@ -446,12 +267,6 @@ void ChiNu::ConstructDetector(G4LogicalVolume* world){
     G4RotationMatrix* Rot = new G4RotationMatrix(u,v,w);
     BuildDetector()->MakeImprint(world,Det_pos,Rot,i);
   }
-
-  G4RotationMatrix* Rot_FC = new G4RotationMatrix(0,0,0);
-  G4ThreeVector Pos_FC = G4ThreeVector(0,0,0) ;
-  //BuildFissionChamber()->MakeImprint(world,Pos_FC,Rot_FC,0);
-
-
 }
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 // Add Detector branch to the EventTree.

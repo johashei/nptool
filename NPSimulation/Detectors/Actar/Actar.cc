@@ -152,7 +152,11 @@ Actar::Actar(){
     m_ReactionRegion=NULL;
     // Lookup table //
    // bool ReadingLookupTable = false;
-    string LT_FileName = "./Detectors/Actar/LT.dat";
+    // Opening the LookUp Table LT.dat
+    G4String GlobalPath = getenv("NPTOOL");
+    G4String LT_FileName = GlobalPath + "/NPSimulation/Detectors/Actar/LT.dat";
+    //string LT_FileName = "./Detectors/Actar/LT.dat";
+    //string LT_FileName = "./configs/LT.dat";
     ifstream LTConfigFile;
     LTConfigFile.open(LT_FileName.c_str());
     if(!LTConfigFile.is_open()){
@@ -274,7 +278,7 @@ G4LogicalVolume* Actar::BuildDetector(){
         MPT->AddConstProperty("DE_ABSLENGTH",1*pc);
         MPT->AddConstProperty("DE_DRIFTSPEED",0.8*cm/microsecond);
         MPT->AddConstProperty("DE_TRANSVERSALSPREAD",2e-5*mm2/ns);
-        MPT->AddConstProperty("DE_LONGITUDINALSPREAD",7e-5*mm2/ns);
+        MPT->AddConstProperty("DE_LONGITUDINALSPREAD",4e-6*mm2/ns);
 
         DriftGasMaterial->SetMaterialPropertiesTable(MPT);
 
@@ -655,6 +659,7 @@ void Actar::ReadSensitive(const G4Event*){
         DataReduced.clear();
         double Count = RandGauss::shoot(PadScorer->GetCharge(i),Actar_NS::ResoCharge*PadScorer->GetCharge(i));
         double Time =  PadScorer->GetTime(i);//RandGauss::shoot(Info[1],Actar_NS::ResoTime);
+        //cout << "Time= " << Time << endl;
         //int iTime = ((int) Time*20/512)+1;
         //int PadNbr = Info[7];
         int Pad_X = PadScorer->GetPadX(i);//m_PadToXRow[PadNbr];
@@ -664,7 +669,7 @@ void Actar::ReadSensitive(const G4Event*){
         int as = m_PadToAsad[Pad_X][Pad_Y];
         int ag = m_PadToAGET[Pad_X][Pad_Y];
         int ch = m_PadToChannel[Pad_X][Pad_Y];
-
+        
         if(Count>Actar_NS::ChargeThreshold){
             DataReduced.globalchannelid = ch+(ag<<7)+(as<<9)+(co<<11);
             DataReduced.peakheight.push_back(Count);
@@ -672,7 +677,7 @@ void Actar::ReadSensitive(const G4Event*){
         }
         m_EventReduced->CoboAsad.push_back(DataReduced);
     }
-
+    
     /*vector<double> Q, T;
      for(int i=0; i<h->GetNbinsX(); i++){
      double count = h->GetBinContent(i);

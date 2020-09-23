@@ -78,7 +78,6 @@ void Analysis::TreatEvent(){
     
     TVector3 vX = TVector3(1,0,0);
     TVector3 aTrack, vB;
-    
     if(TrackMult>1){
         vTrack = Actar->GetTracks();
         double scalarproduct=0;
@@ -106,7 +105,8 @@ void Analysis::TreatEvent(){
         double ZBeamPoint = vTrack[BeamTrack].GetZh();
         TVector3 vBeamPos = TVector3(XBeamPoint,YBeamPoint,ZBeamPoint);
         
-        vB = TVector3(XBeam*PadSizeX, YBeam*PadSizeY,ZBeam*DriftVelocity);
+        //vB = TVector3(XBeam*PadSizeX, YBeam*PadSizeY,ZBeam*DriftVelocity);
+        vB = TVector3(XBeam*PadSizeX, YBeam*PadSizeY,ZBeam);
         BeamAngle = (vX.Angle(vB))*180/TMath::Pi();
         
         for(unsigned int i=0; i<TrackMult; i++){
@@ -117,9 +117,11 @@ void Analysis::TreatEvent(){
                 
                 double vertex_x = vTrack[i].GetVertexPostion(vBeam,vBeamPos).X()*PadSizeX;
                 double vertex_y = vTrack[i].GetVertexPostion(vBeam,vBeamPos).Y()*PadSizeY;
-                double vertex_z = vTrack[i].GetVertexPostion(vBeam,vBeamPos).Z()*DriftVelocity;
+                //double vertex_z = vTrack[i].GetVertexPostion(vBeam,vBeamPos).Z()*DriftVelocity;
+                double vertex_z = vTrack[i].GetVertexPostion(vBeam,vBeamPos).Z();
                 
-                aTrack = TVector3(Xdir*PadSizeX, Ydir*PadSizeY, Zdir*DriftVelocity);
+                //aTrack = TVector3(Xdir*PadSizeX, Ydir*PadSizeY, Zdir*DriftVelocity);
+                aTrack = TVector3(Xdir*PadSizeX, Ydir*PadSizeY, Zdir);
                 double angle = vX.Angle(aTrack)*180/TMath::Pi();
                 //double angle = vB.Angle(aTrack)*180/TMath::Pi();
                 if(angle>90) angle = 180-angle;
@@ -130,8 +132,10 @@ void Analysis::TreatEvent(){
                 double y2 = vTrack[i].GetYh()*PadSizeY-0.5*NumberOfPadsY*PadSizeY;
                 //double z1 = -(vTrack[i].GetZm()-256)*DriftVelocity;
                 //double z2 = -(vTrack[i].GetZh()-256)*DriftVelocity;
-                double z1 = vTrack[i].GetZm()*DriftVelocity;
-                double z2 = vTrack[i].GetZh()*DriftVelocity;
+                //double z1 = vTrack[i].GetZm()*DriftVelocity;
+                double z1 = vTrack[i].GetZm();
+                //double z2 = vTrack[i].GetZh()*DriftVelocity;
+                double z2 = vTrack[i].GetZh();
                 
                 
                 if(vertex_x>0 && vertex_x<256){

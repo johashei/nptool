@@ -121,7 +121,7 @@ G4LogicalVolume* PISTA::BuildTrapezoidDetector(){
         "PISTA",
         0,0,0);
 
-    G4VisAttributes* TrapezoidVisAtt = new G4VisAttributes(G4Colour(0.2, 0.80, 0.50));
+    G4VisAttributes* TrapezoidVisAtt = new G4VisAttributes(G4Colour(0,0,0,0.5));
     TrapezoidVisAtt->SetForceWireframe(true);
     logicTrapezoid->SetVisAttributes(TrapezoidVisAtt);
 
@@ -147,7 +147,8 @@ G4LogicalVolume* PISTA::BuildTrapezoidDetector(){
     logicFirstStage->SetSensitiveDetector(m_FirstStageScorer);
 
     // Visualisation of First Stage strips
-    G4VisAttributes* FirstStageVisAtt = new G4VisAttributes(G4Colour(0.2,0.8,0.5));
+    //G4VisAttributes* FirstStageVisAtt = new G4VisAttributes(G4Colour(0.2,0.8,0.5));
+    G4VisAttributes* FirstStageVisAtt = new G4VisAttributes(G4Colour(0.5,0.5,0.55,0.8));
     logicFirstStage->SetVisAttributes(FirstStageVisAtt);
 
     //////
@@ -173,7 +174,7 @@ G4LogicalVolume* PISTA::BuildTrapezoidDetector(){
     logicSecondStage->SetSensitiveDetector(m_SecondStageScorer);
 
     // Visualisation of Second Stage strips
-    G4VisAttributes* SecondStageVisAtt = new G4VisAttributes(G4Colour(0.2,0.8,0.5));
+    G4VisAttributes* SecondStageVisAtt = new G4VisAttributes(G4Colour(0.5,0.5,0.5));
     logicSecondStage->SetVisAttributes(SecondStageVisAtt);
 
 

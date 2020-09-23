@@ -1,7 +1,7 @@
 ConfigActar
-RecoRansac= 0
-RecoCluster= 1
-RecoVisu= 0
+RecoRansac= 1
+RecoCluster= 0 
+RecoVisu= 1
 HIT_THRESHOLD= 2
 Q_THRESHOLD= 0
 T_THRESHOLD= 0
@@ -17,4 +17,4 @@ Gas= iC4H10
 %Gas= D2
 %Pressure in mbar
 Pressure= 100
-DriftVelocity= 2.66
+DriftVelocity= 0.8e-2

@@ -17,7 +17,7 @@ void LoadCut()
 void LoadChain()
 {
   chain = new TChain("PhysicsTree");
-  chain->Add("../../Outputs/Analysis/Example4.root");
+  chain->Add("../../../Outputs/Analysis/Example4.root");
 }
 
 ////////////////////////////////////////////////
