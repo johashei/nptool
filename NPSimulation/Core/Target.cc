@@ -51,6 +51,7 @@ using namespace CLHEP ;
 #include "Target.hh"
 #include "MaterialManager.hh"
 #include "Decay.hh"
+#include "FissionDecay.hh"
 // NPL
 #include "NPOptionManager.h"
 #include "NPInputParser.h"
@@ -465,6 +466,9 @@ void Target::SetReactionRegion(){
   m_ReactionModel.push_back(fsm); 
   fsm = new NPS::Decay("Decay",m_ReactionRegion);
   m_ReactionModel.push_back(fsm); 
+  fsm = new NPS::FissionDecay("FissionDecay",m_ReactionRegion);
+  m_ReactionModel.push_back(fsm); 
+
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
