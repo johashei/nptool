@@ -42,6 +42,7 @@
 
 // NPTool header
 #include "Plastic.hh"
+#include "CalorimeterScorers.hh"
 #include "ObsoleteGeneralScorers.hh"
 #include "RootOutput.h"
 #include "MaterialManager.hh"
@@ -59,7 +60,8 @@ using namespace CLHEP;
 namespace PLASTIC{
   // Energy and time Resolution
   const G4double ResoTime    = 1.         ;// Resolution in ns  //
-  const G4double ResoEnergy  = 0.1         ;// Resolution in %
+  //const G4double ResoEnergy  = 0.1         ;// Resolution in %
+  const G4double ResoEnergy  = 1*keV;         // Resolution 
 }
 
 using namespace PLASTIC ;
@@ -341,6 +343,17 @@ void Plastic::ReadSensitive(const G4Event* event){
   G4String DetectorNumber;
   m_Event->Clear();
 
+  CalorimeterScorers::PS_Calorimeter* Scorer = (CalorimeterScorers::PS_Calorimeter*) m_PlasticScorer->GetPrimitive(0);
+
+  unsigned int size = Scorer->GetMult();
+  for(unsigned int i=0; i<size; i++){
+    double Energy = RandGauss::shoot(Scorer->GetEnergy(i), ResoEnergy);
+    double Time = RandGauss::shoot(Scorer->GetTime(i), ResoTime);
+    int DetectorNbr = Scorer->GetLevel(i)[0];
+    m_Event->SetEnergyAndTime(DetectorNbr,Energy,Time);
+  }  
+
+  /*
   //////////////////////////////////////////////////////////////////////////////////////
   //////////////////////// Used to Read Event Map of detector //////////////////////////
   //////////////////////////////////////////////////////////////////////////////////////
@@ -386,45 +399,46 @@ void Plastic::ReadSensitive(const G4Event* event){
 
   // Loop on Plastic Number
   for (G4int l = 0 ; l < sizeN ; l++) {
-    G4int N     =      *(DetectorNumber_itr->second);
-    G4int NTrackID  =   DetectorNumber_itr->first - N;
-      if (N > 0) {
-      det.push_back(N);
-      //  Energy
-      Energy_itr = EnergyHitMap->GetMap()->begin();
-      for (G4int h = 0 ; h < sizeE ; h++) {
-        G4int ETrackID  =   Energy_itr->first - N;
-        G4double E     = *(Energy_itr->second);
-        if (ETrackID == NTrackID) {
-          energy.push_back(RandGauss::shoot(E, E*ResoEnergy/100./2.35))    ;
-        }
-        Energy_itr++;
-      }
-
-
-      //  Time
-      Time_itr = TimeHitMap->GetMap()->begin();
-      for (G4int h = 0 ; h < sizeT ; h++) {
-        G4int TTrackID  =   Time_itr->first - N;
-        G4double T     = *(Time_itr->second);
-      if (TTrackID == NTrackID) {
-          time.push_back(RandGauss::shoot(T, ResoTime));
-      } 
-        Time_itr++;
-      }
-    }
-    DetectorNumber_itr++;
+  G4int N     =      *(DetectorNumber_itr->second);
+  G4int NTrackID  =   DetectorNumber_itr->first - N;
+  if (N > 0) {
+  det.push_back(N);
+  //  Energy
+  Energy_itr = EnergyHitMap->GetMap()->begin();
+  for (G4int h = 0 ; h < sizeE ; h++) {
+  G4int ETrackID  =   Energy_itr->first - N;
+  G4double E     = *(Energy_itr->second);
+  if (ETrackID == NTrackID) {
+  //energy.push_back(RandGauss::shoot(E, E*ResoEnergy/100./2.35))    ;
+  energy.push_back(RandGauss::shoot(E, ResoEnergy))    ;
   }
- unsigned int size=energy.size();
- for(unsigned int i = 0 ; i < size ; i++){
-   m_Event->SetEnergyAndTime(det[i],energy[i],time[i]);
-   }
+  Energy_itr++;
+  }
 
 
-  // clear map for next event
-  TimeHitMap->clear();
-  DetectorNumberHitMap->clear();
-  EnergyHitMap->clear();
+  //  Time
+  Time_itr = TimeHitMap->GetMap()->begin();
+  for (G4int h = 0 ; h < sizeT ; h++) {
+  G4int TTrackID  =   Time_itr->first - N;
+  G4double T     = *(Time_itr->second);
+  if (TTrackID == NTrackID) {
+  time.push_back(RandGauss::shoot(T, ResoTime));
+  } 
+  Time_itr++;
+}
+}
+DetectorNumber_itr++;
+}
+unsigned int size=energy.size();
+for(unsigned int i = 0 ; i < size ; i++){
+  m_Event->SetEnergyAndTime(det[i],energy[i],time[i]);
+}
+
+
+// clear map for next event
+TimeHitMap->clear();
+DetectorNumberHitMap->clear();
+EnergyHitMap->clear();*/
 }
 
 
@@ -434,13 +448,19 @@ void Plastic::InitializeScorers() {
   m_PlasticScorer = CheckScorer("PlasticScorer",already_exist) ;
 
   if(already_exist) return ;
-  G4VPrimitiveScorer* DetNbr = new PSDetectorNumber("PlasticNumber","Plastic", 0);
-  G4VPrimitiveScorer* Energy = new PSEnergy("Energy","Plastic", 0);
-  G4VPrimitiveScorer* Time   = new PSTOF("Time","Plastic", 0);
+
+  vector<int> level; level.push_back(1);
+  G4VPrimitiveScorer* Calorimeter = new CalorimeterScorers::PS_Calorimeter("Plastic",level, 0);
+  m_PlasticScorer->RegisterPrimitive(Calorimeter);
+
+  /*G4VPrimitiveScorer* DetNbr = new PSDetectorNumber("PlasticNumber","Plastic", 0);
+    G4VPrimitiveScorer* Energy = new PSEnergy("Energy","Plastic", 0);
+    G4VPrimitiveScorer* Time   = new PSTOF("Time","Plastic", 0);
   //and register it to the multifunctionnal detector
   m_PlasticScorer->RegisterPrimitive(DetNbr);
   m_PlasticScorer->RegisterPrimitive(Energy);
-  m_PlasticScorer->RegisterPrimitive(Time);
+  m_PlasticScorer->RegisterPrimitive(Time);*/
+
   G4SDManager::GetSDMpointer()->AddNewDetector(m_PlasticScorer);
 }
 ////////////////////////////////////////////////////////////////
