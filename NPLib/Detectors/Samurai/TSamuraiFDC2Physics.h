@@ -24,6 +24,7 @@
  *****************************************************************************/
 // STL
 #include <vector>
+#include <map>
 
 // NPL
 #include "TSamuraiFDC2Data.h"
@@ -31,6 +32,7 @@
 #include "NPCalibrationManager.h"
 #include "NPVDetector.h"
 #include "NPInputParser.h"
+#include "NPXmlParser.h"
 // ROOT 
 #include "TVector2.h" 
 #include "TVector3.h" 
@@ -42,6 +44,37 @@
 
 
 using namespace std ;
+// little class to index each of the DC wire
+class SamuraiDCIndex{
+  public:
+   SamuraiDCIndex(){};  
+   ~SamuraiDCIndex(){};  
+   SamuraiDCIndex(unsigned int det, unsigned int layer, unsigned int wire){
+     m_det=det;
+     m_layer=layer;
+     m_wire=wire;
+     m_norme=Norme();
+   };  
+  
+  unsigned int m_det;
+  unsigned int m_layer;
+  unsigned int m_wire;
+  unsigned int m_norme;
+    
+  int Norme() const {return (m_det*1000000000+m_layer*1000000+m_wire);} ;
+  bool operator<(const SamuraiDCIndex i2){
+    return this->Norme()<i2.Norme();
+    }
+  
+  friend bool operator<(const SamuraiDCIndex i1,const SamuraiDCIndex i2){
+    return i1.Norme()<i2.Norme();
+    }
+  
+  friend bool operator==(const SamuraiDCIndex i1,const SamuraiDCIndex i2){
+   return i1.Norme()==i2.Norme();
+   }
+  };
+
 
 class TSamuraiFDC2Physics : public TObject, public NPL::VDetector{
   public:
@@ -59,7 +92,7 @@ class TSamuraiFDC2Physics : public TObject, public NPL::VDetector{
     vector<int> Wire;
     vector<double> Time;
     vector<double> ToT;
-
+    vector<bool>   Matched;
     // Computed variable
     vector<TVector3> ParticleDirection;
     vector<TVector3> MiddlePosition;
@@ -67,6 +100,19 @@ class TSamuraiFDC2Physics : public TObject, public NPL::VDetector{
   public:
     // Projected position at given Z plan
     TVector3 ProjectedPosition(double Z);
+
+  private: // Charateristic of the DC 
+    void AddDC(string name, NPL::XmlParser&);//! take the XML file and fill in Wire_X and Layer_Angle
+    map<SamuraiDCIndex,double> Wire_X;//! X position of the wires
+    map<SamuraiDCIndex,double> Wire_Z;//! Z position of the wires
+    map<SamuraiDCIndex,double> Wire_T;//! Wire Angle (0 for X, 90 for Y, U and V are typically at +/-30)
+  
+  private: // Analysis
+    double ToTThreshold;//! a ToT threshold to remove noise
+    void RemoveNoise();
+    // Construct the 2D track and ref position at Z=0 based on X,Z and Radius provided
+    void Track2D(const vector<double>& X,const vector<double>& Z,const vector<double>& R,double& dirX, double& dirZ,double& refX )
+
 
   public: //   Innherited from VDetector Class
 

@@ -1,0 +1,23 @@
+TTreeName 
+	AutoTree
+RootFileName 
+ /data/Transfert/e748/root/run_0315_*.root
+ /data/Transfert/e748/root/run_0316_*.root
+ /data/Transfert/e748/root/run_0317_*.root
+ /data/Transfert/e748/root/run_0318_*.root
+ /data/Transfert/e748/root/run_0320_*.root
+ /data/Transfert/e748/root/run_0321_*.root
+ /data/Transfert/e748/root/run_0323_*.root
+ /data/Transfert/e748/root/run_0325_*.root
+ /data/Transfert/e748/root/run_0326_*.root
+ /data/Transfert/e748/root/run_0327_*.root
+ /data/Transfert/e748/root/run_0328_*.root
+ /data/Transfert/e748/root/run_0329_*.root
+ /data/Transfert/e748/root/run_0330_*.root
+ /data/Transfert/e748/root/run_0331_*.root
+ /data/Transfert/e748/root/run_0339_*.root
+ /data/Transfert/e748/root/run_0341_*.root
+ /data/Transfert/e748/root/run_0342_*.root
+ /data/Transfert/e748/root/run_0346_*.root
+ /data/Transfert/e748/root/run_0347_*.root
+ /data/Transfert/e748/root/run_0348_*.root

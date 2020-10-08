@@ -1,0 +1,4 @@
+TTreeName 
+	AutoTree
+RootFileName 
+ /data/Transfert/e748/root/run_1003_*.root
