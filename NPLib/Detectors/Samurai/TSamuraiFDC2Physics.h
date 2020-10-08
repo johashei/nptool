@@ -111,7 +111,7 @@ class TSamuraiFDC2Physics : public TObject, public NPL::VDetector{
     double ToTThreshold;//! a ToT threshold to remove noise
     void RemoveNoise();
     // Construct the 2D track and ref position at Z=0 based on X,Z and Radius provided
-    void Track2D(const vector<double>& X,const vector<double>& Z,const vector<double>& R,double& dirX, double& dirZ,double& refX )
+    void Track2D(const vector<double>& X,const vector<double>& Z,const vector<double>& R,double& dirX, double& dirZ,double& refX );
 
 
   public: //   Innherited from VDetector Class
