@@ -87,6 +87,7 @@ class TSamuraiFDC2Physics : public TObject, public NPL::VDetector{
 
   public:
     //   Provide Physical Multiplicity
+    vector<double> DriftLength;
     vector<int> Detector;
     vector<int> Layer;
     vector<int> Wire;
@@ -97,6 +98,7 @@ class TSamuraiFDC2Physics : public TObject, public NPL::VDetector{
     vector<TVector3> ParticleDirection;
     vector<TVector3> MiddlePosition;
 
+    double PosX;
   public:
     // Projected position at given Z plan
     TVector3 ProjectedPosition(double Z);
@@ -113,6 +115,10 @@ class TSamuraiFDC2Physics : public TObject, public NPL::VDetector{
     // Construct the 2D track and ref position at Z=0 based on X,Z and Radius provided
     void Track2D(const vector<double>& X,const vector<double>& Z,const vector<double>& R,double& dirX, double& dirZ,double& refX );
 
+    double SumD(const double* parameter );
+    vector<double> fitX;
+    vector<double> fitZ;
+    vector<double> fitR;
 
   public: //   Innherited from VDetector Class
 

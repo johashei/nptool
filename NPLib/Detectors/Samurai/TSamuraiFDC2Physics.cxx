@@ -36,6 +36,10 @@
 #include "NPSystemOfUnits.h"
 //   ROOT
 #include "TChain.h"
+#include "TVector2.h"
+#include "Math/Minimizer.h"
+#include "Math/Functor.h"
+#include "Math/Factory.h"
 using namespace NPUNITS;
 ///////////////////////////////////////////////////////////////////////////
 
@@ -46,7 +50,7 @@ ClassImp(TSamuraiFDC2Physics)
     m_PreTreatedData    = new TSamuraiFDC2Data ;
     m_EventPhysics      = this ;
     //m_Spectra           = NULL;
-    ToTThreshold = 0;
+    ToTThreshold = 100;
   }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -58,16 +62,30 @@ void TSamuraiFDC2Physics::BuildSimplePhysicalEvent(){
 void TSamuraiFDC2Physics::BuildPhysicalEvent(){
   PreTreat();
   RemoveNoise();
- 
-  // one map per detector
-  map<unsigned int, vector<double> > X ; 
-  map<unsigned int, vector<double> > Z ; 
-  map<unsigned int, vector<double> > R ; 
 
+  // Map[detector & plane angle, vector of spatial information]
+  map<std::pair<unsigned int,double>, vector<double> > X ; 
+  map<std::pair<unsigned int,double>, vector<double> > Z ; 
+  map<std::pair<unsigned int,double>, vector<double> > R ; 
   unsigned int size = Detector.size();
   for(unsigned int i = 0 ; i < size ; i++){
-      
-    
+    if(Matched[i]){
+      int det = Detector[i];
+      int layer = Layer[i];
+      int wire = Wire[i]; 
+      SamuraiDCIndex idx(det,layer,wire);
+      std::pair<unsigned int, double> p(det,Wire_T[idx]);
+      X[p].push_back(Wire_X[idx]); 
+      Z[p].push_back(Wire_Z[idx]); 
+      R[p].push_back(DriftLength[i]); 
+    }
+  }
+
+  // Reconstruct the vector for each of the plane of each of the detector
+  double dirX,dirZ,refX;
+  for(auto it = X.begin();it!=X.end();++it){
+    if(it->first.second==0)
+      Track2D(X[it->first],Z[it->first],R[it->first],dirX,dirZ,PosX); 
     }
 
   return;
@@ -75,12 +93,49 @@ void TSamuraiFDC2Physics::BuildPhysicalEvent(){
 
 ///////////////////////////////////////////////////////////////////////////
 void TSamuraiFDC2Physics::Track2D(const vector<double>& X,const vector<double>& Z,const vector<double>& R,double& dirX, double& dirZ,double& refX ){
+  fitX=X;
+  fitZ=Z;
+  fitR=R;
+  // assume all X,Z,R of same size
+  unsigned int size = X.size();
+  // Define the starting point of the fit: a straight line passing through the 
+  // the two first and last wire
+  // z = ax+b -> x=(z-b)/a
+  double a = fitZ[size-1]-fitZ[0]/(fitX[size-1]-fitX[0]);
+  double b = fitZ[0]-a*fitX[0];
+  double parameter[2]={a,b};
+  static ROOT::Math::Minimizer* min = ROOT::Math::Factory::CreateMinimizer("Minuit2", "Migrad");
+  static ROOT::Math::Functor f(this,&TSamuraiFDC2Physics::SumD,2); 
+  min->SetFunction(f);
+  min->SetVariable(0,"a",parameter[0], 1);
+  min->SetVariable(1,"b",parameter[1], 1);
   
-  }
+  min->Minimize(); 
+  const double *xs = min->X();
+  refX=(-xs[1])/xs[0];
+}
+////////////////////////////////////////////////////////////////////////////////
+double TSamuraiFDC2Physics::SumD(const double* parameter ){
+  unsigned int size = fitX.size();
+  // Compute the sum P of the distance between the circle and the track
+  double P = 0;
+  for(unsigned int i = 0 ; i < size ; i++){
+    double x=(fitZ[i]-parameter[1])/parameter[0];
+    P+= sqrt(abs( (x-fitX[i])*(x-fitX[i])-fitR[i]*fitR[i]));
+    }
 
+  return P;
+  }
 ///////////////////////////////////////////////////////////////////////////
 void TSamuraiFDC2Physics::PreTreat(){
   ClearPreTreatedData();
+  static CalibrationManager* Cal = CalibrationManager::getInstance();
+  static string channel;
+   // one map per detector
+  map<unsigned int, vector<double> > X ; 
+  map<unsigned int, vector<double> > Z ; 
+  map<unsigned int, vector<double> > R ; 
+
   unsigned int size = m_EventData->Mult();
   for(unsigned int i = 0 ; i < size ; i++){
     // EDGE=1 is the leading edge, IE, the real time.
@@ -114,7 +169,8 @@ void TSamuraiFDC2Physics::PreTreat(){
         Wire.push_back(wire);
         Time.push_back(time);
         ToT.push_back(etime-time);
-        SamuraiDCIndex idx(det,layer,wire);
+        channel="SamuraiFDC2/L" + NPL::itoa(layer);
+        DriftLength.push_back(Cal->ApplySigmoid(channel,etime));
       }
     }
 
@@ -151,18 +207,20 @@ void TSamuraiFDC2Physics::RemoveNoise(){
       if(det==adet && blayer && abs(wire-awire)<=1){
         match=true;
         break;
-        }
       }
-     
-     if(match)
-       Matched.push_back(true);
-     else
-       Matched.push_back(false);
     }
+
+    if(match)
+      Matched.push_back(true);
+    else
+      Matched.push_back(false);
+  }
   return;
 }
 ///////////////////////////////////////////////////////////////////////////
 void TSamuraiFDC2Physics::Clear(){
+  PosX=-10000;
+  DriftLength.clear();
   Detector.clear();
   Layer.clear();
   Wire.clear();
@@ -219,10 +277,10 @@ void TSamuraiFDC2Physics::AddDC(string name, NPL::XmlParser& xml){
         cout << "ERROR: Unknown layer orientation for Samurai FDC2"<< endl;
         exit(1);
       }
-     SamuraiDCIndex idx(det,layer,wire);
-     Wire_X[idx]=X;
-     Wire_Z[idx]=Z;
-     Wire_T[idx]=T;
+      SamuraiDCIndex idx(det,layer,wire);
+      Wire_X[idx]=X;
+      Wire_Z[idx]=Z;
+      Wire_T[idx]=T;
     }
   }
 }
@@ -265,6 +323,13 @@ void TSamuraiFDC2Physics::WriteSpectra(){
 }
 ///////////////////////////////////////////////////////////////////////////
 void TSamuraiFDC2Physics::AddParameterToCalibrationManager(){
+  CalibrationManager* Cal = CalibrationManager::getInstance();
+
+  // each layer
+  for( int l = 0 ; l < 14 ; ++l){
+    Cal->AddParameter("SamuraiFDC2", "L"+ NPL::itoa(l),"FDC2_L"+ NPL::itoa(l));
+  }
+
 }
 
 ///////////////////////////////////////////////////////////////////////////
