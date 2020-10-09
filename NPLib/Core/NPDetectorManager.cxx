@@ -260,7 +260,6 @@ void NPL::DetectorManager::BuildPhysicalEvent(){
   static std::map<std::string,VDetector*>::iterator end= m_Detector.end();
 
   for (it =begin; it != end; ++it) {
-    cout << " " <<endl;
     (it->second->*m_ClearEventPhysicsPtr)();
     (it->second->*m_BuildPhysicalPtr)();
     if(m_FillSpectra){

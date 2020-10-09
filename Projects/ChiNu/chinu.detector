@@ -14,7 +14,7 @@ ChiNu
  LeadShield= 1
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-FissionChamber
-  POS= 0 0 0 mm
-  GasMaterial= CF4
-  Pressure= 1 bar
+%FissionChamber
+%  POS= 0 0 0 mm
+%  GasMaterial= CF4
+%  Pressure= 1 bar
