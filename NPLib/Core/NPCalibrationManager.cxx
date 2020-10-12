@@ -374,7 +374,7 @@ double CalibrationManager::ApplySigmoid(const std::string& ParameterPath, const 
     return RawValue ; 
   }
 
-  return (Coeff[0]/(exp(Coeff[1]*(Coeff[2]-RawValue))+1));
+  return (Coeff[0]/(exp(Coeff[1]*(Coeff[2]-(RawValue+gRandom->Uniform(1))))+1));
 
  
   }

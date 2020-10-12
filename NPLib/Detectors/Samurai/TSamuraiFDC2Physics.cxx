@@ -83,14 +83,80 @@ void TSamuraiFDC2Physics::BuildPhysicalEvent(){
 
   // Reconstruct the vector for each of the plane of each of the detector
   double dirX,dirZ,refX;
+  map<std::pair<unsigned int,double>, TVector3 > Pos ;  
   for(auto it = X.begin();it!=X.end();++it){
-    if(it->first.second==0)
-      Track2D(X[it->first],Z[it->first],R[it->first],dirX,dirZ,PosX); 
+      Track2D(X[it->first],Z[it->first],R[it->first],dirX,dirZ,refX); 
+      TVector3 P(refX,0,0);
+      P.RotateZ(-it->first.second);
+      Pos[it->first]=P;
     }
 
+  // Reconstruct the central position (z=0) for each detector
+
+  map<unsigned int,vector<TVector3> > C ;  
+  TVector3 P;
+  for(auto it1 = Pos.begin();it1!=Pos.end();++it1){
+    for(auto it2 = it1;it2!=Pos.end();++it2){
+      if(it1!=it2 && it1->first.first==it2->first.first){// different plane, same detector
+        ResolvePlane(it1->second,it1->first.second,it2->second,it2->first.second,P);
+        C[it1->first.first].push_back(P);
+        }
+      }
+  }
+
+  // Build the Reference position by averaging all possible pair 
+  size = C[2].size();
+  if(size){
+    PosX=0;
+    for(unsigned int i = 0 ; i < size ; i++){
+      PosX+= C[2][i].X(); 
+    } 
+    PosX/=size; 
+  }
   return;
 }
+////////////////////////////////////////////////////////////////////////////////
+void TSamuraiFDC2Physics::ResolvePlane(const TVector3& H,const double& ThetaU ,const TVector3& L, const double& ThetaV, TVector3& PosXY){
+  // direction of U and V wire 
+  TVector3 u = TVector3(0,1,0);
+  u.RotateZ(ThetaU); 
+  
+  TVector3 v = TVector3(0,1,0);
+  v.RotateZ(ThetaV); 
 
+
+  // Compute the coeff of the two line of vecotr u (v) going through H (L)
+  // dv : y = av*x+bv
+  TVector3 HH = H+v;
+  double av = (H.Y() - HH.Y())/(H.X()-HH.X());
+  double bv =  H.Y() - av*H.X();   
+   
+  // du : y = au*x+bv
+  TVector3 LL = L+u;
+  double au = (L.Y() - LL.Y())/(L.X()-LL.X());
+  double bu =  L.Y() - au*L.X();   
+
+  // We look for M(xM, yM) that intersect du and dv:
+  double xM,yM;
+  if(!isinf(au) && !isinf(av)){ // au and av are not inf, i.e. not vertical line
+    xM = (bu-bv)/(av-au); 
+    yM = au*xM+bu;
+   } 
+  else if(isinf(au)){// av is inf, so v is along Y axis, H is direct measure of X
+    xM = H.X(); 
+    yM = au*xM+bu;
+    }
+  else if (isinf(av)){//au is inf, so u is along Y axis, L is direct measure of X
+    xM = L.X(); 
+    yM = av*xM+bv;
+    }
+  else{ // all is lost
+    xM=-10000;
+    yM=-10000;
+    }
+  PosXY=TVector3(xM,yM,0);
+
+  };
 ///////////////////////////////////////////////////////////////////////////
 void TSamuraiFDC2Physics::Track2D(const vector<double>& X,const vector<double>& Z,const vector<double>& R,double& dirX, double& dirZ,double& refX ){
   fitX=X;
@@ -99,7 +165,7 @@ void TSamuraiFDC2Physics::Track2D(const vector<double>& X,const vector<double>& 
   // assume all X,Z,R of same size
   unsigned int size = X.size();
   // Define the starting point of the fit: a straight line passing through the 
-  // the two first and last wire
+  // the first and last wire
   // z = ax+b -> x=(z-b)/a
   double a = fitZ[size-1]-fitZ[0]/(fitX[size-1]-fitX[0]);
   double b = fitZ[0]-a*fitX[0];
@@ -109,9 +175,11 @@ void TSamuraiFDC2Physics::Track2D(const vector<double>& X,const vector<double>& 
   min->SetFunction(f);
   min->SetVariable(0,"a",parameter[0], 1);
   min->SetVariable(1,"b",parameter[1], 1);
-  
+  //cout << "start" << endl;  
   min->Minimize(); 
   const double *xs = min->X();
+  //cout << "end " << SumD(xs) << endl;
+  
   refX=(-xs[1])/xs[0];
 }
 ////////////////////////////////////////////////////////////////////////////////
@@ -119,9 +187,17 @@ double TSamuraiFDC2Physics::SumD(const double* parameter ){
   unsigned int size = fitX.size();
   // Compute the sum P of the distance between the circle and the track
   double P = 0;
+  double a = parameter[0];
+  double b = parameter[1];
+  double ab= a*b;
+  double a2=a*a;
+
   for(unsigned int i = 0 ; i < size ; i++){
-    double x=(fitZ[i]-parameter[1])/parameter[0];
-    P+= sqrt(abs( (x-fitX[i])*(x-fitX[i])-fitR[i]*fitR[i]));
+    double c = fitX[i];
+    double d = fitZ[i];
+    double x = (a*d-ab+c)/(1+a2);
+    double z = a*x+b;
+    P+= sqrt(abs( (x-c)*(x-c)+(z-d)*(z-d)-fitR[i]*fitR[i]));
     }
 
   return P;
@@ -219,7 +295,7 @@ void TSamuraiFDC2Physics::RemoveNoise(){
 }
 ///////////////////////////////////////////////////////////////////////////
 void TSamuraiFDC2Physics::Clear(){
-  PosX=-10000;
+  PosX=PosU=PosV=-10000;
   DriftLength.clear();
   Detector.clear();
   Layer.clear();
