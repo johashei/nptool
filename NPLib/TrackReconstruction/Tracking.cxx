@@ -8,6 +8,8 @@
 #include <vector>
 #include "TTree.h"
 #include "TFile.h"
+#include "TVector3.h"
+
 #include "TClonesArray.h"
 #include <vector>
 #include "TF1.h"
@@ -407,7 +409,7 @@ void NPL::Tracking::Hough_3D(vector<double> *x,vector<double> *y,vector<double> 
 }
 
 // Calculation of the minimal distance between 2 lines in 3D space & calculation of mid-point=>vertex of interaction
-void NPL::Tracking::vertex(double *p, double *pp, double &xv,double &yv,double &zv,double &min_dist, double &Theta_tr1, double &Theta_tr2, double &Phi1, double &Phi2) {
+void NPL::Tracking::vertex(double *p, double *pp, double &xv,double &yv,double &zv,double &min_dist, double &Theta_tr1, double &Theta_tr2, double &Phi1, double &Phi2, TVector3 &VectorTrack1, TVector3 &VectorTrack2) {
   double a1 = p[0];
   double a2 = p[2];
   double b1 = p[1];
@@ -455,6 +457,11 @@ void NPL::Tracking::vertex(double *p, double *pp, double &xv,double &yv,double &
   xap = ap1 + bp1*zpoint;
   yap = ap2 + bp2*zpoint;
 
+  //3D unit vectors of tracks 
+  VectorTrack1.SetXYZ(xa-x,ya-y,zpoint-z);
+  VectorTrack1 = VectorTrack1.Unit();
+  VectorTrack2.SetXYZ(xap-xp,yap-yp,zpoint-zp);
+  VectorTrack2 = VectorTrack2.Unit();
   /* Theta_tr1 = TMath::ACos((zpoint-z)/TMath::Sqrt((xa-x)*(xa-x)+(ya-y)*(ya-y)+(zpoint-z)*(zpoint-z))); */
   /* Theta_tr2 = TMath::ACos((zpoint-zp)/TMath::Sqrt((xap-xp)*(xap-xp)+(yap-yp)*(yap-yp)+(zpoint-zp)*(zpoint-zp))); */
   // Aldric Revel version :
@@ -485,7 +492,6 @@ void NPL::Tracking::vertex(double *p, double *pp, double &xv,double &yv,double &
   Phi2 = 180*Phi2/TMath::Pi();
   Theta_tr1 = Theta_tr1*180./TMath::Pi();
   Theta_tr2 = Theta_tr2*180./TMath::Pi();
-
   min_dist = sqrt(pow((x-xp),2) + pow((y-yp),2) + pow((z-zp),2));
 
 }
@@ -503,5 +509,3 @@ void NPL::Tracking::ParFor_Vertex(double *a, double *b, double *parFit) {
   parFit[2]=Y0;
   parFit[3]=APY0;
 }
-
-

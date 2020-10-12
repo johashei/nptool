@@ -43,11 +43,12 @@ using namespace std;
 #include "TChain.h"
 #include "TROOT.h"
 #include "TMath.h"
-#include "TMinuit.h"
-/* #include "/opt/cern/root/root_v5.34.36/math/genvector/inc/Math/Vector3D.h" */
+/* #include "TMinuit2.h" */
 #include "Math/Vector3D.h"
 #include "TStyle.h"
 #include "TClonesArray.h" 
+#include "Math/Minimizer.h"
+#include "Math/Factory.h"
 
 TMinosPhysics* current_phy = 0;
 
@@ -127,7 +128,7 @@ void TMinosPhysics::PreTreat() {
   Xvertex = -1000;
   Yvertex = -1000;
   Zvertex = -1000;
-  sumTheta = -1000;
+  Theta_12= -1000;
 
   Theta1 = -1000;
   Theta2 = -1000;
@@ -149,29 +150,51 @@ void TMinosPhysics::PreTreat() {
   double Chi2 = 0.;
   double Tshaping = 333.9;
   const double TimeBinElec = 30.; // in ns
-  double MINOSthresh, UperFitLim, VDrift, Z_Shift, DelayTrig, ZRot_Minos; 
-
+  double MINOSthresh, UperFitLim, VDrift, Z_Shift, DelayTrig[18]={0},VdriftperRing[18]={0}, ZRot_Minos, Shift_Vdrift;   
   if(SimulationBool){ // Simulated data
     UperFitLim = 1000000000.; //   
     MINOSthresh = 899.;
-    DelayTrig = 0.;  
     VDrift = 0.03475;  
     Z_Shift = 0; 
   }
   else{ // Experiment data
     MINOSthresh = 100;
     UperFitLim = 100000.; 
-    DelayTrig = 1515; // ns, s034 par.
-    ZRot_Minos = 33.81; // Rotation of Minos along Z axis, s034 par.
-    VDrift = 0.03475; // mm/ns, s034 par.
-    Z_Shift = -2.5 ; // mm, s034 par.
+    
+    ifstream calibFile2("Vdrift.txt");
+    string buffer2;
+    getline(calibFile2, buffer2);
+    double vdriftR;
+    int i = 0;
+    while(calibFile2 >> vdriftR){
+      VdriftperRing[i] = vdriftR; // ns, s034 par.
+      i++;
+    }
+    
+    ifstream calibFile("Time_Offset.txt");
+    /* ifstream calibFile("Time_Offset2.txt"); */
+    string buffer;
+    getline(calibFile, buffer);
+    double offset;
+    i = 0;
+    while(calibFile >> offset){
+      DelayTrig[i] = offset; // ns, s034 par.
+      i++;
+    }
+    Shift_Vdrift = +0.00325; 
+    ZRot_Minos = 35; //21.3;//38.88;//32.81; // Rotation of Minos along Z axis, s034 par.
+    //to fixe VDrift
+    /* VDrift = 0.0325858; //0.03475; // mm/ns, s034 par. */
+    Z_Shift = -18.95;
+    /* Z_Shift = -54.4; */
+    /* Z_Shift = -10.5 ; // mm, s034 par. */
   }
 
   ///////////////////////////////////////////////////////
 
   ClearPreTreatedData();
 
-  /// Read Q(t) signal to fit and extract DriftTime 
+  /// Read Q(t) signal to fit and extract DriftTime
 
   unsigned int NbOfPad = m_EventData->GetPadNumberMult();
   filled =0;trackNbr=0;
@@ -190,10 +213,8 @@ void TMinosPhysics::PreTreat() {
           maxCharge = m_EventData->GetCharge(e)[o];
         }
       }
-      /* if((maxCharge >= MINOSthresh && round((sqrt(x_mm*x_mm+y_mm*y_mm)-44.15)/2.1) < 14 && round((sqrt(x_mm*x_mm+y_mm*y_mm)-44.15)/2.1) >7 )) { // to remove rings 1,2,3,4 and 16,17,18 */      
-      if((maxCharge >= MINOSthresh )) { // to remove rings 1,2,3,4 and 16,17,18      
+      if(maxCharge >= MINOSthresh ) { // to remove rings 1,2,3,4 and 16,17,18      
       /* if((maxCharge >= MINOSthresh && round((sqrt(x_mm*x_mm+y_mm*y_mm)-44.15)/2.1) < 16 && round((sqrt(x_mm*x_mm+y_mm*y_mm)-44.15)/2.1) >4 )) { // to remove rings 1,2,3,4 and 16,17,18 */      
-        /* if((maxCharge >= MINOSthresh && ( SimulationBool==1 ||  (round((sqrt(x_mm*x_mm+y_mm*y_mm)-44.15)/2.1) < 16 && round((sqrt(x_mm*x_mm+y_mm*y_mm)-43.8)/2.1) >4 ))) ) { // to not apply the ring condition for simulation */      
         Xpad.push_back(x_mm);
         Ypad.push_back(y_mm);
         Qpad.push_back(maxCharge);
@@ -215,8 +236,6 @@ void TMinosPhysics::PreTreat() {
         filter_result = Tracking_functions->Hough_modified(&Xpad, &Ypad, &Qpad, &XpadTemp, &YpadTemp, &QpadTemp, &clusterringboolTemp);
 
         if(filter_result<0) break;
-        /* if(filter_result>10 && clusterringboolTemp.back()==1){ */ 
-        /* if(filter_result>4 ){ // modified for the simu w  0 dispersion */ 
         if(filter_result>7 ){ 
           trackNbr++;
           for(int ik=0; ik<filter_result; ik++) { // selected pads
@@ -239,14 +258,13 @@ void TMinosPhysics::PreTreat() {
         /* ZpadNew.push_back(-10000.); */
       }  
 
-      /* if(trackNbr >= 0 && trackNbr < 5 ){  /////////// */
-      if(trackNbr == 2){  ///////////
+      /* if(trackNbr == 2 ){  /////////// */
+      if(trackNbr == 2 || trackNbr == 1){  ///////////
 
         /* if(filled==0) cerr << "Error !!!" << endl; */
         //-------------------------------------------------------
         //  STEP 4.1: Fitting taken pads for Qmax and Ttrig info
         //-------------------------------------------------------
-
         for(unsigned int i=0 ; i< NbOfPad; i++ ) {
           hfit->Reset();
           bool fitbool = false;
@@ -271,7 +289,6 @@ void TMinosPhysics::PreTreat() {
             /*     hfit_max=m_EventData->GetCharge(i)[o]+250; */
             /*   } */
             /* } */  
-
             for(Int_t j=0; j< m_EventData->GetTime(i).size(); j++) {
               if(m_EventData->GetCharge(i)[j]>=0){
                 hfit->SetBinContent(hfit->FindBin(m_EventData->GetTime(i)[j]), m_EventData->GetCharge(i)[j]+250);
@@ -334,7 +351,14 @@ void TMinosPhysics::PreTreat() {
                 t_pad = fit_function_Tpad;
                 /* z_mm = 300.-(-t_pad*TimeBinElec+DelayTrig)*VDrift[int((sqrt(x_mm*x_mm+y_mm*y_mm)-43.8)/2.1)] */
                 if(SimulationBool)z_mm = t_pad*TimeBinElec*VDrift;  // for simu
-                else z_mm =(t_pad*TimeBinElec-DelayTrig)*VDrift; 
+                else{
+                  int ring = round((sqrt(x_mm*x_mm + y_mm*y_mm)-44.15)/2.1);
+                  /* z_mm =(t_pad*TimeBinElec+DelayTrig[ring])*VDrift; */ 
+                  z_mm =(t_pad*TimeBinElec+DelayTrig[ring])*(VdriftperRing[ring]+Shift_Vdrift); 
+                  /* cout << ring << " " << Vdrift[ring] << " " << DelayTrig[ring] << endl; */
+                  /* z_mm =(t_pad*TimeBinElec+DelayTrig[ring])*VDrift; */ 
+                }
+                //else z_mm =(t_pad*TimeBinElec-DelayTrig)*VDrift; 
                 /* else z_mm = 300.-(-t_pad*TimeBinElec+DelayTrig)*VDrift; */ 
                 Q_Pad.push_back(fit_function_max-250);
                 T_Pad.push_back(t_pad*TimeBinElec);
@@ -342,6 +366,7 @@ void TMinosPhysics::PreTreat() {
                 Y_Pad.push_back(y_mm);
                 Z_Pad.push_back(z_mm);
                 q_pad = fit_function_max-250.;
+              
               }
               ZpadNew[indexfill] = z_mm + Z_Shift; // CYRIL Test
               /* ZpadNew[indexfill] = z_mm; */
@@ -360,21 +385,21 @@ void TMinosPhysics::PreTreat() {
 
         cluster_temp = 0;
         int ringtouch[19]={0};      
+        
         /* for(int ko=1; ko<19; ko++) ringtouch[ko] = 0; ///// Added by Cyril */
         for(unsigned int i=0;i<(XpadNew.size());i++){
           if(xin.size()>0 && ((cluster_temp != int(clusternbr[i]) && i!=0) || i==(XpadNew.size()-1))){ // We fill xin until the next cluster 
             Tracking_functions->Hough_3D(&xin, &yin, &zin, &qin, &xout, &yout, &zout, &qout);
             for(unsigned int ij=0; ij<xout.size();ij++){
               if(zout[ij]>zmax) {zmax = zout[ij];}
+              
               ringtouch[int(round((sqrt(xout[ij]*xout[ij]+yout[ij]*yout[ij])-44.15)/2.1))]++; // Corr by Cyril
             }
             for(int ko=0; ko<19; ko++){
               if(ringtouch[ko]>0) ringsum++;
             }
-
             // Tracks of interest: >10 pads and >=12 rings hit
             if(xout.size()>10 && ringsum>=8){
-
               npoint=0;
               trackNbr_FINAL++;
               double charge_temp=0.;
@@ -384,6 +409,7 @@ void TMinosPhysics::PreTreat() {
               int indexin=0; int indexout=0;
               for(unsigned int ij=0; ij<xout.size(); ij++){
 
+//d
                 point.SetXYZ(xout[ij],yout[ij],zout[ij]);
                 if(!SimulationBool)point.RotateZ(ZRot_Minos*TMath::DegToRad());//15.6*TMath::DegToRad() CHANGE####
                 xoutprime.push_back(point.X());youtprime.push_back(point.Y());zoutprime.push_back(point.Z());
@@ -459,15 +485,14 @@ void TMinosPhysics::PreTreat() {
           /* //------------------------------------------------------- */
 
 
-          /* if(trackNbr_FINAL>= 1){   //  !!!  Just for 1 or more tracks! */
-          if(trackNbr_FINAL== 2){
-
+          /* if(trackNbr_FINAL== 2 ){ */
+          if(trackNbr_FINAL== 2 || trackNbr_FINAL == 1){
+            
             //////////Minimization in 2D to reconstruct track lines
             allevt_2pfiltered++;
-
-            for(int itr= 0 ; itr < trackNbr_FINAL; itr++) {
-
+             for(int itr= 0 ; itr < trackNbr_FINAL; itr++) {
               pStart[0]=0; pStart[2]=0; pStart[1]=1; pStart[3]=3;
+              
               min = new TMinuit(4);
               min->SetPrintLevel(-1);
               arglist[0] = 3;
@@ -476,6 +501,7 @@ void TMinosPhysics::PreTreat() {
 
               NclusterFit = itr+1;
               current_phy=this;
+              
               min->SetFCN(SumDistance);
 
               // Set starting values and step sizes for parameters
@@ -483,11 +509,11 @@ void TMinosPhysics::PreTreat() {
               min->mnparm(1,"Ax",pStart[1],0.1,-10,10,iflag);
               min->mnparm(2,"y0",pStart[2],0.1,-500,500,iflag);
               min->mnparm(3,"Ay",pStart[3],0.1,-10,10,iflag);
+             
               arglist[0] = 200; // number of function calls
               arglist[1] = 0.000001; // tolerance
-
+              
               min->mnexcm("MIGRAD",arglist,2,iflag); // minimization with MIGRAD
-
               min->mnstat(amin,edm,errdef,nvpar,nparx,iflag);  //returns current status of the minimization
 
               // get fit parameters
@@ -498,63 +524,63 @@ void TMinosPhysics::PreTreat() {
               /* parFit2.push_back(parFit_temp[1]); */
               /* parFit3.push_back(parFit_temp[2]); */
               /* parFit4.push_back(parFit_temp[3]); */
-
+              /* } */
               parFit1[itr]=parFit_temp[0];
               parFit2[itr]=parFit_temp[1];
               parFit3[itr]=parFit_temp[2];
               parFit4[itr]=parFit_temp[3];
 
-              /* } */
               delete min;
             }
 
+            double ParTrack1[4];
+            double ParTrack2[4];
+            
+            ParTrack1[0] = parFit1[0];
+            ParTrack1[1] = parFit2[0];
+            ParTrack1[2] = parFit3[0];
+            ParTrack1[3] = parFit4[0];
+
             if(trackNbr_FINAL==2){
-              /* if(trackNbr_FINAL>=0){ */
-
-              double ParTrack1[4];
-              double ParTrack2[4];
-
-              ParTrack1[0] = parFit1[0];
-              ParTrack1[1] = parFit2[0];
-              ParTrack1[2] = parFit3[0];
-              ParTrack1[3] = parFit4[0];
-
               ParTrack2[0] = parFit1[1];
               ParTrack2[1] = parFit2[1];
               ParTrack2[2] = parFit3[1];
               ParTrack2[3] = parFit4[1];
-
-              Dist_min=0, Theta_tr1=0, Theta_tr2=0;
-
-              Tracking_functions->vertex(ParTrack1, ParTrack2, xv, yv, zv, Dist_min, Theta_tr1, Theta_tr2, Phi1, Phi2);
+            }
+            else if(trackNbr_FINAL==1){// The vertex is still calculated with
+              ParTrack2[0] = 0;// the beam axis 
+              ParTrack2[1] = 0;
+              ParTrack2[2] = 0;
+              ParTrack2[3] = 0;
+            }
+            
+            Dist_min=-100, Theta_tr1=0, Theta_tr2=0;
               
+              Tracking_functions->vertex(ParTrack1, ParTrack2, xv, yv, zv, Dist_min, Theta_tr1, Theta_tr2, Phi1, Phi2, VectorTrack1, VectorTrack2);
+
               Xvertex=xv;
               Yvertex=yv;
               Zvertex = zv;
-              /* Zvertex = zv+Z_Shift; */
-
+              
               Dmin = Dist_min;
               Theta_1 = Theta_tr1;  
               Theta_2 = Theta_tr2 ;  
-              
+
               Theta1 = Theta_tr1;
               Theta2 = Theta_tr2;
-
-              sumTheta = Theta_tr1+Theta_tr2;
-            }
-
+             
+              Theta_12 = VectorTrack1.Angle(VectorTrack2)*360/TMath::Pi();
           }// end if trackNbr_FINAL>=1
 
-        } // end loop if 0<trackNbr < 5
+          } // end loop if 0<trackNbr < 5
 
-        // instantiate CalibrationManager
-        static CalibrationManager* Cal = CalibrationManager::getInstance();
-        }
+          // instantiate CalibrationManager
+          static CalibrationManager* Cal = CalibrationManager::getInstance();
+}
 
         ///////////////////////////////////////////////////////////////////////////
-        void TMinosPhysics::ReadAnalysisConfig() {
+void TMinosPhysics::ReadAnalysisConfig() {
           bool ReadingStatus = false;
-
           // path to file
           string FileName = "./configs/ConfigMinos.dat";
 
@@ -641,7 +667,6 @@ void TMinosPhysics::PreTreat() {
               float z=phy->minosdata_result->z_mm;
               float q=phy->minosdata_result->Chargemax;
               //if(nused<2)cout<<minosdata_result->n_Cluster<<" "<<x<<" "<<y<<" "<<z<<" "<<q<<endl;
-              /* double d = Tracking_functions->distance2(x, y, z, par); */
               double d = TMinosPhysics::distance2(x, y, z, par);
               sum += d*q;       
               nused++;
@@ -701,7 +726,6 @@ void TMinosPhysics::PreTreat() {
 
           hfit->Reset();
 
-
           filled=0;
           indexfill = 0;
           ChargeBin = 0.;
@@ -715,8 +739,7 @@ void TMinosPhysics::PreTreat() {
           array_final=0;
           ringsum=0;
           zmax=0.;
-
-
+          
         }
 
         ///////////////////////////////////////////////////////////////////////////

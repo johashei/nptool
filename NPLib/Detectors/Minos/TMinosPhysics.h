@@ -176,7 +176,15 @@ TMinosResult *minosdata_result;//!
  
     double GetPhi1(){return Phi1;}
     double GetPhi2(){return Phi2;}
-  // parameters used in the analysis
+    
+    double GetDmin(){return Dmin;}
+    double GetTheta_12(){return Theta_12;}
+    
+    int GetNbrOfTracks(){return trackNbr_FINAL;}
+      
+    TVector3 GetVectorTrack1(){return VectorTrack1;}
+    TVector3 GetVectorTrack2(){return VectorTrack2;}
+    // parameters used in the analysis
   private:
    
 
@@ -263,7 +271,7 @@ TMinosResult *minosdata_result;//!
     double Zvertex;
     double Dmin;
     
-    double sumTheta;
+    double Theta_12;
     double Theta1;
     double Theta2;
     double Theta_1;
@@ -271,12 +279,15 @@ TMinosResult *minosdata_result;//!
 
     double Phi1;
     double Phi2;
+    
+    TVector3 VectorTrack1, VectorTrack2;
+
+    int trackNbr_FINAL;
 
     vector<int> trackclusternbr;//!
     vector<int> tracknbr;//!
     
     double Tot_tracks=0; //!
-    int trackNbr_FINAL;//!
     vector<TGraph> gryz;//!
     vector<TGraph> grxz;//!
     
@@ -314,7 +325,8 @@ TMinosResult *minosdata_result;//!
     double yv;//!
     double zv;//!
     
-    double Dist_min;
+    double Dist_min;//!
+    
     double Theta_tr1;//!
     double Theta_tr2;//!
   // number of detectors
