@@ -64,9 +64,10 @@ void TSamuraiFDC2Physics::BuildPhysicalEvent(){
   RemoveNoise();
 
   // Map[detector & plane angle, vector of spatial information]
-  map<std::pair<unsigned int,double>, vector<double> > X ; 
-  map<std::pair<unsigned int,double>, vector<double> > Z ; 
-  map<std::pair<unsigned int,double>, vector<double> > R ; 
+  static map<std::pair<unsigned int,double>, vector<double> > X ; 
+  static map<std::pair<unsigned int,double>, vector<double> > Z ; 
+  static map<std::pair<unsigned int,double>, vector<double> > R ; 
+  X.clear();Z.clear();R.clear();
   unsigned int size = Detector.size();
   for(unsigned int i = 0 ; i < size ; i++){
     if(Matched[i]){
@@ -83,17 +84,26 @@ void TSamuraiFDC2Physics::BuildPhysicalEvent(){
 
   // Reconstruct the vector for each of the plane of each of the detector
   double dirX,dirZ,refX;
-  map<std::pair<unsigned int,double>, TVector3 > Pos ;  
+  static map<std::pair<unsigned int,double>, TVector3 > Pos ;  
+  static map<std::pair<unsigned int,double>, TVector3 > Dir ;  
+  Pos.clear();Dir.clear();
   for(auto it = X.begin();it!=X.end();++it){
       Track2D(X[it->first],Z[it->first],R[it->first],dirX,dirZ,refX); 
+      Mult=X[it->first].size();
+      // Position at z=0
       TVector3 P(refX,0,0);
       P.RotateZ(-it->first.second);
       Pos[it->first]=P;
+
+      // Direction of the vector in the plane
+      TVector3 D(dirX,dirZ,0);
+      D.RotateZ(-it->first.second);
+      Dir[it->first]=D;
     }
 
   // Reconstruct the central position (z=0) for each detector
-
-  map<unsigned int,vector<TVector3> > C ;  
+  static map<unsigned int,vector<TVector3> > C ;  
+  C.clear();
   TVector3 P;
   for(auto it1 = Pos.begin();it1!=Pos.end();++it1){
     for(auto it2 = it1;it2!=Pos.end();++it2){
@@ -103,15 +113,18 @@ void TSamuraiFDC2Physics::BuildPhysicalEvent(){
         }
       }
   }
-
+  
   // Build the Reference position by averaging all possible pair 
   size = C[2].size();
   if(size){
     PosX=0;
+    PosY=0;
     for(unsigned int i = 0 ; i < size ; i++){
       PosX+= C[2][i].X(); 
+      PosY+= C[2][i].Y(); 
     } 
     PosX/=size; 
+    PosY/=size;
   }
   return;
 }
@@ -178,9 +191,15 @@ void TSamuraiFDC2Physics::Track2D(const vector<double>& X,const vector<double>& 
   //cout << "start" << endl;  
   min->Minimize(); 
   const double *xs = min->X();
-  //cout << "end " << SumD(xs) << endl;
-  
   refX=(-xs[1])/xs[0];
+  // compute the reference vector
+  // M is reference point at Z=1
+  double zM=xs[0]+xs[1];
+  dirX=1;
+  dirZ=zM;
+  double n = sqrt(1+dirZ*dirZ);
+  dirX/=n;
+  dirZ/=n;
 }
 ////////////////////////////////////////////////////////////////////////////////
 double TSamuraiFDC2Physics::SumD(const double* parameter ){
@@ -295,7 +314,8 @@ void TSamuraiFDC2Physics::RemoveNoise(){
 }
 ///////////////////////////////////////////////////////////////////////////
 void TSamuraiFDC2Physics::Clear(){
-  PosX=PosU=PosV=-10000;
+  Mult=0;
+  PosX=PosY=-10000;
   DriftLength.clear();
   Detector.clear();
   Layer.clear();

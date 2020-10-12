@@ -99,8 +99,8 @@ class TSamuraiFDC2Physics : public TObject, public NPL::VDetector{
     vector<TVector3> MiddlePosition;
 
     double PosX;
-    double PosU;
-    double PosV;
+    double PosY;
+    int Mult;
   public:
     // Projected position at given Z plan
     TVector3 ProjectedPosition(double Z);
@@ -118,7 +118,6 @@ class TSamuraiFDC2Physics : public TObject, public NPL::VDetector{
     void Track2D(const vector<double>& X,const vector<double>& Z,const vector<double>& R,double& dirX, double& dirZ,double& refX );
     // Compute X and Y of interaction point based on drift vector of two different wire plane
     void ResolvePlane(const TVector3& PosU,const double& ThetaU ,const TVector3& PosV, const double& ThetaV, TVector3& PosXY);
-
     double SumD(const double* parameter );
     vector<double> fitX;
     vector<double> fitZ;
