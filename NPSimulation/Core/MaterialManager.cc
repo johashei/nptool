@@ -973,6 +973,17 @@ G4Material* MaterialManager::GetMaterialFromLibrary(string Name,
       G4Material* material = new G4Material("NPS_" + Name, density, 2);
       material->AddElement(GetElementFromLibrary("C"), 5);
       material->AddElement(GetElementFromLibrary("H"), 6);
+      
+      m_Material[Name] = material;
+      return material;
+    }
+
+    else if (Name == "NE213_optical") {
+      if (!density)
+        density            = 0.874 * g / cm3;
+      G4Material* material = new G4Material("NPS_" + Name, density, 2);
+      material->AddElement(GetElementFromLibrary("C"), 5);
+      material->AddElement(GetElementFromLibrary("H"), 6);
 
       //--------------------- Optical Properties ---------------------//
       const G4int NUMENTRIES = 15;

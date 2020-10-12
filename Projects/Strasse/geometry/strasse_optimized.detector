@@ -84,9 +84,9 @@ Strasse Chamber
   Z= -30 mm
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%Catana CSV
-% Path= geometry/Catana.csv 
-% Pos= 0 0 100 mm
-% Rshift= 100 micrometer
+Catana CSV
+ Path= geometry/Catana.csv 
+ Pos= 0 0 100 mm
+ Rshift= 100 micrometer
 
 

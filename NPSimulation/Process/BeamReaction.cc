@@ -67,8 +67,8 @@ void NPS::BeamReaction::ReadConfiguration() {
 
   if (m_ReactionType=="TwoBodyReaction" ) {
     m_Reaction.ReadConfigurationFile(input);
-    m_BeamName = NPL::ChangeNameToG4Standard(m_Reaction.GetNucleus1()->GetName());
-    if(m_Reaction.GetNucleus3()->GetName() != ""){
+    m_BeamName = NPL::ChangeNameToG4Standard(m_Reaction.GetParticle1()->GetName());
+    if(m_Reaction.GetParticle3()->GetName() != ""){
       m_active             = true;
       m_ReactionConditions = new TReactionConditions();
       AttachReactionConditions();
@@ -80,7 +80,7 @@ void NPS::BeamReaction::ReadConfiguration() {
 
   else  if (m_ReactionType=="QFSReaction") {
     m_QFS.ReadConfigurationFile(input);
-    m_BeamName = NPL::ChangeNameToG4Standard(m_QFS.GetNucleusA()->GetName());
+    m_BeamName = NPL::ChangeNameToG4Standard(m_QFS.GetParticleA()->GetName());
     m_active             = true;
     m_ReactionConditions = new TReactionConditions();
     AttachReactionConditions();
@@ -101,6 +101,7 @@ G4bool NPS::BeamReaction::IsApplicable(const G4ParticleDefinition& particleType)
   static std::string particleName;
   particleName = particleType.GetParticleName();
   if(particleName=="neutron") particleName="n1";
+  else if(particleName=="e-") particleName="electron";
   if (particleName.find(m_BeamName) != std::string::npos) {
     return true;
   }
@@ -127,12 +128,12 @@ G4bool NPS::BeamReaction::ModelTrigger(const G4FastTrack& fastTrack) {
   bool is_first = (to_entrance==0);
 
   if(is_first && m_shoot){
- /*   std::cout << "Something went wrong in beam reaction, m_shoot cannot be true at beginning of event" << std::endl;
-    std::cout << "rand: " << m_rand << std::endl;
-    std::cout << "length: " << m_length << std::endl;
-    std::cout << "step: " << m_StepSize << std::endl;
-    std::cout << "Z: " << m_Z << std::endl;
-    std::cout << "S: " << m_S << std::endl;*/
+    /*   std::cout << "Something went wrong in beam reaction, m_shoot cannot be true at beginning of event" << std::endl;
+         std::cout << "rand: " << m_rand << std::endl;
+         std::cout << "length: " << m_length << std::endl;
+         std::cout << "step: " << m_StepSize << std::endl;
+         std::cout << "Z: " << m_Z << std::endl;
+         std::cout << "S: " << m_S << std::endl;*/
     m_shoot = false;
   }
 
@@ -144,7 +145,7 @@ G4bool NPS::BeamReaction::ModelTrigger(const G4FastTrack& fastTrack) {
     m_ReactionConditions->Clear();
     m_shoot=true;
   }
-  
+
   // curviligne coordinate along beam path
   m_S = to_entrance - 0.5*(to_exit+to_entrance); 
   m_length = m_Z-m_S;
@@ -194,18 +195,18 @@ void NPS::BeamReaction::DoIt(const G4FastTrack& fastTrack,
     ->GetVolume()
     ->GetLogicalVolume()
     ->GetMaterial();
- 
+
   double energy = PrimaryTrack->GetKineticEnergy();
   double speed  = PrimaryTrack->GetVelocity();
   double time   = PrimaryTrack->GetGlobalTime()+m_length/speed;
-   
+
 
   double reac_energy = SlowDownBeam (
-    PrimaryTrack->GetParticleDefinition(),
-    energy,
-    m_length,
-    material);
-  
+      PrimaryTrack->GetParticleDefinition(),
+      energy,
+      m_length,
+      material);
+
 
   G4ThreeVector ldir = pdirection;
   ldir *= m_length;
@@ -225,30 +226,35 @@ void NPS::BeamReaction::DoIt(const G4FastTrack& fastTrack,
     ///////////////////////////////
     // Two-Body Reaction Case /////
     ///////////////////////////////
-
-    //////Define the kind of particle to shoot////////
-    // Nucleus 3
-    int LightZ = m_Reaction.GetNucleus3()->GetZ();
-    int LightA = m_Reaction.GetNucleus3()->GetA();
     static G4IonTable* IonTable
       = G4ParticleTable::GetParticleTable()->GetIonTable();
 
+    //////Define the kind of particle to shoot////////
+    // Particle 3
     G4ParticleDefinition* LightName;
+    if(m_Reaction.GetParticle3()->GetName()=="electron"){
+      LightName=G4Electron::Definition();
+    }
+    else{
+      int LightZ = m_Reaction.GetParticle3()->GetZ();
+      int LightA = m_Reaction.GetParticle3()->GetA();
+      if (LightZ == 0 && LightA == 1){
+        LightName = G4Neutron::Definition();
+      } 
+      else {
+        if (m_Reaction.GetUseExInGeant4())
+          LightName
+            = IonTable->GetIon(LightZ, LightA, m_Reaction.GetExcitation3() * MeV);
+        else
+          LightName = IonTable->GetIon(LightZ, LightA);
+      }
 
-    if (LightZ == 0 && LightA == 1) // neutron is special case
-    {
-      LightName = G4Neutron::Definition();
-    } else {
-      if (m_Reaction.GetUseExInGeant4())
-        LightName
-          = IonTable->GetIon(LightZ, LightA, m_Reaction.GetExcitation3() * MeV);
-      else
-        LightName = IonTable->GetIon(LightZ, LightA);
     }
 
-    // Nucleus 4
-    G4int HeavyZ = m_Reaction.GetNucleus4()->GetZ();
-    G4int HeavyA = m_Reaction.GetNucleus4()->GetA();
+
+    // Particle 4
+    G4int HeavyZ = m_Reaction.GetParticle4()->GetZ();
+    G4int HeavyA = m_Reaction.GetParticle4()->GetA();
 
     // Generate the excitation energy if a distribution is given
     m_Reaction.ShootRandomExcitationEnergy();
@@ -397,10 +403,10 @@ void NPS::BeamReaction::DoIt(const G4FastTrack& fastTrack,
     //////Define the kind of particle to shoot////////
     //    A --> T  ==> B + (c -> T) =>  B + 1 + 2      
 
-    int Light1_Z = m_QFS.GetNucleus1()->GetZ();
-    int Light1_A = m_QFS.GetNucleus1()->GetA();
-    int Light2_Z = m_QFS.GetNucleus2()->GetZ();
-    int Light2_A = m_QFS.GetNucleus2()->GetA();
+    int Light1_Z = m_QFS.GetParticle1()->GetZ();
+    int Light1_A = m_QFS.GetParticle1()->GetA();
+    int Light2_Z = m_QFS.GetParticle2()->GetZ();
+    int Light2_A = m_QFS.GetParticle2()->GetA();
 
     static G4IonTable* IonTable
       = G4ParticleTable::GetParticleTable()->GetIonTable();
@@ -422,9 +428,9 @@ void NPS::BeamReaction::DoIt(const G4FastTrack& fastTrack,
       Light2Name = IonTable->GetIon(Light2_Z, Light2_A);
     }
 
-    // Nucleus B
-    G4int Heavy_Z = m_QFS.GetNucleusB()->GetZ();
-    G4int Heavy_A = m_QFS.GetNucleusB()->GetA();
+    // Particle B
+    G4int Heavy_Z = m_QFS.GetParticleB()->GetZ();
+    G4int Heavy_A = m_QFS.GetParticleB()->GetA();
 
     G4ParticleDefinition* HeavyName;
     HeavyName = IonTable->GetIon(Heavy_Z, Heavy_A);
@@ -490,10 +496,10 @@ void NPS::BeamReaction::DoIt(const G4FastTrack& fastTrack,
 
     TLorentzVector* P_A = m_QFS.GetEnergyImpulsionLab_A();
     TLorentzVector* P_B = m_QFS.GetEnergyImpulsionLab_B();
-    
+
     G4ThreeVector momentum_kineB_beam( P_B->Px(), P_B->Py(), P_B->Pz() );
     momentum_kineB_beam = momentum_kineB_beam.unit();
-    TKEB = P_B->Energy() - m_QFS.GetNucleusB()->Mass();
+    TKEB = P_B->Energy() - m_QFS.GetParticleB()->Mass();
     G4ThreeVector momentum_kineB_world =  momentum_kineB_beam;
     momentum_kineB_world.rotate(Beam_theta, V); // rotation of Beam_theta on Y axis
     momentum_kineB_world.rotate(Beam_phi, ZZ); // rotation of Beam_phi on Z axis

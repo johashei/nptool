@@ -17,7 +17,7 @@
  * Decription:                                                               *
  *  This class simulate particule with a give energy                         *
  *  and angular distirubtion in the lab.                                     *
- *  Physical parameter (Nuclei mass) are loaded from the nubtab03.asc file   *
+ *  Physical parameter (Particle mass) are loaded from the nubtab03.asc file   *
  *  (2003 nuclear table of isotopes mass).                                   *
  *                                                                           *
  *                                                                           *
@@ -32,7 +32,7 @@
 #include <string>
 
 // NPL
-#include "NPNucleus.h"
+#include "NPParticle.h"
 #include "NPBeam.h"
 #include "NPInputParser.h"
 using namespace NPL;
@@ -60,7 +60,7 @@ namespace NPL{
       ~Reaction();
 
     public:  // Various Method
-      Nucleus GetNucleus(string name, NPL::InputParser parser);
+      Particle GetParticle(string name, NPL::InputParser parser);
       void ReadConfigurationFile(string Path);
       void ReadConfigurationFile(NPL::InputParser);
 
@@ -83,10 +83,10 @@ namespace NPL{
       TGraph* fLineBrho3;
       TGraph* fAngleLine;
     private:
-      Beam     fNuclei1;                 // Beam
-      Nucleus  fNuclei2;                 // Target
-      Nucleus  fNuclei3;                 // Light ejectile
-      Nucleus  fNuclei4;                 // Heavy ejectile
+      Beam     fParticle1;                 // Beam
+      Particle  fParticle2;                 // Target
+      Particle  fParticle3;                 // Light ejectile
+      Particle  fParticle4;                 // Heavy ejectile
       double   fQValue;                  // Q-value in MeV
       double   fEcm;                     // Ecm in MeV
       double   fBeamEnergy;              // Beam energy in MeV
@@ -122,10 +122,10 @@ namespace NPL{
       double   GetExcitation4() const           {return fExcitation4;}
       double   GetQValue() const                {return fQValue;}
       double   GetEcm() const			{return fEcm;}
-      Nucleus*  GetNucleus1()               {return &fNuclei1;}
-      Nucleus*  GetNucleus2()               {return &fNuclei2;}
-      Nucleus*  GetNucleus3()               {return &fNuclei3;}
-      Nucleus*  GetNucleus4()               {return &fNuclei4;}
+      Particle*  GetParticle1()               {return &fParticle1;}
+      Particle*  GetParticle2()               {return &fParticle2;}
+      Particle*  GetParticle3()               {return &fParticle3;}
+      Particle*  GetParticle4()               {return &fParticle4;}
       TH1F*    GetCrossSectionHist() const      {return fCrossSectionHist;}
       int      GetVerboseLevel()         const  {return fVerboseLevel;}
       bool     GetShoot3()         const        {return fshoot3;}
@@ -221,7 +221,7 @@ namespace NPL{
       // Check whenever the reaction is allowed at the given energy
       bool IsAllowed(double Energy);
       
-      void SetNuclei3(double EnergyLab, double ThetaLab);
+      void SetParticle3(double EnergyLab, double ThetaLab);
 
       TGraph* GetKinematicLine3(double AngleStep_CM=1);
       TGraph* GetKinematicLine4(double AngleStep_CM=1);

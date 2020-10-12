@@ -57,9 +57,6 @@ class ChiNu : public NPS::VDetector{
 
 
     G4AssemblyVolume* BuildDetector();
-    G4AssemblyVolume* BuildFissionChamber();
-    void BuildAnode(double PosZ);
-    void BuildCathode(double PosZ);
  
   private:
     G4LogicalVolume* m_CylindricalDetector;
@@ -68,8 +65,6 @@ class ChiNu : public NPS::VDetector{
     G4LogicalVolume* m_LeadShield;
     G4AssemblyVolume* m_AssemblyVolume;
 
-    G4LogicalVolume* m_FissionChamberWall;
-    G4AssemblyVolume* m_FissionChamberVolume;
     
     ////////////////////////////////////////////////////
     //////  Inherite from NPS::VDetector class /////////

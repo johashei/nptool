@@ -1,0 +1,53 @@
+CalibrationFilePath
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%MUST2%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+  ./Calibration/Energy/Calibration/Juin16_CalE/run_0019/E748_X_T1_E/Cal_Str_X_E_MM1.cal
+  ./Calibration/Energy/Calibration/Juin16_CalE/run_0019/E748_X_T2_E/Cal_Str_X_E_MM2.cal
+  ./Calibration/Energy/Calibration/Juin16_CalE/run_0019/E748_X_T3_E/Cal_Str_X_E_MM3.cal
+  ./Calibration/Energy/Calibration/Juin16_CalE/run_0019/E748_X_T4_E/Cal_Str_X_E_MM4.cal
+  ./Calibration/Energy/Calibration/Juin16_CalE/run_0031/E748_X_T5_E/Cal_Str_X_E_MM5.cal
+  ./Calibration/Energy/Calibration/Juin16_CalE/run_0029/E748_X_T6_E/Cal_Str_X_E_MM6.cal
+  ./Calibration/Energy/Calibration/Juin16_CalE/run_0029/E748_X_T7_E/Cal_Str_X_E_MM7.cal
+  ./Calibration/Energy/Calibration/Juin16_CalE/run_0031/E748_X_T8_E/Cal_Str_X_E_MM8.cal
+  ./Calibration/Energy/Calibration/Juin16_CalE/run_0019/E748_Y_T1_E/Cal_Str_Y_E_MM1.cal
+  ./Calibration/Energy/Calibration/Juin16_CalE/run_0019/E748_Y_T2_E/Cal_Str_Y_E_MM2.cal
+  ./Calibration/Energy/Calibration/Juin16_CalE/run_0019/E748_Y_T3_E/Cal_Str_Y_E_MM3.cal
+  ./Calibration/Energy/Calibration/Juin16_CalE/run_0019/E748_Y_T4_E/Cal_Str_Y_E_MM4.cal
+  ./Calibration/Energy/Calibration/Juin16_CalE/run_0031/E748_Y_T5_E/Cal_Str_Y_E_MM5.cal
+  ./Calibration/Energy/Calibration/Juin16_CalE/run_0029/E748_Y_T6_E/Cal_Str_Y_E_MM6.cal
+  ./Calibration/Energy/Calibration/Juin16_CalE/run_0029/E748_Y_T7_E/Cal_Str_Y_E_MM7.cal
+  ./Calibration/Energy/Calibration/Juin16_CalE/run_0031/E748_Y_T8_E/Cal_Str_Y_E_MM8.cal
+
+  ./Calibration/Time/Coeff/Cal_Str_X_T_MM1.cal
+  ./Calibration/Time/Coeff/Cal_Str_X_T_MM2.cal
+  ./Calibration/Time/Coeff/Cal_Str_X_T_MM3.cal
+  ./Calibration/Time/Coeff/Cal_Str_X_T_MM4.cal
+  ./Calibration/Time/Coeff/Cal_Str_X_T_MM5.cal
+  ./Calibration/Time/Coeff/Cal_Str_X_T_MM6.cal
+  ./Calibration/Time/Coeff/Cal_Str_X_T_MM7.cal
+  ./Calibration/Time/Coeff/Cal_Str_X_T_MM8.cal
+  ./Calibration/Time/Coeff/Cal_Str_Y_T_MM1.cal
+  ./Calibration/Time/Coeff/Cal_Str_Y_T_MM2.cal
+  ./Calibration/Time/Coeff/Cal_Str_Y_T_MM3.cal
+  ./Calibration/Time/Coeff/Cal_Str_Y_T_MM4.cal
+  ./Calibration/Time/Coeff/Cal_Str_Y_T_MM5.cal
+  ./Calibration/Time/Coeff/Cal_Str_Y_T_MM6.cal
+  ./Calibration/Time/Coeff/Cal_Str_Y_T_MM7.cal
+  ./Calibration/Time/Coeff/Cal_Str_Y_T_MM8.cal
+ 
+%%%%%%%%%%%%%%%%%%%%%%%%%%EXL%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+  
+ 
+ ./Calibration/EXL/rough_Exl_calibration.txt
+
+
+ %%%%%%%%%%%%%%%%%%%%%%%%%CATS%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+ ./Calibration/Cats_27Juin/Cal_Cats_1X.txt
+ ./Calibration/Cats_27Juin/Cal_Cats_1Y.txt
+ ./Calibration/Cats_27Juin/Cal_Cats_2X.txt
+ ./Calibration/Cats_27Juin/Cal_Cats_2Y.txt
+
+ %%%%%%%%%%%%%%%%%%%%%%%%% TAC
+ ./Calibration/CalTac.txt

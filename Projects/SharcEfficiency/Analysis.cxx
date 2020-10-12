@@ -325,8 +325,6 @@ void Analysis::InitOutputBranch(){
   RootOutput::getInstance()->GetTree()->Branch("Z_Sharc",&Z_Sharc,"Z_Sharc/D");
   RootOutput::getInstance()->GetTree()->Branch("X_Trifoil",&X_Trifoil,"X_Trifoil/D");
   RootOutput::getInstance()->GetTree()->Branch("Y_Trifoil",&Y_Trifoil,"Y_Trifoil/D");
-
-
 }
 
 

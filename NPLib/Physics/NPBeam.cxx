@@ -81,9 +81,10 @@ Beam::Beam(){
   fXThetaXHist = new TH2F(Form("XThetaXHis_%i",offset),"XThetaXHis",1,0,1,1,0,1);
   fYPhiYHist   = new TH2F(Form("YPhiYHist_%i",offset),"YPhiYHist",1,0,1,1,0,1);
 }
+
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-Beam::Beam(string isotope){
-  SetUp(isotope);
+Beam::Beam(string name){
+  SetUp(name);
   fEnergy = 0;
   fExcitationEnergy = 0; 
   fSigmaEnergy = -1 ;
@@ -116,7 +117,6 @@ Beam::Beam(string isotope){
   fYPhiYHist   = new TH2F(Form("YPhiYHist_%i",offset),"YPhiYHist",1,0,1,1,0,1);
 }
 
-
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 Beam::~Beam(){
 }
@@ -126,6 +126,7 @@ void Beam::ReadConfigurationFile(string Path){
   NPL::InputParser parser(Path);
   ReadConfigurationFile(parser);
 }
+
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 void Beam::ReadConfigurationFile(NPL::InputParser parser){
   vector<NPL::InputBlock*> blocks = parser.GetAllBlocksWithToken("Beam");
@@ -253,20 +254,20 @@ void Beam::Print() const {
 
 
 }
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 void Beam::SetTargetSize(double TargetSize){
   fTargetSize = TargetSize;
   fEffectiveTargetSize = fTargetSize*cos(fTargetAngle);
 }
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 void Beam::SetTargetThickness(double TargetThickness){
   fTargetThickness = TargetThickness;
   fEffectiveTargetThickness = fTargetThickness/cos(fTargetAngle);
 }
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 void Beam::SetTargetAngle(double TargetAngle){
   fTargetAngle = TargetAngle;
   fEffectiveTargetSize = fTargetSize*cos(fTargetAngle);

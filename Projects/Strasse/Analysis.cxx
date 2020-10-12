@@ -154,12 +154,12 @@ void Analysis::TreatEvent(){
       //////////////////////////////////// 
       
      // setting up Lorentz Vector from measured trajectories and energies
-     // TVector3 PA(0,0,sqrt(TA*(TA+2*m_QFS->GetNucleusA()->Mass()))); // for like there is no BDC
-     double beam_mom=sqrt(TA*(TA+2*m_QFS->GetNucleusA()->Mass()));
+     // TVector3 PA(0,0,sqrt(TA*(TA+2*m_QFS->GetParticleA()->Mass()))); // for like there is no BDC
+     double beam_mom=sqrt(TA*(TA+2*m_QFS->GetParticleA()->Mass()));
     // TVector3 PA(0,0,beam_mom); // for like there is no BDC
        TVector3 PA=beam_mom*RC->GetBeamDirection().Unit();
 
-      LV_A.SetVectM(PA,m_QFS->GetNucleusA()->Mass());
+      LV_A.SetVectM(PA,m_QFS->GetParticleA()->Mass());
       double P1= sqrt(E1*(E1+2*NPUNITS::proton_mass_c2));
       double P2= sqrt(E2*(E2+2*NPUNITS::proton_mass_c2));
 
@@ -168,7 +168,7 @@ void Analysis::TreatEvent(){
       // computing Ex from Missing Mass
       LV_B = LV_A + LV_T - LV_p1 - LV_p2;
       //LV_B = RC->GetParticleMomentum(2);
-      Ex = LV_B.M() - m_QFS->GetNucleusB()->Mass();
+      Ex = LV_B.M() - m_QFS->GetParticleB()->Mass();
     }
   }
 }

@@ -63,6 +63,7 @@ class CalibrationManager{
     double ApplyResistivePositionCalibrationDebug (const std::string& ParameterPath , const double& RawValue) const ;
 
     bool ApplyThreshold (const std::string& ParameterPath, const double& RawValue) const ;
+    double ApplySigmoid(const std::string& ParameterPath, const double& RawValue) const ;
     double GetPedestal  (const std::string& ParameterPath) const ;
     double GetValue     (const std::string& ParameterPath,const unsigned int& order) const ;
 

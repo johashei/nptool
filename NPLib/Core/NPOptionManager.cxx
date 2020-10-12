@@ -204,7 +204,7 @@ void NPOptionManager::DisplayVersion(){
     std::cout << line << std::endl;
     std::cout << " NPLib version: nplib-"<< NPL::version_major <<"-" << NPL::version_minor << "-" << NPL::version_deta <<std::endl;
     std::cout << " Copyright: NPTool Collaboration "<<std::endl;
-    std::cout << " GitHub: http://github.com/adrien-matta/nptool"<<std::endl; ;
+    std::cout << " Gitlab: https://gitlab.in2p3.fr/np/nptool"<<std::endl; ;
     std::cout << line << std::endl;
 
   }
@@ -215,6 +215,9 @@ NPOptionManager::NPOptionManager(int argc, char** argv){
 }
 ////////////////////////////////////////////////////////////////////////////////
 NPOptionManager::NPOptionManager(std::string arg){  
+  // add dummy string in front of arg string
+  arg.insert(0, "ignore ");
+
   std::vector<char *> args;
   std::stringstream iss(arg);
 

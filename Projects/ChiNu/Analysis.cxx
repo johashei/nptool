@@ -82,16 +82,15 @@ void Analysis::TreatEvent(){
 
 
       double DeltaTheta = atan(89.0/Rdet);
-      double random_ThetaLab = ra.Uniform(init_ThetaLab-DeltaTheta, init_ThetaLab+DeltaTheta);
+      double exp_ThetaLab = m_ChiNu->GetVectorDetectorPosition(m_ChiNu->DetectorNumber[i]).Theta();
+      double random_ThetaLab = ra.Uniform(exp_ThetaLab-DeltaTheta, exp_ThetaLab+DeltaTheta);
       double dEx = my_Reaction->ReconstructRelativistic(Elab[i], random_ThetaLab);
       
       ThetaLab.push_back(random_ThetaLab/deg);
+      //ThetaLab.push_back(exp_ThetaLab/deg);
       Ex.push_back(dEx);
     }
   }
-
-
-
 }
 
 ///////////////////////////////////////////////////////////////////////////////

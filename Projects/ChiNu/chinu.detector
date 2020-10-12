@@ -1,0 +1,20 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Alias Theta
+ Action= Copy
+ Value= 30 45 60 75 90 105 120 135 150 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Alias Phi
+ Action= Copy
+ Value= 0 30 60 120 150 180
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ChiNu
+ R= 1000 mm
+ THETA= @Theta deg
+ PHI= @Phi deg
+ LeadShield= 1
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%FissionChamber
+%  POS= 0 0 0 mm
+%  GasMaterial= CF4
+%  Pressure= 1 bar
