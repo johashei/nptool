@@ -100,6 +100,9 @@ class TSamuraiFDC2Physics : public TObject, public NPL::VDetector{
 
     double PosX;
     double PosY;
+    double ThetaX;
+    double PhiY;
+    TVector3 Dir;
     int Mult;
   public:
     // Projected position at given Z plan
@@ -114,8 +117,9 @@ class TSamuraiFDC2Physics : public TObject, public NPL::VDetector{
   private: // Analysis
     double ToTThreshold;//! a ToT threshold to remove noise
     void RemoveNoise();
-    // Construct the 2D track and ref position at Z=0 based on X,Z and Radius provided
-    void Track2D(const vector<double>& X,const vector<double>& Z,const vector<double>& R,double& dirX, double& dirZ,double& refX );
+    // Construct the 2D track and ref position at Z=0 and Z=100 based on X,Z and Radius provided
+
+    void Track2D(const vector<double>& X,const vector<double>& Z,const vector<double>& R,double& X0,double& X100 );
     // Compute X and Y of interaction point based on drift vector of two different wire plane
     void ResolvePlane(const TVector3& PosU,const double& ThetaU ,const TVector3& PosV, const double& ThetaV, TVector3& PosXY);
     double SumD(const double* parameter );

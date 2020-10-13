@@ -83,49 +83,81 @@ void TSamuraiFDC2Physics::BuildPhysicalEvent(){
   }
 
   // Reconstruct the vector for each of the plane of each of the detector
-  double dirX,dirZ,refX;
-  static map<std::pair<unsigned int,double>, TVector3 > Pos ;  
-  static map<std::pair<unsigned int,double>, TVector3 > Dir ;  
-  Pos.clear();Dir.clear();
+  static double X0,X100;
+  static map<std::pair<unsigned int,double>, TVector3 > VX0 ;  
+  static map<std::pair<unsigned int,double>, TVector3 > VX100 ;  
+  VX0.clear();VX100.clear();
   for(auto it = X.begin();it!=X.end();++it){
-      Track2D(X[it->first],Z[it->first],R[it->first],dirX,dirZ,refX); 
+      Track2D(X[it->first],Z[it->first],R[it->first],X0,X100); 
       Mult=X[it->first].size();
       // Position at z=0
-      TVector3 P(refX,0,0);
+      TVector3 P(X0,0,0);
       P.RotateZ(-it->first.second);
-      Pos[it->first]=P;
+      VX0[it->first]=P;
 
       // Direction of the vector in the plane
-      TVector3 D(dirX,dirZ,0);
+      TVector3 D = TVector3(X100,0,0);
       D.RotateZ(-it->first.second);
-      Dir[it->first]=D;
+      VX100[it->first]=D;
     }
 
   // Reconstruct the central position (z=0) for each detector
   static map<unsigned int,vector<TVector3> > C ;  
   C.clear();
   TVector3 P;
-  for(auto it1 = Pos.begin();it1!=Pos.end();++it1){
-    for(auto it2 = it1;it2!=Pos.end();++it2){
+  for(auto it1 = VX0.begin();it1!=VX0.end();++it1){
+    for(auto it2 = it1;it2!=VX0.end();++it2){
       if(it1!=it2 && it1->first.first==it2->first.first){// different plane, same detector
         ResolvePlane(it1->second,it1->first.second,it2->second,it2->first.second,P);
         C[it1->first.first].push_back(P);
         }
       }
   }
+   // Reconstruct the central position (z=0) for each detector
+  static map<unsigned int,vector<TVector3> > C100 ;  
+  C100.clear();
+  for(auto it1 = VX100.begin();it1!=VX100.end();++it1){
+    for(auto it2 = it1;it2!=VX100.end();++it2){
+      if(it1!=it2 && it1->first.first==it2->first.first){// different plane, same detector
+        ResolvePlane(it1->second,it1->first.second,it2->second,it2->first.second,P);
+        C100[it1->first.first].push_back(P);
+        }
+      }
+  }
   
   // Build the Reference position by averaging all possible pair 
   size = C[2].size();
+  double PosX100,PosY100;
   if(size){
     PosX=0;
     PosY=0;
+    PosX100=0;
+    PosY100=0;
     for(unsigned int i = 0 ; i < size ; i++){
       PosX+= C[2][i].X(); 
       PosY+= C[2][i].Y(); 
+      PosX100+= C100[2][i].X(); 
+      PosY100+= C100[2][i].Y(); 
     } 
+
+    // Mean position at Z=0
     PosX/=size; 
     PosY/=size;
+    // Mean position at Z=100
+    PosX100/=size; 
+    PosY100/=size;
+    // Compute ThetaX, angle between the Direction vector projection in XZ with
+    // the Z axis
+    TVector3 Proj=TVector3(PosX100-PosX,0,100);
+    ThetaX=atan((PosX100-PosX)/100.);
+    // Compute PhiY, angle between the Direction vector projection in YZ with
+    // the Z axis
+    Proj.SetXYZ(0,PosY100-PosY,100);
+    Proj=Proj.Unit();
+    PhiY=asin(Proj.X());
+    Dir=TVector3(PosX100-PosX,PosY100-PosY,100).Unit();
   }
+
   return;
 }
 ////////////////////////////////////////////////////////////////////////////////
@@ -155,11 +187,11 @@ void TSamuraiFDC2Physics::ResolvePlane(const TVector3& H,const double& ThetaU ,c
     xM = (bu-bv)/(av-au); 
     yM = au*xM+bu;
    } 
-  else if(isinf(au)){// av is inf, so v is along Y axis, H is direct measure of X
+  else if(isinf(av)){// av is inf, so v is along Y axis, H is direct measure of X
     xM = H.X(); 
     yM = au*xM+bu;
     }
-  else if (isinf(av)){//au is inf, so u is along Y axis, L is direct measure of X
+  else if (isinf(au)){//au is inf, so u is along Y axis, L is direct measure of X
     xM = L.X(); 
     yM = av*xM+bv;
     }
@@ -171,7 +203,7 @@ void TSamuraiFDC2Physics::ResolvePlane(const TVector3& H,const double& ThetaU ,c
 
   };
 ///////////////////////////////////////////////////////////////////////////
-void TSamuraiFDC2Physics::Track2D(const vector<double>& X,const vector<double>& Z,const vector<double>& R,double& dirX, double& dirZ,double& refX ){
+void TSamuraiFDC2Physics::Track2D(const vector<double>& X,const vector<double>& Z,const vector<double>& R,double& X0,double& X100 ){
   fitX=X;
   fitZ=Z;
   fitR=R;
@@ -188,18 +220,10 @@ void TSamuraiFDC2Physics::Track2D(const vector<double>& X,const vector<double>& 
   min->SetFunction(f);
   min->SetVariable(0,"a",parameter[0], 1);
   min->SetVariable(1,"b",parameter[1], 1);
-  //cout << "start" << endl;  
   min->Minimize(); 
   const double *xs = min->X();
-  refX=(-xs[1])/xs[0];
-  // compute the reference vector
-  // M is reference point at Z=1
-  double zM=xs[0]+xs[1];
-  dirX=1;
-  dirZ=zM;
-  double n = sqrt(1+dirZ*dirZ);
-  dirX/=n;
-  dirZ/=n;
+  X0=-xs[1]/xs[0];
+  X100=(100-xs[1])/xs[0];
 }
 ////////////////////////////////////////////////////////////////////////////////
 double TSamuraiFDC2Physics::SumD(const double* parameter ){
