@@ -1,3 +1,22 @@
+/***********************************************************************
+*                                                                      *
+* Original Author    : Diego Ramos      -> diego.ramos@ganil.fr        *
+* Adapted for NPTool : Pierre Morfouace -> pierre.morfouace2@cea.fr    *
+* Creation Date      : 25/09/2020                                      *
+*                                                                      *
+*----------------------------------------------------------------------*
+*                                                                      *
+* Description:                                                         *
+* This class generates fission fragments based on a simplified         *
+* model of the GEF code.                                               *
+* This is not the full GEF code. User should use it with caution.      *
+*                                                                      *
+*----------------------------------------------------------------------*
+* Comment:                                                             *
+*                                                                      *
+*                                                                      *
+************************************************************************/
+
 #include "GEF.h"
 
 GEF::GEF(NPL::Particle FissNucl)
