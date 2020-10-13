@@ -44,8 +44,11 @@ NPL::FissionDecay::FissionDecay(std::string compound, std::string fission_model)
 void NPL::FissionDecay::ReadConfiguration(NPL::InputParser parser){
   vector<NPL::InputBlock*> blocks = parser.GetAllBlocksWithToken("FissionDecay");
 
-  if(blocks.size()>0 && NPOptionManager::getInstance()->GetVerboseLevel())
+  if(blocks.size()>0 && NPOptionManager::getInstance()->GetVerboseLevel()){
     cout << endl << "\033[1;35m//// Fission decay found" << std::endl; 
+  }
+  if(blocks.size()==0) HasFissionToken=0;
+  else HasFissionToken=1;
 
   std::vector<std::string> token = 
   {"CompoundNucleus","FissionModel","Shoot_FF","Shoot_neutron","Shoot_gamma"};
@@ -133,12 +136,6 @@ bool NPL::FissionDecay::GenerateEvent(string CompoundName, double MEx,double MEK
       double Phil   = m_FissionModel->GetPhffl();
       double Phih   = m_FissionModel->GetPhffh();
 
-      /*cout << endl;
-      cout << "A-> " << Al << " / " << Ah << endl;
-      cout << "Z-> " << Zl << " / " << Zh << endl;
-      cout << "Phi-> " << Phil << " / " << Phih << endl;
-      cout << "Theta-> " << Thetal << " / " << Thetah << endl;
-      cout << "KE-> " << KEl << " / " << KEh << endl;*/
       TVector3 Momentuml = Pl * TVector3(sin(Thetal)*cos(Phil),
           sin(Thetal)*sin(Phil),
           cos(Thetal));
@@ -158,13 +155,20 @@ bool NPL::FissionDecay::GenerateEvent(string CompoundName, double MEx,double MEK
       KE1 = m_FissionModel->GetKE1();
       KE2 = m_FissionModel->GetKE2();
 
-      // Neutron emission
+      // Neutron and gamma emission
       float* En1;
+      float* Eg1;
       En1 = m_FissionModel->GetNeutronEnergyFrag1();
-      /*cout << "----- Neutron energy: " << endl;
-      for(int i=0; i<51; i++) {
-        cout << "En= " << En1[i] << endl;
-      }*/
+      //cout << "----- Neutron energy: " << endl;
+      //for(int i=0; i<51; i++) {
+      //  cout << "En= " << En1[i] << endl;
+      //}
+      
+      Eg1 = m_FissionModel->GetGammaEnergyFrag1();
+      //cout << "----- Gamma energy: " << endl;
+      //for(int i=0; i<101; i++){
+      //  cout << "Eg= " << Eg1[i] << endl;
+      //}
     }
   }
   return worked;

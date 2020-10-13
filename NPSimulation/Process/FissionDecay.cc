@@ -43,6 +43,10 @@ FissionDecay::FissionDecay(G4String modelName,G4Region* envelope) :
     ReadConfiguration();
     m_PreviousEnergy=0 ;
     m_PreviousLength=0 ;
+    m_FissionConditions = new TFissionConditions();
+    //AttachFissionConditions();
+    //if(!RootOutput::getInstance()->GetTree()->FindBranch("FissionConditions"))
+    //  RootOutput::getInstance()->GetTree()->Branch("FissionConditions", "TFissionConditions", &m_FissionConditions);
   }
 
 
@@ -65,22 +69,22 @@ void FissionDecay::AttachFissionConditions(){
 void FissionDecay::ReadConfiguration(){
   NPL::InputParser input(NPOptionManager::getInstance()->GetReactionFile());
   m_FissionDecay.ReadConfiguration(input);
-  std::string Mother = m_FissionDecay.GetCompoundName();
-  
-  m_CompoundParticle = NPL::Particle(Mother);
 
-  m_CompoundName = NPL::ChangeNameToG4Standard(Mother,true);
+  if(m_FissionDecay.GetFissionToken()>0){
+    std::string Mother = m_FissionDecay.GetCompoundName(); 
+    m_CompoundParticle = NPL::Particle(Mother);
+    m_CompoundName = NPL::ChangeNameToG4Standard(Mother,true);
+    AttachFissionConditions();
+    if(!RootOutput::getInstance()->GetTree()->FindBranch("FissionConditions"))
+      RootOutput::getInstance()->GetTree()->Branch("FissionConditions", "TFissionConditions", &m_FissionConditions);
 
-  m_FissionConditions = new TFissionConditions();
-  AttachFissionConditions();
-  if(!RootOutput::getInstance()->GetTree()->FindBranch("FissionConditions"))
-    RootOutput::getInstance()->GetTree()->Branch("FissionConditions", "TFissionConditions", &m_FissionConditions);
-
+  }
 
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 G4bool FissionDecay::IsApplicable( const G4ParticleDefinition& particleType) {
+  
   m_CurrentName = particleType.GetParticleName();
   // Extract Ex from name
   if(m_CurrentName.find("[")!=std::string::npos)
@@ -99,7 +103,7 @@ G4bool FissionDecay::IsApplicable( const G4ParticleDefinition& particleType) {
 ////////////////////////////////////////////////////////////////////////////////
 G4bool FissionDecay::ModelTrigger(const G4FastTrack& fastTrack) {
   bool Trigger = true;
- 
+
   m_FissionConditions->Clear();
 
   m_PreviousEnergy=fastTrack.GetPrimaryTrack()->GetKineticEnergy();
@@ -146,7 +150,7 @@ void FissionDecay::DoIt(const G4FastTrack& fastTrack,G4FastStep& fastStep){
       pdirection.x(),pdirection.y(),pdirection.z(),
       FissionFragment, Ex,DEK,DPx,DPy,DPz,
       TKE, KE1, KE2);
- 
+
   /////////////////////////////////////////////////
   // Fillion the attached Fission condition Tree //
   /////////////////////////////////////////////////
@@ -166,7 +170,7 @@ void FissionDecay::DoIt(const G4FastTrack& fastTrack,G4FastStep& fastStep){
 
   if(size == 0)
     return;
-    
+
   // Get Neutron Multiplicity
   int Zsum = FissionFragment[0].GetZ() + FissionFragment[1].GetZ();
   int Asum = FissionFragment[0].GetA() + FissionFragment[1].GetA();
@@ -184,7 +188,7 @@ void FissionDecay::DoIt(const G4FastTrack& fastTrack,G4FastStep& fastStep){
     Momentum=Momentum.unit();
 
     double Brho = FissionFragment[i].GetBrho();
- 
+
     m_FissionConditions->SetFragmentZ(FFZ);
     m_FissionConditions->SetFragmentA(FFA);
     m_FissionConditions->SetFragmentKineticEnergy(DEK[i]);
@@ -199,10 +203,10 @@ void FissionDecay::DoIt(const G4FastTrack& fastTrack,G4FastStep& fastStep){
     if(FFZ==0){
       if(FFA==1)
         FissionFragmentDef=G4ParticleTable::GetParticleTable()->FindParticle("neutron");
-     
+
       else if(FFA==0){
         FissionFragmentDef=G4ParticleTable::GetParticleTable()->FindParticle("gamma");
-        }
+      }
 
     }
     // proton
@@ -212,11 +216,11 @@ void FissionDecay::DoIt(const G4FastTrack& fastTrack,G4FastStep& fastStep){
     else
       FissionFragmentDef=G4ParticleTable::GetParticleTable()->GetIonTable()->GetIon(FFZ, FFA, Ex[i]);
 
-     
+
     G4DynamicParticle DynamicFissionFragment(FissionFragmentDef,Momentum,DEK[i]);
     fastStep.CreateSecondaryTrack(DynamicFissionFragment, localPosition, time);
   }
-  
+
   if(size){
     // Set the end of the step conditions
     fastStep.SetPrimaryTrackFinalKineticEnergyAndDirection(0,pdirection);
@@ -225,6 +229,6 @@ void FissionDecay::DoIt(const G4FastTrack& fastTrack,G4FastStep& fastStep){
     fastStep.SetPrimaryTrackFinalTime (time);
     fastStep.KillPrimaryTrack();
     fastStep.SetPrimaryTrackPathLength(0.0);
-    }
-    
+  }
+
 }

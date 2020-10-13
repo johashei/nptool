@@ -46,7 +46,7 @@ namespace NPL{
     public:
         void ReadConfiguration(std::string Path);
         void ReadConfiguration(NPL::InputParser parser);
-
+        int GetFissionToken() {return HasFissionToken;}
     private:
         GEF* m_FissionModel;
         std::string m_FissionModelName;
@@ -56,7 +56,7 @@ namespace NPL{
         std::vector<std::string> m_FissionFragmentName;
         std::vector<NPL::Particle> m_FissionFragment;
         std::vector<double> m_FissionFragmentMasses;
- 
+        int HasFissionToken; 
         bool m_shoot_FF;
         bool m_shoot_neutron;
         bool m_shoot_gamma;

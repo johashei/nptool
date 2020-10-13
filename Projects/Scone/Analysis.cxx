@@ -58,7 +58,6 @@ void Analysis::Init(){
 ////////////////////////////////////////////////////////////////////////////////
 void Analysis::TreatEvent(){
   ReInitValue();
-
   if(InitialConditions->GetParticleMultiplicity()>0){
     E_init = InitialConditions->GetKineticEnergy(0);
   }
@@ -69,7 +68,6 @@ void Analysis::TreatEvent(){
     vE_init.push_back(E_new);
     new_energy = true;
   }
-
 
   if(new_energy == true){
     if(m_DetectedNeutron!=0) vDetectedNeutron.push_back(m_DetectedNeutron);

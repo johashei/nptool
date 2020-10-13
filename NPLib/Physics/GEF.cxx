@@ -1614,17 +1614,11 @@ void GEF::Eva(int Ilh, float Z_CN, float A_CN, float E_INIT, float T, float J_fr
   // Shell effects excluded 
   //   SN = LDMass(Zi,Ai-1.,0.0) + LyPair(Zi,Ai-1.) - (LDMass(Zi,Ai,0.0) + LyPair(Zi,Ai)) ;
   //   SNeff = LDMass(Zi,Ai-1.,0.0) - LDMass(Zi,Ai,0.0) ; 
-
-  Zf = Zi;
-  Af = Ai;
-  Ef = Ei;
-
   while(Ei-SN>E_MIN)
   {
     // Treat gamma competition 
     Tm = U_Temp(Zi,Ai,Ei,1,1,Tscale,Econd);       // emitting nucleus
     Td = U_Temp(Zi,Ai-1,Ei-SNeff,1,1,Tscale,Econd);
-
     if(Ilh > 0) // Emission from fragments
     {
       Gamma_g = 0.624 * pow(Ai,1.6) * pow(Tm,5);    // in meV (Ignatyuk, Bologna)
@@ -1652,9 +1646,7 @@ void GEF::Eva(int Ilh, float Z_CN, float A_CN, float E_INIT, float T, float J_fr
     }
     // Reduces the even-odd effect in neutron number 
     // due to low level density below the pairing gap 
-
-    Pgamma = Gamma_g / (Gamma_g + Gamma_n);   
-
+    Pgamma = Gamma_g / (Gamma_g + Gamma_n);  
     if(rn->Rndm()<Pgamma) //gamma will be emitted
     {
       In_gamma = In_gamma + 1;
@@ -4207,7 +4199,7 @@ void GEF::N_Saddle_Scission(void)
     J_Frag_light = 0;
   //  Eva(0,I_Z_light_sad,I_A_light_sad,E_intr_light,TlightFF,J_Frag_light,R_Z_light_sci,
   //      R_A_light_sci,E_Final_Light,Array_E_n1_ss,Array_Tn,Array_Eg0_light);             
-    Eva(0,I_Z_light_sad,I_A_light_sad,E_intr_light,TlightFF,J_Frag_light,R_Z_light_sci,
+    Eva(1,I_Z_light_sad,I_A_light_sad,E_intr_light,TlightFF,J_Frag_light,R_Z_light_sci,
         R_A_light_sci,E_Final_Light,Array_E_n1_frag1,Array_Tn,Array_Eg0_light);             
  
     for(int i = 1;i<= 50;i++)
@@ -4232,7 +4224,7 @@ void GEF::N_Saddle_Scission(void)
     J_Frag_heavy = 0;
   //  Eva(0,I_Z_heavy_sad,I_A_heavy_sad,E_intr_heavy,TheavyFF,J_Frag_heavy,R_Z_heavy_sci,
   //      R_A_heavy_sci,E_Final_Heavy,Array_E_n2_ss,Array_Tn,Array_Eg0_heavy);                   
-    Eva(0,I_Z_heavy_sad,I_A_heavy_sad,E_intr_heavy,TheavyFF,J_Frag_heavy,R_Z_heavy_sci,
+    Eva(1,I_Z_heavy_sad,I_A_heavy_sad,E_intr_heavy,TheavyFF,J_Frag_heavy,R_Z_heavy_sci,
         R_A_heavy_sci,E_Final_Heavy,Array_E_n2_frag2,Array_Tn,Array_Eg0_heavy);                   
  
     for(int i = 1;i<=50;i++)

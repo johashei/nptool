@@ -67,8 +67,8 @@ class TFissionChamberPhysics : public TObject, public NPL::VDetector {
     vector<double>   Time;
 
   /// A usefull method to bundle all operation to add a detector
-  void AddDetector(TVector3 POS, string shape); 
-  void AddDetector(double R, double Theta, double Phi, string shape); 
+  void AddDetector(TVector3 POS); 
+  void AddDetector(double R, double Theta, double Phi); 
   
   //////////////////////////////////////////////////////////////
   // methods inherited from the VDetector ABC class

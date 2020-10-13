@@ -55,7 +55,8 @@ void Analysis::TreatEvent(){
   Einit = InitialConditions->GetKineticEnergy(0);
   double init_ThetaLab = ReactionConditions->GetTheta(0)*deg;
   double init_BeamEnergy = ReactionConditions->GetBeamEnergy();
-  neutron->SetKineticEnergy(init_BeamEnergy);
+  //neutron->SetKineticEnergy(init_BeamEnergy);
+  neutron->SetKineticEnergy(Einit);
   double beam_TOF = neutron->GetTimeOfFlight();
 
   double Xtarget = InitialConditions->GetIncidentPositionX();
@@ -71,7 +72,6 @@ void Analysis::TreatEvent(){
       TVector3 HitPos = DetPos-TargetPos;
       //R= HitPos.Mag()*1e-3;
       R= Rdet*mm;
-      
       Distance.push_back(R);	
       Det.push_back(m_ChiNu->DetectorNumber[i]); 
       T.push_back(m_ChiNu->Time[i]);

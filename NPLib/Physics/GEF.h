@@ -1,6 +1,24 @@
 #ifndef GEF_CLASS
 #define GEF_CLASS
-
+/***********************************************************************
+*                                                                      *
+* Original Author    : Diego Ramos      -> diego.ramos@ganil.fr        *
+* Adapted for NPTool : Pierre Morfouace -> pierre.morfouace2@cea.fr    *
+* Creation Date      : 25/09/2020                                      *
+*                                                                      *
+*----------------------------------------------------------------------*
+*                                                                      *
+* Description:                                                         *
+* This class generates fission fragments based on a simplified         *
+* model of the GEF code.                                               *
+* This is not the full GEF code. User should use it with caution.      *
+*                                                                      *
+*----------------------------------------------------------------------*
+* Comment:                                                             *
+*                                                                      *
+*                                                                      *
+************************************************************************/
+// C++ header
 #include <iostream>
 #include <iomanip>
 #include <sstream>
@@ -17,11 +35,11 @@
 #include <ctime>
 #include <fcntl.h>
 #include <unistd.h> 
-
 #include <sys/stat.h>
 #include <time.h>
 #include <typeinfo>
 
+// ROOT header
 #include <TROOT.h>
 #include <TFile.h>
 #include <TDirectory.h>
@@ -33,14 +51,10 @@
 #include <TKey.h>
 #include <TRandom3.h>
 
-using namespace std;
-
-//#endif
-
-//#define GEF_SIMPLE
-
-// NPTool headers
+// NPTool header
 #include "NPParticle.h"
+
+using namespace std;
 
 class GEF
 {
@@ -65,6 +79,8 @@ public:
 
   float* GetNeutronEnergyFrag1() {return Array_E_n1_frag1;}
   float* GetNeutronEnergyFrag2() {return Array_E_n2_frag2;}
+  float* GetGammaEnergyFrag1()   {return Array_Eg0_light;} 
+  float* GetGammaEnergyFrag2()   {return Array_Eg0_heavy;} 
   float GetTKE() {return TKE;}
   float GetKE1() {return Ekinlight_sci;}
   float GetKE2() {return Ekinheavy_sci;}

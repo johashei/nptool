@@ -591,7 +591,7 @@ void Scone::ReadSensitive(const G4Event* ){
     m_Event->SetCapture(2);
     m_Event->SetCaptureTime(GdCaptureTime);
   }
-  //else m_Event->SetCapture(0);
+  else m_Event->SetCapture(0);
   GdProcess_scorer->clear();
 
   ///////////
