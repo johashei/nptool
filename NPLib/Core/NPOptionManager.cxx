@@ -215,6 +215,9 @@ NPOptionManager::NPOptionManager(int argc, char** argv){
 }
 ////////////////////////////////////////////////////////////////////////////////
 NPOptionManager::NPOptionManager(std::string arg){  
+  // add dummy string in front of arg string
+  arg.insert(0, "ignore ");
+
   std::vector<char *> args;
   std::stringstream iss(arg);
 

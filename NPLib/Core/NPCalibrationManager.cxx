@@ -357,6 +357,28 @@ bool CalibrationManager::ApplyThreshold(const std::string& ParameterPath, const 
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
+double CalibrationManager::ApplySigmoid(const std::string& ParameterPath, const double& RawValue) const{
+  std::map< std::string , std::vector<double> >::const_iterator it ;
+  static std::map< std::string , std::vector<double> >::const_iterator ite = fCalibrationCoeff.end();
+  //   Find the good parameter in the Map
+  // Using Find method of stl is the fastest way
+  it = fCalibrationCoeff.find(ParameterPath)  ;
+	// If the find methods return the end iterator it's mean the parameter was not found
+  if(it == ite ){
+    return RawValue ;
+  }
+
+  std::vector<double> Coeff = it->second  ;
+  // Check that the number of coeff is ok
+  if(Coeff.size()!=3){
+    return RawValue ; 
+  }
+
+  return (Coeff[0]/(exp(Coeff[1]*(Coeff[2]-(RawValue+gRandom->Uniform(1))))+1));
+
+ 
+  }
+/////////////////////////////////////////////////////////////////////////////////////////////
 double CalibrationManager::GetPedestal(const std::string& ParameterPath) const{
   return GetValue(ParameterPath,0);
 }
