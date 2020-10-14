@@ -104,6 +104,8 @@ class TSamuraiFDC2Physics : public TObject, public NPL::VDetector{
     double PhiY;
     TVector3 Dir;
     int Mult;
+    int MultMean;
+    int PileUp;
   public:
     // Projected position at given Z plan
     TVector3 ProjectedPosition(double Z);
@@ -112,14 +114,14 @@ class TSamuraiFDC2Physics : public TObject, public NPL::VDetector{
     void AddDC(string name, NPL::XmlParser&);//! take the XML file and fill in Wire_X and Layer_Angle
     map<SamuraiDCIndex,double> Wire_X;//! X position of the wires
     map<SamuraiDCIndex,double> Wire_Z;//! Z position of the wires
-    map<SamuraiDCIndex,double> Wire_T;//! Wire Angle (0 for X, 90 for Y, U and V are typically at +/-30)
+    map<SamuraiDCIndex,double> Wire_Angle;//! Wire Angle (0 for X, 90 for Y, U and V are typically at +/-30)
   
   private: // Analysis
     double ToTThreshold;//! a ToT threshold to remove noise
     void RemoveNoise();
     // Construct the 2D track and ref position at Z=0 and Z=100 based on X,Z and Radius provided
 
-    void Track2D(const vector<double>& X,const vector<double>& Z,const vector<double>& R,double& X0,double& X100 );
+    double Track2D(const vector<double>& X,const vector<double>& Z,const vector<double>& R,double& X0,double& X100 );
     // Compute X and Y of interaction point based on drift vector of two different wire plane
     void ResolvePlane(const TVector3& PosU,const double& ThetaU ,const TVector3& PosV, const double& ThetaV, TVector3& PosXY);
     double SumD(const double* parameter );
