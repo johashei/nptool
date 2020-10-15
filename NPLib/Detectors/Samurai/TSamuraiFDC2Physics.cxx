@@ -411,7 +411,7 @@ void TSamuraiFDC2Physics::ReadConfiguration(NPL::InputParser parser){
 
 ///////////////////////////////////////////////////////////////////////////
 void TSamuraiFDC2Physics::AddDC(string name, NPL::XmlParser& xml){
-  std::vector<NPL::block*> b = xml.GetAllBlocksWithName(name);  
+  std::vector<NPL::XML::block*> b = xml.GetAllBlocksWithName(name);  
   // FDC2 case
   if(name=="SAMURAIFDC2"){
     unsigned int det=2;

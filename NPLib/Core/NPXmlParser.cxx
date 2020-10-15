@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <iostream>
 using namespace NPL;
-
+using namespace NPL::XML;
 ////////////////////////////////////////////////////////////////////////////////
 block::block(){};
 block::~block(){};
@@ -121,8 +121,8 @@ void XmlParser::LoadNode(TXMLEngine* xml, XMLNodePointer_t node, Int_t level){
 }
 
 //////////////////////////////////////////////////////////////////////////////////
-std::vector<NPL::block*> XmlParser::GetAllBlocksWithName(std::string name){
-   std::vector<NPL::block*> res;
+std::vector<NPL::XML::block*> XmlParser::GetAllBlocksWithName(std::string name){
+   std::vector<NPL::XML::block*> res;
    auto it=m_blocks.find(name);
 
     if(it!=m_blocks.end()){
