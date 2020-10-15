@@ -4,7 +4,8 @@ add_custom_command(OUTPUT NPClusterDict.cxx COMMAND ${CMAKE_BINARY_DIR}/scripts/
 
 add_custom_command(OUTPUT TrackingDict.cxx COMMAND ${CMAKE_BINARY_DIR}/scripts/build_dict.sh Tracking.h TrackingDict.cxx Tracking.rootmap libNPTrackReconstruction.so NPTrackReconstructionLinkDef.h DEPENDS Tracking.h)
 
-add_library(NPTrackReconstruction SHARED NPRansac.cxx NPCluster.cxx NPTrack.cxx Tracking.cxx NPRansacDict.cxx NPClusterDict.cxx TrackingDict.cxx)
+add_library(NPTrackReconstruction SHARED NPRansac.cxx NPCluster.cxx NPTrack.cxx Tracking.cxx NPRansacDict.cxx NPClusterDict.cxx TrackingDict.cxx NPDCReconstruction.cxx)
+
 target_link_libraries(NPTrackReconstruction ${ROOT_LIBRARIES} NPCore)
 
-install(FILES NPRansac.h NPCluster.h NPTrack.h Tracking.h NPTrackingUtility.h   DESTINATION ${CMAKE_INCLUDE_OUTPUT_DIRECTORY})
+install(FILES NPRansac.h NPCluster.h NPTrack.h Tracking.h NPTrackingUtility.h NPDCReconstruction.h  DESTINATION ${CMAKE_INCLUDE_OUTPUT_DIRECTORY})

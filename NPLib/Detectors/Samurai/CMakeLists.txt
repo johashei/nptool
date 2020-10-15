@@ -4,6 +4,6 @@ add_custom_command(OUTPUT TSamuraiFDC2PhysicsDict.cxx COMMAND ${CMAKE_BINARY_DIR
 
 add_library(NPSamurai SHARED TSamuraiFDC2Data.cxx TSamuraiFDC2DataDict.cxx TSamuraiFDC2Physics.cxx TSamuraiFDC2PhysicsDict.cxx)
 
-target_link_libraries(NPSamurai ${ROOT_LIBRARIES} NPCore) 
+target_link_libraries(NPSamurai ${ROOT_LIBRARIES} NPCore NPTrackReconstruction) 
 install(FILES TSamuraiFDC2Data.h TSamuraiFDC2Physics.h  DESTINATION ${CMAKE_INCLUDE_OUTPUT_DIRECTORY})
 

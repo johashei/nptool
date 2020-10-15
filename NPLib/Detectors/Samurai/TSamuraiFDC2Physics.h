@@ -33,12 +33,9 @@
 #include "NPVDetector.h"
 #include "NPInputParser.h"
 #include "NPXmlParser.h"
+#include "NPDCReconstruction.h"
 // ROOT 
-#include "TVector2.h" 
 #include "TVector3.h" 
-#include "TObject.h"
-#include "TCanvas.h"
-#include "TRandom3.h"
 // Forward declaration
 //class TSamuraiFDC2Spectra;
 
@@ -106,6 +103,7 @@ class TSamuraiFDC2Physics : public TObject, public NPL::VDetector{
     int Mult;
     int MultMean;
     int PileUp;
+
   public:
     // Projected position at given Z plan
     TVector3 ProjectedPosition(double Z);
@@ -121,13 +119,8 @@ class TSamuraiFDC2Physics : public TObject, public NPL::VDetector{
     void RemoveNoise();
     // Construct the 2D track and ref position at Z=0 and Z=100 based on X,Z and Radius provided
 
-    double Track2D(const vector<double>& X,const vector<double>& Z,const vector<double>& R,double& X0,double& X100 );
-    // Compute X and Y of interaction point based on drift vector of two different wire plane
-    void ResolvePlane(const TVector3& PosU,const double& ThetaU ,const TVector3& PosV, const double& ThetaV, TVector3& PosXY);
-    double SumD(const double* parameter );
-    vector<double> fitX;
-    vector<double> fitZ;
-    vector<double> fitR;
+    // Object use to perform the DC reconstruction
+    NPL::DCReconstruction m_reconstruction;//!
 
   public: //   Innherited from VDetector Class
 

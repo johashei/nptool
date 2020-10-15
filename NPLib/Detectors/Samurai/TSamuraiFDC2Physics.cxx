@@ -35,11 +35,6 @@
 #include "NPDetectorFactory.h"
 #include "NPSystemOfUnits.h"
 //   ROOT
-#include "TChain.h"
-#include "TVector2.h"
-#include "Math/Minimizer.h"
-#include "Math/Functor.h"
-#include "Math/Factory.h"
 using namespace NPUNITS;
 ///////////////////////////////////////////////////////////////////////////
 
@@ -83,13 +78,13 @@ void TSamuraiFDC2Physics::BuildPhysicalEvent(){
   }
 
   // Reconstruct the vector for each of the plane of each of the detector
-  static double X0,X100;
+  static double X0,X100,a,b; // store the BuildTrack2D results
   static map<std::pair<unsigned int,double>, TVector3 > VX0 ;  
   static map<std::pair<unsigned int,double>, TVector3 > VX100 ;  
   static map<std::pair<unsigned int,double>, int > MultPlane ;  
   VX0.clear();VX100.clear();
   for(auto it = X.begin();it!=X.end();++it){
-    double a = Track2D(X[it->first],Z[it->first],R[it->first],X0,X100); 
+    m_reconstruction.BuildTrack2D(X[it->first],Z[it->first],R[it->first],X0,X100,a,b); 
     // very small a means track perpendicular to the chamber, what happen when there is pile up
 
     if(abs(a)>1000)
@@ -115,7 +110,7 @@ void TSamuraiFDC2Physics::BuildPhysicalEvent(){
   for(auto it1 = VX0.begin();it1!=VX0.end();++it1){
     for(auto it2 = it1;it2!=VX0.end();++it2){
       if(it1!=it2 && it1->first.first==it2->first.first){// different plane, same detector
-        ResolvePlane(it1->second,it1->first.second,it2->second,it2->first.second,P);
+        m_reconstruction.ResolvePlane(it1->second,it1->first.second,it2->second,it2->first.second,P);
         if(P.X()!=-10000)
           C[it1->first.first].push_back(P);
       }
@@ -127,7 +122,7 @@ void TSamuraiFDC2Physics::BuildPhysicalEvent(){
   for(auto it1 = VX100.begin();it1!=VX100.end();++it1){
     for(auto it2 = it1;it2!=VX100.end();++it2){
       if(it1!=it2 && it1->first.first==it2->first.first){// different plane, same detector
-        ResolvePlane(it1->second,it1->first.second,it2->second,it2->first.second,P);
+        m_reconstruction.ResolvePlane(it1->second,it1->first.second,it2->second,it2->first.second,P);
 
         if(P.X()!=-10000)
           C100[it1->first.first].push_back(P);
@@ -167,119 +162,6 @@ void TSamuraiFDC2Physics::BuildPhysicalEvent(){
   }
 
   return;
-}
-////////////////////////////////////////////////////////////////////////////////
-void TSamuraiFDC2Physics::ResolvePlane(const TVector3& L,const double& ThetaU ,const TVector3& H, const double& ThetaV, TVector3& PosXY){
-  // direction of U and V wire 
-  TVector3 u = TVector3(0,1,0);
-  u.RotateZ(ThetaU); 
-
-  TVector3 v = TVector3(0,1,0);
-  v.RotateZ(ThetaV); 
-
-
-  // Compute the coeff of the two line of vecotr u (v) going through H (L)
-  // dv : y = av*x+bv
-  double av = v.Y()/v.X();
-  double bv = H.Y() - av*H.X();   
-  
-  // du : y = au*x+bv
-  double au = u.Y()/u.X();
-  double bu = L.Y() - au*L.X();   
-
-  // We look for M(xM, yM) that intersect du and dv:
-  double xM,yM;
-  if(!isinf(au) && !isinf(av)){ // au and av are not inf, i.e. not vertical line
-    xM = (bv-bu)/(au-av); 
-    yM = au*xM+bu;
-  } 
-  else if(isinf(av)){// av is inf, so v is along Y axis, H is direct measure of X
-    xM = H.X(); 
-    yM = au*xM+bu;
-  }
-  else if (isinf(au)){//au is inf, so u is along Y axis, L is direct measure of X
-    xM = L.X(); 
-    yM = av*xM+bv;
-  }
-  else{ // all is lost
-    xM=-10000;
-    yM=-10000;
-  }
-  PosXY=TVector3(xM,yM,0);
-};
-///////////////////////////////////////////////////////////////////////////
-double TSamuraiFDC2Physics::Track2D(const vector<double>& X,const vector<double>& Z,const vector<double>& R,double& X0,double& X100 ){
-  fitX=X;
-  fitZ=Z;
-  fitR=R;
-  // assume all X,Z,R of same size
-  unsigned int size = X.size();
-/*
-    ofstream out("data.txt");
-      for(unsigned int i = 0 ; i < size ; i++){
-      out << fitX[i] << " " << fitZ[i] << " "<< fitR[i] << endl;
-      }
-      out.close();
-  */      
-  // Define the starting point of the fit: a straight line passing through the 
-  // the first and last wire
-  // z = ax+b -> x=(z-b)/a
-  double a = (fitZ[size-1]-fitZ[0])/(fitX[size-1]-fitR[size-1]-fitX[0]-fitR[0]);
-  double b = fitZ[0]-a*(fitX[0]+fitR[0]);
-  double parameter[2]={a,b};
-/*    out.open("line.txt");
-      out << a << " " << b <<endl;
-      out.close();
-      */
-  //cout << a << " - " << b << " " << SumD(parameter) <<endl;
-
-  static ROOT::Math::Minimizer* min = ROOT::Math::Factory::CreateMinimizer("Minuit2", "Migrad");
-  static ROOT::Math::Functor f(this,&TSamuraiFDC2Physics::SumD,2); 
-  min->SetFunction(f);
-  min->SetVariable(0,"a",parameter[0],1000);
-  min->SetVariable(1,"b",parameter[1],1000);
-  min->SetTolerance(0.1);
-  // cout <<"start " << endl;
-  min->Minimize(); 
-  //cout << "start" << endl;
-  const double *xs = min->X();
-  X0=-xs[1]/xs[0];
-  X100=(100-xs[1])/xs[0];
-/*  
-     out.open("fit.txt");
-     out << xs[0] << " " << xs[1] <<endl;
-     out.close();
-     if(X0==0){
-     exit(0);
-     }
-  */   
-  return xs[0];
-  //  cout << " done " << SumD(xs) <<endl;  
-  //cout << xs[0] << " / " << xs[1] << " " << SumD(xs) <<endl;
-}
-////////////////////////////////////////////////////////////////////////////////
-double TSamuraiFDC2Physics::SumD(const double* parameter){
-  //cout << " "<<parameter[0] << " h " << parameter[1] ;
-  unsigned int size = fitX.size();
-  // Compute the sum P of the distance between the circle and the track
-  double P = 0;
-  double a = parameter[0];
-  double b = parameter[1];
-  double ab= a*b;
-  double a2=a*a;
-  double c,d,x,z;
-
-  for(unsigned int i = 0 ; i < size ; i++){
-    c = fitX[i];
-    d = fitZ[i];
-    x = (a*d-ab+c)/(1+a2);
-    z = a*x+b;
-    //P+= sqrt(abs( (x-c)*(x-c)+(z-d)*(z-d)-fitR[i]*fitR[i]))/fitR[i];
-    P+= abs( (x-c)*(x-c)+(z-d)*(z-d)-fitR[i]*fitR[i])/fitR[i];
-    //  cout << sqrt(abs((x-c)*(x-c)+(z-d)*(z-d)-fitR[i]*fitR[i] ))/fitR[i]<< " ";
-  }
-  //cout << endl;
-  return P;
 }
 ///////////////////////////////////////////////////////////////////////////
 void TSamuraiFDC2Physics::PreTreat(){
