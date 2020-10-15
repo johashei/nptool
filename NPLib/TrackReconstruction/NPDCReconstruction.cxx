@@ -99,7 +99,7 @@ double DCReconstruction::SumD(const double* parameter ){
     r = (*fitR)[i];
     x = (a*d-ab+c)/(1+a2);
     z = a*x+b;
-    P+= abs( (x-c)*(x-c)+(z-d)*(z-d)-r*r)/r;
+    P+= sqrt(abs( (x-c)*(x-c)+(z-d)*(z-d)-r*r));
   }
   return P;
 
