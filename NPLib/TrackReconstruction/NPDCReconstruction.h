@@ -9,7 +9,7 @@
 
 /*****************************************************************************
  *                                                                           *
- * Original Author :  Pierre MORFOUACE contact address: matta@lpcaen.in2p3.fr*
+ * Original Author :  Adrien Matta   contact address: matta@lpcaen.in2p3.fr  *
  *                                                                           *
  * Creation Date   : October 2020                                            *
  * Last update     : October 2020                                            *

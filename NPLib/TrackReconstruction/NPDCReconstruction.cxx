@@ -1,5 +1,22 @@
 #include"NPDCReconstruction.h"
 #include "Math/Factory.h"
+/*****************************************************************************
+ * Copyright (C) 2009-2020   this file is part of the NPTool Project         *
+ *                                                                           *
+ * For the licensing terms see $NPTOOL/Licence/NPTool_Licence                *
+ * For the list of contributors see $NPTOOL/Licence/Contributors             *
+ *****************************************************************************/
+
+/*****************************************************************************
+ *                                                                           *
+ * Original Author :  Adrien Matta   contact address: matta@lpcaen.in2p3.fr  *
+ *                                                                           *
+ * Creation Date   : October 2020                                            *
+ * Last update     : October 2020                                            *
+ *---------------------------------------------------------------------------*
+ * Decription:                                                               *
+ *  This class have all the method needed to analyse Drift Chambers          *
+ *****************************************************************************/
 
 using namespace std;
 using namespace NPL;
