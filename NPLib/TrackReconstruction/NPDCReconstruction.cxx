@@ -74,7 +74,7 @@ void DCReconstruction::ResolvePlane(const TVector3& L,const double& ThetaU ,cons
   double av = v.Y()/v.X();
   double bv = H.Y() - av*H.X();
 
-  // du : y = au*x+bv
+  // du : y = au*x+bu
   double au = u.Y()/u.X();
   double bu = L.Y() - au*L.X();
 
@@ -104,7 +104,6 @@ void DCReconstruction::ResolvePlane(const TVector3& L,const double& ThetaU ,cons
 
 ////////////////////////////////////////////////////////////////////////////////
 double DCReconstruction::SumD(const double* parameter ){
-  //cout << " "<<parameter[0] << " h " << parameter[1] ;
   unsigned int size = fitX->size();
   // Compute the sum P of the distance between the circle and the track
   double P = 0;
