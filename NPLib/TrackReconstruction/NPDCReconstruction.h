@@ -16,6 +16,23 @@
  *---------------------------------------------------------------------------*
  * Decription:                                                               *
  *  This class have all the method needed to analyse Drift Chambers          *
+ *  Notation:                                                                *
+ *    - The Wire are along the Y axis, there fore providing a measure of the *
+ *    X positions                                                            *
+ *    - First we find a 2D track in the X-Z plane based on the measurement of* 
+ *    several drift radius by minimisation:                                  *
+ *      - Let be Di the distance between a trial track and one of the drift  *
+ *      circle of coordinate Xi Zi and radius Ri.                            *
+ *      - We compute for the track P= sum_i(Di^2/Ri)                         *
+ *      - We minimise P to find the correct track                            *
+ *      - Warning : this algo assume only one track                          *
+ *    - Once the track found, we return the X position at Z=0 and Z=100 to   *
+ *    the user.                                                              *
+ *    - User can rotate found position depending on the real position of the *
+ *    Wires.                                                                 *
+ *    - Once the position found for all wire plan, one can look for the      *
+ *    intersaction in any given plane. This is done using ResolvePlane.      *
+ *    - Resolving plane for two Z plane will provide a point and a direction *
  *****************************************************************************/
 #include<vector>
 #include"TVector3.h"
