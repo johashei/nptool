@@ -19,12 +19,14 @@
  *****************************************************************************/
 #include<vector>
 #include"TVector3.h"
+#include "Math/Minimizer.h"
+#include "Math/Functor.h"
 namespace NPL{
   
   class DCReconstruction{
     public:
-      DCReconstruction(){};
-      ~DCReconstruction(){};
+      DCReconstruction();
+      ~DCReconstruction();
     
     public:
     // Build a track in 2D based on drift circle of Radius R and position X,Z
@@ -39,6 +41,8 @@ namespace NPL{
     double SumD(const double* parameter );
 
     private: // private member used by SumD
+      ROOT::Math::Minimizer* m_min;
+      ROOT::Math::Functor    m_func;
       const std::vector<double>* fitX;
       const std::vector<double>* fitZ;
       const std::vector<double>* fitR;

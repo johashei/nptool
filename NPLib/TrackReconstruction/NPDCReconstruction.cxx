@@ -1,12 +1,18 @@
 #include"NPDCReconstruction.h"
-#include "Math/Minimizer.h"
-#include "Math/Functor.h"
 #include "Math/Factory.h"
 
 using namespace std;
 using namespace NPL;
 
-
+////////////////////////////////////////////////////////////////////////////////
+DCReconstruction::DCReconstruction(){
+  m_min=ROOT::Math::Factory::CreateMinimizer("Minuit2", "Migrad"); 
+  m_func=ROOT::Math::Functor(this,&NPL::DCReconstruction::SumD,2); 
+  }
+////////////////////////////////////////////////////////////////////////////////
+DCReconstruction::~DCReconstruction(){
+  delete m_min;
+  }
 
 ////////////////////////////////////////////////////////////////////////////////
 void DCReconstruction::BuildTrack2D(const vector<double>& X,const vector<double>& Z,const vector<double>& R,double& X0,double& X100,double& a, double& b ){
@@ -22,16 +28,14 @@ void DCReconstruction::BuildTrack2D(const vector<double>& X,const vector<double>
   double bi = Z[0]-ai*(X[0]+R[0]);
   double parameter[2]={ai,bi};
 
-  static ROOT::Math::Minimizer* min = ROOT::Math::Factory::CreateMinimizer("Minuit2", "Migrad");
-  static ROOT::Math::Functor f(this,&NPL::DCReconstruction::SumD,2); 
-  min->SetFunction(f);
-  min->SetVariable(0,"a",parameter[0],1000);
-  min->SetVariable(1,"b",parameter[1],1000);
-  min->SetTolerance(0.1);
+  m_min->SetFunction(m_func);
+  m_min->SetVariable(0,"a",parameter[0],1000);
+  m_min->SetVariable(1,"b",parameter[1],1000);
+  m_min->SetTolerance(0.1);
   // Perform minimisation
-  min->Minimize(); 
+  m_min->Minimize(); 
   // access set of parameter that produce the minimum
-  const double *xs = min->X();
+  const double *xs = m_min->X();
   a=xs[0];
   b=xs[1];
   X0=-b/a;
@@ -99,7 +103,7 @@ double DCReconstruction::SumD(const double* parameter ){
     r = (*fitR)[i];
     x = (a*d-ab+c)/(1+a2);
     z = a*x+b;
-    P+= sqrt(abs( (x-c)*(x-c)+(z-d)*(z-d)-r*r));
+    P+= abs( (x-c)*(x-c)+(z-d)*(z-d)-r*r)/r;
   }
   return P;
 
