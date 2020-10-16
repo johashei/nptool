@@ -1,7 +1,17 @@
 # ROOT stuff
-#list(APPEND CMAKE_PREFIX_PATH $ENV{ROOTSYS})
-#find_package(ROOT REQUIRED)
-#include_directories(${ROOT_INCLUDE_DIRS})
+list(APPEND CMAKE_PREFIX_PATH $ENV{ROOTSYS})
+find_package(ROOT REQUIRED)
+include_directories(${ROOT_INCLUDE_DIRS})
+
+# nptool stuff
+#list(APPEND CMAKE_PREFIX_PATH $ENV{NPTOOL})
+#find_package(NPTOOL)
+
+#set(NPTOOL "$ENV{NPTOOL}")                                                      
+#set(NPLIB "${NPTOOL}/NPLib")                                                    
+#set(NPTOOL_INCLUDE_DIR "${NPLIB}/include")                                      
+#set(NPTOOL_LIB_DIR "${NPLIB}/lib")                                              
+#include_directories("${NPTOOL_INCLUDE_DIR}")
 
 # build libStarClusterMC shared library
 add_library(DecodeR SHARED DecodeR.cpp)
