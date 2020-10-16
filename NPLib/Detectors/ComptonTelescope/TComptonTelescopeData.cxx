@@ -109,5 +109,5 @@ void TComptonTelescopeData::Dump() const
    // Time
    cout << "CT_Calorimeter_T_Mult = " << fCT_Calorimeter_T_DetectorNbr.size() << endl;
    for (UShort_t i = 0; i < fCT_Calorimeter_T_DetectorNbr.size(); i++)
-      cout << "TowNbr: " << fCT_Calorimeter_E_TowerNbr[i] << " Det: " << fCT_Calorimeter_T_DetectorNbr[i] << " Pad: " << fCT_Calorimeter_T_ChannelNbr[i] << " Time: " << fCT_Calorimeter_T_Time[i] << endl;
+      cout << "TowNbr: " << fCT_Calorimeter_T_TowerNbr[i] << " Det: " << fCT_Calorimeter_T_DetectorNbr[i] << " Pad: " << fCT_Calorimeter_T_ChannelNbr[i] << " Time: " << fCT_Calorimeter_T_Time[i] << endl;
 }

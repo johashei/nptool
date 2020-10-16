@@ -13,4 +13,4 @@ ComptonTelescope
    THICKNESS_CALORIMETER= 10 mm
    TRACKER= 1
    CALORIMETER= 1
-   VIS= 0
+   VIS= 1
