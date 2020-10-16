@@ -49,13 +49,12 @@ int main()
    // read data file/flux and fill ccamData object
 
    cout << "Reading data" << endl;
-   DecodeR* D = new DecodeR();
+   DecodeR* D = new DecodeR(false);
    D->Dump();
-//   bool verbose = false;
-/*   
+
    // Load a file
    ifstream is;
-   is.open("decodeR/mfm.bin", ios::binary);
+   is.open("../mfm.bin", ios::binary);
    is.seekg (0, ios::end);
    int length = is.tellg();
    is.seekg (0, ios::beg);
@@ -65,23 +64,26 @@ int main()
 
    // Read from file
    D -> setRaw(buffer);
-   D -> decodeRawMFM(verbose);//Get rid of the first two (empty) events
-   D -> decodeRawMFM(verbose);
+   D -> decodeRawMFM();//Get rid of the first two (empty) events
+   D -> decodeRawMFM();
+   D -> decodeRawMFM();
+   D -> Dump();
 
+/*
    int c = 0;
    int i = 0;
 
    while (D -> getCursor() < length)
    {
       // Read the actual data
-      D -> decodeRawMFM(verbose);
+      D -> decodeRawMFM();
       //D -> Dump();//Optionnal print
 
       // Set ccamData (a better way is envisionned)
       for (int i=0; i<64; i++) {
         ccamData -> SetCTCalorimeterTTowerNbr( 1 );
-        ccamData -> SetCTCalorimeterTDetectorNbr( D -> getSource() );//Triggered ASIC number
-        ccamData -> SetCTCalorimeterTChannelNbr( D -> getChannel() );//ASIC's channel number
+        ccamData -> SetCTCalorimeterTDetectorNbr( 1 );//Triggered ASIC number
+        ccamData -> SetCTCalorimeterTChannelNbr( D -> getPixelNumber() );//ASIC's channel number
         ccamData -> SetCTCalorimeterTTime( D -> getTime() );
         ccamData -> SetCTCalorimeterETowerNbr(1);
         ccamData -> SetCTCalorimeterEDetectorNbr( 1 );
@@ -91,10 +93,10 @@ int main()
       ccamData -> Dump();
       ccamData -> Clear();
       c++;
-   }
+   }*/
    delete D;
    delete [] buffer;
-*/
+
    // test zone...
 /*
    ccamData->SetCTTrackerFrontETowerNbr(1);
@@ -108,5 +110,5 @@ int main()
 
    std::cout << "test compil\n";
 
-   return 1;
+   return 0;
 }

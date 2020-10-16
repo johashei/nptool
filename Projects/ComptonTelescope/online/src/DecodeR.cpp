@@ -1,9 +1,10 @@
 #include "DecodeR.h"
 
-DecodeR::DecodeR()
+DecodeR::DecodeR(bool v)
 {
   raw = NULL;
   cursor = 0;
+  verbose = v;
   time = 0;
   mat = new int [_NPIXELS];
   for (int i=0; i<_NPIXELS; i++) {
@@ -12,10 +13,11 @@ DecodeR::DecodeR()
   setF();
 }
 
-DecodeR::DecodeR(char* dataBlock)
+DecodeR::DecodeR(bool v, char* dataBlock)
 {
   raw = dataBlock;
   cursor = 0;
+  verbose = v;
   time = 0;
   mat = new int [_NPIXELS];
   for (int i=0; i<_NPIXELS; i++) {
@@ -74,6 +76,11 @@ void DecodeR::setRaw(char* dataBlock)
   cursor = 0;
 }
 
+void DecodeR::setVerbosity(bool v)
+{
+  verbose = v;
+}
+
 long int DecodeR::getTime()
 {
   return time;
@@ -96,15 +103,22 @@ long int DecodeR::getCursor()
 
 char DecodeR::getSource()
 {
+  cout << "Deprecated function getSource: use getPixelNumberInstead" << endl;
   return sourceID;
 }
 
 char DecodeR::getChannel()
 {
+  cout << "Deprecated function getChannel: use getPixelNumberInstead" << endl;
   return channelID;
 }
 
-void DecodeR::decodeRaw(bool verbose)
+char DecodeR::getPixelNumber()
+{
+  return F[sourceID*16+channelID];
+}
+
+void DecodeR::decodeRaw()
 {
   const bool packetType0xd4Autorized = true;
   // Version and system number
@@ -189,7 +203,7 @@ void DecodeR::decodeRaw(bool verbose)
   { cout << "Packet Type is not 0xd5 nor 0xd4 -> not analysed." << endl; }
 }
 
-void DecodeR::decodeRawMFM(bool verbose)
+void DecodeR::decodeRawMFM()
 {
   if (raw) {
     if (verbose)
@@ -231,7 +245,7 @@ void DecodeR::decodeRawMFM(bool verbose)
       // Data block length
       long int dataBlockLength = combineBytes(4);
       // Reading the actual data
-      decodeRaw(verbose);
+      decodeRaw();
       if (verbose)
         { cout << endl << "Curseur: " << cursor << endl; }
       // Rosmap adress in ASCII
