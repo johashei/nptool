@@ -31,6 +31,12 @@
 #include "TReactionConditions.h"
 class G4VPhysicalVolume;
 namespace NPS{
+  enum ReactionType{
+    TwoBody,
+    QFS,
+    Fusion
+    };
+
   class BeamReaction : public G4VFastSimulationModel{
     public:
       BeamReaction (G4String, G4Region*);
@@ -47,7 +53,8 @@ namespace NPS{
       NPL::Reaction m_Reaction;
       NPL::QFS m_QFS;
       string m_BeamName;
-      string m_ReactionType;
+      int m_ReactionType;
+
       bool   m_active;// is the process active
       bool   m_shoot;
       double m_StepSize;
@@ -57,7 +64,11 @@ namespace NPS{
       double m_length;
       int    m_Parent_ID;
       double SlowDownBeam(const G4ParticleDefinition* Beam, double IncidentEnergy, double Thickness,G4Material* Material);
-
+    
+    private:// specific for the simple case of fusion
+      string m_TargetNuclei;
+      string m_FusionProduct;
+      double m_FusionExcitation;
   
    private:
      TReactionConditions* m_ReactionConditions;
