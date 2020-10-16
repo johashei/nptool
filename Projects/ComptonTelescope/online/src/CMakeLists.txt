@@ -20,4 +20,4 @@ add_library(DecodeR SHARED DecodeR.cpp)
 add_executable(online online.cpp)
 
 # link library rules
-target_link_libraries(online DecodeR)
+target_link_libraries(online DecodeR ${ROOT_LIBRARIES})

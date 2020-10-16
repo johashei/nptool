@@ -6,6 +6,7 @@
 //#include "TComptonTelescopePhysics.h"
 
 // root headers
+#include "TH1F.h"
 
 // custom headers
 #include "DecodeR.h"
@@ -19,6 +20,10 @@ using namespace std;
 
 int main()
 {
+   auto pipo = new TH1F("h1", "h1", 100, 0, 100);
+   pipo->Print();
+   pipo->Dump();
+
    ///////////////////////////////////////////////////////////////////////////
    // configure option manager
 //   NPOptionManager::getInstance()->Destroy();
