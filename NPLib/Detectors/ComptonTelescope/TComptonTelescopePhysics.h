@@ -170,6 +170,7 @@ class TComptonTelescopePhysics : public TObject, public NPL::VDetector
       double m_StripFront_E_Threshold;       //!
       double m_StripBack_E_RAW_Threshold;    //!
       double m_StripBack_E_Threshold;        //!
+      double m_Calorimeter_E_RAW_Threshold;
 
    public:  // methods used in event treatment 
       vector<TVector2> Match_Front_Back();

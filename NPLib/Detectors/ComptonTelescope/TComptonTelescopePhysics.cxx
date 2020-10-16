@@ -55,13 +55,13 @@ TComptonTelescopePhysics::TComptonTelescopePhysics()
   m_StripFront_E_Threshold(0),
   m_StripBack_E_RAW_Threshold(0),
   m_StripBack_E_Threshold(0),
+  m_Calorimeter_E_RAW_Threshold(0),
   m_Take_E_Front(true), // p-side
   m_NumberOfDetectors(0),
   m_NumberOfStrips(32)
 {
   EventMultiplicity   = 0;
 }
-
 
 ///////////////////////////////////////////////////////////////////////////
 void TComptonTelescopePhysics::BuildPhysicalEvent()
@@ -123,7 +123,6 @@ void TComptonTelescopePhysics::PreTreat()
         m_PreTreatedData->SetCTTrackerFrontEDetectorNbr(m_EventData->GetCTTrackerFrontEDetectorNbr(i));
         m_PreTreatedData->SetCTTrackerFrontEStripNbr(m_EventData->GetCTTrackerFrontEStripNbr(i));
         m_PreTreatedData->SetCTTrackerFrontEEnergy(E);
-
       }
     }
   }
@@ -142,7 +141,27 @@ void TComptonTelescopePhysics::PreTreat()
     }
   }
 
-  // DSSSD time information and LaBr3 still have to be done...
+  // DSSSD time information and calorimeter still have to be done...
+  // Front, time
+  for (UShort_t i = 0; i < m_EventData->GetCTTrackerFrontTMult(); ++i) {
+    //
+  }
+
+  // Calorimeter
+  // Energy
+  for (UShort_t i = 0; i < m_EventData->GetCTCalorimeterEMult(); ++i) {
+    if (m_EventData->GetCTCalorimeterEEnergy(i) > m_Calorimeter_E_RAW_Threshold) {
+        m_PreTreatedData->SetCTCalorimeterETowerNbr(m_EventData->GetCTCalorimeterETowerNbr(i));
+        m_PreTreatedData->SetCTCalorimeterEDetectorNbr(m_EventData->GetCTCalorimeterEDetectorNbr(i));
+        m_PreTreatedData->SetCTCalorimeterEChannelNbr(m_EventData->GetCTCalorimeterEChannelNbr(i));
+        m_PreTreatedData->SetCTCalorimeterEEnergy(m_EventData->GetCTCalorimeterEEnergy(i));
+    }
+  }
+  
+  // Time
+  for (UShort_t i = 0; i < m_EventData->GetCTCalorimeterTMult(); ++i) {
+    //
+  }
 }
 
 
@@ -556,6 +575,7 @@ void TComptonTelescopePhysics::CheckSpectra()
 ///////////////////////////////////////////////////////////////////////////
 void TComptonTelescopePhysics::ClearSpectra()
 {
+  // m_Spectra -> Clear();
   // To be done
 }
 

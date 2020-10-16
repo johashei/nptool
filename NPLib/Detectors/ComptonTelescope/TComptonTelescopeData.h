@@ -98,12 +98,12 @@ class TComptonTelescopeData : public TObject {
       // Calorimeter
       // (E)
       void SetCTCalorimeterETowerNbr(const UShort_t TowNbr)       {fCT_Calorimeter_E_TowerNbr.push_back(TowNbr);}
-      void SetCTCalorimeterEDetectorNbr(const UShort_t DetNbr)    {fCT_Calorimeter_E_TowerNbr.push_back(DetNbr);}
+      void SetCTCalorimeterEDetectorNbr(const UShort_t DetNbr)    {fCT_Calorimeter_E_DetectorNbr.push_back(DetNbr);}
       void SetCTCalorimeterEChannelNbr(const UShort_t ChannelNbr) {fCT_Calorimeter_E_ChannelNbr.push_back(ChannelNbr);}
       void SetCTCalorimeterEEnergy(const Double_t Energy)         {fCT_Calorimeter_E_Energy.push_back(Energy);}
       // (T)
       void SetCTCalorimeterTTowerNbr(const UShort_t TowNbr)       {fCT_Calorimeter_T_TowerNbr.push_back(TowNbr);}
-      void SetCTCalorimeterTDetectorNbr(const UShort_t DetNbr)    {fCT_Calorimeter_T_TowerNbr.push_back(DetNbr);}
+      void SetCTCalorimeterTDetectorNbr(const UShort_t DetNbr)    {fCT_Calorimeter_T_DetectorNbr.push_back(DetNbr);}
       void SetCTCalorimeterTChannelNbr(const UShort_t ChannelNbr) {fCT_Calorimeter_T_ChannelNbr.push_back(ChannelNbr);}
       void SetCTCalorimeterTTime(const Double_t Time)             {fCT_Calorimeter_T_Time.push_back(Time);}
 
