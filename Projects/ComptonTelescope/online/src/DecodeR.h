@@ -39,8 +39,9 @@ class DecodeR
     int* getData();
     char* getRaw();
     long int getCursor();
-    char getSource();
-    char getChannel();
+    char getSource();//Deprecated
+    char getChannel();//Deprecated
+    char getPixelNumber();
     // Utility method
     long int combineBytes(int length);
     void orderPixels();

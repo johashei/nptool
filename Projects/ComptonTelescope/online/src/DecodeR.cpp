@@ -96,12 +96,19 @@ long int DecodeR::getCursor()
 
 char DecodeR::getSource()
 {
+  cout << "Deprecated function getSource: use getPixelNumberInstead" << endl;
   return sourceID;
 }
 
 char DecodeR::getChannel()
 {
+  cout << "Deprecated function getChannel: use getPixelNumberInstead" << endl;
   return channelID;
+}
+
+char DecodeR::getPixelNumber()
+{
+  return F[sourceID*16+channelID];
 }
 
 void DecodeR::decodeRaw(bool verbose)
