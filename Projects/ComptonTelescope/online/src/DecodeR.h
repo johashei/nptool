@@ -15,6 +15,7 @@ class DecodeR
     // raw is a pointer to the data flux, scanned by cursor
     char* raw;
     long int cursor;
+    bool verbose;
     // The most usefull data
     long int time;
     int* mat;
@@ -26,15 +27,16 @@ class DecodeR
     void setF();//Order of pixels hard-coded here
 
   public:
-    // Instanciation with all fields set to 0 (especially the cursor) except optionally the buffer dataBlock
-    DecodeR();
-    DecodeR(char* dataBlock);
+    // Instanciation with all fields set to 0 (especially the cursor) except optionally the buffer dataBlock, and sets verbosity to v
+    DecodeR(bool v);
+    DecodeR(bool v, char* dataBlock);
     // Deletion deletes the data array mat
     ~DecodeR();
     // Setters and getters
     //void setTime(long int timestamp);
     //void setData(int* data);
     void setRaw(char* dataBlock);//also sets the cursor to 0
+    void setVerbosity(bool v);
     long int getTime();
     int* getData();
     char* getRaw();
@@ -46,8 +48,8 @@ class DecodeR
     long int combineBytes(int length);
     void orderPixels();
     // Decode methods with and without MFM header (the second calls the first that fills the fields)
-    void decodeRaw(bool verbose);
-    void decodeRawMFM(bool verbose);
+    void decodeRaw();
+    void decodeRawMFM();
     // A dumping method
     void Dump();
 };
