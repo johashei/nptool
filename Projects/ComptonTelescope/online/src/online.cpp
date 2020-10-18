@@ -2,13 +2,13 @@
 #include "NPOptionManager.h"
 #include "RootOutput.h"
 #include "NPDetectorManager.h"
-#include "TComptonTelescopeData.h"
-#include "TComptonTelescopePhysics.h"
+//#include "TComptonTelescopeData.h"
+//#include "TComptonTelescopePhysics.h"
 
 // root headers
 
 // custom headers
-#include "DecodeR.h"
+//#include "DecodeR.h"
 
 // C++ headers
 #include <iostream>
@@ -32,7 +32,7 @@ int main()
    NPOptionManager::getInstance(arg);  
 
    // ROOT output file name
-// RootOutput::getInstance("OnlineTree.root", "OnlineTree");
+ RootOutput::getInstance("OnlineTree.root", "OnlineTree");
 
    // configure detector manager
    string detectorfileName = NPOptionManager::getInstance()->GetDetectorFile();

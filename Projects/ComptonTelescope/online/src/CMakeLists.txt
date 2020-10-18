@@ -17,7 +17,8 @@ message("  library directory: ${NPLib_LIB_DIRS}")
 #set(NPTOOL_INCLUDE_DIR "${NPLIB}/include")                                      
 set(NPTOOL_LIB_DIR "${NPLIB}/lib")                                              
 #include_directories("${NPTOOL_INCLUDE_DIR}")
-set(NPLib_LIBRARIES "-L${NPTOOL_LIB_DIR} -lNPCore -lNPPhysics -lNPComptonTelescope")
+#set(NPLib_LIBRARIES "-L${NPTOOL_LIB_DIR} -lNPCore -lNPPhysics -lNPComptonTelescope")
+set(NPLib_LIBRARIES "-L${NPTOOL_LIB_DIR} -lNPCore -lNPPhysics")
 
 # build libStarClusterMC shared library
 add_library(DecodeR SHARED DecodeR.cpp)
@@ -26,5 +27,6 @@ add_library(DecodeR SHARED DecodeR.cpp)
 add_executable(online online.cpp)
 
 # link library rules
-target_link_libraries(online DecodeR ${ROOT_LIBRARIES} ${NPLib_LIBRARIES})
+#target_link_libraries(online DecodeR ${ROOT_LIBRARIES} ${NPLib_LIBRARIES})
+target_link_libraries(online ${ROOT_LIBRARIES} ${NPLib_LIBRARIES})
 #target_link_libraries(online DecodeR ${ROOT_LIBRARIES} NPCore NPPhysics NPComptonTelescope)
