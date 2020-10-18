@@ -384,7 +384,7 @@ void NPL::InputParser::TreatAliases(){
     name += alias[i]->GetMainValue(); 
     std::string action = alias[i]->GetString("Action");
     std::vector<std::string> value  = alias[i]->GetVectorString("Value"); 
-    if(action=="Inplace" && value.size()!=1)
+    if(action=="Replace" && value.size()!=1)
       NPL::SendErrorAndExit("NPL::InputParser", "Inplace alias can only take one value"); 
 
     // Scan all blocks for aliases

@@ -61,15 +61,16 @@ NPS::BeamReaction::BeamReaction(G4String modelName)
 void NPS::BeamReaction::ReadConfiguration() {
   NPL::InputParser input(NPOptionManager::getInstance()->GetReactionFile());
 
-  if(input.GetAllBlocksWithToken("TwoBodyReaction").size()>0) m_ReactionType ="TwoBodyReaction";
-  else if(input.GetAllBlocksWithToken("QFSReaction").size()>0) m_ReactionType ="QFSReaction";
+  if(input.GetAllBlocksWithToken("TwoBodyReaction").size()>0) m_ReactionType =TwoBody;
+  else if(input.GetAllBlocksWithToken("QFSReaction").size()>0) m_ReactionType =QFS;
+  else if(input.GetAllBlocksWithToken("FusionReaction").size()>0) m_ReactionType =Fusion;
 
-
-  if (m_ReactionType=="TwoBodyReaction" ) {
+  // Two body
+  if (m_ReactionType==TwoBody ) {
     m_Reaction.ReadConfigurationFile(input);
     m_BeamName = NPL::ChangeNameToG4Standard(m_Reaction.GetParticle1()->GetName());
     if(m_Reaction.GetParticle3()->GetName() != ""){
-      m_active             = true;
+      m_active = true;
       m_ReactionConditions = new TReactionConditions();
       AttachReactionConditions();
       if (!RootOutput::getInstance()->GetTree()->FindBranch("ReactionConditions"))
@@ -78,15 +79,28 @@ void NPS::BeamReaction::ReadConfiguration() {
     }
   } 
 
-  else  if (m_ReactionType=="QFSReaction") {
+  // QFS
+  else  if (m_ReactionType==QFS) {
     m_QFS.ReadConfigurationFile(input);
     m_BeamName = NPL::ChangeNameToG4Standard(m_QFS.GetParticleA()->GetName());
-    m_active             = true;
+    m_active = true;
     m_ReactionConditions = new TReactionConditions();
     AttachReactionConditions();
     if (!RootOutput::getInstance()->GetTree()->FindBranch("ReactionConditions"))
       RootOutput::getInstance()->GetTree()->Branch(
           "ReactionConditions", "TReactionConditions", &m_ReactionConditions);
+  }
+
+  // Fusion
+  else  if (m_ReactionType==Fusion) {
+    vector<InputBlock*> blocks=input.GetAllBlocksWithToken("FusionReaction");
+    m_BeamName = NPL::ChangeNameToG4Standard(blocks[0]->GetString("Beam"));
+    m_TargetNuclei = blocks[0]->GetString("Target");
+    m_FusionProduct = blocks[0]->GetString("Product");
+    m_FusionExcitation = blocks[0]->GetDouble("ExcitationEnergy","MeV");
+    m_active = true;
+    // not used
+    m_ReactionConditions = new TReactionConditions();
   }
   else {
     m_active = false;
@@ -153,7 +167,7 @@ G4bool NPS::BeamReaction::ModelTrigger(const G4FastTrack& fastTrack) {
   m_StepSize = PrimaryTrack->GetStepLength();
   // If the condition is met, the event is generated
   if (m_shoot && m_length < m_StepSize) {
-    if(m_ReactionType=="QFSReaction"){
+    if(m_ReactionType==QFS){
       if ( m_QFS.IsAllowed() ) {
         return true;
       }
@@ -163,7 +177,7 @@ G4bool NPS::BeamReaction::ModelTrigger(const G4FastTrack& fastTrack) {
       }
     }
 
-    else if(m_ReactionType=="TwoBodyReaction"){
+    else if(m_ReactionType==TwoBody){
       if ( m_Reaction.IsAllowed(PrimaryTrack->GetKineticEnergy()) ) {
         return true;
       } 
@@ -172,6 +186,9 @@ G4bool NPS::BeamReaction::ModelTrigger(const G4FastTrack& fastTrack) {
         std::cout << "Two body reaction not allowed" << std::endl;
       }
     }
+    else if(m_ReactionType==Fusion){
+        return true;
+      }
   }
 
   return false;
@@ -220,12 +237,11 @@ void NPS::BeamReaction::DoIt(const G4FastTrack& fastTrack,
   fastStep.KillPrimaryTrack();
   fastStep.SetPrimaryTrackPathLength(0.0);
 
+  ///////////////////////////////
+  // Two-Body Reaction Case /////
+  ///////////////////////////////
+  if (m_ReactionType==TwoBody) {
 
-  if (m_ReactionType=="TwoBodyReaction" ) {
-
-    ///////////////////////////////
-    // Two-Body Reaction Case /////
-    ///////////////////////////////
     static G4IonTable* IonTable
       = G4ParticleTable::GetParticleTable()->GetIonTable();
 
@@ -398,7 +414,9 @@ void NPS::BeamReaction::DoIt(const G4FastTrack& fastTrack,
 
   }// end if TwoBodyReaction
 
-  else if (m_ReactionType=="QFSReaction" ) {
+
+  // QFS
+  else if (m_ReactionType==QFS ) {
 
     //////Define the kind of particle to shoot////////
     //    A --> T  ==> B + (c -> T) =>  B + 1 + 2      
@@ -576,9 +594,35 @@ void NPS::BeamReaction::DoIt(const G4FastTrack& fastTrack,
     m_ReactionConditions->SetMomentumDirectionZ(momentum_kine2_world.z());
     m_ReactionConditions->SetMomentumDirectionZ(momentum_kineB_world.z());
 
+  }// end QFS
 
+  ////////////////////
+  //  Fusion Case   //
+  ////////////////////
+  else if(m_ReactionType==Fusion){
+     // Set the end of the step conditions
+    fastStep.SetPrimaryTrackFinalKineticEnergyAndDirection(0, pdirection);
+    fastStep.SetPrimaryTrackFinalPosition(worldPosition);
+    fastStep.SetTotalEnergyDeposited(0);
+    fastStep.SetPrimaryTrackFinalTime(time);// FIXME
+    fastStep.KillPrimaryTrack();
+    fastStep.SetPrimaryTrackPathLength(0.0);
+    
+    static G4IonTable* IonTable
+      = G4ParticleTable::GetParticleTable()->GetIonTable();
+    //////Define the kind of particle to shoot////////
+    G4ParticleDefinition* Product;
+    NPL::Particle N(m_FusionProduct);  
+    int PZ = N.GetZ();
+    int PA = N.GetA();
+    Product = IonTable->GetIon(PZ, PA, m_FusionExcitation*MeV);
+    // setup the daugter
+    G4ThreeVector momentum_dir(0,0,1);
+    double Energy=energy;
+    G4DynamicParticle particle(Product, momentum_dir, Energy);
+    fastStep.CreateSecondaryTrack(particle, localPosition, time);
+  }// end fusion
 
-  }
 }
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 // Return the slow down beam in given thickness of material
