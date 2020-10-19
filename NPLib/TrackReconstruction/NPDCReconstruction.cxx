@@ -25,6 +25,7 @@ using namespace NPL;
 DCReconstruction::DCReconstruction(){
   m_min=ROOT::Math::Factory::CreateMinimizer("Minuit2", "Migrad"); 
   m_func=ROOT::Math::Functor(this,&NPL::DCReconstruction::SumD,2); 
+  m_min->SetFunction(m_func);
   }
 ////////////////////////////////////////////////////////////////////////////////
 DCReconstruction::~DCReconstruction(){
@@ -44,13 +45,13 @@ void DCReconstruction::BuildTrack2D(const vector<double>& X,const vector<double>
   double ai = (Z[size-1]-Z[0])/(X[size-1]-R[size-1]-X[0]-R[0]);
   double bi = Z[0]-ai*(X[0]+R[0]);
   double parameter[2]={ai,bi};
-
-  m_min->SetFunction(m_func);
   m_min->SetVariable(0,"a",parameter[0],1000);
   m_min->SetVariable(1,"b",parameter[1],1000);
   m_min->SetTolerance(0.1);
+
   // Perform minimisation
   m_min->Minimize(); 
+
   // access set of parameter that produce the minimum
   const double *xs = m_min->X();
   a=xs[0];
