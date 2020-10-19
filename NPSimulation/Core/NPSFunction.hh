@@ -1,0 +1,13 @@
+#ifndef NPSFunction_h
+#define NPSFunction_h 1
+#include"TVector3.h"
+#include"G4ThreeVector.hh"
+
+namespace NPS{
+////////////////////////////////////////////////////////////////////////////////
+G4ThreeVector ConvertVector(TVector3 vec);
+////////////////////////////////////////////////////////////////////////////////
+TVector3 ConvertVector(G4ThreeVector vec);
+
+  }
+#endif 
