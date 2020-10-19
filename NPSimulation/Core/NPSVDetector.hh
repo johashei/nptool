@@ -49,6 +49,7 @@
 // NPLib header
 #include "TInteractionCoordinates.h"
 #include "NPInputParser.h"
+#include "NPSFunction.hh"
 
 
 using namespace std;

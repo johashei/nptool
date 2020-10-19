@@ -13,4 +13,4 @@ if(Geant4_VERSION_MAJOR GREATER 9)
  endif()
 
 
- target_link_libraries(NPSProcess ${ROOT_LIBRARIES} ${Geant4_LIBRARIES} ${NPLib_LIBRARIES} -lNPInitialConditions -lNPInteractionCoordinates -lNPReactionConditions -lNPFissionConditions)
+ target_link_libraries(NPSProcess ${ROOT_LIBRARIES} ${Geant4_LIBRARIES} NPSCore ${NPLib_LIBRARIES} NPInitialConditions NPInteractionCoordinates NPReactionConditions NPFissionConditions)

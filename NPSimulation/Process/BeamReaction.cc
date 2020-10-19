@@ -32,7 +32,7 @@
 #include "NPOptionManager.h"
 #include "RootOutput.h"
 #include "TLorentzVector.h"
-#include "NPSDetectorFactory.hh"
+#include "NPSFunction.hh"
 #include <Randomize.hh>
 #include <iostream>
 #include <string>
