@@ -14,6 +14,7 @@ typedef NPS::VDetector* (*ClassDetectorFactoryFn)();
 namespace NPS{
   // Convert fron root to g4 standard
   G4ThreeVector ConvertVector(TVector3 vec);
+  TVector3 ConvertVector(G4ThreeVector vec);
 
 class DetectorFactory{
   private:

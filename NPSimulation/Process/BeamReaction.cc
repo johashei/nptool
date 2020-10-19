@@ -31,6 +31,9 @@
 #include "NPInputParser.h"
 #include "NPOptionManager.h"
 #include "RootOutput.h"
+#include "TLorentzVector.h"
+#include "NPSDetectorFactory.hh"
+#include <Randomize.hh>
 #include <iostream>
 #include <string>
 ////////////////////////////////////////////////////////////////////////////////
@@ -600,7 +603,7 @@ void NPS::BeamReaction::DoIt(const G4FastTrack& fastTrack,
   //  Fusion Case   //
   ////////////////////
   else if(m_ReactionType==Fusion){
-     // Set the end of the step conditions
+    // Set the end of the step conditions
     fastStep.SetPrimaryTrackFinalKineticEnergyAndDirection(0, pdirection);
     fastStep.SetPrimaryTrackFinalPosition(worldPosition);
     fastStep.SetTotalEnergyDeposited(0);
@@ -613,13 +616,32 @@ void NPS::BeamReaction::DoIt(const G4FastTrack& fastTrack,
     //////Define the kind of particle to shoot////////
     G4ParticleDefinition* Product;
     NPL::Particle N(m_FusionProduct);  
+    N.SetExcitationEnergy(m_FusionExcitation);
+    NPL::Particle T(m_TargetNuclei);  
     int PZ = N.GetZ();
     int PA = N.GetA();
     Product = IonTable->GetIon(PZ, PA, m_FusionExcitation*MeV);
     // setup the daugter
-    G4ThreeVector momentum_dir(0,0,1);
-    double Energy=energy;
-    G4DynamicParticle particle(Product, momentum_dir, Energy);
+    /////////////////////////////////////////////////////////////////////////
+    TVector3 BeamP = NPS::ConvertVector(PrimaryTrack->GetMomentum()); 
+
+    TLorentzVector BeamLV;
+    BeamLV.SetVectM(BeamP,N.Mass()*MeV);
+    TLorentzVector TargetLV;
+    TargetLV.SetVectM(TVector3(0,0,0),T.Mass()*MeV);
+    TLorentzVector TotalLV=BeamLV+TargetLV;
+
+    // energy lost in the fusion process to be removed to the total energy 
+    // Total Available Ek = Initial Ek + (InitialMass-FinalMass)
+    double KineAvailable= TotalLV.Et()+ (TotalLV.Mag()-N.Mass());
+    G4ThreeVector momentum_dir = ConvertVector(TotalLV.Vect().Unit());
+
+    //////FIXME Unsure of this part
+    // Randomize Phi after the reaction
+    double Phi = CLHEP::RandFlat::shoot()*2*M_PI ;
+    momentum_dir.rotate(Phi,PrimaryTrack->GetMomentum());
+
+    G4DynamicParticle particle(Product, momentum_dir, KineAvailable);
     fastStep.CreateSecondaryTrack(particle, localPosition, time);
   }// end fusion
 
