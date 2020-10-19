@@ -634,7 +634,7 @@ void NPS::BeamReaction::DoIt(const G4FastTrack& fastTrack,
     // energy lost in the fusion process to be removed to the total energy 
     // Total Available Ek = Initial Ek + (InitialMass-FinalMass)
     double KineAvailable= TotalLV.Et()+ (TotalLV.Mag()-N.Mass());
-    G4ThreeVector momentum_dir = ConvertVector(TotalLV.Vect().Unit());
+    G4ThreeVector momentum_dir = NPS::ConvertVector(TotalLV.Vect().Unit());
 
     //////FIXME Unsure of this part
     // Randomize Phi after the reaction
