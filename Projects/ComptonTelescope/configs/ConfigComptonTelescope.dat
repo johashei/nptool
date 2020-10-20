@@ -6,3 +6,5 @@ ConfigComptonTelescope
    STRIP_BACK_E_RAW_THRESHOLD             300
    STRIP_FRONT_E_THRESHOLD                10
    STRIP_BACK_E_THRESHOLD                 10
+   CALORIMETER_E_RAW_THRESHOLD            0
+   CALORIMETER_E_THRESHOLD                0

@@ -55,10 +55,12 @@ TComptonTelescopePhysics::TComptonTelescopePhysics()
   m_StripFront_E_Threshold(0),
   m_StripBack_E_RAW_Threshold(0),
   m_StripBack_E_Threshold(0),
-  m_Calorimeter_E_RAW_Threshold(0),
+  m_Calorimeter_E_RAW_Threshold(0), // Before pedestal subtraction (ADC)
+  m_Calorimeter_E_Threshold(0), // After pedestal subtraction (ADC)
   m_Take_E_Front(true), // p-side
   m_NumberOfDetectors(0),
-  m_NumberOfStrips(32)
+  m_NumberOfStrips(32),
+  m_NPixels(64)
 {
   EventMultiplicity   = 0;
 }
@@ -87,7 +89,7 @@ void TComptonTelescopePhysics::BuildSimplePhysicalEvent()
       Double_t Front_E = m_PreTreatedData->GetCTTrackerFrontEEnergy(couple[i].X());
       Double_t Back_E  = m_PreTreatedData->GetCTTrackerBackEEnergy(couple[i].Y());
 
-      // Fill TComptonTelescopePhysics private members
+      // Fill TComptonTelescopePhysics members
       DetectorNumber.push_back(N);
       StripFront_E.push_back(Front_E);
       StripBack_E.push_back(Back_E);
@@ -97,10 +99,23 @@ void TComptonTelescopePhysics::BuildSimplePhysicalEvent()
       else
         Strip_E.push_back(Back_E);
 
+      //Strip_T = ?
+
       Strip_Front.push_back(Front);
       Strip_Back.push_back(Back);
     }
   }
+  
+  // Calculate a corrected energy for the calorimeter
+  Calor_E = 0;
+/*  for (UShort_t i = 0; i < m_PreTreatedData->GetCTCalorimeterEMult(); ++i) {
+    Calor_E += fCalorimeter_E(m_PreTreatedData, i);//Apply calibration other than pedestal and sum anodes
+  }*/
+  for (UShort_t i = 0; i < m_EventData->GetCTCalorimeterEMult(); ++i) {
+    Calor_E += fCalorimeter_E(m_EventData, i);//Apply full calibration and sum anodes
+  }
+
+  //Calor_T = ?
 
   //   if (DetectorNumber.size() == 1) return;
 }
@@ -117,7 +132,7 @@ void TComptonTelescopePhysics::PreTreat()
   for (UShort_t i = 0; i < m_EventData->GetCTTrackerFrontEMult(); ++i) {
     if (m_EventData->GetCTTrackerFrontEEnergy(i) > m_StripFront_E_RAW_Threshold && 
         IsValidChannel("Front", m_EventData->GetCTTrackerFrontEDetectorNbr(i), m_EventData->GetCTTrackerFrontEStripNbr(i))) {
-      Double_t E = fStrip_Front_E(m_EventData, i);
+      Double_t E = fStrip_Front_E(m_EventData, i);//Calibration happens here
       if (E > m_StripFront_E_Threshold) {
         m_PreTreatedData->SetCTTrackerFrontETowerNbr(m_EventData->GetCTTrackerFrontETowerNbr(i));
         m_PreTreatedData->SetCTTrackerFrontEDetectorNbr(m_EventData->GetCTTrackerFrontEDetectorNbr(i));
@@ -131,7 +146,7 @@ void TComptonTelescopePhysics::PreTreat()
   for (UShort_t i = 0; i < m_EventData->GetCTTrackerBackEMult(); ++i) {
     if (m_EventData->GetCTTrackerBackEEnergy(i) > m_StripBack_E_RAW_Threshold && 
         IsValidChannel("Back", m_EventData->GetCTTrackerBackEDetectorNbr(i), m_EventData->GetCTTrackerBackEStripNbr(i))) {
-      Double_t E = fStrip_Back_E(m_EventData, i);
+      Double_t E = fStrip_Back_E(m_EventData, i);//Calibration happens here
       if (E > m_StripBack_E_Threshold) {
         m_PreTreatedData->SetCTTrackerBackETowerNbr(m_EventData->GetCTTrackerBackETowerNbr(i));
         m_PreTreatedData->SetCTTrackerBackEDetectorNbr( m_EventData->GetCTTrackerBackEDetectorNbr(i));
@@ -144,23 +159,40 @@ void TComptonTelescopePhysics::PreTreat()
   // DSSSD time information and calorimeter still have to be done...
   // Front, time
   for (UShort_t i = 0; i < m_EventData->GetCTTrackerFrontTMult(); ++i) {
-    //
+    m_PreTreatedData->SetCTTrackerFrontTTowerNbr(m_EventData->GetCTTrackerFrontTTowerNbr(i));
+    m_PreTreatedData->SetCTTrackerFrontTDetectorNbr(m_EventData->GetCTTrackerFrontTDetectorNbr(i));
+    m_PreTreatedData->SetCTTrackerFrontTStripNbr(m_EventData->GetCTTrackerFrontTStripNbr(i));
+    m_PreTreatedData->SetCTTrackerFrontTTime(m_EventData->GetCTTrackerFrontTTime(i));
+  }
+  // Back, time
+  for (UShort_t i = 0; i < m_EventData->GetCTTrackerBackTMult(); ++i) {
+    m_PreTreatedData->SetCTTrackerBackTTowerNbr(m_EventData->GetCTTrackerBackTTowerNbr(i));
+    m_PreTreatedData->SetCTTrackerBackTDetectorNbr(m_EventData->GetCTTrackerBackTDetectorNbr(i));
+    m_PreTreatedData->SetCTTrackerBackTStripNbr(m_EventData->GetCTTrackerBackTStripNbr(i));
+    m_PreTreatedData->SetCTTrackerBackTTime(m_EventData->GetCTTrackerBackTTime(i));
   }
 
   // Calorimeter
   // Energy
+
   for (UShort_t i = 0; i < m_EventData->GetCTCalorimeterEMult(); ++i) {
     if (m_EventData->GetCTCalorimeterEEnergy(i) > m_Calorimeter_E_RAW_Threshold) {
+      Double_t E = fCalorimeter_ped(m_EventData, i);//Calibration happens here (pedestal subtraction only)
+      if (E > m_Calorimeter_E_Threshold) {
         m_PreTreatedData->SetCTCalorimeterETowerNbr(m_EventData->GetCTCalorimeterETowerNbr(i));
         m_PreTreatedData->SetCTCalorimeterEDetectorNbr(m_EventData->GetCTCalorimeterEDetectorNbr(i));
         m_PreTreatedData->SetCTCalorimeterEChannelNbr(m_EventData->GetCTCalorimeterEChannelNbr(i));
-        m_PreTreatedData->SetCTCalorimeterEEnergy(m_EventData->GetCTCalorimeterEEnergy(i));
+        m_PreTreatedData->SetCTCalorimeterEEnergy(E);
+      }
     }
   }
   
   // Time
   for (UShort_t i = 0; i < m_EventData->GetCTCalorimeterTMult(); ++i) {
-    //
+    m_PreTreatedData->SetCTCalorimeterTTowerNbr(m_EventData->GetCTCalorimeterTTowerNbr(i));
+    m_PreTreatedData->SetCTCalorimeterTDetectorNbr(m_EventData->GetCTCalorimeterTDetectorNbr(i));
+    m_PreTreatedData->SetCTCalorimeterTChannelNbr(m_EventData->GetCTCalorimeterTChannelNbr(i));
+    m_PreTreatedData->SetCTCalorimeterTTime(m_EventData->GetCTCalorimeterTTime(i));
   }
 }
 
@@ -305,7 +337,7 @@ void TComptonTelescopePhysics::ReadAnalysisConfig()
         cout << "\t" << whatToDo << "\t" << DataBuffer << endl;
         Int_t Detector = atoi(DataBuffer.substr(2,1).c_str());
         Int_t channel = -1;
-        if (DataBuffer.compare(3,4,"FRONT") == 0) {
+        if (DataBuffer.compare(3,5,"FRONT") == 0) {
           channel = atoi(DataBuffer.substr(7).c_str());
           *(m_FrontChannelStatus[Detector-1].begin()+channel) = false;
         }
@@ -343,10 +375,22 @@ void TComptonTelescopePhysics::ReadAnalysisConfig()
         cout << whatToDo << " " << m_StripFront_E_Threshold << endl;
       }
 
-      else if (whatToDo=="STRIP_BACK_THRESHOLD") {
+      else if (whatToDo=="STRIP_BACK_E_THRESHOLD") {
         AnalysisConfigFile >> DataBuffer;
         m_StripBack_E_Threshold = atoi(DataBuffer.c_str());
         cout << whatToDo << " " << m_StripBack_E_Threshold << endl;
+      }
+
+      else if (whatToDo=="CALORIMETER_E_RAW_THRESHOLD") {
+        AnalysisConfigFile >> DataBuffer;
+        m_Calorimeter_E_RAW_Threshold = atoi(DataBuffer.c_str());
+        cout << whatToDo << " " << m_Calorimeter_E_RAW_Threshold << endl;
+      }
+
+      else if (whatToDo=="CALORIMETER_E_THRESHOLD") {
+        AnalysisConfigFile >> DataBuffer;
+        m_Calorimeter_E_Threshold = atoi(DataBuffer.c_str());
+        cout << whatToDo << " " << m_Calorimeter_E_Threshold << endl;
       }
 
       else {
@@ -379,6 +423,10 @@ void TComptonTelescopePhysics::Clear()
   StripBack_T.clear();
   Strip_Front.clear();
   Strip_Back.clear();
+
+  // Calorimeter
+  Calor_E = 0;
+  Calor_T.clear();
 }
 
 
@@ -408,6 +456,7 @@ void TComptonTelescopePhysics::ReadConfiguration(NPL::InputParser parser){
       int    nbr_strip = blocks[i]->GetInt("NUMBER_STRIPS");
       double distance_cal = blocks[i]->GetDouble("DISTANCE_TRACKER_CALORIMETER","mm");
       double thickness_cal = blocks[i]->GetDouble("THICKNESS_CALORIMETER","mm");
+      int    npixels_cal = blocks[i]->GetInt("NPIXELS_CALORIMETER");
       int    tracker = blocks[i]->GetInt("TRACKER");
       int    calorimeter = blocks[i]->GetInt("CALORIMETER");
       int    vis= blocks[i]->GetInt("VIS");
@@ -438,6 +487,10 @@ void TComptonTelescopePhysics::AddParameterToCalibrationManager()
     for (int j = 0; j < m_NumberOfStrips; ++j) {
       Cal->AddParameter("COMPTONTELESCOPE", "D"+ NPL::itoa(i+1)+"_STRIP_BACK"+ NPL::itoa(j)+"_E",  "COMPTONTELESCOPE_D"+ NPL::itoa(i+1)+"_STRIP_BACK"+ NPL::itoa(j)+"_E");
       Cal->AddParameter("COMPTONTELESCOPE", "D"+ NPL::itoa(i+1)+"_STRIP_BACK"+ NPL::itoa(j)+"_T",  "COMPTONTELESCOPE_D"+ NPL::itoa(i+1)+"_STRIP_BACK"+ NPL::itoa(j)+"_T");
+    }
+    for (int j = 0; j < m_NPixels; ++j) {
+      Cal->AddParameter("COMPTONTELESCOPE", "D"+ NPL::itoa(i+1)+"_CHANNEL"+ NPL::itoa(j)+"_E",  "COMPTONTELESCOPE_D"+ NPL::itoa(i+1)+"_CHANNEL"+ NPL::itoa(j)+"_E");
+      Cal->AddParameter("COMPTONTELESCOPE", "D"+ NPL::itoa(i+1)+"_CHANNEL"+ NPL::itoa(j)+"_E",  "COMPTONTELESCOPE_D"+ NPL::itoa(i+1)+"_CHANNEL"+ NPL::itoa(j)+"_PED");
     }
   }
 
@@ -616,6 +669,17 @@ namespace ComptonTelescope_LOCAL
   Double_t fStrip_Back_E(const TComptonTelescopeData* m_EventData, const int i)
   {
     return CalibrationManager::getInstance()->ApplyCalibration("COMPTONTELESCOPE/D" + NPL::itoa(m_EventData->GetCTTrackerBackEDetectorNbr(i)) + "_STRIP_BACK" + NPL::itoa(m_EventData->GetCTTrackerBackEStripNbr(i)) + "_E", m_EventData->GetCTTrackerBackEEnergy(i));
+  }
+
+  //Calorimeter
+  Double_t fCalorimeter_ped(const TComptonTelescopeData* m_EventData, const int i)
+  {
+    return CalibrationManager::getInstance()->ApplyCalibration("COMPTONTELESCOPE/D" + NPL::itoa(m_EventData->GetCTCalorimeterEDetectorNbr(i)) + "_CHANNEL" + NPL::itoa(m_EventData->GetCTCalorimeterEChannelNbr(i)) + "_PED", m_EventData->GetCTCalorimeterEEnergy(i));
+  }
+
+  Double_t fCalorimeter_E(const TComptonTelescopeData* m_EventData, const int i)
+  {
+    return CalibrationManager::getInstance()->ApplyCalibration("COMPTONTELESCOPE/D" + NPL::itoa(m_EventData->GetCTCalorimeterEDetectorNbr(i)) + "_CHANNEL" + NPL::itoa(m_EventData->GetCTCalorimeterEChannelNbr(i)) + "_E", m_EventData->GetCTCalorimeterEEnergy(i));
   }
 }
 

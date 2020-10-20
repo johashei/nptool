@@ -15,7 +15,7 @@
  *---------------------------------------------------------------------------*
  * Decription:                                                               *
  *  This class holds the raw data for a Compton telescope prototype made of  *
- *  a silicon tracker detector and a LaBr3 calorimeter                       *
+ *  a silicon tracker detector and a calorimeter                       *
  *                                                                           *
  *---------------------------------------------------------------------------*
  * Comment:                                                                  *
@@ -130,7 +130,7 @@ class TComptonTelescopeData : public TObject {
       Double_t   GetCTTrackerBackEEnergy(const Int_t i)        const {return fCT_Tracker_BackE_Energy[i];}
       // (Y,T)
       UShort_t   GetCTTrackerBackTMult()                       const {return fCT_Tracker_BackT_TowerNbr.size();}
-      UShort_t   GetCTrackerTBackTTowerNbr(const Int_t i)      const {return fCT_Tracker_BackT_TowerNbr[i];}
+      UShort_t   GetCTTrackerBackTTowerNbr(const Int_t i)      const {return fCT_Tracker_BackT_TowerNbr[i];}
       UShort_t   GetCTTrackerBackTDetectorNbr(const Int_t i)   const {return fCT_Tracker_BackT_DetectorNbr[i];}
       UShort_t   GetCTTrackerBackTStripNbr(const Int_t i)      const {return fCT_Tracker_BackT_StripNbr[i];}
       Double_t   GetCTTrackerBackTTime(const Int_t i)          const {return fCT_Tracker_BackT_Time[i];}

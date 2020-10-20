@@ -13,7 +13,7 @@
  *---------------------------------------------------------------------------*
  * Decription:                                                               *
  *  This class holds the raw data for a Compton telescope prototype made of  *
- *  a silicon tracker detector and a LaBr3 calorimeter                       *
+ *  a silicon tracker detector and a calorimeter                       *
  *                                                                           *
  *---------------------------------------------------------------------------*
  * Comment:                                                                  *

@@ -88,24 +88,24 @@ int main()
 
   while (D -> getCursor() < length)
   {
-  // Read the actual data
-  D -> decodeRawMFM();
-  //D -> Dump();//Optionnal print
+     // Read the actual data
+     D -> decodeRawMFM();
+     //D -> Dump();//Optionnal print
 
-  // Set ccamData (a better way is envisionned)
-  for (int i=0; i<64; i++) {
-  ccamData -> SetCTCalorimeterTTowerNbr( 1 );
-  ccamData -> SetCTCalorimeterTDetectorNbr( 1 );//Triggered ASIC number
-  ccamData -> SetCTCalorimeterTChannelNbr( D -> getPixelNumber() );//ASIC's channel number
-  ccamData -> SetCTCalorimeterTTime( D -> getTime() );
-  ccamData -> SetCTCalorimeterETowerNbr(1);
-  ccamData -> SetCTCalorimeterEDetectorNbr( 1 );
-  ccamData -> SetCTCalorimeterEChannelNbr( i );//PMT pixel number
-  ccamData -> SetCTCalorimeterEEnergy( D -> getData()[i] );
-  }
-  ccamData -> Dump();
-  ccamData -> Clear();
-  c++;
+     // Set ccamData (a better way is envisionned)
+     for (int i=0; i<64; i++) {
+       ccamData -> SetCTCalorimeterTTowerNbr( 1 );
+       ccamData -> SetCTCalorimeterTDetectorNbr( 1 );//Triggered ASIC number
+       ccamData -> SetCTCalorimeterTChannelNbr( D -> getPixelNumber() );//ASIC's channel number
+       ccamData -> SetCTCalorimeterTTime( D -> getTime() );
+       ccamData -> SetCTCalorimeterETowerNbr(1);
+       ccamData -> SetCTCalorimeterEDetectorNbr( 1 );
+       ccamData -> SetCTCalorimeterEChannelNbr( i );//PMT pixel number
+       ccamData -> SetCTCalorimeterEEnergy( D -> getData()[i] );
+     }
+     ccamData -> Dump();
+     ccamData -> Clear();
+     c++;
   }
   delete D;
   delete [] buffer;
