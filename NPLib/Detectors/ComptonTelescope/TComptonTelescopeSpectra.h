@@ -53,7 +53,7 @@ class TComptonTelescopeSpectra:public VSpectra {
     unsigned int fNumberOfTelescope;
     unsigned int fStripX;
     unsigned int fStripY;
-    unsigned int fCrystalCsI;
+    unsigned int fCalorimeterNPixels;
 };
 
 #endif
