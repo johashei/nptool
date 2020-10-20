@@ -29,7 +29,8 @@ int main()
   //   sprintf(arg,"-D ./ComptonCAM.detector -C calibrations.txt -GH -E Example2.reaction --circular");
   //   sprintf(arg,"-D ./ComptonCAM.detector -C calibrations.txt -GH -E ./10He.reaction --circular");
   //   string arg = "-D ./ComptonCAM.detector -C calibrations.txt -GH -E ./10He.reaction --circular";
-  string arg = "-D ./Example1.detector -GH -E Example1.reaction";
+  
+  string arg = "-D ./Example1.detector -GH -E Example1.reaction -T  /scratch/rdc/FDC2.root RawTree";
   NPOptionManager::getInstance(arg);  
 
   // ROOT output file name
@@ -39,12 +40,14 @@ int main()
   cout << "detector file name from NPOptionManager: " << detectorfileName << "\n";
   NPL::DetectorManager* m_NPDetectorManager = new NPL::DetectorManager();
   m_NPDetectorManager->ReadConfigurationFile(detectorfileName);
-
+  m_NPDetectorManager->InitializeRootOutput();
+  m_NPDetectorManager->InitializeRootInput();
   // Essential!
   #if __cplusplus > 199711L && NPMULTITHREADING
   m_NPDetectorManager->StopThread();
   #endif
   RootOutput::Destroy();
+  RootInput::Destroy();
 
   ///////////////////////////////////////////////////////////////////////////
   // this part is commented for debugging purposes, but it works on its own
