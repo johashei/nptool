@@ -72,12 +72,12 @@ void DCReconstruction::ResolvePlane(const TVector3& L,const double& ThetaU ,cons
 
   // Compute the coeff of the two line of vecotr u (v) going through H (L)
   // dv : y = av*x+bv
-  double av = v.Y()/v.X();
-  double bv = H.Y() - av*H.X();
+  long double av = v.Y()/v.X();
+  long double bv = H.Y() - av*H.X();
 
   // du : y = au*x+bu
-  double au = u.Y()/u.X();
-  double bu = L.Y() - au*L.X();
+  long double au = u.Y()/u.X();
+  long double bu = L.Y() - au*L.X();
 
   // We look for M(xM, yM) that intersect du and dv:
   double xM,yM;
