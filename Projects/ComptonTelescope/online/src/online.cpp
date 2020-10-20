@@ -51,19 +51,11 @@ int main()
   ///////////////////////////////////////////////////////////////////////////
   // instantiate raw ComptonCAM data pointer
   /*   auto ccamData = new TComptonTelescopeData();
-<<<<<<< Updated upstream
        ccamData->Dump();
   // connect raw CCAM data pointer to physics class
   //   auto ccamPhys = (TComptonTelescopePhysics*) m_NPDetectorManager->GetDetector("ComptonTelescope");
   //   ccamPhys->SetRawDataPointer(ccamData);
 
-=======
-      ccamData->Dump();
-  // connect raw CCAM data pointer to physics class
-  //   auto ccamPhys = (TComptonTelescopePhysics*) m_NPDetectorManager->GetDetector("ComptonTelescope");
-  //   ccamPhys->SetRawDataPointer(ccamData);
-  
->>>>>>> Stashed changes
   // read data file/flux and fill ccamData object
   std::cout << "Reading data\n";
   // instantiate DecodeR object reading calorimeter data flux
@@ -93,26 +85,6 @@ int main()
 
   while (D -> getCursor() < length)
   {
-<<<<<<< Updated upstream
-  // Read the actual data
-  D -> decodeRawMFM();
-  //D -> Dump();//Optionnal print
-
-  // Set ccamData (a better way is envisionned)
-  for (int i=0; i<64; i++) {
-  ccamData -> SetCTCalorimeterTTowerNbr( 1 );
-  ccamData -> SetCTCalorimeterTDetectorNbr( 1 );//Triggered ASIC number
-  ccamData -> SetCTCalorimeterTChannelNbr( D -> getPixelNumber() );//ASIC's channel number
-  ccamData -> SetCTCalorimeterTTime( D -> getTime() );
-  ccamData -> SetCTCalorimeterETowerNbr(1);
-  ccamData -> SetCTCalorimeterEDetectorNbr( 1 );
-  ccamData -> SetCTCalorimeterEChannelNbr( i );//PMT pixel number
-  ccamData -> SetCTCalorimeterEEnergy( D -> getData()[i] );
-  }
-  ccamData -> Dump();
-  ccamData -> Clear();
-  c++;
-=======
      // Read the actual data
      D -> decodeRawMFM();
      //D -> Dump();//Optionnal print
@@ -131,7 +103,6 @@ int main()
      ccamData -> Dump();
      ccamData -> Clear();
      c++;
->>>>>>> Stashed changes
   }
   delete D;
   delete [] buffer;
@@ -146,11 +117,6 @@ int main()
      ccamData->Clear();
      ccamData->Dump();
      */
-<<<<<<< Updated upstream
   std::cout << "test compil\n";
   return 0;
-=======
-   std::cout << "test compil\n";
-   return 0;
->>>>>>> Stashed changes
 }
