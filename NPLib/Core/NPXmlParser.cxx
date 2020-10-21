@@ -116,7 +116,7 @@ void XmlParser::LoadNode(TXMLEngine* xml, XMLNodePointer_t node, Int_t level){
       m_blocks[name].push_back(b);
       child = xml->GetNext(child);
     }  
-    std::cout << " XML file loaded for " <<m_blocks.size() << " detectors" << std::endl;
+    std::cout << " -> XML file loaded for " <<m_blocks.size() << " detectors" << std::endl;
   }
 }
 
