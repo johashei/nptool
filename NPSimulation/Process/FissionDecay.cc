@@ -40,10 +40,11 @@ using namespace NPS;
 ////////////////////////////////////////////////////////////////////////////////
 FissionDecay::FissionDecay(G4String modelName,G4Region* envelope) :
   G4VFastSimulationModel(modelName, envelope) {
-    ReadConfiguration();
     m_PreviousEnergy=0 ;
     m_PreviousLength=0 ;
     m_FissionConditions = new TFissionConditions();
+    
+    ReadConfiguration();
     //AttachFissionConditions();
     //if(!RootOutput::getInstance()->GetTree()->FindBranch("FissionConditions"))
     //  RootOutput::getInstance()->GetTree()->Branch("FissionConditions", "TFissionConditions", &m_FissionConditions);
@@ -75,9 +76,9 @@ void FissionDecay::ReadConfiguration(){
     m_CompoundParticle = NPL::Particle(Mother);
     m_CompoundName = NPL::ChangeNameToG4Standard(Mother,true);
     AttachFissionConditions();
-    if(!RootOutput::getInstance()->GetTree()->FindBranch("FissionConditions"))
+    if(!RootOutput::getInstance()->GetTree()->FindBranch("FissionConditions")){
       RootOutput::getInstance()->GetTree()->Branch("FissionConditions", "TFissionConditions", &m_FissionConditions);
-
+    }
   }
 
 }
