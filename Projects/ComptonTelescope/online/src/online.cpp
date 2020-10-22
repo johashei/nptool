@@ -8,7 +8,7 @@
 // root headers
 
 // custom headers
-//#include "DecodeR.h"
+#include "DecodeR.h"
 
 // C++ headers
 #include <iostream>
