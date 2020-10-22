@@ -39,23 +39,23 @@
 #include "Math/Minimizer.h"
 #include "Math/Functor.h"
 namespace NPL{
-  
+
   class DCReconstruction{
     public:
       DCReconstruction();
       ~DCReconstruction();
-    
+
     public:
-    // Build a track in 2D based on drift circle of Radius R and position X,Z
-    // return X0(X100) the X position at Z=0 (Z=100)
-    // return a and b the coeff of the 2D line
-    void BuildTrack2D(const std::vector<double>& X,const std::vector<double>& Z,const std::vector<double>& R,double& X0,double& X100,double& a, double& b );
-    
-    // Compute X and Y crossing coordinate of 2 plane of Wire
-    void ResolvePlane(const TVector3& L,const double& ThetaU ,const TVector3& H, const double& ThetaV, TVector3& PosXY);
-    
-    // Function used by the minimizer in BuildTrack2D
-    double SumD(const double* parameter );
+      // Build a track in 2D based on drift circle of Radius R and position X,Z
+      // return X0(X100) the X position at Z=0 (Z=100)
+      // return a and b the coeff of the 2D line
+      double BuildTrack2D(const std::vector<double>& X,const std::vector<double>& Z,const std::vector<double>& R,double& X0,double& X100,double& a, double& b );
+
+      // Compute X and Y crossing coordinate of 2 plane of Wire
+      void ResolvePlane(const TVector3& L,const double& ThetaU ,const TVector3& H, const double& ThetaV, TVector3& PosXY);
+
+      // Function used by the minimizer in BuildTrack2D
+      double SumD(const double* parameter );
 
     private: // private member used by SumD
       ROOT::Math::Minimizer* m_min;
@@ -63,7 +63,18 @@ namespace NPL{
       const std::vector<double>* fitX;
       const std::vector<double>* fitZ;
       const std::vector<double>* fitR;
-    };
-  }
+      // used by SumD
+      unsigned int size ;
+      double P,a,b,ab,a2,c,d,x,z,r;
+      // used by BuildTrack
+      double ai,bi;
+      double parameter[2];
+      // used by resolve plane
+      long double av,bv,au,bu;
+      double xM,yM;
+
+
+  };
+}
 
 #endif

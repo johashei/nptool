@@ -33,21 +33,22 @@ DCReconstruction::~DCReconstruction(){
   }
 
 ////////////////////////////////////////////////////////////////////////////////
-void DCReconstruction::BuildTrack2D(const vector<double>& X,const vector<double>& Z,const vector<double>& R,double& X0,double& X100,double& a, double& b ){
+double DCReconstruction::BuildTrack2D(const vector<double>& X,const vector<double>& Z,const vector<double>& R,double& X0,double& X100,double& a, double& b ){
   fitX=&X;
   fitZ=&Z;
   fitR=&R;
   // assume all X,Z,R of same size
-  unsigned int size = X.size();
+  size = X.size();
   // Define the starting point of the fit: a straight line passing through the 
   // the first and last wire
   // z = ax+b -> x=(z-b)/a
-  double ai = (Z[size-1]-Z[0])/(X[size-1]-R[size-1]-X[0]-R[0]);
-  double bi = Z[0]-ai*(X[0]+R[0]);
-  double parameter[2]={ai,bi};
+  ai = (Z[size-1]-Z[0])/(X[size-1]-R[size-1]-X[0]-R[0]);
+  bi = Z[0]-ai*(X[0]+R[0]);
+  parameter[0]=ai;
+  parameter[1]=bi;
   m_min->SetVariable(0,"a",parameter[0],1000);
   m_min->SetVariable(1,"b",parameter[1],1000);
-  m_min->SetTolerance(0.1);
+  m_min->SetTolerance(0.01);
 
   // Perform minimisation
   m_min->Minimize(); 
@@ -58,29 +59,29 @@ void DCReconstruction::BuildTrack2D(const vector<double>& X,const vector<double>
   b=xs[1];
   X0=-b/a;
   X100=(100-b)/a;
+  return m_min->MinValue() ;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 void DCReconstruction::ResolvePlane(const TVector3& L,const double& ThetaU ,const TVector3& H, const double& ThetaV, TVector3& PosXY){
   // direction of U and V wire
-  TVector3 u = TVector3(0,1,0);
+  TVector3 u(0,1,0);
   u.RotateZ(ThetaU);
 
-  TVector3 v = TVector3(0,1,0);
+  TVector3 v(0,1,0);
   v.RotateZ(ThetaV);
 
 
   // Compute the coeff of the two line of vecotr u (v) going through H (L)
   // dv : y = av*x+bv
-  long double av = v.Y()/v.X();
-  long double bv = H.Y() - av*H.X();
+  av = v.Y()/v.X();
+  bv = H.Y() - av*H.X();
 
   // du : y = au*x+bu
-  long double au = u.Y()/u.X();
-  long double bu = L.Y() - au*L.X();
+  au = u.Y()/u.X();
+  bu = L.Y() - au*L.X();
 
   // We look for M(xM, yM) that intersect du and dv:
-  double xM,yM;
   if(!isinf(au) && !isinf(av)){ // au and av are not inf, i.e. not vertical line
     xM = (bv-bu)/(au-av);
     yM = au*xM+bu;
@@ -98,7 +99,7 @@ void DCReconstruction::ResolvePlane(const TVector3& L,const double& ThetaU ,cons
     yM=-10000;
   }
 
-  PosXY=TVector3(xM,yM,0);
+  PosXY.SetXYZ(xM,yM,0);
 
 }
 
@@ -107,12 +108,11 @@ void DCReconstruction::ResolvePlane(const TVector3& L,const double& ThetaU ,cons
 double DCReconstruction::SumD(const double* parameter ){
   unsigned int size = fitX->size();
   // Compute the sum P of the distance between the circle and the track
-  double P = 0;
-  double a = parameter[0];
-  double b = parameter[1];
-  double ab= a*b;
-  double a2=a*a;
-  double c,d,x,z,r;
+  P = 0;
+  a = parameter[0];
+  b = parameter[1];
+  ab= a*b;
+  a2=a*a;
 
   for(unsigned int i = 0 ; i < size ; i++){
     c = (*fitX)[i];
@@ -120,9 +120,10 @@ double DCReconstruction::SumD(const double* parameter ){
     r = (*fitR)[i];
     x = (a*d-ab+c)/(1+a2);
     z = a*x+b;
-    P+= abs( (x-c)*(x-c)+(z-d)*(z-d)-r*r)/r;
+    P+= sqrt(abs( (x-c)*(x-c)+(z-d)*(z-d)-r*r));
   }
-  return P;
+  // return normalized power
+  return P/size;
 
 }
 

@@ -64,13 +64,14 @@ void TSamuraiFDC2Physics::BuildPhysicalEvent(){
   static map<std::pair<unsigned int,double>, vector<double> > X ; 
   static map<std::pair<unsigned int,double>, vector<double> > Z ; 
   static map<std::pair<unsigned int,double>, vector<double> > R ; 
+  static int det,layer,wire;
   X.clear();Z.clear();R.clear();
   unsigned int size = Detector.size();
   for(unsigned int i = 0 ; i < size ; i++){
     if( DriftLength[i] > DriftLowThreshold && DriftLength[i] < DriftUpThreshold){
-      int det = Detector[i];
-      int layer = Layer[i];
-      int wire = Wire[i]; 
+      det = Detector[i];
+      layer = Layer[i];
+      wire = Wire[i]; 
       SamuraiDCIndex idx(det,layer,wire);
       std::pair<unsigned int, double> p(det,Wire_Angle[idx]);
       X[p].push_back(Wire_X[idx]); 
@@ -83,16 +84,15 @@ void TSamuraiFDC2Physics::BuildPhysicalEvent(){
   static double X0,X100,a,b; // store the BuildTrack2D results
   static map<std::pair<unsigned int,double>, TVector3 > VX0 ;  
   static map<std::pair<unsigned int,double>, TVector3 > VX100 ;  
-  static map<std::pair<unsigned int,double>, int > MultPlane ;  
-  VX0.clear();VX100.clear();
+  static map<std::pair<unsigned int,double>, double > D ;// the minimum distance  
+  VX0.clear();VX100.clear(),D.clear();
   for(auto it = X.begin();it!=X.end();++it){
-    m_reconstruction.BuildTrack2D(X[it->first],Z[it->first],R[it->first],X0,X100,a,b); 
-    // very small a means track perpendicular to the chamber, what happen when there is pile up
-
+    D[it->first]=m_reconstruction.BuildTrack2D(X[it->first],Z[it->first],R[it->first],X0,X100,a,b); 
+    
+    // very large a means track perpendicular to the chamber, what happen when there is pile up
     if(abs(a)>1000)
       PileUp++;
 
-    MultPlane[it->first] = X[it->first].size() ;
     Mult+=X[it->first].size();
     // Position at z=0
     TVector3 P(X0,0,0);
@@ -107,15 +107,21 @@ void TSamuraiFDC2Physics::BuildPhysicalEvent(){
 
   // Reconstruct the central position (z=0) for each detector
   static map<unsigned int,vector<TVector3> > C ;  
-  C.clear();
+  static map<unsigned int,vector<double> > W ; // weight based on D  
+  C.clear(),W.clear();
   TVector3 P;
 
   for(auto it1 = VX0.begin();it1!=VX0.end();++it1){
     for(auto it2 = it1;it2!=VX0.end();++it2){
       if(it1!=it2 && it1->first.first==it2->first.first){// different plane, same detector
         m_reconstruction.ResolvePlane(it1->second,it1->first.second,it2->second,it2->first.second,P);
-        if(P.X()!=-10000)
+        
+        if(P.X()!=-10000){
           C[it1->first.first].push_back(P);
+          // Mean pos are weighted based on the the sum of distance from track
+          // to hit obtained during the minimisation
+          W[it1->first.first].push_back(1./(D[it1->first]+D[it2->first]));
+          }
       }
     }
   }
@@ -136,37 +142,39 @@ void TSamuraiFDC2Physics::BuildPhysicalEvent(){
 
   // Build the Reference position by averaging all possible pair 
   size = C[2].size();
-  double PosX100,PosY100;
+  static double PosX100,PosY100,norm;
   if(size){
     PosX=0;
     PosY=0;
     PosX100=0;
     PosY100=0;
+    norm=0;
     for(unsigned int i = 0 ; i < size ; i++){
-      PosX+= C[2][i].X(); 
-      PosY+= C[2][i].Y(); 
-      PosX100+= C100[2][i].X(); 
-      PosY100+= C100[2][i].Y(); 
+      PosX+= C[2][i].X()*W[2][i]; 
+      PosY+= C[2][i].Y()*W[2][i]; 
+      PosX100+= C100[2][i].X()*W[2][i]; 
+      PosY100+= C100[2][i].Y()*W[2][i]; 
+      norm+=W[2][i];
       //        cout << C[2][i].X() << " (" << C[2][i].Y() << ") ";
     } 
     // cout << endl;
     MultMean=size;
     // Mean position at Z=0
-    PosX=PosX/size; 
-    PosY=PosY/size; 
+    PosX=PosX/norm; 
+    PosY=PosY/norm; 
     // Mean position at Z=100
-    PosX100=PosX100/size; 
-    PosY100=PosY100/size; 
+    PosX100=PosX100/norm; 
+    PosY100=PosY100/norm; 
 
     devX=0;
     devY=0;
     for(unsigned int i = 0 ; i < size ; i++){
-      devX+=(C[2][i].X()-PosX)*(C[2][i].X()-PosX);
-      devY+=(C[2][i].Y()-PosY)*(C[2][i].Y()-PosY);
+      devX+=W[2][i]*(C[2][i].X()-PosX)*(C[2][i].X()-PosX);
+      devY+=W[2][i]*(C[2][i].Y()-PosY)*(C[2][i].Y()-PosY);
     }
 
-    devX=sqrt(devX/size);
-    devY=sqrt(devY/size);
+    devX=sqrt(devX/((size-1)*norm));
+    devY=sqrt(devY/((size-1)*norm));
 
     // Compute ThetaX, angle between the Direction vector projection in XZ with
     // the Z axis
