@@ -2,8 +2,8 @@
 #include "NPOptionManager.h"
 #include "RootOutput.h"
 #include "NPDetectorManager.h"
-//#include "TComptonTelescopeData.h"
-//#include "TComptonTelescopePhysics.h"
+#include "TComptonTelescopeData.h"
+#include "TComptonTelescopePhysics.h"
 
 // root headers
 
@@ -39,10 +39,8 @@ int main()
   string detectorfileName = NPOptionManager::getInstance()->GetDetectorFile();
   cout << "detector file name from NPOptionManager: " << detectorfileName << "\n";
   NPL::DetectorManager* m_NPDetectorManager = new NPL::DetectorManager();
-//  m_NPDetectorManager->ReadConfigurationFile(detectorfileName);
   m_NPDetectorManager->ReadConfigurationFile(detectorfileName);
-  m_NPDetectorManager->InitializeRootOutput();
-//  m_NPDetectorManager->InitializeRootInput();
+//  m_NPDetectorManager->InitializeRootOutput();
 
   // Essential!
   #if __cplusplus > 199711L && NPMULTITHREADING
@@ -54,8 +52,8 @@ int main()
   // this part is commented for debugging purposes, but it works on its own
   ///////////////////////////////////////////////////////////////////////////
   // instantiate raw ComptonCAM data pointer
-  /*   auto ccamData = new TComptonTelescopeData();
-       ccamData->Dump();
+/*  auto ccamData = new TComptonTelescopeData();
+  ccamData->Dump();
   // connect raw CCAM data pointer to physics class
   //   auto ccamPhys = (TComptonTelescopePhysics*) m_NPDetectorManager->GetDetector("ComptonTelescope");
   //   ccamPhys->SetRawDataPointer(ccamData);
@@ -110,7 +108,7 @@ int main()
   }
   delete D;
   delete [] buffer;
-  */
+*/
   // test zone...
   /*
      ccamData->SetCTTrackerFrontETowerNbr(1);
