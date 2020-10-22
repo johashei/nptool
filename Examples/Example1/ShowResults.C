@@ -56,7 +56,7 @@ void ShowResults(){
     
     NPL::Reaction r("11Li(d,3He)10He@553");
     vector<string> v={"8He","n","n"};
-    r.GetNucleus4()->DefineMassByThreshold(v);
+    r.GetParticle4()->DefineMassByThreshold(v);
 
     r.SetExcitationHeavy(1.4);
     TGraph* Kine = r.GetKinematicLine3();

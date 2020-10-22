@@ -66,50 +66,53 @@ class TComptonTelescopePhysics : public TObject, public NPL::VDetector
       vector<double> StripBack_T;
       vector<int>    Strip_Front;
       vector<int>    Strip_Back;
+      // Calorimeter
+      double Calor_E;
+      vector<double> Calor_T;
    
 
    public:  // inherited from VDetector
-   // Read stream at ConfigFile to pick-up parameters of detector (Position,...) using Token
-   void ReadConfiguration(NPL::InputParser);
+      // Read stream at ConfigFile to pick-up parameters of detector (Position,...) using Token
+      void ReadConfiguration(NPL::InputParser);
 
-   // Add parameters to the CalibrationManger
-   void AddParameterToCalibrationManager();
+      // Add parameters to the CalibrationManger
+      void AddParameterToCalibrationManager();
 
-   // Activate associated branches and link them to the private member object m_EventData
-   void InitializeRootInputRaw();
+      // Activate associated branches and link them to the private member object m_EventData
+      void InitializeRootInputRaw();
 
-   // Activate associated branches and link them to the private member m_EventPhysics
-   void InitializeRootInputPhysics();
+      // Activate associated branches and link them to the private member m_EventPhysics
+      void InitializeRootInputPhysics();
 
-   // Create associated branches and associated private member m_EventPhysics 
-   void InitializeRootOutput();
+      // Create associated branches and associated private member m_EventPhysics 
+      void InitializeRootOutput();
 
-   // This method is called at each event read from the Input Tree. Aime is to build treat Raw dat in order to extract physical parameter. 
-   void BuildPhysicalEvent();
+      // This method is called at each event read from the Input Tree. Aime is to build treat Raw dat in order to extract physical parameter. 
+      void BuildPhysicalEvent();
 
-   // Same as above, but only the simplest event and/or simple method are used (low multiplicity, faster algorythm but less efficient ...).
-   // This method aimed to be used for analysis performed during experiment, when speed is requiered.
-   // NB: This method can eventually be the same as BuildPhysicalEvent.
-   void BuildSimplePhysicalEvent();
+      // Same as above, but only the simplest event and/or simple method are used (low multiplicity, faster algorythm but less efficient ...).
+      // This method aimed to be used for analysis performed during experiment, when speed is requiered.
+      // NB: This method can eventually be the same as BuildPhysicalEvent.
+      void BuildSimplePhysicalEvent();
 
-   // Same as above but for online analysis
-   void BuildOnlinePhysicalEvent()  {BuildPhysicalEvent();};
+      // Same as above but for online analysis
+      void BuildOnlinePhysicalEvent()  {BuildPhysicalEvent();};
 
-   // Clear raw and physics data 
-   void ClearEventPhysics()   {Clear();}
-   void ClearEventData()      {m_EventData->Clear();}
+      // Clear raw and physics data 
+      void ClearEventPhysics()   {Clear();}
+      void ClearEventData()      {m_EventData->Clear();}
 
-   // Methods related to the TW1Spectra classes
-   // Instantiate the TW1Spectra class and the histograms
-   void InitSpectra();
-   // Fill the spectra defined in TW1Spectra
-   void FillSpectra();
-   // Used for Online mainly, perform check on the histo and for example change their color if issues are found
-   void CheckSpectra();
-   // Used for Online only, clear all the spectra hold by the Spectra class
-   void ClearSpectra();
-   // Write Spectra to file
-   void WriteSpectra();
+      // Methods related to the TW1Spectra classes
+      // Instantiate the TW1Spectra class and the histograms
+      void InitSpectra();
+      // Fill the spectra defined in TW1Spectra
+      void FillSpectra();
+      // Used for Online mainly, perform check on the histo and for example change their color if issues are found
+      void CheckSpectra();
+      // Used for Online only, clear all the spectra hold by the Spectra class
+      void ClearSpectra();
+      // Write Spectra to file
+      void WriteSpectra();
    
 
    public:      //   Specific to ComptonTelescope Array
@@ -171,6 +174,7 @@ class TComptonTelescopePhysics : public TObject, public NPL::VDetector
       double m_StripBack_E_RAW_Threshold;    //!
       double m_StripBack_E_Threshold;        //!
       double m_Calorimeter_E_RAW_Threshold;
+      double m_Calorimeter_E_Threshold;
 
    public:  // methods used in event treatment 
       vector<TVector2> Match_Front_Back();
@@ -193,6 +197,9 @@ class TComptonTelescopePhysics : public TObject, public NPL::VDetector
       vector< vector < vector < double > > >   m_StripPositionX;  //!
       vector< vector < vector < double > > >   m_StripPositionY;  //!
       vector< vector < vector < double > > >   m_StripPositionZ;  //!
+
+  private:
+      int m_NPixels;
 
    private: // Spectra Class   
       TComptonTelescopeSpectra*      m_Spectra; //! 
@@ -217,6 +224,10 @@ namespace ComptonTelescope_LOCAL
    //   Back   
    double fStrip_Back_E(const TComptonTelescopeData* Data, const int i);
    double fStrip_Back_T(const TComptonTelescopeData* Data, const int i);
+
+   // Calorimeter
+   double fCalorimeter_E(const TComptonTelescopeData* Data, const int i);
+   double fCalorimeter_ped(const TComptonTelescopeData* Data, const int i);
 }
 
 

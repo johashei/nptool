@@ -29,7 +29,12 @@ int main()
   //   sprintf(arg,"-D ./ComptonCAM.detector -C calibrations.txt -GH -E Example2.reaction --circular");
   //   sprintf(arg,"-D ./ComptonCAM.detector -C calibrations.txt -GH -E ./10He.reaction --circular");
   //   string arg = "-D ./ComptonCAM.detector -C calibrations.txt -GH -E ./10He.reaction --circular";
+<<<<<<< HEAD
   string arg = "-D ./Example1.detector -GH -E Example1.reaction --circular";
+=======
+  
+  string arg = "-D ./Example1.detector -GH -E Example1.reaction -T  /scratch/rdc/FDC2.root RawTree";
+>>>>>>> f7daf77f0460ce69ba6db1a4d5d78ec8b22029f1
   NPOptionManager::getInstance(arg);  
 
   // ROOT output file name
@@ -39,13 +44,20 @@ int main()
   string detectorfileName = NPOptionManager::getInstance()->GetDetectorFile();
   cout << "detector file name from NPOptionManager: " << detectorfileName << "\n";
   NPL::DetectorManager* m_NPDetectorManager = new NPL::DetectorManager();
+<<<<<<< HEAD
 //  m_NPDetectorManager->ReadConfigurationFile(detectorfileName);
 
+=======
+  m_NPDetectorManager->ReadConfigurationFile(detectorfileName);
+  m_NPDetectorManager->InitializeRootOutput();
+  m_NPDetectorManager->InitializeRootInput();
+>>>>>>> f7daf77f0460ce69ba6db1a4d5d78ec8b22029f1
   // Essential!
   #if __cplusplus > 199711L && NPMULTITHREADING
    m_NPDetectorManager->StopThread();
   #endif
   RootOutput::Destroy();
+  RootInput::Destroy();
 
   ///////////////////////////////////////////////////////////////////////////
   // this part is commented for debugging purposes, but it works on its own
@@ -86,24 +98,24 @@ int main()
 
   while (D -> getCursor() < length)
   {
-  // Read the actual data
-  D -> decodeRawMFM();
-  //D -> Dump();//Optionnal print
+     // Read the actual data
+     D -> decodeRawMFM();
+     //D -> Dump();//Optionnal print
 
-  // Set ccamData (a better way is envisionned)
-  for (int i=0; i<64; i++) {
-  ccamData -> SetCTCalorimeterTTowerNbr( 1 );
-  ccamData -> SetCTCalorimeterTDetectorNbr( 1 );//Triggered ASIC number
-  ccamData -> SetCTCalorimeterTChannelNbr( D -> getPixelNumber() );//ASIC's channel number
-  ccamData -> SetCTCalorimeterTTime( D -> getTime() );
-  ccamData -> SetCTCalorimeterETowerNbr(1);
-  ccamData -> SetCTCalorimeterEDetectorNbr( 1 );
-  ccamData -> SetCTCalorimeterEChannelNbr( i );//PMT pixel number
-  ccamData -> SetCTCalorimeterEEnergy( D -> getData()[i] );
-  }
-  ccamData -> Dump();
-  ccamData -> Clear();
-  c++;
+     // Set ccamData (a better way is envisionned)
+     for (int i=0; i<64; i++) {
+       ccamData -> SetCTCalorimeterTTowerNbr( 1 );
+       ccamData -> SetCTCalorimeterTDetectorNbr( 1 );//Triggered ASIC number
+       ccamData -> SetCTCalorimeterTChannelNbr( D -> getPixelNumber() );//ASIC's channel number
+       ccamData -> SetCTCalorimeterTTime( D -> getTime() );
+       ccamData -> SetCTCalorimeterETowerNbr(1);
+       ccamData -> SetCTCalorimeterEDetectorNbr( 1 );
+       ccamData -> SetCTCalorimeterEChannelNbr( i );//PMT pixel number
+       ccamData -> SetCTCalorimeterEEnergy( D -> getData()[i] );
+     }
+     ccamData -> Dump();
+     ccamData -> Clear();
+     c++;
   }
   delete D;
   delete [] buffer;

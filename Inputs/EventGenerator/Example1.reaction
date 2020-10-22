@@ -18,9 +18,13 @@ Beam
  %YPhiYProfilePath=
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-DefineNucleus 10He
+%% This is useful to redefine the reference mass of resonnance
+%% without this block the g.s. of the system is taken as the 
+%% first resonant state (~1.4MeV) in nutab
+DefineParticle 10He
  SubPart= 8He n n
  BindingEnergy= 0 MeV
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 TwoBodyReaction
  Beam= 11Li
