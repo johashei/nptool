@@ -347,7 +347,7 @@ void online()
 //   sprintf(arg,"-D ./ComptonCAM.detector -C Calibration.txt -GH -E Example2.reaction -P %i --circular",port);
 //   sprintf(arg,"-D ./ComptonCAM.detector -C calibrations.txt -GH -E Example2.reaction --circular");
 //   sprintf(arg,"-D ./ComptonCAM.detector -C calibrations.txt -GH -E ./10He.reaction --circular");
-/*   string arg = "-D ./ComptonCAM.detector -C calibrations.txt -GH -E ./10He.reaction --circular";
+   string arg = "-D ./ComptonCAM.detector -C calibrations.txt -GH -E ./10He.reaction --circular";
    NPOptionManager::getInstance(arg);  
 
    // ROOT output file name
@@ -357,7 +357,7 @@ void online()
    string detectorfileName = NPOptionManager::getInstance()->GetDetectorFile();
    cout << "detector file name from NPOptionManager: " << detectorfileName << "\n";
    NPL::DetectorManager* m_NPDetectorManager = new NPL::DetectorManager();
-   m_NPDetectorManager->ReadConfigurationFile(detectorfileName);*/
+//   m_NPDetectorManager->ReadConfigurationFile(detectorfileName);
 /*   m_NPDetectorManager->InitializeRootOutput();*/
 
    // instantiate raw ComptonCAM data pointer
@@ -374,7 +374,7 @@ void online()
    
    // Load a file
    ifstream is;
-   is.open("decodeR/mfm.bin", ios::binary);
+   is.open("../mfm.bin", ios::binary);
    is.seekg (0, ios::end);
    int length = is.tellg();
    is.seekg (0, ios::beg);

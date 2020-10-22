@@ -22,27 +22,28 @@ int main()
 {
   ///////////////////////////////////////////////////////////////////////////
   // configure option manager
-  //   NPOptionManager::getInstance()->Destroy();
+  // NPOptionManager::getInstance()->Destroy();
 
   //   char arg[1000];
   //   sprintf(arg,"-D ./ComptonCAM.detector -C Calibration.txt -GH -E Example2.reaction -P %i --circular",port);
   //   sprintf(arg,"-D ./ComptonCAM.detector -C calibrations.txt -GH -E Example2.reaction --circular");
   //   sprintf(arg,"-D ./ComptonCAM.detector -C calibrations.txt -GH -E ./10He.reaction --circular");
   //   string arg = "-D ./ComptonCAM.detector -C calibrations.txt -GH -E ./10He.reaction --circular";
-  string arg = "-D ./Example1.detector -GH -E Example1.reaction";
+  string arg = "-D ./Example1.detector -GH -E Example1.reaction --circular";
   NPOptionManager::getInstance(arg);  
 
   // ROOT output file name
   RootOutput::getInstance("OnlineTree.root", "OnlineTree");
+
   // configure detector manager
   string detectorfileName = NPOptionManager::getInstance()->GetDetectorFile();
   cout << "detector file name from NPOptionManager: " << detectorfileName << "\n";
   NPL::DetectorManager* m_NPDetectorManager = new NPL::DetectorManager();
-  m_NPDetectorManager->ReadConfigurationFile(detectorfileName);
+//  m_NPDetectorManager->ReadConfigurationFile(detectorfileName);
 
   // Essential!
   #if __cplusplus > 199711L && NPMULTITHREADING
-  m_NPDetectorManager->StopThread();
+   m_NPDetectorManager->StopThread();
   #endif
   RootOutput::Destroy();
 
