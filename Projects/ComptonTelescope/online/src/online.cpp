@@ -40,20 +40,14 @@ int main()
   cout << "detector file name from NPOptionManager: " << detectorfileName << "\n";
   NPL::DetectorManager* m_NPDetectorManager = new NPL::DetectorManager();
   m_NPDetectorManager->ReadConfigurationFile(detectorfileName);
-//  m_NPDetectorManager->InitializeRootOutput();
-
-  // Essential!
-  #if __cplusplus > 199711L && NPMULTITHREADING
-   m_NPDetectorManager->StopThread();
-  #endif
-  RootOutput::Destroy();
+  m_NPDetectorManager->InitializeRootOutput();
 
   ///////////////////////////////////////////////////////////////////////////
   // this part is commented for debugging purposes, but it works on its own
   ///////////////////////////////////////////////////////////////////////////
   // instantiate raw ComptonCAM data pointer
-/*  auto ccamData = new TComptonTelescopeData();
-  ccamData->Dump();
+//  auto ccamData = new TComptonTelescopeData();
+//  ccamData->Dump();
   // connect raw CCAM data pointer to physics class
   //   auto ccamPhys = (TComptonTelescopePhysics*) m_NPDetectorManager->GetDetector("ComptonTelescope");
   //   ccamPhys->SetRawDataPointer(ccamData);
@@ -92,7 +86,7 @@ int main()
      //D -> Dump();//Optionnal print
 
      // Set ccamData (a better way is envisionned)
-     for (int i=0; i<64; i++) {
+/*     for (int i=0; i<64; i++) {
        ccamData -> SetCTCalorimeterTTowerNbr( 1 );
        ccamData -> SetCTCalorimeterTDetectorNbr( 1 );//Triggered ASIC number
        ccamData -> SetCTCalorimeterTChannelNbr( D -> getPixelNumber() );//ASIC's channel number
@@ -103,12 +97,12 @@ int main()
        ccamData -> SetCTCalorimeterEEnergy( D -> getData()[i] );
      }
      ccamData -> Dump();
-     ccamData -> Clear();
+     ccamData -> Clear();*/
      c++;
   }
   delete D;
   delete [] buffer;
-*/
+
   // test zone...
   /*
      ccamData->SetCTTrackerFrontETowerNbr(1);
@@ -120,6 +114,12 @@ int main()
      ccamData->Dump();
      */
   std::cout << "test compil\n";
+
+  // Essential
+  #if __cplusplus > 199711L && NPMULTITHREADING
+   m_NPDetectorManager->StopThread();
+  #endif
+  RootOutput::Destroy();
 
   return 0;
 }
