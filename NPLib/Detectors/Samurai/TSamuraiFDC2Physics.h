@@ -99,6 +99,7 @@ class TSamuraiFDC2Physics : public TObject, public NPL::VDetector{
     double PosY;
     double ThetaX;
     double PhiY;
+    double devX,devY;
     TVector3 Dir;
     int Mult;
     int MultMean;
@@ -116,6 +117,10 @@ class TSamuraiFDC2Physics : public TObject, public NPL::VDetector{
   
   private: // Analysis
     double ToTThreshold;//! a ToT threshold to remove noise
+    // since the calibration is a sigmoid there quite a few event at the edge 
+    double DriftLowThreshold;//! Minimum Drift length to keep the hit 
+    double DriftUpThreshold;//! Maximum Drift length to keep the hit
+  
     void RemoveNoise();
     // Construct the 2D track and ref position at Z=0 and Z=100 based on X,Z and Radius provided
 

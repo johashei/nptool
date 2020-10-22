@@ -46,6 +46,8 @@ ClassImp(TSamuraiFDC2Physics)
     m_EventPhysics      = this ;
     //m_Spectra           = NULL;
     ToTThreshold = 180;
+    DriftLowThreshold=0.5;
+    DriftUpThreshold=9.5;
   }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -65,7 +67,7 @@ void TSamuraiFDC2Physics::BuildPhysicalEvent(){
   X.clear();Z.clear();R.clear();
   unsigned int size = Detector.size();
   for(unsigned int i = 0 ; i < size ; i++){
-    if(DriftLength[i]>0.1){
+    if( DriftLength[i] > DriftLowThreshold && DriftLength[i] < DriftUpThreshold){
       int det = Detector[i];
       int layer = Layer[i];
       int wire = Wire[i]; 
@@ -102,6 +104,7 @@ void TSamuraiFDC2Physics::BuildPhysicalEvent(){
     VX100[it->first]=D;
 
   }
+
   // Reconstruct the central position (z=0) for each detector
   static map<unsigned int,vector<TVector3> > C ;  
   C.clear();
@@ -116,6 +119,7 @@ void TSamuraiFDC2Physics::BuildPhysicalEvent(){
       }
     }
   }
+
   // Reconstruct the position at z=100 for each detector
   static map<unsigned int,vector<TVector3> > C100 ;  
   C100.clear();
@@ -129,6 +133,7 @@ void TSamuraiFDC2Physics::BuildPhysicalEvent(){
       }
     }
   }
+
   // Build the Reference position by averaging all possible pair 
   size = C[2].size();
   double PosX100,PosY100;
@@ -142,9 +147,9 @@ void TSamuraiFDC2Physics::BuildPhysicalEvent(){
       PosY+= C[2][i].Y(); 
       PosX100+= C100[2][i].X(); 
       PosY100+= C100[2][i].Y(); 
-    //       cout << C[2][i].X() << " (" << C[2][i].Y() << ") ";
+      //        cout << C[2][i].X() << " (" << C[2][i].Y() << ") ";
     } 
-   // cout << endl;
+    // cout << endl;
     MultMean=size;
     // Mean position at Z=0
     PosX=PosX/size; 
@@ -152,12 +157,25 @@ void TSamuraiFDC2Physics::BuildPhysicalEvent(){
     // Mean position at Z=100
     PosX100=PosX100/size; 
     PosY100=PosY100/size; 
+
+    devX=0;
+    devY=0;
+    for(unsigned int i = 0 ; i < size ; i++){
+      devX+=(C[2][i].X()-PosX)*(C[2][i].X()-PosX);
+      devY+=(C[2][i].Y()-PosY)*(C[2][i].Y()-PosY);
+    }
+
+    devX=sqrt(devX/size);
+    devY=sqrt(devY/size);
+
     // Compute ThetaX, angle between the Direction vector projection in XZ with
     // the Z axis
-    ThetaX=atan((PosX100-PosX)/100.);
+    //ThetaX=atan((PosX100-PosX)/100.);
+    ThetaX = (PosX100-PosX)/100.;
     // Compute PhiY, angle between the Direction vector projection in YZ with
     // the Z axis
-    PhiY=atan((PosY100-PosY)/100.);
+    //PhiY=atan((PosY100-PosY)/100.);
+    PhiY=(PosY100-PosY)/100.;
     Dir=TVector3(PosX100-PosX,PosY100-PosY,100).Unit();
   }
 
@@ -260,6 +278,7 @@ void TSamuraiFDC2Physics::Clear(){
   PileUp=0;
   Mult=0;
   PosX=PosY=-10000;
+  devX=devY=-10000;
   DriftLength.clear();
   Detector.clear();
   Layer.clear();
