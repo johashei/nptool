@@ -42,7 +42,7 @@ int main()
 //  m_NPDetectorManager->ReadConfigurationFile(detectorfileName);
   m_NPDetectorManager->ReadConfigurationFile(detectorfileName);
   m_NPDetectorManager->InitializeRootOutput();
-  m_NPDetectorManager->InitializeRootInput();
+//  m_NPDetectorManager->InitializeRootInput();
 
   // Essential!
   #if __cplusplus > 199711L && NPMULTITHREADING
