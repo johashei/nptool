@@ -29,12 +29,21 @@
 #include<iostream>
 #include<stdlib.h>
 
-// NPTool
-#include "NPOptionManager.h"
-
 NPL::DetectorFactory* NPL::DetectorFactory::m_Instance = 0;
 ////////////////////////////////////////////////////////////////////////////////
 NPL::DetectorFactory::DetectorFactory(){
+#ifdef __linux__
+  m_SharedLibExtension = ".so";
+#endif
+
+#ifdef __FreeBSD__
+  m_SharedLibExtension = ".so";
+#endif
+
+#ifdef __APPLE__
+  m_SharedLibExtension = ".dylib";
+#endif
+
 
 }
 
@@ -138,7 +147,7 @@ void NPL::DetectorFactory::AddToken(std::string Token, std::string LibName){
 
 
   // Create the full name:
-  LibName = "libNP"+LibName + NPOptionManager::getInstance()->GetSharedLibExtension();
+  LibName = "libNP"+LibName + m_SharedLibExtension;
   
   m_TokenLib[Token] = LibName;
 }

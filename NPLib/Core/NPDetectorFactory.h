@@ -48,6 +48,7 @@ class DetectorFactory{
       std::map<std::string,ClassDetectorFactoryFn> m_Construct;
       // Map that Match the Token with the Lib to be loaded
       std::map<std::string,std::string> m_TokenLib;
+      std::string m_SharedLibExtension;
 };
 }
 #endif

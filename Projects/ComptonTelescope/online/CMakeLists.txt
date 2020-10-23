@@ -4,8 +4,23 @@ set (CCAM_VERSION_MAJOR 0)
 set (CCAM_VERSION_MINOR 1)
 set(CMAKE_BUILD_TYPE Release)
 
+# ROOT stuff                                                                    
+list(APPEND CMAKE_PREFIX_PATH $ENV{ROOTSYS})                                    
+find_package(ROOT REQUIRED)                                                     
+include_directories(${ROOT_INCLUDE_DIRS})                                       
+                                                                                
+# nptool stuff                                                                  
+find_package(NPLib)                                                             
+include(${NPLib_USE_FILE})                                                      
+message("  found: ${NPLIB}")                                                    
+message("  include directory: ${NPLib_INCLUDE_DIRS}")                           
+message("  detector list (empty if all): ${NPLib_DETECTOR_LIST}")               
+message("  library directory: ${NPLib_LIB_DIRS}")                               
+link_directories(${NPLIB}/lib)                                                  
+
 # support for c++11
 set (CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${ROOT_CXX_FLAGS}")
 
 # set directories
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
