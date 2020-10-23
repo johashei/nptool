@@ -93,6 +93,9 @@ int main()
      }
 //     ccamData -> Dump();
 
+     // Build physical event
+     m_NPDetectorManager->BuildPhysicalEvent();
+
      // Fill object in output ROOT file
      m_OutputTree->Fill();
 
