@@ -409,7 +409,7 @@ void NPL::Tracking::Hough_3D(vector<double> *x,vector<double> *y,vector<double> 
 }
 
 // Calculation of the minimal distance between 2 lines in 3D space & calculation of mid-point=>vertex of interaction
-void NPL::Tracking::vertex(double *p, double *pp, double &xv,double &yv,double &zv,double &min_dist, double &Theta_tr1, double &Theta_tr2, double &Phi1, double &Phi2, TVector3 &VectorTrack1, TVector3 &VectorTrack2) {
+void NPL::Tracking::vertex(double *p, double *pp, double &xv,double &yv,double &zv,double &min_dist, double &Theta_tr1, double &Theta_tr2, double &Phi1, double &Phi2, double *VectorTrack1, double *VectorTrack2) {
   double a1 = p[0];
   double a2 = p[2];
   double b1 = p[1];
@@ -458,35 +458,20 @@ void NPL::Tracking::vertex(double *p, double *pp, double &xv,double &yv,double &
   yap = ap2 + bp2*zpoint;
 
   //3D unit vectors of tracks 
-  VectorTrack1.SetXYZ(xa-x,ya-y,zpoint-z);
-  VectorTrack1 = VectorTrack1.Unit();
-  VectorTrack2.SetXYZ(xap-xp,yap-yp,zpoint-zp);
-  VectorTrack2 = VectorTrack2.Unit();
-  /* Theta_tr1 = TMath::ACos((zpoint-z)/TMath::Sqrt((xa-x)*(xa-x)+(ya-y)*(ya-y)+(zpoint-z)*(zpoint-z))); */
-  /* Theta_tr2 = TMath::ACos((zpoint-zp)/TMath::Sqrt((xap-xp)*(xap-xp)+(yap-yp)*(yap-yp)+(zpoint-zp)*(zpoint-zp))); */
+  
+  VectorTrack1[0] = xa-x;
+  VectorTrack1[1] = ya-y;
+  VectorTrack1[2] = zpoint-z;
+  
+  VectorTrack2[0] = xap-xp;
+  VectorTrack2[1] = yap-yp;
+  VectorTrack2[2] = zpoint-zp;
+  
   // Aldric Revel version :
   Theta_tr1 = TMath::ATan(TMath::Sqrt((x-a1)*(x-a1)+(y-a2)*(y-a2))/TMath::Abs(sol1));
   Theta_tr2 = TMath::ATan(TMath::Sqrt((xp-ap1)*(xp-ap1)+(yp-ap2)*(yp-ap2))/TMath::Abs(solf1));
   Phi1 = TMath::ATan2(b2,b1);
   Phi2 = TMath::ATan2(bp2,bp1);
-  
-  /* Phi1 = TMath::RadToDeg()*TMath::ATan2(parFit4->at(0),parFit2->at(0)); */
-  /* if( xa-x > 0 && ya-y >= 0) */
-  /*     Phi1 = TMath::ATan((ya-y)/(xa-x)); */
-  /* else if(xa-x > 0 && ya-y < 0) */
-  /*     Phi1 = TMath::ATan((ya-y)/(xa-x)) + 2*TMath::Pi(); */
-  /* else if(xa-x < 0) */
-  /*     Phi1 = TMath::ATan((ya-y)/(xa-x)) + TMath::Pi(); */
-
-  /* if(xap-xp > 0 && yap-yp >= 0) */
-  /*     Phi2 = TMath::ATan((yap-yp)/(xap-xp)); */
-  /* else if(xap-xp > 0 && yap-yp < 0) */
-  /*     Phi2 = TMath::ATan((yap-yp)/(xap-xp)) + 2*TMath::Pi(); */
-  /* else if(xap-xp < 0) */
-  /*     Phi2 = TMath::ATan((yap-yp)/(xap-xp)) + TMath::Pi(); */
-
-  /* if(Phi1>TMath::Pi()) Phi1 = Phi1-2*TMath::Pi(); */
-  /* if(Phi2>TMath::Pi()) Phi2 = Phi2-2*TMath::Pi(); */
   
   Phi1 = 180*Phi1/TMath::Pi();
   Phi2 = 180*Phi2/TMath::Pi();
