@@ -20,5 +20,5 @@ add_executable(online online.cpp)
 
 # link library rules
 # !!!! Example1.detector not found when NPComptonTelescope is added !!!!
-#target_link_libraries(online DecodeR ${ROOT_LIBRARIES} NPCore NPPhysics NPComptonTelescope)
-target_link_libraries(online DecodeR ${ROOT_LIBRARIES} NPCore NPPhysics)
+target_link_libraries(online DecodeR ${ROOT_LIBRARIES} NPCore NPPhysics NPComptonTelescope)
+#target_link_libraries(online DecodeR ${ROOT_LIBRARIES} NPCore NPPhysics)

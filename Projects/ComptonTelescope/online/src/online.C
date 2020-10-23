@@ -358,8 +358,8 @@ void online()
    string detectorfileName = NPOptionManager::getInstance()->GetDetectorFile();
    cout << "detector file name from NPOptionManager: " << detectorfileName << "\n";
    NPL::DetectorManager* m_NPDetectorManager = new NPL::DetectorManager();
-//   m_NPDetectorManager->ReadConfigurationFile(detectorfileName);
-/*   m_NPDetectorManager->InitializeRootOutput();*/
+   m_NPDetectorManager->ReadConfigurationFile(detectorfileName);
+   m_NPDetectorManager->InitializeRootOutput();
 
    // instantiate raw ComptonCAM data pointer
    auto ccamData = new TComptonTelescopeData();

@@ -46,11 +46,11 @@ int main()
   // this part is commented for debugging purposes, but it works on its own
   ///////////////////////////////////////////////////////////////////////////
   // instantiate raw ComptonCAM data pointer
-//  auto ccamData = new TComptonTelescopeData();
-//  ccamData->Dump();
+  auto ccamData = new TComptonTelescopeData();
+  ccamData->Dump();
   // connect raw CCAM data pointer to physics class
-  //   auto ccamPhys = (TComptonTelescopePhysics*) m_NPDetectorManager->GetDetector("ComptonTelescope");
-  //   ccamPhys->SetRawDataPointer(ccamData);
+//  auto ccamPhys = (TComptonTelescopePhysics*) m_NPDetectorManager->GetDetector("ComptonTelescope");
+//  ccamPhys->SetRawDataPointer(ccamData);
 
   // read data file/flux and fill ccamData object
   std::cout << "Reading data\n";
@@ -86,7 +86,7 @@ int main()
      //D -> Dump();//Optionnal print
 
      // Set ccamData (a better way is envisionned)
-/*     for (int i=0; i<64; i++) {
+     for (int i=0; i<64; i++) {
        ccamData -> SetCTCalorimeterTTowerNbr( 1 );
        ccamData -> SetCTCalorimeterTDetectorNbr( 1 );//Triggered ASIC number
        ccamData -> SetCTCalorimeterTChannelNbr( D -> getPixelNumber() );//ASIC's channel number
@@ -97,7 +97,7 @@ int main()
        ccamData -> SetCTCalorimeterEEnergy( D -> getData()[i] );
      }
      ccamData -> Dump();
-     ccamData -> Clear();*/
+     ccamData -> Clear();
      c++;
   }
   delete D;
