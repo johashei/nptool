@@ -20,6 +20,8 @@ link_directories(${NPLIB}/lib)
 
 # support for c++11
 set (CMAKE_CXX_STANDARD 11)
+
+# add ROOT cxx flags
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${ROOT_CXX_FLAGS}")
 
 # set directories

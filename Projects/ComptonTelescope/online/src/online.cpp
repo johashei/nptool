@@ -12,9 +12,8 @@
 
 // C++ headers
 #include <iostream>
-#include <string>
 #include <fstream>
-#include <vector>
+#include <string>
 using namespace std;
 
 
@@ -22,35 +21,29 @@ int main()
 {
   ///////////////////////////////////////////////////////////////////////////
   // configure option manager
-  // NPOptionManager::getInstance()->Destroy();
+//   NPOptionManager::getInstance()->Destroy();
 
-  //   char arg[1000];
-  //   sprintf(arg,"-D ./ComptonCAM.detector -C Calibration.txt -GH -E Example2.reaction -P %i --circular",port);
-  //   sprintf(arg,"-D ./ComptonCAM.detector -C calibrations.txt -GH -E Example2.reaction --circular");
-  //   sprintf(arg,"-D ./ComptonCAM.detector -C calibrations.txt -GH -E ./10He.reaction --circular");
-  //   string arg = "-D ./ComptonCAM.detector -C calibrations.txt -GH -E ./10He.reaction --circular";
-  string arg = "-D ./Example1.detector -GH -E Example1.reaction --circular";
+//  string arg = "-D ./ComptonCAM.detector -C Calibration.txt -GH -E Example2.reaction -P %i --circular",port);
+  string arg = "-D ./ComptonCAM.detector -C calibrations.txt -GH -E ./10He.reaction --circular";
   NPOptionManager::getInstance(arg);  
 
-  // ROOT output file name
+  // open ROOT output file
   RootOutput::getInstance("OnlineTree.root", "OnlineTree");
+  // get tree pointer
+  auto m_OutputTree = RootOutput::getInstance()->GetTree();
 
   // configure detector manager
   string detectorfileName = NPOptionManager::getInstance()->GetDetectorFile();
-  cout << "detector file name from NPOptionManager: " << detectorfileName << "\n";
   NPL::DetectorManager* m_NPDetectorManager = new NPL::DetectorManager();
   m_NPDetectorManager->ReadConfigurationFile(detectorfileName);
   m_NPDetectorManager->InitializeRootOutput();
 
-  ///////////////////////////////////////////////////////////////////////////
-  // this part is commented for debugging purposes, but it works on its own
-  ///////////////////////////////////////////////////////////////////////////
   // instantiate raw ComptonCAM data pointer
   auto ccamData = new TComptonTelescopeData();
   ccamData->Dump();
   // connect raw CCAM data pointer to physics class
-//  auto ccamPhys = (TComptonTelescopePhysics*) m_NPDetectorManager->GetDetector("ComptonTelescope");
-//  ccamPhys->SetRawDataPointer(ccamData);
+  auto ccamPhys = (TComptonTelescopePhysics*) m_NPDetectorManager->GetDetector("ComptonTelescope");
+  ccamPhys->SetRawDataPointer(ccamData);
 
   // read data file/flux and fill ccamData object
   std::cout << "Reading data\n";
@@ -60,7 +53,7 @@ int main()
 
   // Load a file
   std::ifstream is;
-  is.open("../mfm.bin", std::ios::binary);
+  is.open("./mfm.bin", std::ios::binary);
   is.seekg (0, std::ios::end);
   int length = is.tellg();
   is.seekg (0, ios::beg);
@@ -75,18 +68,20 @@ int main()
   D -> decodeRawMFM();
   D -> Dump();
 
-
   int c = 0;
-  //   int i = 0;
-
-  while (D -> getCursor() < length)
+  const int pixelNumber = 64;
+  while (D -> getCursor() < length) 
   {
+     // Clear raw data and physics objects
+     m_NPDetectorManager->ClearEventPhysics();
+     m_NPDetectorManager->ClearEventData();
+
      // Read the actual data
      D -> decodeRawMFM();
      //D -> Dump();//Optionnal print
 
      // Set ccamData (a better way is envisionned)
-     for (int i=0; i<64; i++) {
+     for (int i = 0; i < pixelNumber; ++i) {
        ccamData -> SetCTCalorimeterTTowerNbr( 1 );
        ccamData -> SetCTCalorimeterTDetectorNbr( 1 );//Triggered ASIC number
        ccamData -> SetCTCalorimeterTChannelNbr( D -> getPixelNumber() );//ASIC's channel number
@@ -96,24 +91,20 @@ int main()
        ccamData -> SetCTCalorimeterEChannelNbr( i );//PMT pixel number
        ccamData -> SetCTCalorimeterEEnergy( D -> getData()[i] );
      }
-     ccamData -> Dump();
-     ccamData -> Clear();
+//     ccamData -> Dump();
+
+     // Fill object in output ROOT file
+     m_OutputTree->Fill();
+
      c++;
   }
   delete D;
   delete [] buffer;
 
-  // test zone...
-  /*
-     ccamData->SetCTTrackerFrontETowerNbr(1);
-     ccamData->SetCTTrackerFrontEDetectorNbr(1);
-     ccamData->SetCTTrackerFrontEStripNbr(12);
-     ccamData->SetCTTrackerFrontEEnergy(480);
-     ccamData->Dump();
-     ccamData->Clear();
-     ccamData->Dump();
-     */
   std::cout << "test compil\n";
+
+  // Fill spectra
+  m_NPDetectorManager->WriteSpectra();
 
   // Essential
   #if __cplusplus > 199711L && NPMULTITHREADING
