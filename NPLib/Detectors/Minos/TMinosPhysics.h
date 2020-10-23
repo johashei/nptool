@@ -169,10 +169,8 @@ TMinosResult *minosdata_result;//!
     double GetVertexX()  {return Xvertex;} 
     double GetVertexY()  {return Yvertex;} 
 
-    double GetTheta1() {return Theta1 ;}
-    double GetTheta2() {return Theta2 ;}
-    double GetTheta_1() {return Theta_1 ;}
-    double GetTheta_2() {return Theta_2 ;}
+    double GetTheta1() {return Theta_1 ;}
+    double GetTheta2() {return Theta_2 ;}
  
     double GetPhi1(){return Phi1;}
     double GetPhi2(){return Phi2;}
@@ -272,8 +270,7 @@ TMinosResult *minosdata_result;//!
     double Dmin;
     
     double Theta_12;
-    double Theta1;
-    double Theta2;
+    
     double Theta_1;
     double Theta_2;
 
@@ -325,10 +322,6 @@ TMinosResult *minosdata_result;//!
     double yv;//!
     double zv;//!
     
-    double Dist_min;//!
-    
-    double Theta_tr1;//!
-    double Theta_tr2;//!
   // number of detectors
   private:
     int m_NumberOfDetectors;  //!
