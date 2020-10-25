@@ -62,12 +62,16 @@ int NPL::Tracking::Hough_modified(vector<double> *x,vector<double> *y,vector<dou
   double Rext = 45.2 + 18*2.1;
   int filter_result = 0;
 
+  /* static TH2F hp_xy = TH2F("hp_xy","hp_xy",nt1,mint,maxt,nt2,mint,maxt); */
+  /* static TH2F hpDiag_xy = TH2F("hpDiag_xy","hpDiag_xy",nt1,mint,maxt,nt2,mint,maxt); */
+  /* hp_xy.Clear(); */
+  /* hpDiag_xy.Clear(); */
   TH2F *hp_xy = new TH2F("hp_xy","hp_xy",nt1,mint,maxt,nt2,mint,maxt);
   TH2F *hpDiag_xy = new TH2F("hpDiag_xy","hpDiag_xy",nt1,mint,maxt,nt2,mint,maxt);
-
+  
   double max_xy;
-
-  vector<double> xTemp, yTemp, qTemp;
+  static vector<double> xTemp, yTemp, qTemp;
+  xTemp.clear(); yTemp.clear(); qTemp.clear();
 
   double theta1, theta2, xt1, yt1, xt2, yt2;
   double line0=0., line1=0.;
@@ -159,7 +163,9 @@ int NPL::Tracking::Hough_modified(vector<double> *x,vector<double> *y,vector<dou
   par1 = (ymax2-ymax1)/(xmax2-xmax1);
   par0 = (ymax1 - xmax1*par1);
   //Selection of x,y points IN the maxmean+/-1 found in Obertelli transform of xy plane
-  for(unsigned int i=0;i<xTemp.size();i++){
+  static int xTempSize;
+  xTempSize = xTemp.size();
+  for(unsigned int i=0;i<xTempSize;i++){
     if( (abs(par1*xTemp[i]-yTemp[i]+par0)/sqrt(1+par1*par1))<= 6 && ((xmax1*xTemp[i] + ymax1*yTemp[i]) >= 0) && ((xmax2*xTemp[i] + ymax2*yTemp[i]) >= 0) && ((xmax1*xmax2 + ymax1*ymax2) >= 0)){
       //			couti<< "Taken points= " << xTemp[i] << " , " << yTemp[i] << " , " << zTemp[i] << endl;
       //			hcnew_xy->Fill(xTemp[i],yTemp[i],qTemp[i]);
@@ -184,8 +190,10 @@ int NPL::Tracking::Hough_modified(vector<double> *x,vector<double> *y,vector<dou
     /* else ringbool->push_back(0); */
     ringbool->push_back(1);
   }
+  
   delete hp_xy;
   delete hpDiag_xy;
+  
   return filter_result;
 }
 
@@ -248,6 +256,13 @@ void NPL::Tracking::Hough_3D(vector<double> *x,vector<double> *y,vector<double> 
 
   double rho_xy,rho_xz,rho_yz;
   double theta_xy,theta_xz,theta_yz;
+  
+  /* static TH2F hp_xy("hp_xy","hp_xy",nt_xy,0,180,nr_xy,-1*nr_xy,nr_xy); */
+  /* static TH2F hp_xz("hp_xz","hp_xz",nt_xz,0,180,nr_xz,-1*nr_xz,nr_xz); */
+  /* static TH2F hp_yz("hp_yz","hp_yz",nt_yz,0,180,nr_yz,-1*nr_yz,nr_yz); */
+  /* hp_xy.Clear(); */
+  /* hp_xz.Clear(); */
+  /* hp_xy.Clear(); */
 
   TH2F *hp_xy = new TH2F("hp_xy","hp_xy",nt_xy,0,180,nr_xy,-1*nr_xy,nr_xy);
   TH2F *hp_xz = new TH2F("hp_xz","hp_xz",nt_xz,0,180,nr_xz,-1*nr_xz,nr_xz);
@@ -417,7 +432,7 @@ void NPL::Tracking::vertex(double *p, double *pp, double &xv,double &yv,double &
   double ap1 = pp[0];
   double ap2 = pp[2];
   double bp1 = pp[1];
-  double bp2 = pp[3];
+ double bp2 = pp[3];
 
   // calcul the closest pointis between track1 && track2
   double alpha, beta, A, B, C;

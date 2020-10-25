@@ -143,6 +143,7 @@ void TMinosPhysics::PreTreat() {
   ////////////////////fit variables//////////////////////  
 
   fit_function = new TF1("fit_function",conv_fit, 0, 511, 3);
+  
   int fit2DStatus = 0.;
   double fit_function_max = 0., fit_function_Tpad = 0.;
   double Chi2 = 0.;
