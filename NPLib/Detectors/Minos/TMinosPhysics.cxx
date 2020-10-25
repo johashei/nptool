@@ -742,7 +742,14 @@ void TMinosPhysics::ReadAnalysisConfig() {
       TChain* inputChain = RootInput::getInstance()->GetChain();
       inputChain->SetBranchStatus("Minos",  true );
       inputChain->SetBranchAddress("Minos", &m_EventData );
-      if( strlen(inputChain->GetTree()->GetName())==13) SimulationBool= true; // Test if TreeName==SimulatedTree
+      if(NPOptionManager::getInstance()->HasDefinition("simulation")){
+        cout << "Considering input data as simulation"<< endl;
+        SimulationBool = true;
+      }
+      else{
+        cout << "Considering input data as real" << endl;
+        SimulationBool = false;
+      }
     }
 
     ///////////////////////////////////////////////////////////////////////////
