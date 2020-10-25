@@ -62,9 +62,9 @@ int NPL::Tracking::Hough_modified(vector<double> *x,vector<double> *y,vector<dou
   double Rext = 45.2 + 18*2.1;
   int filter_result = 0;
 
-  static TH2F hp_xy = TH2F("hp_xy","hp_xy",nt1,mint,maxt,nt2,mint,maxt);
+  static TH2F hp_xy1 = TH2F("hp_xy1","hp_xy1",nt1,mint,maxt,nt2,mint,maxt);
   static TH2F hpDiag_xy = TH2F("hpDiag_xy","hpDiag_xy",nt1,mint,maxt,nt2,mint,maxt);
-  hp_xy.Reset();
+  hp_xy1.Reset();
   hpDiag_xy.Reset();
   
   double max_xy;
@@ -109,7 +109,7 @@ int NPL::Tracking::Hough_modified(vector<double> *x,vector<double> *y,vector<dou
           else if(yt2<=0)	      theta2=  360 + asin(yt2/Rext)*180/PI;
         }
         if( (xt1*x->at(i) + yt1*y->at(i))>=0 && (xt2*x->at(i) + yt2*y->at(i))>=0  && (xt1*xt2+yt1*yt2)>=0){
-          hp_xy.Fill(theta1,theta2);
+          hp_xy1.Fill(theta1,theta2);
           if(abs(theta1-theta2)<=10) hpDiag_xy.Fill(theta1,theta2);
         }
         else{
@@ -122,7 +122,7 @@ int NPL::Tracking::Hough_modified(vector<double> *x,vector<double> *y,vector<dou
               else if(yt2<=0)	      theta2=  360 + asin(yt2/Rext)*180/PI;
             }
             if( (xt1*x->at(i) + yt1*y->at(i))>=0 && (xt2*x->at(i) + yt2*y->at(i))>=0  && (xt1*xt2+yt1*yt2)>=0){
-              hp_xy.Fill(theta1,theta2);
+              hp_xy1.Fill(theta1,theta2);
               if(abs(theta1-theta2)<=10) hpDiag_xy.Fill(theta1,theta2);
             }
           }
@@ -137,12 +137,12 @@ int NPL::Tracking::Hough_modified(vector<double> *x,vector<double> *y,vector<dou
 
   if(hpDiag_xy.GetMaximum()>=10) max_xy = hpDiag_xy.GetMaximum();
   //		cout << "Max taken in diag... withh value=" << max_xy << endl;
-  else max_xy = hp_xy.GetMaximum();
+  else max_xy = hp_xy1.GetMaximum();
 
   for(int ii=0; ii<nt1; ii++){
     if(maxfound ==true) break;
     for(int jj=0; jj<nt2; jj++){
-      if(hp_xy.GetBinContent(ii+1, jj+1) == max_xy){
+      if(hp_xy1.GetBinContent(ii+1, jj+1) == max_xy){
         maxtheta1 = (ii+0.5)*bint1 + mint;
         maxtheta2 = (jj+0.5)*bint2 + mint;
         maxfound = true;
@@ -192,8 +192,9 @@ double NPL::Tracking::FitFunction(double *x, double *p) {
   return(val);
 }
 void NPL::Tracking::FindStart(double pStart[4], double chi[2],  int fitStatus[2],TGraph *grxz, TGraph *gryz) {
-  double par1D[2];
-  TF1 *myfit1 = new TF1("myfit1","[0]+[1]*x", -100,500);
+  static double par1D[2];
+  static TF1 *myfit1 = new TF1("myfit1","[0]+[1]*x", -100,500);
+  myfit1->Clear();
   myfit1->SetParameter(0,0);
   myfit1->SetParameter(1,10);
   fitStatus[0] =0;
@@ -211,7 +212,7 @@ void NPL::Tracking::FindStart(double pStart[4], double chi[2],  int fitStatus[2]
   pStart[2]=par1D[0];
   pStart[3]=par1D[1];
   //AC 07/12/14
-  delete myfit1;
+  /* delete myfit1; */
 }
 
 // Calculation of the distance line-point
