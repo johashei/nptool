@@ -170,7 +170,6 @@ void TMinosPhysics::PreTreat() {
     }
 
     ifstream calibFile("Time_Offset.txt");
-    /* ifstream calibFile("Time_Offset2.txt"); */
     string buffer;
     getline(calibFile, buffer);
     double offset;
@@ -182,12 +181,9 @@ void TMinosPhysics::PreTreat() {
 
     coef_Vdrift = 1.125; 
     Shift_Vdrift = +0.00325; 
-    ZRot_Minos = 35; //21.3;//38.88;//32.81; // Rotation of Minos along Z axis, s034 par.
+    ZRot_Minos = 35; // Rotation of Minos along Z axis, s034 par.
     //to fixe VDrift
-    /* VDrift = 0.0325858; //0.03475; // mm/ns, s034 par. */
     Z_Shift = -18.95 + 4;
-    /* Z_Shift = -54.4; */
-    /* Z_Shift = -10.5 ; // mm, s034 par. */
   }
 
   ///////////////////////////////////////////////////////

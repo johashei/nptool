@@ -206,11 +206,6 @@ TMinosResult *minosdata_result;//!
     vector<double> QpadNew;//!
     vector<double> ZpadNew;//!
     
-    /* vector<double> XpadTemp;//! */
-    /* vector<double> YpadTemp;//! */
-    /* vector<double> QpadTemp;//! */
-    /* vector<double> ZpadTemp;//! */
-    
     double x_mm;//!
     double y_mm;//!
     double z_mm;//!
