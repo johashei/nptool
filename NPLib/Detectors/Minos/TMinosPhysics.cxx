@@ -228,6 +228,9 @@ void TMinosPhysics::PreTreat() {
       /* while(Xpad.size()>=10 && Iteration< 20 ) {   //  !!!!!!!! */  
       filter_result = 0; // Nbr of pads in the Track
       Iteration++;
+      
+      static vector<double> XpadTemp, YpadTemp, QpadTemp;
+      static vector <int> clusterringboolTemp;
       XpadTemp.clear();                
       YpadTemp.clear();                
       QpadTemp.clear();                
@@ -522,10 +525,8 @@ void TMinosPhysics::PreTreat() {
         delete min;
       }
 
-      double ParTrack1[4];
-      double ParTrack2[4];
-      /* TVector3 VectorTrack1, VectorTrack2; */
-      double VectorTrack11[3], VectorTrack22[3];
+      static double ParTrack1[4], ParTrack2[4];
+      static double VectorTrack11[3], VectorTrack22[3];
 
       ParTrack1[0] = parFit1[0];
       ParTrack1[1] = parFit2[0];
@@ -547,11 +548,8 @@ void TMinosPhysics::PreTreat() {
 
       Dmin=-100, Theta_1 = -1, Theta_2 = -1;
 
-      Tracking_functions->vertex(ParTrack1, ParTrack2, xv, yv, zv, Dmin, Theta_1, Theta_2, Phi1, Phi2, VectorTrack11, VectorTrack22);
+      Tracking_functions->vertex(ParTrack1, ParTrack2, Xvertex, Yvertex, Zvertex, Dmin, Theta_1, Theta_2, Phi1, Phi2, VectorTrack11, VectorTrack22);
 
-      Xvertex=xv;
-      Yvertex=yv;
-      Zvertex = zv;
       VectorTrack1.SetXYZ(VectorTrack11[0],VectorTrack11[1],VectorTrack11[2]);
       VectorTrack2.SetXYZ(VectorTrack22[0],VectorTrack22[1],VectorTrack22[2]);
       VectorTrack1 = VectorTrack1.Unit();

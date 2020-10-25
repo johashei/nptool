@@ -206,10 +206,10 @@ TMinosResult *minosdata_result;//!
     vector<double> QpadNew;//!
     vector<double> ZpadNew;//!
     
-    vector<double> XpadTemp;//!
-    vector<double> YpadTemp;//!
-    vector<double> QpadTemp;//!
-    vector<double> ZpadTemp;//!
+    /* vector<double> XpadTemp;//! */
+    /* vector<double> YpadTemp;//! */
+    /* vector<double> QpadTemp;//! */
+    /* vector<double> ZpadTemp;//! */
     
     double x_mm;//!
     double y_mm;//!
@@ -318,10 +318,6 @@ TMinosResult *minosdata_result;//!
     vector<double> errFit3_local;
     vector<double> errFit4_local;
   
-    double xv;//!
-    double yv;//!
-    double zv;//!
-    
   // number of detectors
   private:
     int m_NumberOfDetectors;  //!
