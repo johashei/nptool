@@ -62,12 +62,10 @@ int NPL::Tracking::Hough_modified(vector<double> *x,vector<double> *y,vector<dou
   double Rext = 45.2 + 18*2.1;
   int filter_result = 0;
 
-  /* static TH2F hp_xy = TH2F("hp_xy","hp_xy",nt1,mint,maxt,nt2,mint,maxt); */
-  /* static TH2F hpDiag_xy = TH2F("hpDiag_xy","hpDiag_xy",nt1,mint,maxt,nt2,mint,maxt); */
-  /* hp_xy.Clear(); */
-  /* hpDiag_xy.Clear(); */
-  TH2F *hp_xy = new TH2F("hp_xy","hp_xy",nt1,mint,maxt,nt2,mint,maxt);
-  TH2F *hpDiag_xy = new TH2F("hpDiag_xy","hpDiag_xy",nt1,mint,maxt,nt2,mint,maxt);
+  static TH2F hp_xy = TH2F("hp_xy","hp_xy",nt1,mint,maxt,nt2,mint,maxt);
+  static TH2F hpDiag_xy = TH2F("hpDiag_xy","hpDiag_xy",nt1,mint,maxt,nt2,mint,maxt);
+  hp_xy.Reset();
+  hpDiag_xy.Reset();
   
   double max_xy;
   static vector<double> xTemp, yTemp, qTemp;
@@ -111,8 +109,8 @@ int NPL::Tracking::Hough_modified(vector<double> *x,vector<double> *y,vector<dou
           else if(yt2<=0)	      theta2=  360 + asin(yt2/Rext)*180/PI;
         }
         if( (xt1*x->at(i) + yt1*y->at(i))>=0 && (xt2*x->at(i) + yt2*y->at(i))>=0  && (xt1*xt2+yt1*yt2)>=0){
-          hp_xy->Fill(theta1,theta2);
-          if(abs(theta1-theta2)<=10) hpDiag_xy->Fill(theta1,theta2);
+          hp_xy.Fill(theta1,theta2);
+          if(abs(theta1-theta2)<=10) hpDiag_xy.Fill(theta1,theta2);
         }
         else{
           if(delta!=0){
@@ -124,8 +122,8 @@ int NPL::Tracking::Hough_modified(vector<double> *x,vector<double> *y,vector<dou
               else if(yt2<=0)	      theta2=  360 + asin(yt2/Rext)*180/PI;
             }
             if( (xt1*x->at(i) + yt1*y->at(i))>=0 && (xt2*x->at(i) + yt2*y->at(i))>=0  && (xt1*xt2+yt1*yt2)>=0){
-              hp_xy->Fill(theta1,theta2);
-              if(abs(theta1-theta2)<=10) hpDiag_xy->Fill(theta1,theta2);
+              hp_xy.Fill(theta1,theta2);
+              if(abs(theta1-theta2)<=10) hpDiag_xy.Fill(theta1,theta2);
             }
           }
         }
@@ -137,14 +135,14 @@ int NPL::Tracking::Hough_modified(vector<double> *x,vector<double> *y,vector<dou
   y->clear();
   q->clear();
 
-  if(hpDiag_xy->GetMaximum()>=10) max_xy = hpDiag_xy->GetMaximum();
+  if(hpDiag_xy.GetMaximum()>=10) max_xy = hpDiag_xy.GetMaximum();
   //		cout << "Max taken in diag... withh value=" << max_xy << endl;
-  else max_xy = hp_xy->GetMaximum();
+  else max_xy = hp_xy.GetMaximum();
 
   for(int ii=0; ii<nt1; ii++){
     if(maxfound ==true) break;
     for(int jj=0; jj<nt2; jj++){
-      if(hp_xy->GetBinContent(ii+1, jj+1) == max_xy){
+      if(hp_xy.GetBinContent(ii+1, jj+1) == max_xy){
         maxtheta1 = (ii+0.5)*bint1 + mint;
         maxtheta2 = (jj+0.5)*bint2 + mint;
         maxfound = true;
@@ -167,7 +165,6 @@ int NPL::Tracking::Hough_modified(vector<double> *x,vector<double> *y,vector<dou
   xTempSize = xTemp.size();
   for(unsigned int i=0;i<xTempSize;i++){
     if( (abs(par1*xTemp[i]-yTemp[i]+par0)/sqrt(1+par1*par1))<= 6 && ((xmax1*xTemp[i] + ymax1*yTemp[i]) >= 0) && ((xmax2*xTemp[i] + ymax2*yTemp[i]) >= 0) && ((xmax1*xmax2 + ymax1*ymax2) >= 0)){
-      //			couti<< "Taken points= " << xTemp[i] << " , " << yTemp[i] << " , " << zTemp[i] << endl;
       //			hcnew_xy->Fill(xTemp[i],yTemp[i],qTemp[i]);
       x_out->push_back(xTemp[i]); 
       y_out->push_back(yTemp[i]);
@@ -182,18 +179,11 @@ int NPL::Tracking::Hough_modified(vector<double> *x,vector<double> *y,vector<dou
       q->push_back(qTemp[i]);
     }
   }
-
-  /* cout << "ringsum = " << ringsum << endl; */ 
-  /* cout << "Filter_result = " << filter_result  << endl; */ 
   for(int ip=0; ip<filter_result; ip++){
     /* if(ringsum>2) ringbool->push_back(1); */
     /* else ringbool->push_back(0); */
     ringbool->push_back(1);
   }
-  
-  delete hp_xy;
-  delete hpDiag_xy;
-  
   return filter_result;
 }
 
@@ -257,16 +247,12 @@ void NPL::Tracking::Hough_3D(vector<double> *x,vector<double> *y,vector<double> 
   double rho_xy,rho_xz,rho_yz;
   double theta_xy,theta_xz,theta_yz;
   
-  /* static TH2F hp_xy("hp_xy","hp_xy",nt_xy,0,180,nr_xy,-1*nr_xy,nr_xy); */
-  /* static TH2F hp_xz("hp_xz","hp_xz",nt_xz,0,180,nr_xz,-1*nr_xz,nr_xz); */
-  /* static TH2F hp_yz("hp_yz","hp_yz",nt_yz,0,180,nr_yz,-1*nr_yz,nr_yz); */
-  /* hp_xy.Clear(); */
-  /* hp_xz.Clear(); */
-  /* hp_xy.Clear(); */
-
-  TH2F *hp_xy = new TH2F("hp_xy","hp_xy",nt_xy,0,180,nr_xy,-1*nr_xy,nr_xy);
-  TH2F *hp_xz = new TH2F("hp_xz","hp_xz",nt_xz,0,180,nr_xz,-1*nr_xz,nr_xz);
-  TH2F *hp_yz = new TH2F("hp_yz","hp_yz",nt_yz,0,180,nr_yz,-1*nr_yz,nr_yz);
+  static TH2F hp_xy("hp_xy","hp_xy",nt_xy,0,180,nr_xy,-1*nr_xy,nr_xy);
+  static TH2F hp_xz("hp_xz","hp_xz",nt_xz,0,180,nr_xz,-1*nr_xz,nr_xz);
+  static TH2F hp_yz("hp_yz","hp_yz",nt_yz,0,180,nr_yz,-1*nr_yz,nr_yz);
+  hp_xy.Reset();
+  hp_xz.Reset();
+  hp_yz.Reset();
 
   //	int npeaks_xy, npeaks_xz, npeaks_yz;
   vector<double> thetapeaks_xy, rpeaks_xy, thetapeaks_xz, rpeaks_xz, thetapeaks_yz, rpeaks_yz;
@@ -295,7 +281,7 @@ void NPL::Tracking::Hough_3D(vector<double> *x,vector<double> *y,vector<double> 
       rho_xy = x->at(i)*TMath::Cos(theta_xy*PI/180.)+y->at(i)*TMath::Sin(theta_xy*PI/180.);
       if(abs(theta_xy)<180. && abs(rho_xy)<nr_xy)
       {
-        hp_xy->Fill(theta_xy,rho_xy);
+        hp_xy.Fill(theta_xy,rho_xy);
       }
 
       //xz
@@ -303,7 +289,7 @@ void NPL::Tracking::Hough_3D(vector<double> *x,vector<double> *y,vector<double> 
       rho_xz = z->at(i)*TMath::Cos(theta_xz*PI/180.)+x->at(i)*TMath::Sin(theta_xz*PI/180.);
       if(abs(theta_xz)<180. && abs(rho_xz)<nr_xz)
       {
-        hp_xz->Fill(theta_xz,rho_xz);
+        hp_xz.Fill(theta_xz,rho_xz);
       }
 
       //yz
@@ -311,34 +297,34 @@ void NPL::Tracking::Hough_3D(vector<double> *x,vector<double> *y,vector<double> 
       rho_yz = z->at(i)*TMath::Cos(theta_yz*PI/180.)+y->at(i)*TMath::Sin(theta_yz*PI/180.);
       if(abs(theta_yz)<180. && abs(rho_yz)<nr_yz)
       {
-        hp_yz->Fill(theta_yz,rho_yz);
+        hp_yz.Fill(theta_yz,rho_yz);
       }
     }
   }
 
-  max_xy = hp_xy->GetMaximum();
-  max_xz = hp_xz->GetMaximum();
-  max_yz = hp_yz->GetMaximum();
+  max_xy = hp_xy.GetMaximum();
+  max_xz = hp_xz.GetMaximum();
+  max_yz = hp_yz.GetMaximum();
 
   for(int ii=0; ii<nt; ii++)
   {
     for(int jj=0; jj<nr; jj++)
     {
-      if(hp_xy->GetBinContent(ii+1, jj+1) == max_xy && jj<nr_xy)
+      if(hp_xy.GetBinContent(ii+1, jj+1) == max_xy && jj<nr_xy)
       {
         thetapeaks_xy.push_back((ii+0.5)*nt_xy/nt);
         rpeaks_xy.push_back((jj+0.5)*2 - nr_xy);
         rmean_xy += rpeaks_xy.back();
         thetamean_xy += thetapeaks_xy.back();
       }
-      if(hp_xz->GetBinContent(ii+1, jj+1) == max_xz)
+      if(hp_xz.GetBinContent(ii+1, jj+1) == max_xz)
       {
         thetapeaks_xz.push_back((ii+0.5)*nt_xz/nt);
         rpeaks_xz.push_back((jj+0.5)*2 - nr_xz);
         rmean_xz += rpeaks_xz.back();
         thetamean_xz += thetapeaks_xz.back();
       }
-      if(hp_yz->GetBinContent(ii+1, jj+1) == max_yz)
+      if(hp_yz.GetBinContent(ii+1, jj+1) == max_yz)
       {
         thetapeaks_yz.push_back((ii+0.5)*nt_yz/nt);
         rpeaks_yz.push_back((jj+0.5)*2 - nr_yz);
@@ -415,12 +401,7 @@ void NPL::Tracking::Hough_3D(vector<double> *x,vector<double> *y,vector<double> 
         }
       }
     }
-
   }
-  delete hp_xy;
-  delete hp_xz;
-  delete hp_yz;
-
 }
 
 // Calculation of the minimal distance between 2 lines in 3D space & calculation of mid-point=>vertex of interaction
