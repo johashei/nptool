@@ -186,7 +186,7 @@ TMinosResult *minosdata_result;//!
   private:
    
 
-    bool SimulationBool=false;//!
+    bool SimulationBool;//!
     
     // thresholds
     double m_E_RAW_Threshold; //!
@@ -205,6 +205,8 @@ TMinosResult *minosdata_result;//!
     vector<double> YpadNew;
     vector<double> QpadNew;//!
     vector<double> ZpadNew;//!
+    
+  double MINOSthresh, UperFitLim, VDrift, Z_Shift, DelayTrig[18]={0},VdriftperRing[18]={0}, ZRot_Minos, coef_Vdrift; //!   
     
     double x_mm;//!
     double y_mm;//!

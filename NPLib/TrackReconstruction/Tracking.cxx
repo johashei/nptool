@@ -212,7 +212,6 @@ void NPL::Tracking::FindStart(double pStart[4], double chi[2],  int fitStatus[2]
   pStart[2]=par1D[0];
   pStart[3]=par1D[1];
   //AC 07/12/14
-  /* delete myfit1; */
 }
 
 // Calculation of the distance line-point

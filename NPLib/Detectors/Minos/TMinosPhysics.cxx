@@ -139,17 +139,15 @@ void TMinosPhysics::PreTreat() {
   Dmin = -1000;
 
   TMinosClust *minosfitdata;
-
   ////////////////////fit variables//////////////////////  
 
-  fit_function = new TF1("fit_function",conv_fit, 0, 511, 3);
-  
+  /* fit_function = new TF1("fit_function",conv_fit, 0, 511, 3); */
+  fit_function->Clear(); 
   int fit2DStatus = 0.;
   double fit_function_max = 0., fit_function_Tpad = 0.;
   double Chi2 = 0.;
   double Tshaping = 333.9;
   const double TimeBinElec = 30.; // in ns
-  double MINOSthresh, UperFitLim, VDrift, Z_Shift, DelayTrig[18]={0},VdriftperRing[18]={0}, ZRot_Minos, Shift_Vdrift, coef_Vdrift;   
   if(SimulationBool){ // Simulated data
     UperFitLim = 1000000000.; //   
     MINOSthresh = 899.;
@@ -159,34 +157,12 @@ void TMinosPhysics::PreTreat() {
   else{ // Experiment data
     MINOSthresh = 100;
     UperFitLim = 100000.; 
-
-    ifstream calibFile2("Vdrift.txt");
-    string buffer2;
-    getline(calibFile2, buffer2);
-    double vdriftR;
-    int i = 0;
-    while(calibFile2 >> vdriftR){
-      VdriftperRing[i] = vdriftR; // ns, s034 par.
-      i++;
-    }
-
-    ifstream calibFile("Time_Offset.txt");
-    string buffer;
-    getline(calibFile, buffer);
-    double offset;
-    i = 0;
-    while(calibFile >> offset){
-      DelayTrig[i] = offset; // ns, s034 par.
-      i++;
-    }
-
     coef_Vdrift = 1.125; 
-    Shift_Vdrift = +0.00325; 
-    ZRot_Minos = 35; // Rotation of Minos along Z axis, s034 par.
+    ZRot_Minos = 35; // Rotation of Minos along Z axis s034
     //to fixe VDrift
     Z_Shift = -18.95 + 4;
   }
-
+  
   ///////////////////////////////////////////////////////
 
   ClearPreTreatedData();
@@ -287,6 +263,7 @@ void TMinosPhysics::PreTreat() {
         /*     hfit_max=m_EventData->GetCharge(i)[o]+250; */
         /*   } */
         /* } */  
+        
         for(Int_t j=0; j< m_EventData->GetTime(i).size(); j++) {
           if(m_EventData->GetCharge(i)[j]>=0){
             hfit->SetBinContent(hfit->FindBin(m_EventData->GetTime(i)[j]), m_EventData->GetCharge(i)[j]+250);
@@ -398,8 +375,6 @@ void TMinosPhysics::PreTreat() {
           double zouttarget=0;
           int indexin=0; int indexout=0;
           for(unsigned int ij=0; ij<xout.size(); ij++){
-
-            //d
             point.SetXYZ(xout[ij],yout[ij],zout[ij]);
             if(!SimulationBool)point.RotateZ(ZRot_Minos*TMath::DegToRad());//15.6*TMath::DegToRad() CHANGE####
             xoutprime.push_back(point.X());youtprime.push_back(point.Y());zoutprime.push_back(point.Z());
@@ -738,51 +713,76 @@ void TMinosPhysics::ReadAnalysisConfig() {
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    void TMinosPhysics::InitializeRootInputRaw() {
-      TChain* inputChain = RootInput::getInstance()->GetChain();
-      inputChain->SetBranchStatus("Minos",  true );
-      inputChain->SetBranchAddress("Minos", &m_EventData );
-      if(NPOptionManager::getInstance()->HasDefinition("simulation")){
-        cout << "Considering input data as simulation"<< endl;
-        SimulationBool = true;
-      }
-      else{
-        cout << "Considering input data as real" << endl;
-        SimulationBool = false;
-      }
-    }
+void TMinosPhysics::InitializeRootInputRaw() {
+      
+  TChain* inputChain = RootInput::getInstance()->GetChain();
+  inputChain->SetBranchStatus("Minos",  true );
+  inputChain->SetBranchAddress("Minos", &m_EventData );
 
-    ///////////////////////////////////////////////////////////////////////////
-    void TMinosPhysics::InitializeRootInputPhysics() {
-      TChain* inputChain = RootInput::getInstance()->GetChain();
-      inputChain->SetBranchAddress("Minos", &m_EventPhysics);
-    }
-
-    ///////////////////////////////////////////////////////////////////////////
-    void TMinosPhysics::InitializeRootOutput() {
-      TTree* outputTree = RootOutput::getInstance()->GetTree();
-      outputTree->Branch("Minos", "TMinosPhysics", &m_EventPhysics);
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////
-    //            Construct Method to be pass to the DetectorFactory              //
-    ////////////////////////////////////////////////////////////////////////////////
-    NPL::VDetector* TMinosPhysics::Construct() {
-      return (NPL::VDetector*) new TMinosPhysics();
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////
-    //            Registering the construct method to the factory                 //
-    ////////////////////////////////////////////////////////////////////////////////
-    extern "C"{
-      class proxy_Minos{
-        public:
-          proxy_Minos(){
-            NPL::DetectorFactory::getInstance()->AddToken("Minos","Minos");
-            NPL::DetectorFactory::getInstance()->AddDetector("Minos",TMinosPhysics::Construct);
-          }
-      };
-
-    proxy_Minos p_Minos;
+  fit_function = new TF1("fit_function",conv_fit, 0, 511, 3);
+  
+  if(NPOptionManager::getInstance()->HasDefinition("simulation")){
+    cout << "Considering input data as simulation"<< endl;
+    SimulationBool = true;
   }
+  else{
+    cout << "Considering input data as real" << endl;
+
+    SimulationBool = false;
+
+    ifstream calibFile2("Vdrift.txt");
+    string buffer2;
+    getline(calibFile2, buffer2);
+    double vdriftR;
+    int i = 0;
+    while(calibFile2 >> vdriftR){
+      VdriftperRing[i] = vdriftR; // ns, s034 par.
+      i++;
+    }
+
+    ifstream calibFile("Time_Offset.txt");
+    string buffer;
+    getline(calibFile, buffer);
+    double offset;
+    i = 0;
+    while(calibFile >> offset){
+      DelayTrig[i] = offset; // ns, s034 par.
+      i++;
+    }
+  }
+}
+
+///////////////////////////////////////////////////////////////////////////
+void TMinosPhysics::InitializeRootInputPhysics() {
+  TChain* inputChain = RootInput::getInstance()->GetChain();
+  inputChain->SetBranchAddress("Minos", &m_EventPhysics);
+}
+
+///////////////////////////////////////////////////////////////////////////
+void TMinosPhysics::InitializeRootOutput() {
+  TTree* outputTree = RootOutput::getInstance()->GetTree();
+  outputTree->Branch("Minos", "TMinosPhysics", &m_EventPhysics);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+//            Construct Method to be pass to the DetectorFactory              //
+////////////////////////////////////////////////////////////////////////////////
+NPL::VDetector* TMinosPhysics::Construct() {
+  return (NPL::VDetector*) new TMinosPhysics();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+//            Registering the construct method to the factory                 //
+////////////////////////////////////////////////////////////////////////////////
+extern "C"{
+class proxy_Minos{
+  public:
+    proxy_Minos(){
+      NPL::DetectorFactory::getInstance()->AddToken("Minos","Minos");
+      NPL::DetectorFactory::getInstance()->AddDetector("Minos",TMinosPhysics::Construct);
+    }
+};
+
+proxy_Minos p_Minos;
+}
 
