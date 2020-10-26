@@ -105,7 +105,7 @@ double TMinosPhysics::conv_fit(double *x, double *p){
   p0=p[0]; p1=p[1]; p2=p[2];
   x0 = x[0];
   if(x0 > p1 && x0<512.) 
-    return (p0 * exp(-3.*(x0-p1)/p2)  * sin((x0-p1)/p2) * pow((x0-p1)/p2, 3) + 250);
+    return (p0 * exp(-3.*(x0-p1)/p2)  * sin((x0-p1)/p2) * ((x0-p1)/p2)*((x0-p1)/p2)*((x0-p1)/p2) + 250);
   else return (250);
 }
 
@@ -272,7 +272,7 @@ void TMinosPhysics::PreTreat() {
         }
 
         // Fitting the hfit histogram of last channel if not empty
-        if(hfit->GetSumOfWeights()>0) {
+        if(hfit->GetSumOfWeights()>3000) {
           hfit->GetXaxis()->SetRange(0,510);
           hfit_max = hfit->GetMaximum();
           hfit_max_T = hfit->GetMaximumBin();
@@ -403,7 +403,7 @@ void TMinosPhysics::PreTreat() {
             if(zoutprime[ij]>zouttarget) {zouttarget=zoutprime[ij];indexout=ij;}
           }
 
-          if(xout.size()>0)lenght_temp=sqrt(pow(zoutprime[indexin]-zoutprime[indexout],2)+pow(youtprime[indexin]-youtprime[indexout],2)+pow(xoutprime[indexin]-xoutprime[indexout],2));
+          if(xout.size()>0)lenght_temp=sqrt((zoutprime[indexin]-zoutprime[indexout])*(zoutprime[indexin]-zoutprime[indexout]) +(youtprime[indexin]-youtprime[indexout])*(youtprime[indexin]-youtprime[indexout]) +(xoutprime[indexin]-xoutprime[indexout])*(xoutprime[indexin]-xoutprime[indexout]));
 
           grxz.push_back(*grxztmp);
           gryz.push_back(*gryztmp);
