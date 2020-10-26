@@ -101,11 +101,12 @@ void TMinosPhysics::BuildPhysicalEvent() {
 
 // definition of the fit function for the signal Q(t)
 double TMinosPhysics::conv_fit(double *x, double *p){
-  double val;
-  if(!(x[0]<p[1] || x[0]>512.)) val = p[0] * exp(-3.*(x[0]-p[1])/p[2])  * sin((x[0]-p[1])/p[2]) * pow((x[0]-p[1])/p[2], 3) + 250;
-  //else val = p[3];
-  else val = 250;
-  return(val);
+  static double p0, p1, p2, x0;
+  p0=p[0]; p1=p[1]; p2=p[2];
+  x0 = x[0];
+  if(x0 > p1 && x0<512.) 
+    return (p0 * exp(-3.*(x0-p1)/p2)  * sin((x0-p1)/p2) * pow((x0-p1)/p2, 3) + 250);
+  else return (250);
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -353,14 +354,16 @@ void TMinosPhysics::PreTreat() {
 
     cluster_temp = 0;
     int ringtouch[19]={0};      
+    static vector<double> xin, yin, zin, qin;
+    static vector<double> xout, yout, zout, qout;
+    static vector<double> xoutprime, youtprime, zoutprime, qoutprime;
 
-    /* for(int ko=1; ko<19; ko++) ringtouch[ko] = 0; ///// Added by Cyril */
     for(unsigned int i=0;i<(XpadNew.size());i++){
       if(xin.size()>0 && ((cluster_temp != int(clusternbr[i]) && i!=0) || i==(XpadNew.size()-1))){ // We fill xin until the next cluster 
         Tracking_functions->Hough_3D(&xin, &yin, &zin, &qin, &xout, &yout, &zout, &qout);
         for(unsigned int ij=0; ij<xout.size();ij++){
           if(zout[ij]>zmax) {zmax = zout[ij];}
-            ringtouch[int(round((sqrt(xout[ij]*xout[ij]+yout[ij]*yout[ij])-44.15)/2.1))]++; // Corr by Cyril
+          ringtouch[int(round((sqrt(xout[ij]*xout[ij]+yout[ij]*yout[ij])-44.15)/2.1))]++; // Corr by Cyril
         }
         for(int ko=0; ko<19; ko++){
           if(ringtouch[ko]>0) ringsum++;
@@ -411,28 +414,19 @@ void TMinosPhysics::PreTreat() {
           chargeTot.push_back(charge_temp);
           lenght.push_back(lenght_temp);                        
         } // end of if(xout.size()>10 &&)
-        //X_mm->Fill();
-        xin.clear();
-        yin.clear();
-        zin.clear();
-        qin.clear();
-        xout.clear();
-        yout.clear();
-        zout.clear();
-        xoutprime.clear();
-        youtprime.clear();
-        zoutprime.clear();
-        qout.clear();
-        npoint_temp=0;
-        ringsum=0;// angle between 1st track and z axis in 3D in degrees
-        zmax=0.;
-        for(int ko=0; ko<18; ko++) ringtouch[ko] = 0;
-
+        
+        xin.clear(); yin.clear(); zin.clear(); qin.clear(); 
+        xout.clear(); yout.clear(); zout.clear(); qout.clear();
+        xoutprime.clear(); youtprime.clear(); zoutprime.clear();
+        
+        npoint_temp=0; ringsum=0; zmax=0.;
+        for(int ko=0; ko<18; ko++) 
+          ringtouch[ko] = 0;
+        
         } // if(xin.size()>0 && (( cluster_temp .... )
 
         cluster_temp = clusternbr[i]; // Number of the track/cluster
-        /* if(!(clusterpads[i]>=10 && clusterringbool[i]==1 && ZpadNew[i]>-100 && ZpadNew[i]<=310)) continue; // Warning <=310 necessary ? (Cyril) */
-        if(!(clusterpads[i]>=10 && clusterringbool[i]==1 && ZpadNew[i]>-100 && ZpadNew[i]<=310)) continue; // Warning <=310 necessary ? (Cyril)
+        if(!(clusterpads[i]>=10 && clusterringbool[i]==1 && ZpadNew[i]>-100 && ZpadNew[i]<=310)) continue;
         else
         {
           xin.push_back(XpadNew[i]);
@@ -442,7 +436,7 @@ void TMinosPhysics::PreTreat() {
           npoint_temp++;
         }
 
-    }//end of PadNews
+      }//end of PadNews
 
       /* //------------------------------------------------------- */
       /* //  STEP 3.2:  Fitting the filtered tracks in 3D */ 
@@ -450,339 +444,331 @@ void TMinosPhysics::PreTreat() {
       /* //------------------------------------------------------- */
 
 
-    if(trackNbr_FINAL== 2 || trackNbr_FINAL == 1){
+      if(trackNbr_FINAL== 2 || trackNbr_FINAL == 1){
 
-      //////////Minimization in 2D to reconstruct track lines
-      allevt_2pfiltered++;
-      for(int itr= 0 ; itr < trackNbr_FINAL; itr++) {
-        pStart[0]=0; pStart[2]=0; pStart[1]=1; pStart[3]=3;
+        //////////Minimization in 2D to reconstruct track lines
+        allevt_2pfiltered++;
+        for(int itr= 0 ; itr < trackNbr_FINAL; itr++) {
+          pStart[0]=0; pStart[2]=0; pStart[1]=1; pStart[3]=3;
 
-        min = new TMinuit(4);
-        min->SetPrintLevel(-1);
-        arglist[0] = 3;
+          min = new TMinuit(4);
+          min->SetPrintLevel(-1);
+          arglist[0] = 3;
 
-        Tracking_functions->FindStart(pStart,chi,fitStatus, &grxz.at(itr), &gryz.at(itr));
+          Tracking_functions->FindStart(pStart,chi,fitStatus, &grxz.at(itr), &gryz.at(itr));
 
-        NclusterFit = itr+1;
-        current_phy=this;
+          NclusterFit = itr+1;
+          current_phy=this;
 
-        min->SetFCN(SumDistance);
+          min->SetFCN(SumDistance);
 
-        // Set starting values and step sizes for parameters
-        min->mnparm(0,"x0",pStart[0],0.1,-500,500,iflag);
-        min->mnparm(1,"Ax",pStart[1],0.1,-10,10,iflag);
-        min->mnparm(2,"y0",pStart[2],0.1,-500,500,iflag);
-        min->mnparm(3,"Ay",pStart[3],0.1,-10,10,iflag);
+          // Set starting values and step sizes for parameters
+          min->mnparm(0,"x0",pStart[0],0.1,-500,500,iflag);
+          min->mnparm(1,"Ax",pStart[1],0.1,-10,10,iflag);
+          min->mnparm(2,"y0",pStart[2],0.1,-500,500,iflag);
+          min->mnparm(3,"Ay",pStart[3],0.1,-10,10,iflag);
 
-        arglist[0] = 200; // number of function calls
-        arglist[1] = 0.000001; // tolerance
+          arglist[0] = 200; // number of function calls
+          arglist[1] = 0.000001; // tolerance
 
-        min->mnexcm("MIGRAD",arglist,2,iflag); // minimization with MIGRAD
-        min->mnstat(amin,edm,errdef,nvpar,nparx,iflag);  //returns current status of the minimization
+          min->mnexcm("MIGRAD",arglist,2,iflag); // minimization with MIGRAD
+          min->mnstat(amin,edm,errdef,nvpar,nparx,iflag);  //returns current status of the minimization
 
-        // get fit parameters
-        for(int i = 0; i <4; i++) min->GetParameter(i,parFit_temp[i],err_temp[i]);
+          // get fit parameters
+          for(int i = 0; i <4; i++) min->GetParameter(i,parFit_temp[i],err_temp[i]);
 
-        /* if( (parFit_temp[0] >-499 && parFit_temp[0]<499) && (parFit_temp[2] >-499 && parFit_temp[2]<499)) { */
-        /* parFit1[itr] = push_back(parFit_temp[0]); */
-        /* parFit2.push_back(parFit_temp[1]); */
-        /* parFit3.push_back(parFit_temp[2]); */
-        /* parFit4.push_back(parFit_temp[3]); */
-        /* } */
-        parFit1[itr]=parFit_temp[0];
-        parFit2[itr]=parFit_temp[1];
-        parFit3[itr]=parFit_temp[2];
-        parFit4[itr]=parFit_temp[3];
+          /* if( (parFit_temp[0] >-499 && parFit_temp[0]<499) && (parFit_temp[2] >-499 && parFit_temp[2]<499)) { */
+          /* parFit1[itr] = push_back(parFit_temp[0]); */
+          /* parFit2.push_back(parFit_temp[1]); */
+          /* parFit3.push_back(parFit_temp[2]); */
+          /* parFit4.push_back(parFit_temp[3]); */
+          /* } */
+          parFit1[itr]=parFit_temp[0];
+          parFit2[itr]=parFit_temp[1];
+          parFit3[itr]=parFit_temp[2];
+          parFit4[itr]=parFit_temp[3];
 
-        delete min;
-      }
-
-      static double ParTrack1[4], ParTrack2[4];
-      static double VectorTrack11[3], VectorTrack22[3];
-
-      ParTrack1[0] = parFit1[0];
-      ParTrack1[1] = parFit2[0];
-      ParTrack1[2] = parFit3[0];
-      ParTrack1[3] = parFit4[0];
-
-      if(trackNbr_FINAL==2){
-        ParTrack2[0] = parFit1[1];
-        ParTrack2[1] = parFit2[1];
-        ParTrack2[2] = parFit3[1];
-        ParTrack2[3] = parFit4[1];
-      }
-      else if(trackNbr_FINAL==1){// The vertex is still calculated with Zaxis
-        ParTrack2[0] = 0;
-        ParTrack2[1] = 0;
-        ParTrack2[2] = 0;
-        ParTrack2[3] = 0;
-      }
-
-      Dmin=-100, Theta_1 = -1, Theta_2 = -1;
-
-      Tracking_functions->vertex(ParTrack1, ParTrack2, Xvertex, Yvertex, Zvertex, Dmin, Theta_1, Theta_2, Phi1, Phi2, VectorTrack11, VectorTrack22);
-
-      VectorTrack1.SetXYZ(VectorTrack11[0],VectorTrack11[1],VectorTrack11[2]);
-      VectorTrack2.SetXYZ(VectorTrack22[0],VectorTrack22[1],VectorTrack22[2]);
-      VectorTrack1 = VectorTrack1.Unit();
-      VectorTrack2 = VectorTrack2.Unit();
-      Theta_12 = VectorTrack1.Angle(VectorTrack2)*180/TMath::Pi();
-    }// end if trackNbr_FINAL>=1
-
-  } // end loop if 0<trackNbr < 5
-  // instantiate CalibrationManager
-  static CalibrationManager* Cal = CalibrationManager::getInstance();
-}
-
-    ///////////////////////////////////////////////////////////////////////////
-void TMinosPhysics::ReadAnalysisConfig() {
-      bool ReadingStatus = false;
-      // path to file
-      string FileName = "./configs/ConfigMinos.dat";
-
-      // open analysis config file
-      ifstream AnalysisConfigFile;
-      AnalysisConfigFile.open(FileName.c_str());
-
-      if (!AnalysisConfigFile.is_open()) {
-        cout << " No ConfigMinos.dat found: Default parameter loaded for Analayis " << FileName << endl;
-        return;
-      }
-      cout << " Loading user parameter for Analysis from ConfigMinos.dat " << endl;
-
-      // Save it in a TAsciiFile
-      TAsciiFile* asciiConfig = RootOutput::getInstance()->GetAsciiFileAnalysisConfig();
-      asciiConfig->AppendLine("%%% ConfigMinos.dat %%%");
-      asciiConfig->Append(FileName.c_str());
-      asciiConfig->AppendLine("");
-      // read analysis config file
-      string LineBuffer,DataBuffer,whatToDo;
-      while (!AnalysisConfigFile.eof()) {
-        // Pick-up next line
-        getline(AnalysisConfigFile, LineBuffer);
-
-        // search for "header"
-        string name = "ConfigMinos";
-        if (LineBuffer.compare(0, name.length(), name) == 0) 
-          ReadingStatus = true;
-
-        // loop on tokens and data
-        while (ReadingStatus ) {
-          whatToDo="";
-          AnalysisConfigFile >> whatToDo;
-
-          // Search for comment symbol (%)
-          if (whatToDo.compare(0, 1, "%") == 0) {
-            AnalysisConfigFile.ignore(numeric_limits<streamsize>::max(), '\n' );
-          }
-
-          else if (whatToDo=="E_RAW_THRESHOLD") {
-            AnalysisConfigFile >> DataBuffer;
-            m_E_RAW_Threshold = atof(DataBuffer.c_str());
-            cout << whatToDo << " " << m_E_RAW_Threshold << endl;
-          }
-
-          else if (whatToDo=="E_THRESHOLD") {
-            AnalysisConfigFile >> DataBuffer;
-            m_E_Threshold = atof(DataBuffer.c_str());
-            cout << whatToDo << " " << m_E_Threshold << endl;
-          }
-
-          else {
-            ReadingStatus = false;
-          }
+          delete min;
         }
-      }
 
-    }
+        static double ParTrack1[4], ParTrack2[4];
+        static double VectorTrack11[3], VectorTrack22[3];
 
-    double TMinosPhysics::distance2(double x,double y,double z, double *p) {
-      // distance line point is D= | (xp-x0) cross  ux |
-      // where ux is direction of line and x0 is a point in the line (like t = 0)
-      ROOT::Math::XYZVector xp(x,y,z); //point of the track
-      ROOT::Math:: XYZVector x0(p[0], p[2], 0. );
-      ROOT::Math::XYZVector x1(p[0] + p[1], p[2] + p[3], 1. ); //line
-      ROOT::Math::XYZVector u = (x1-x0).Unit();
-      double d2 = ((xp-x0).Cross(u)) .Mag2();
-      return d2;
-    }
+        ParTrack1[0] = parFit1[0];
+        ParTrack1[1] = parFit2[0];
+        ParTrack1[2] = parFit3[0];
+        ParTrack1[3] = parFit4[0];
 
-    void TMinosPhysics::SumDistance(int &, double *, double & sum, double * par,  int) {
-      TMinosPhysics* phy = current_phy;
-      int nused=0;
-      double qtot=0;
-      sum = 0;
-
-      for(int i=0; i < phy->data_result.GetEntriesFast(); i++)
-      {
-        phy->minosdata_result = (TMinosResult*)phy->data_result.At(i);
-        if(phy->minosdata_result->n_Cluster==NclusterFit)
-        {
-          float x=phy->minosdata_result->x_mm;
-          float y=phy->minosdata_result->y_mm;
-          float z=phy->minosdata_result->z_mm;
-          float q=phy->minosdata_result->Chargemax;
-          //if(nused<2)cout<<minosdata_result->n_Cluster<<" "<<x<<" "<<y<<" "<<z<<" "<<q<<endl;
-          double d = TMinosPhysics::distance2(x, y, z, par);
-          sum += d*q;       
-          nused++;
-          qtot+=q;
+        if(trackNbr_FINAL==2){
+          ParTrack2[0] = parFit1[1];
+          ParTrack2[1] = parFit2[1];
+          ParTrack2[2] = parFit3[1];
+          ParTrack2[3] = parFit4[1];
         }
-      }
-      //sum/=nused;
-      sum/=qtot;
+        else if(trackNbr_FINAL==1){// The vertex is still calculated with Zaxis
+          ParTrack2[0] = 0;
+          ParTrack2[1] = 0;
+          ParTrack2[2] = 0;
+          ParTrack2[3] = 0;
+        }
+
+        Dmin=-100, Theta_1 = -1, Theta_2 = -1;
+
+        Tracking_functions->vertex(ParTrack1, ParTrack2, Xvertex, Yvertex, Zvertex, Dmin, Theta_1, Theta_2, Phi1, Phi2, VectorTrack11, VectorTrack22);
+
+        VectorTrack1.SetXYZ(VectorTrack11[0],VectorTrack11[1],VectorTrack11[2]);
+        VectorTrack2.SetXYZ(VectorTrack22[0],VectorTrack22[1],VectorTrack22[2]);
+        VectorTrack1 = VectorTrack1.Unit();
+        VectorTrack2 = VectorTrack2.Unit();
+        Theta_12 = VectorTrack1.Angle(VectorTrack2)*180/TMath::Pi();
+      }// end if trackNbr_FINAL>=1
+
+    } // end loop if 0<trackNbr < 5
+    // instantiate CalibrationManager
+    static CalibrationManager* Cal = CalibrationManager::getInstance();
+  }
+
+  ///////////////////////////////////////////////////////////////////////////
+  void TMinosPhysics::ReadAnalysisConfig() {
+    bool ReadingStatus = false;
+    // path to file
+    string FileName = "./configs/ConfigMinos.dat";
+
+    // open analysis config file
+    ifstream AnalysisConfigFile;
+    AnalysisConfigFile.open(FileName.c_str());
+
+    if (!AnalysisConfigFile.is_open()) {
+      cout << " No ConfigMinos.dat found: Default parameter loaded for Analayis " << FileName << endl;
       return;
     }
+    cout << " Loading user parameter for Analysis from ConfigMinos.dat " << endl;
 
-    ///////////////////////////////////////////////////////////////////////////
-    void TMinosPhysics::Clear() {
+    // Save it in a TAsciiFile
+    TAsciiFile* asciiConfig = RootOutput::getInstance()->GetAsciiFileAnalysisConfig();
+    asciiConfig->AppendLine("%%% ConfigMinos.dat %%%");
+    asciiConfig->Append(FileName.c_str());
+    asciiConfig->AppendLine("");
+    // read analysis config file
+    string LineBuffer,DataBuffer,whatToDo;
+    while (!AnalysisConfigFile.eof()) {
+      // Pick-up next line
+      getline(AnalysisConfigFile, LineBuffer);
 
-      Xpad.clear();
-      Ypad.clear();
-      Qpad.clear();
-      XpadNew.clear();
-      YpadNew.clear();
-      ZpadNew.clear();
-      QpadNew.clear();
+      // search for "header"
+      string name = "ConfigMinos";
+      if (LineBuffer.compare(0, name.length(), name) == 0) 
+        ReadingStatus = true;
 
-      clusterringboolTemp.clear();
-      clusterringbool.clear();
-      clusternbr.clear();
-      clusterpads.clear();  
-      hfit->Reset();
+      // loop on tokens and data
+      while (ReadingStatus ) {
+        whatToDo="";
+        AnalysisConfigFile >> whatToDo;
 
-      xin.clear();
-      yin.clear();
-      zin.clear();
-      qin.clear();
-      xout.clear();
-      yout.clear();
-      zout.clear();
-      xoutprime.clear();
-      youtprime.clear();
-      zoutprime.clear();
-      qout.clear();
+        // Search for comment symbol (%)
+        if (whatToDo.compare(0, 1, "%") == 0) {
+          AnalysisConfigFile.ignore(numeric_limits<streamsize>::max(), '\n' );
+        }
 
-      trackclusternbr.clear();
-      tracknbr.clear();
-      TOTxoutprime.clear();
-      TOTyoutprime.clear();
-      TOTzoutprime.clear();
-      TOTqout.clear(); 
+        else if (whatToDo=="E_RAW_THRESHOLD") {
+          AnalysisConfigFile >> DataBuffer;
+          m_E_RAW_Threshold = atof(DataBuffer.c_str());
+          cout << whatToDo << " " << m_E_RAW_Threshold << endl;
+        }
 
-      lenght.clear();
-      chargeTot.clear();
-      parFit1.clear();
-      parFit2.clear();
-      parFit3.clear();
-      parFit4.clear();
+        else if (whatToDo=="E_THRESHOLD") {
+          AnalysisConfigFile >> DataBuffer;
+          m_E_Threshold = atof(DataBuffer.c_str());
+          cout << whatToDo << " " << m_E_Threshold << endl;
+        }
 
-      grxz.clear();
-      gryz.clear();
-
-      hfit->Reset();
-
-      filled=0;
-      indexfill = 0;
-      ChargeBin = 0.;
-      maxCharge = 0.;
-      Iteration=0;
-      filter_result=0;
-      fit2DStatus=0;
-      trackNbr=0;
-      trackNbr_FINAL=0;
-      x_mm = 0.; y_mm = 0.; z_mm = 0.; q_pad = 0.; t_pad = 0.;
-      array_final=0;
-      ringsum=0;
-      zmax=0.;
-
-    }
-
-    ///////////////////////////////////////////////////////////////////////////
-    void TMinosPhysics::ReadConfiguration(NPL::InputParser parser) {
-    }
-
-
-    ///////////////////////////////////////////////////////////////////////////
-    void TMinosPhysics::AddParameterToCalibrationManager() {
-      CalibrationManager* Cal = CalibrationManager::getInstance();
-      for (int i = 0; i < m_NumberOfDetectors; ++i) {
-        Cal->AddParameter("Minos", "D"+ NPL::itoa(i+1)+"_ENERGY","Minos_D"+ NPL::itoa(i+1)+"_ENERGY");
-        Cal->AddParameter("Minos", "D"+ NPL::itoa(i+1)+"_TIME","Minos_D"+ NPL::itoa(i+1)+"_TIME");
+        else {
+          ReadingStatus = false;
+        }
       }
     }
 
-    ///////////////////////////////////////////////////////////////////////////
-void TMinosPhysics::InitializeRootInputRaw() {
-      
-  TChain* inputChain = RootInput::getInstance()->GetChain();
-  inputChain->SetBranchStatus("Minos",  true );
-  inputChain->SetBranchAddress("Minos", &m_EventData );
-
-  fit_function = new TF1("fit_function",conv_fit, 0, 511, 3);
-  
-  if(NPOptionManager::getInstance()->HasDefinition("simulation")){
-    cout << "Considering input data as simulation"<< endl;
-    SimulationBool = true;
   }
-  else{
-    cout << "Considering input data as real" << endl;
 
-    SimulationBool = false;
+  double TMinosPhysics::distance2(double x,double y,double z, double *p) {
+    // distance line point is D= | (xp-x0) cross  ux |
+    // where ux is direction of line and x0 is a point in the line (like t = 0)
+    ROOT::Math::XYZVector xp(x,y,z); //point of the track
+    ROOT::Math:: XYZVector x0(p[0], p[2], 0. );
+    ROOT::Math::XYZVector x1(p[0] + p[1], p[2] + p[3], 1. ); //line
+    ROOT::Math::XYZVector u = (x1-x0).Unit();
+    double d2 = ((xp-x0).Cross(u)) .Mag2();
+    return d2;
+  }
 
-    ifstream calibFile2("Vdrift.txt");
-    string buffer2;
-    getline(calibFile2, buffer2);
-    double vdriftR;
-    int i = 0;
-    while(calibFile2 >> vdriftR){
-      VdriftperRing[i] = vdriftR; // ns, s034 par.
-      i++;
+  void TMinosPhysics::SumDistance(int &, double *, double & sum, double * par,  int) {
+    TMinosPhysics* phy = current_phy;
+    int nused=0;
+    double qtot=0;
+    sum = 0;
+
+    for(int i=0; i < phy->data_result.GetEntriesFast(); i++)
+    {
+      phy->minosdata_result = (TMinosResult*)phy->data_result.At(i);
+      if(phy->minosdata_result->n_Cluster==NclusterFit)
+      {
+        float x=phy->minosdata_result->x_mm;
+        float y=phy->minosdata_result->y_mm;
+        float z=phy->minosdata_result->z_mm;
+        float q=phy->minosdata_result->Chargemax;
+        //if(nused<2)cout<<minosdata_result->n_Cluster<<" "<<x<<" "<<y<<" "<<z<<" "<<q<<endl;
+        double d = TMinosPhysics::distance2(x, y, z, par);
+        sum += d*q;       
+        nused++;
+        qtot+=q;
+      }
     }
+    //sum/=nused;
+    sum/=qtot;
+    return;
+  }
 
-    ifstream calibFile("Time_Offset.txt");
-    string buffer;
-    getline(calibFile, buffer);
-    double offset;
-    i = 0;
-    while(calibFile >> offset){
-      DelayTrig[i] = offset; // ns, s034 par.
-      i++;
+  ///////////////////////////////////////////////////////////////////////////
+  void TMinosPhysics::Clear() {
+
+    Xpad.clear();
+    Ypad.clear();
+    Qpad.clear();
+    XpadNew.clear();
+    YpadNew.clear();
+    ZpadNew.clear();
+    QpadNew.clear();
+
+    clusterringboolTemp.clear();
+    clusterringbool.clear();
+    clusternbr.clear();
+    clusterpads.clear();  
+    hfit->Reset();
+
+    /* xoutprime.clear(); */
+    /* youtprime.clear(); */
+    /* zoutprime.clear(); */
+
+    trackclusternbr.clear();
+    tracknbr.clear();
+    TOTxoutprime.clear();
+    TOTyoutprime.clear();
+    TOTzoutprime.clear();
+    TOTqout.clear(); 
+
+    lenght.clear();
+    chargeTot.clear();
+    parFit1.clear();
+    parFit2.clear();
+    parFit3.clear();
+    parFit4.clear();
+
+    grxz.clear();
+    gryz.clear();
+
+    hfit->Reset();
+
+    filled=0;
+    indexfill = 0;
+    ChargeBin = 0.;
+    maxCharge = 0.;
+    Iteration=0;
+    filter_result=0;
+    fit2DStatus=0;
+    trackNbr=0;
+    trackNbr_FINAL=0;
+    x_mm = 0.; y_mm = 0.; z_mm = 0.; q_pad = 0.; t_pad = 0.;
+    array_final=0;
+    ringsum=0;
+    zmax=0.;
+
+  }
+
+  ///////////////////////////////////////////////////////////////////////////
+  void TMinosPhysics::ReadConfiguration(NPL::InputParser parser) {
+  }
+
+
+  ///////////////////////////////////////////////////////////////////////////
+  void TMinosPhysics::AddParameterToCalibrationManager() {
+    CalibrationManager* Cal = CalibrationManager::getInstance();
+    for (int i = 0; i < m_NumberOfDetectors; ++i) {
+      Cal->AddParameter("Minos", "D"+ NPL::itoa(i+1)+"_ENERGY","Minos_D"+ NPL::itoa(i+1)+"_ENERGY");
+      Cal->AddParameter("Minos", "D"+ NPL::itoa(i+1)+"_TIME","Minos_D"+ NPL::itoa(i+1)+"_TIME");
     }
   }
-}
 
-///////////////////////////////////////////////////////////////////////////
-void TMinosPhysics::InitializeRootInputPhysics() {
-  TChain* inputChain = RootInput::getInstance()->GetChain();
-  inputChain->SetBranchAddress("Minos", &m_EventPhysics);
-}
+  ///////////////////////////////////////////////////////////////////////////
+  void TMinosPhysics::InitializeRootInputRaw() {
 
-///////////////////////////////////////////////////////////////////////////
-void TMinosPhysics::InitializeRootOutput() {
-  TTree* outputTree = RootOutput::getInstance()->GetTree();
-  outputTree->Branch("Minos", "TMinosPhysics", &m_EventPhysics);
-}
+    TChain* inputChain = RootInput::getInstance()->GetChain();
+    inputChain->SetBranchStatus("Minos",  true );
+    inputChain->SetBranchAddress("Minos", &m_EventData );
 
-////////////////////////////////////////////////////////////////////////////////
-//            Construct Method to be pass to the DetectorFactory              //
-////////////////////////////////////////////////////////////////////////////////
-NPL::VDetector* TMinosPhysics::Construct() {
-  return (NPL::VDetector*) new TMinosPhysics();
-}
+    fit_function = new TF1("fit_function",conv_fit, 0, 511, 3);
 
-////////////////////////////////////////////////////////////////////////////////
-//            Registering the construct method to the factory                 //
-////////////////////////////////////////////////////////////////////////////////
-extern "C"{
-class proxy_Minos{
-  public:
-    proxy_Minos(){
-      NPL::DetectorFactory::getInstance()->AddToken("Minos","Minos");
-      NPL::DetectorFactory::getInstance()->AddDetector("Minos",TMinosPhysics::Construct);
+    if(NPOptionManager::getInstance()->HasDefinition("simulation")){
+      cout << "Considering input data as simulation"<< endl;
+      SimulationBool = true;
     }
-};
+    else{
+      cout << "Considering input data as real" << endl;
 
-proxy_Minos p_Minos;
-}
+      SimulationBool = false;
+
+      ifstream calibFile2("Vdrift.txt");
+      string buffer2;
+      getline(calibFile2, buffer2);
+      double vdriftR;
+      int i = 0;
+      while(calibFile2 >> vdriftR){
+        VdriftperRing[i] = vdriftR; // ns, s034 par.
+        i++;
+      }
+
+      ifstream calibFile("Time_Offset.txt");
+      string buffer;
+      getline(calibFile, buffer);
+      double offset;
+      i = 0;
+      while(calibFile >> offset){
+        DelayTrig[i] = offset; // ns, s034 par.
+        i++;
+      }
+    }
+  }
+
+  ///////////////////////////////////////////////////////////////////////////
+  void TMinosPhysics::InitializeRootInputPhysics() {
+    TChain* inputChain = RootInput::getInstance()->GetChain();
+    inputChain->SetBranchAddress("Minos", &m_EventPhysics);
+  }
+
+  ///////////////////////////////////////////////////////////////////////////
+  void TMinosPhysics::InitializeRootOutput() {
+    TTree* outputTree = RootOutput::getInstance()->GetTree();
+    outputTree->Branch("Minos", "TMinosPhysics", &m_EventPhysics);
+  }
+
+  ////////////////////////////////////////////////////////////////////////////////
+  //            Construct Method to be pass to the DetectorFactory              //
+  ////////////////////////////////////////////////////////////////////////////////
+  NPL::VDetector* TMinosPhysics::Construct() {
+    return (NPL::VDetector*) new TMinosPhysics();
+  }
+
+  ////////////////////////////////////////////////////////////////////////////////
+  //            Registering the construct method to the factory                 //
+  ////////////////////////////////////////////////////////////////////////////////
+  extern "C"{
+    class proxy_Minos{
+      public:
+        proxy_Minos(){
+          NPL::DetectorFactory::getInstance()->AddToken("Minos","Minos");
+          NPL::DetectorFactory::getInstance()->AddDetector("Minos",TMinosPhysics::Construct);
+        }
+    };
+
+  proxy_Minos p_Minos;
+  }
 

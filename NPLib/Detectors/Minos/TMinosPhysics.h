@@ -243,19 +243,7 @@ TMinosResult *minosdata_result;//!
     TGraph* grxztmp;//!
     
     double zmax;//!
-    vector<double> xin;//!
-    vector<double> yin;//!
-    vector<double> zin;//!
-    vector<double> qin;//!
-    vector<double> xout;//!
-    vector<double> yout;//!
-    vector<double> zout;//!
-    vector<double> qout;//!
-    vector<double> xoutprime;//!
-    vector<double> youtprime;//!
-    vector<double> zoutprime;//!
-    vector<double> qoutprime;//!
-
+    
     vector<double> TOTxoutprime;
     vector<double> TOTyoutprime;
     vector<double> TOTzoutprime;
