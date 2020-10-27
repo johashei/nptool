@@ -166,12 +166,12 @@ void TComptonTelescopeSpectra::InitPhysicsSpectra()
   // Calorimeter energy spectrum
   for (unsigned int i = 0 ; i < fNumberOfTelescope ; i++) { // loop on number of detectors
     name = "CT"+NPL::itoa(i+1)+"_CALOR_SPECTRUM";
-    AddHisto1D(name, name, 1000, 1, 2000, "COMPTONTELESCOPE/PHY");
+    AddHisto1D(name, name, 1000, 1, 2000, "COMPTONTELESCOPE/PHY/CALOR");
   }
 
   // Sum spectrum
   name = "CT_SUM_SPECTRUM";
-  AddHisto1D(name, name, 1000, 1, 2000, "COMPTONTELESCOPE/PHY");
+  AddHisto1D(name, name, 1000, 1, 2000, "COMPTONTELESCOPE/PHY/CALOR");
 }
 
 
@@ -256,7 +256,7 @@ void TComptonTelescopeSpectra::FillRawSpectra(TComptonTelescopeData* RawData)
   for (unsigned int i = 0; i < RawData->GetCTCalorimeterTMult(); i++) {
     name = "CT"+NPL::itoa(RawData->GetCTCalorimeterEDetectorNbr(i))+"_CALOR_RAW_TRIGGER";
     family = "COMPTONTELESCOPE/RAW/CALORTRIGGER";
-    FillSpectra(family, name, RawData->GetCTCalorimeterTChannelNbr(i));
+    FillSpectra(family, name, RawData->GetCTCalorimeterTChannelNbr(i)+1);
   }
 }
 
@@ -339,17 +339,17 @@ void TComptonTelescopeSpectra::FillPhysicsSpectra(TComptonTelescopePhysics* Phys
   string family = "COMPTONTELESCOPE/PHY";
 
   // X-Y Impact Matrix
+/*  name = "CT_IMPACT_MATRIX";
 
 
   // X-Y Energy correlation
   for (unsigned int i = 0; i < fNumberOfTelescope; i++) {
-
-  }
+  }*/
 
   // Calorimeters spectra
   for (unsigned int i = 0; i < fNumberOfTelescope; i++) {
     name = "CT"+NPL::itoa(i+1)+"_CALOR_SPECTRUM";
-    FillSpectra(family, name, Physics->Calor_E);
+    FillSpectra(family, name, Physics->GetCalor_E());
   }
 
   // Sum spectrum
@@ -358,7 +358,7 @@ void TComptonTelescopeSpectra::FillPhysicsSpectra(TComptonTelescopePhysics* Phys
   for (unsigned int i = 0; i < Physics->Strip_E.size(); i++) {
     energy += Physics->Strip_E[i];
   }
-  FillSpectra(family, name, Physics->Calor_E + energy);
+  FillSpectra(family, name, Physics->GetCalor_E() + energy);
 
 
 /*  string name;

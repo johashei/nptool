@@ -115,7 +115,9 @@ void TComptonTelescopePhysics::BuildSimplePhysicalEvent()
     Calor_E += fCalorimeter_E(m_EventData, i);//Apply full calibration and sum anodes
   }
 
-  //Calor_T = ?
+  for (UShort_t i = 0; i < m_PreTreatedData->GetCTCalorimeterTMult(); ++i) {
+    Calor_T.push_back(m_PreTreatedData->GetCTCalorimeterTTime(i));
+  }
 
   //   if (DetectorNumber.size() == 1) return;
 }
@@ -578,6 +580,9 @@ TVector3 TComptonTelescopePhysics::GetPositionOfInteraction(const int i) const{
 
 }
 
+double TComptonTelescopePhysics::GetCalor_E() {
+  return Calor_E;
+}
 
 
 ///////////////////////////////////////////////////////////////////////////
