@@ -2,4 +2,3 @@ CalibrationFilePath
   ./calibrations/COCOTE_PACI_Front.txt
   ./calibrations/COCOTE_PACI_Back.txt
   ./calibrations/CeBr3_PED.txt
-  ./calibrations/CeBr3_E.txt

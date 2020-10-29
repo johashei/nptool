@@ -166,13 +166,13 @@ void TComptonTelescopeSpectra::InitPhysicsSpectra()
   // Calorimeter energy spectrum
   for (unsigned int i = 0 ; i < fNumberOfTelescope ; i++) { // loop on number of detectors
     name = "CT"+NPL::itoa(i+1)+"_CALOR_SPECTRUM";
-    AddHisto1D(name, name, 1000, 1, 1000000, "COMPTONTELESCOPE/PHY/CALOR");
+    AddHisto1D(name, name, 1000, 1, 2000, "COMPTONTELESCOPE/PHY/CALOR");
   }
 
   // Sum spectrum
   for (unsigned int i = 0; i < fNumberOfTelescope; i++) {
     name = "CT"+NPL::itoa(i+1)+"_SUM_SPECTRUM";
-    AddHisto1D(name, name, 1000, 1, 1000000, "COMPTONTELESCOPE/PHY/CALOR");
+    AddHisto1D(name, name, 1000, 1, 2000, "COMPTONTELESCOPE/PHY/CALOR");
   }
 }
 
