@@ -225,7 +225,8 @@ namespace ComptonTelescope_LOCAL
    double fStrip_Back_T(const TComptonTelescopeData* Data, const int i);
 
    // Calorimeter
-   double fCalorimeter_E(const TComptonTelescopeData* Data, const int i);
+   double fCalorimeter_E(double charge, int detectorNumber);
+   double fCalorimeter_Q(const TComptonTelescopeData* Data, const int i);
    double fCalorimeter_ped(const TComptonTelescopeData* Data, const int i);
 }
 

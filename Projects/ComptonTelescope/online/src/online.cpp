@@ -58,7 +58,7 @@ int main()
   {
     // Load a file(s)
     std::ifstream is;
-    i = 1;
+    i = 3;
     switch (i % 6) {
       case 0: is.open("./mfm.bin", std::ios::binary); break;
       case 3: is.open("./133Ba.bin", std::ios::binary); break;
