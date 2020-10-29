@@ -1,0 +1,63 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Target
+ THICKNESS= 120 mm
+ RADIUS=	 @SpecRadius mm
+ MATERIAL= Vacuum
+ ANGLE= 0 deg
+ X= 0 mm
+ Y= 0 mm
+ Z= 0 mm
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+eAGanil Trap
+ Length= 120 mm
+ InnerRadius= 30 mm
+ OuterRadius= 60 mm
+ BladesThickness= 5 mm
+ NumberOfBlades= 4
+ Phi= 45 deg
+ WindowsThickness=  @SpecRadius mm
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Alias SpecRadius
+  Action= Replace
+  Value= 0.7
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+eAGanil Spectrometer
+ R=  @SpecRadius m
+ Theta= 90 deg
+ Phi= 0 deg
+ EntranceWidth= 900 mm
+ EntranceHeigh= 200 mm
+ MomentumResolution= 0.0001
+ 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+eAGanil Spectrometer
+ R=  @SpecRadius m
+ Theta= 20 deg
+ Phi= 0 deg
+ EntranceWidth= 50 cm
+ EntranceHeigh= 30 cm
+ MomentumResolution= 0.0001
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+eAGanil Spectrometer
+ R=  @SpecRadius m
+ Theta= -90 deg
+ Phi= 0 deg
+ EntranceWidth= 900 mm
+ EntranceHeigh= 200 mm
+ MomentumResolution= 0.0001
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+eAGanil Spectrometer
+ R=  @SpecRadius m
+ Theta= 200 deg
+ Phi= 0 deg
+ EntranceWidth= 50 cm
+ EntranceHeigh= 30 cm
+ MomentumResolution= 0.0001
+
+
