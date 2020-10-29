@@ -24,7 +24,8 @@ int main()
 //   NPOptionManager::getInstance()->Destroy();
 
 //  string arg = "-D ./ComptonCAM.detector -C Calibration.txt -GH -E Example2.reaction -P %i --circular",port);
-  string arg = "-D ./ComptonCAM.detector -C calibrations.txt -GH -E ./10He.reaction --circular";
+  //string arg = "-D ./ComptonCAM.detector -C calibrations.txt -GH -E ./10He.reaction --circular";
+  string arg = "-D ./ComptonCAM.detector -C calibrations.txt -GH -E ./10He.reaction";
   NPOptionManager::getInstance(arg);  
 
   // open ROOT output file
@@ -53,10 +54,11 @@ int main()
   int i = 0;
   int c = 0;
   const int pixelNumber = 64;
-  while (true)
+  while (i<1)
   {
     // Load a file(s)
     std::ifstream is;
+    i = 1;
     switch (i % 6) {
       case 0: is.open("./mfm.bin", std::ios::binary); break;
       case 3: is.open("./133Ba.bin", std::ios::binary); break;
@@ -109,7 +111,7 @@ int main()
        m_OutputTree->Fill();
   
        c++;
-       usleep(10000);//Simulated 100Hz count rate
+       //usleep(10000);//Simulated 100Hz count rate
     }
   
     //std::cout << "test compil\n";

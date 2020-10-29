@@ -107,13 +107,14 @@ void TComptonTelescopePhysics::BuildSimplePhysicalEvent()
   }
   
   // Calculate a corrected energy for the calorimeter
-  Calor_E = 0;
+  double energy = 0;
 /*  for (UShort_t i = 0; i < m_PreTreatedData->GetCTCalorimeterEMult(); ++i) {
     Calor_E += fCalorimeter_E(m_PreTreatedData, i);//Apply calibration other than pedestal and sum anodes
   }*/
   for (UShort_t i = 0; i < m_EventData->GetCTCalorimeterEMult(); ++i) {
-    Calor_E += fCalorimeter_E(m_EventData, i);//Apply full calibration and sum anodes
+    energy += fCalorimeter_E(m_EventData, i);//Apply full calibration and sum anodes
   }
+  Calor_E.push_back(energy);
 
   for (UShort_t i = 0; i < m_PreTreatedData->GetCTCalorimeterTMult(); ++i) {
     Calor_T.push_back(m_PreTreatedData->GetCTCalorimeterTTime(i));
@@ -427,7 +428,7 @@ void TComptonTelescopePhysics::Clear()
   Strip_Back.clear();
 
   // Calorimeter
-  Calor_E = 0;
+  Calor_E.clear();
   Calor_T.clear();
 }
 
@@ -582,9 +583,9 @@ TVector3 TComptonTelescopePhysics::GetPositionOfInteraction(const int i) const{
 
 }
 
-double TComptonTelescopePhysics::GetCalor_E() {
+/*double TComptonTelescopePhysics::GetCalor_E() {
   return Calor_E;
-}
+}*/
 
 
 ///////////////////////////////////////////////////////////////////////////

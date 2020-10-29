@@ -67,7 +67,7 @@ class TComptonTelescopePhysics : public TObject, public NPL::VDetector
       vector<int>    Strip_Front;
       vector<int>    Strip_Back;
       // Calorimeter
-      double Calor_E;
+      vector<double> Calor_E;
       vector<double> Calor_T;
    
 
@@ -156,11 +156,12 @@ class TComptonTelescopePhysics : public TObject, public NPL::VDetector
       
       TVector3 GetPositionOfInteraction(const int i) const;   
       TVector3 GetDetectorNormal(const int i) const;
-      double   GetCalor_E();
+//      double   GetCalor_E();
 
    private:   // Parameter used in the analysis
       // By default take EX and TY.
-      bool m_Take_E_Front; //!
+      bool m_Take_E_Front;      //!
+      int m_NPixels;            //!
 
       // If multiplicity is greater than m_MaximumStripMultiplicityAllowed 
       // after PreTreat(), event is not treated
@@ -174,8 +175,8 @@ class TComptonTelescopePhysics : public TObject, public NPL::VDetector
       double m_StripFront_E_Threshold;       //!
       double m_StripBack_E_RAW_Threshold;    //!
       double m_StripBack_E_Threshold;        //!
-      double m_Calorimeter_E_RAW_Threshold;
-      double m_Calorimeter_E_Threshold;
+      double m_Calorimeter_E_RAW_Threshold;  //!
+      double m_Calorimeter_E_Threshold;      //!
 
    public:  // methods used in event treatment 
       vector<TVector2> Match_Front_Back();
@@ -198,9 +199,6 @@ class TComptonTelescopePhysics : public TObject, public NPL::VDetector
       vector< vector < vector < double > > >   m_StripPositionX;  //!
       vector< vector < vector < double > > >   m_StripPositionY;  //!
       vector< vector < vector < double > > >   m_StripPositionZ;  //!
-
-  private:
-      int m_NPixels;
 
    private: // Spectra Class   
       TComptonTelescopeSpectra*      m_Spectra; //! 

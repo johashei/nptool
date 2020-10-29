@@ -349,19 +349,27 @@ void TComptonTelescopeSpectra::FillPhysicsSpectra(TComptonTelescopePhysics* Phys
   }*/
 
   // Calorimeters spectra
+  double energy = 0;
   for (unsigned int i = 0; i < fNumberOfTelescope; i++) {
     name = "CT"+NPL::itoa(i+1)+"_CALOR_SPECTRUM";
-    FillSpectra(family, name, Physics->GetCalor_E());
+    energy = 0;
+    for (unsigned int j = 0; j < Physics->Calor_E.size(); j++) {
+      energy += Physics->Calor_E[j];
+    }
+    FillSpectra(family, name, energy);
   }
 
   // Sum spectrum
   for (unsigned int i = 0; i < fNumberOfTelescope; i++) {
     name = "CT"+NPL::itoa(i+1)+"_SUM_SPECTRUM";
-    double energy = 0;
+    energy = 0;
     for (unsigned int j = 0; j < Physics->Strip_E.size();j++) {
       energy += Physics->Strip_E[j];
     }
-    FillSpectra(family, name, Physics->GetCalor_E() + energy);
+    for (unsigned int j = 0; j < Physics->Calor_E.size(); j++) {
+      energy += Physics->Calor_E[j];
+    }
+    FillSpectra(family, name, energy);
   }
 
 
