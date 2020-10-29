@@ -355,12 +355,14 @@ void TComptonTelescopeSpectra::FillPhysicsSpectra(TComptonTelescopePhysics* Phys
   }
 
   // Sum spectrum
-  name = "CT_SUM_SPECTRUM";
-  double energy = 0;
-  for (unsigned int i = 0; i < Physics->Strip_E.size(); i++) {
-    energy += Physics->Strip_E[i];
+  for (unsigned int i = 0; i < fNumberOfTelescope; i++) {
+    name = "CT"+NPL::itoa(i+1)+"_SUM_SPECTRUM";
+    double energy = 0;
+    for (unsigned int j = 0; j < Physics->Strip_E.size();j++) {
+      energy += Physics->Strip_E[j];
+    }
+    FillSpectra(family, name, Physics->GetCalor_E() + energy);
   }
-  FillSpectra(family, name, Physics->GetCalor_E() + energy);
 
 
 /*  string name;
