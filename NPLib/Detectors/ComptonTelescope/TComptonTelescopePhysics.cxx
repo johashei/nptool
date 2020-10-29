@@ -525,6 +525,8 @@ void TComptonTelescopePhysics::InitializeRootInputPhysics()
   inputChain->SetBranchStatus("StripBack_T",       true);
   inputChain->SetBranchStatus("Strip_Front",       true);
   inputChain->SetBranchStatus("Strip_Back",        true);
+  inputChain->SetBranchStatus("Calor_E",        true);
+  inputChain->SetBranchStatus("Calor_T",        true);
 }
 
 

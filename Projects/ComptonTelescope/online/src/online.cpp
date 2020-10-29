@@ -53,15 +53,15 @@ int main()
   int i = 0;
   int c = 0;
   const int pixelNumber = 64;
-  while (i < 6)
+  while (i < 1)
   {
     // Load a file(s)
     std::ifstream is;
     switch (i % 6) {
       case 0: is.open("./mfm.bin", std::ios::binary); break;
-      case 1: is.open("./133Ba.bin", std::ios::binary); break;
+      case 3: is.open("./133Ba.bin", std::ios::binary); break;
       case 2: is.open("./241Am.bin", std::ios::binary); break;
-      case 3: is.open("./207Bi.bin", std::ios::binary); break;
+      case 1: is.open("./207Bi.bin", std::ios::binary); break;
       case 4: is.open("./241Am-1.bin", std::ios::binary); break;
       case 5: is.open("./241Am-2.bin", std::ios::binary); break;
     }
@@ -79,7 +79,7 @@ int main()
     D -> decodeRawMFM(); // get rid of the first two (empty) events
     D -> decodeRawMFM();
   
-    while (D -> getCursor() < length)
+    while (c < 1001) //(D -> getCursor() < length)
     {
        // Clear raw data and physics objects
        m_NPDetectorManager->ClearEventPhysics();
@@ -109,16 +109,17 @@ int main()
        m_OutputTree->Fill();
   
        c++;
-       usleep(100);//Simulated 10kHz count rate
+       //usleep(100);//Simulated 10kHz count rate
     }
   
     //std::cout << "test compil\n";
   
-    // Fill spectra
-    m_NPDetectorManager->WriteSpectra();
     delete [] buffer;
 
   }// End of main loop
+
+  // Fill spectra
+  m_NPDetectorManager->WriteSpectra();
 
   // Essential
   delete D;

@@ -265,9 +265,10 @@ void DecodeR::decodeRawMFM()
       int timestampSize = raw[cursor];
       cursor++;
       long int pctimestamp = combineBytes(timestampSize);
-      if (verbose)
-        {cout << "PC timestamp: " <<  pctimestamp << endl;}
-      cout << "Event number : " << eventN << " done." << endl;
+      if (verbose) {
+        cout << "PC timestamp: " <<  pctimestamp << endl;
+        cout << "Event number : " << eventN << " done." << endl;
+        }
     } else {
       // Event not good
       cout << "Event number : " << eventN << " -> not done." << endl;
