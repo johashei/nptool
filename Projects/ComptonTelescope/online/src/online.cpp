@@ -53,7 +53,7 @@ int main()
   int i = 0;
   int c = 0;
   const int pixelNumber = 64;
-  while (i < 1)
+  while (true)
   {
     // Load a file(s)
     std::ifstream is;
@@ -79,7 +79,7 @@ int main()
     D -> decodeRawMFM(); // get rid of the first two (empty) events
     D -> decodeRawMFM();
   
-    while (c < 1001) //(D -> getCursor() < length)
+    while (D -> getCursor() < length)
     {
        // Clear raw data and physics objects
        m_NPDetectorManager->ClearEventPhysics();
@@ -109,7 +109,7 @@ int main()
        m_OutputTree->Fill();
   
        c++;
-       //usleep(100);//Simulated 10kHz count rate
+       usleep(10000);//Simulated 100Hz count rate
     }
   
     //std::cout << "test compil\n";
