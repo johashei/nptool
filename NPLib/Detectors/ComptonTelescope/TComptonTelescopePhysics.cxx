@@ -107,14 +107,15 @@ void TComptonTelescopePhysics::BuildSimplePhysicalEvent()
   }
   
   // Calculate a corrected energy for the calorimeter
-  double energy = 0;
-/*  for (UShort_t i = 0; i < m_PreTreatedData->GetCTCalorimeterEMult(); ++i) {
-    Calor_E += fCalorimeter_E(m_PreTreatedData, i);//Apply calibration other than pedestal and sum anodes
-  }*/
+  double charge = 0;
+  int detectorNumber = 1;
+  /*for (UShort_t i = 0; i < m_PreTreatedData->GetCTCalorimeterEMult(); ++i) {
+    charge += fCalorimeter_Q(m_PreTreatedData, i);//Apply calibration other than pedestal and sum anodes
+  }//*/
   for (UShort_t i = 0; i < m_EventData->GetCTCalorimeterEMult(); ++i) {
-    energy += fCalorimeter_E(m_EventData, i);//Apply full calibration and sum anodes
-  }
-  Calor_E.push_back(energy);
+    charge += fCalorimeter_Q(m_EventData, i);//Apply full calibration and sum anodes
+  }//*/
+  Calor_E.push_back(fCalorimeter_E(charge, detectorNumber));
 
   for (UShort_t i = 0; i < m_PreTreatedData->GetCTCalorimeterTMult(); ++i) {
     Calor_T.push_back(m_PreTreatedData->GetCTCalorimeterTTime(i));
@@ -495,6 +496,7 @@ void TComptonTelescopePhysics::AddParameterToCalibrationManager()
       Cal->AddParameter("COMPTONTELESCOPE", "D"+ NPL::itoa(i+1)+"_CHANNEL"+ NPL::itoa(j)+"_E",  "COMPTONTELESCOPE_D"+ NPL::itoa(i+1)+"_CHANNEL"+ NPL::itoa(j)+"_E");
       Cal->AddParameter("COMPTONTELESCOPE", "D"+ NPL::itoa(i+1)+"_CHANNEL"+ NPL::itoa(j)+"_PED",  "COMPTONTELESCOPE_D"+ NPL::itoa(i+1)+"_CHANNEL"+ NPL::itoa(j)+"_PED");
     }
+    Cal->AddParameter("COMPTONTELESCOPE", "D"+ NPL::itoa(i+1)+"_Q_E", "COMPTONTELESCOPE_D"+ NPL::itoa(i+1)+"_Q_E");
   }
 
   return;  
@@ -685,9 +687,14 @@ namespace ComptonTelescope_LOCAL
     return CalibrationManager::getInstance()->ApplyCalibration("COMPTONTELESCOPE/D" + NPL::itoa(m_EventData->GetCTCalorimeterEDetectorNbr(i)) + "_CHANNEL" + NPL::itoa(m_EventData->GetCTCalorimeterEChannelNbr(i)) + "_PED", m_EventData->GetCTCalorimeterEEnergy(i));
   }
 
-  Double_t fCalorimeter_E(const TComptonTelescopeData* m_EventData, const int i)
+  Double_t fCalorimeter_Q(const TComptonTelescopeData* m_EventData, const int i) // Charge-ADC calibration
   {
     return CalibrationManager::getInstance()->ApplyCalibration("COMPTONTELESCOPE/D" + NPL::itoa(m_EventData->GetCTCalorimeterEDetectorNbr(i)) + "_CHANNEL" + NPL::itoa(m_EventData->GetCTCalorimeterEChannelNbr(i)) + "_E", m_EventData->GetCTCalorimeterEEnergy(i));
+  }
+
+  Double_t fCalorimeter_E(double charge, int detectorNumber) // Total charge-energy relation
+  {
+    return CalibrationManager::getInstance()->ApplyCalibration("COMPTONTELESCOPE/D" + NPL::itoa(detectorNumber) + "_Q_E", charge);
   }
 }
 
