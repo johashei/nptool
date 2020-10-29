@@ -1,0 +1,4 @@
+Canvas
+ Path= ComptonTelescope 
+ Divide= 1 2 
+ Histo= CT1_CALOR_SPECTRUM CT1_CALOR_RAW_TRIGGER
