@@ -24,7 +24,8 @@ int main()
 //   NPOptionManager::getInstance()->Destroy();
 
 //  string arg = "-D ./ComptonCAM.detector -C Calibration.txt -GH -E Example2.reaction -P %i --circular",port);
-  string arg = "-D ./ComptonCAM.detector -C calibrations.txt -GH -E ./10He.reaction --circular";
+  //string arg = "-D ./ComptonCAM.detector -C calibrations.txt -GH -E ./10He.reaction --circular";
+  string arg = "-D ./ComptonCAM.detector -C calibrations.txt -GH -E ./10He.reaction";
   NPOptionManager::getInstance(arg);  
 
   // open ROOT output file
@@ -49,67 +50,82 @@ int main()
   std::cout << "Reading data\n";
   // instantiate DecodeR object reading calorimeter data flux
   DecodeR* D = new DecodeR(false);
-  D->Dump();
-
-  // Load a file
-  std::ifstream is;
-  is.open("./mfm.bin", std::ios::binary);
-  is.seekg (0, std::ios::end);
-  int length = is.tellg();
-  is.seekg (0, ios::beg);
-  char* buffer = new char [length];
-  is.read(buffer, length);
-  is.close();
-
-  // Read from file
-  D -> setRaw(buffer);
-  D -> decodeRawMFM(); // get rid of the first two (empty) events
-  D -> decodeRawMFM();
-  D -> decodeRawMFM();
-  D -> Dump();
-
+  
+  int i = 0;
   int c = 0;
   const int pixelNumber = 64;
-  while (D -> getCursor() < length) 
+  while (i<1)
   {
-     // Clear raw data and physics objects
-     m_NPDetectorManager->ClearEventPhysics();
-     m_NPDetectorManager->ClearEventData();
+    // Load a file(s)
+    std::ifstream is;
+    i = 1;
+    switch (i % 6) {
+      case 0: is.open("./mfm.bin", std::ios::binary); break;
+      case 3: is.open("./133Ba.bin", std::ios::binary); break;
+      case 2: is.open("./241Am.bin", std::ios::binary); break;
+      case 1: is.open("./207Bi.bin", std::ios::binary); break;
+      case 4: is.open("./241Am-1.bin", std::ios::binary); break;
+      case 5: is.open("./241Am-2.bin", std::ios::binary); break;
+    }
+    is.seekg (0, std::ios::end);
+    int length = is.tellg();
+    is.seekg (0, ios::beg);
+    char* buffer = new char [length];
+    is.read(buffer, length);
+    is.close();
+    i++;
+  
+    // Read from file(s)
+    D -> setRaw(buffer);
 
-     // Read the actual data
-     D -> decodeRawMFM();
-     //D -> Dump();//Optionnal print
-
-     // Set ccamData (a better way is envisionned)
-     for (int i = 0; i < pixelNumber; ++i) {
+    D -> decodeRawMFM(); // get rid of the first two (empty) events
+    D -> decodeRawMFM();
+  
+    while (D -> getCursor() < length)
+    {
+       // Clear raw data and physics objects
+       m_NPDetectorManager->ClearEventPhysics();
+       m_NPDetectorManager->ClearEventData();
+  
+       // Read the actual data
+       D -> decodeRawMFM();
+       //D -> Dump();//Optionnal print
+  
+       // Set ccamData (a better way is envisionned)
+       for (int i = 0; i < pixelNumber; ++i) {
+         ccamData -> SetCTCalorimeterETowerNbr(1);
+         ccamData -> SetCTCalorimeterEDetectorNbr( 1 );
+         ccamData -> SetCTCalorimeterEChannelNbr( i );//PMT pixel number
+         ccamData -> SetCTCalorimeterEEnergy( D -> getData()[i] );
+       }
        ccamData -> SetCTCalorimeterTTowerNbr( 1 );
        ccamData -> SetCTCalorimeterTDetectorNbr( 1 );//Triggered ASIC number
-       ccamData -> SetCTCalorimeterTChannelNbr( D -> getPixelNumber() );//ASIC's channel number
+       ccamData -> SetCTCalorimeterTChannelNbr( D -> getPixelNumber() );//Pixel that triggered
        ccamData -> SetCTCalorimeterTTime( D -> getTime() );
-       ccamData -> SetCTCalorimeterETowerNbr(1);
-       ccamData -> SetCTCalorimeterEDetectorNbr( 1 );
-       ccamData -> SetCTCalorimeterEChannelNbr( i );//PMT pixel number
-       ccamData -> SetCTCalorimeterEEnergy( D -> getData()[i] );
-     }
-//     ccamData -> Dump();
+  //     ccamData -> Dump();
+  
+       // Build physical event
+       m_NPDetectorManager->BuildPhysicalEvent();
+  
+       // Fill object in output ROOT file
+       m_OutputTree->Fill();
+  
+       c++;
+       //usleep(10000);//Simulated 100Hz count rate
+    }
+  
+    //std::cout << "test compil\n";
+  
+    delete [] buffer;
 
-     // Build physical event
-     m_NPDetectorManager->BuildPhysicalEvent();
-
-     // Fill object in output ROOT file
-     m_OutputTree->Fill();
-
-     c++;
-  }
-  delete D;
-  delete [] buffer;
-
-  std::cout << "test compil\n";
+  }// End of main loop
 
   // Fill spectra
   m_NPDetectorManager->WriteSpectra();
 
   // Essential
+  delete D;
+
   #if __cplusplus > 199711L && NPMULTITHREADING
    m_NPDetectorManager->StopThread();
   #endif
@@ -117,3 +133,5 @@ int main()
 
   return 0;
 }
+
+
