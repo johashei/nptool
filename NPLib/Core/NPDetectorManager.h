@@ -59,6 +59,7 @@ namespace NPL{
       void        WriteSpectra();
       std::vector< std::map< std::string, TH1* > > GetSpectra();  
       std::vector<std::string> GetDetectorList();
+      NPL::SpectraServer* GetSpectraServer() {return m_SpectraServer;};
 
     public: // for online spectra server
       void SetSpectraServer();
