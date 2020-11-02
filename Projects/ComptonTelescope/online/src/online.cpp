@@ -39,6 +39,15 @@ int main()
   m_NPDetectorManager->ReadConfigurationFile(detectorfileName);
   m_NPDetectorManager->InitializeRootOutput();
 
+  // configure spectra server
+  // seems to be needed to stat manually since despite a message saying the
+  // server is started, it is not the case!! (to be investigated)
+  m_NPDetectorManager->SetSpectraServer();
+  // check spectra
+  m_NPDetectorManager->CheckSpectraServer();
+  // check if spectra server has some requests
+//  m_NPDetectorManager->GetSpectraServer()->CheckRequest();
+
   // instantiate raw ComptonCAM data pointer
   auto ccamData = new TComptonTelescopeData();
   ccamData->Dump();
@@ -59,11 +68,7 @@ int main()
   {
     // Load a file(s)
     std::ifstream is;
-<<<<<<< HEAD
     i = 0;
-=======
-    i = 3;
->>>>>>> 4858dca71cc19eb84e36cf0148befb3a02137b9c
     switch (i % 6) {
       case 0: is.open("./mfm.bin", std::ios::binary); break;
       case 3: is.open("./133Ba.bin", std::ios::binary); break;
@@ -115,6 +120,9 @@ int main()
        // Fill object in output ROOT file
        m_OutputTree->Fill();
   
+       // check spectra
+       m_NPDetectorManager->CheckSpectraServer();
+
        c++;
        //usleep(10000);//Simulated 100Hz count rate
     }
