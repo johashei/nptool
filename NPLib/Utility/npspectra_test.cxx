@@ -32,8 +32,9 @@ int main(int argc , char** argv){
   server->AddSpectra(hh1);
   server->AddSpectra(hh2);
   }
-
+unsigned int i=0;
    while(true){
+     std::cout << "\r"<< i++  << std::flush;
     h1->Reset();
     h2->Reset();
     double meanX = gRandom->Uniform(-5,5);
