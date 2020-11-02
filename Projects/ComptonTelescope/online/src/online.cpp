@@ -66,7 +66,7 @@ int main()
   {
     // Load a file(s)
     std::ifstream is;
-    i = 0;
+//    i = 0;
     switch (i % 6) {
       case 0: is.open("./mfm.bin", std::ios::binary); break;
       case 3: is.open("./133Ba.bin", std::ios::binary); break;
@@ -122,7 +122,7 @@ int main()
        m_NPDetectorManager->CheckSpectraServer();
 
        c++;
-       //usleep(10000);//Simulated 100Hz count rate
+       usleep(100);//Simulated 10kHz count rate
     }
   
     //std::cout << "test compil\n";
