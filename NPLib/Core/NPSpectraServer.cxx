@@ -71,6 +71,7 @@ void NPL::SpectraServer::CheckRequest(){
     m_Monitor->ResetInterrupt();
     TSocket* s = m_Monitor->Select(1);
     if(s && s!=(TSocket*)-1){
+       std::cout << "tests handle socket dans checkrequest\n";
         HandleSocket(s);
     }
   }

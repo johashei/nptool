@@ -24,8 +24,7 @@ int main()
 //   NPOptionManager::getInstance()->Destroy();
 
 //  string arg = "-D ./ComptonCAM.detector -C Calibration.txt -GH -E Example2.reaction -P %i --circular",port);
-  string arg = "-D ./ComptonCAM.detector -C calibrations.txt -GH -E ./10He.reaction --circular";
-  //string arg = "-D ./ComptonCAM.detector -C calibrations.txt -GH -E ./10He.reaction";
+   string arg = "-D ./ComptonCAM.detector -C calibrations.txt -GH -E ./10He.reaction --circular";
   NPOptionManager::getInstance(arg);  
 
   // open ROOT output file
@@ -50,7 +49,6 @@ int main()
 
   // instantiate raw ComptonCAM data pointer
   auto ccamData = new TComptonTelescopeData();
-  ccamData->Dump();
   // connect raw CCAM data pointer to physics class
   auto ccamPhys = (TComptonTelescopePhysics*) m_NPDetectorManager->GetDetector("ComptonTelescope");
   ccamPhys->SetRawDataPointer(ccamData);
