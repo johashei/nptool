@@ -23,7 +23,6 @@ int main()
   // configure option manager
 //   NPOptionManager::getInstance()->Destroy();
 
-//  string arg = "-D ./ComptonCAM.detector -C Calibration.txt -GH -E Example2.reaction -P %i --circular",port);
    string arg = "-D ./ComptonCAM.detector -C calibrations.txt -GH -E ./10He.reaction --circular";
   NPOptionManager::getInstance(arg);  
 
@@ -39,13 +38,7 @@ int main()
   m_NPDetectorManager->InitializeRootOutput();
 
   // configure spectra server
-  // seems to be needed to stat manually since despite a message saying the
-  // server is started, it is not the case!! (to be investigated)
   m_NPDetectorManager->SetSpectraServer();
-  // check spectra
-  m_NPDetectorManager->CheckSpectraServer();
-  // check if spectra server has some requests
-//  m_NPDetectorManager->GetSpectraServer()->CheckRequest();
 
   // instantiate raw ComptonCAM data pointer
   auto ccamData = new TComptonTelescopeData();
@@ -125,18 +118,18 @@ int main()
        usleep(100);//Simulated 10kHz count rate
     }
   
-    //std::cout << "test compil\n";
-  
+    // delete buffer
     delete [] buffer;
 
-  }// End of main loop
+  } // end of main loop
 
-  // Fill spectra
+  // fill spectra
   m_NPDetectorManager->WriteSpectra();
 
-  // Essential
+  // delete DecodeR
   delete D;
 
+  // Essential
   #if __cplusplus > 199711L && NPMULTITHREADING
    m_NPDetectorManager->StopThread();
   #endif
