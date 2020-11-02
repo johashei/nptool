@@ -63,6 +63,7 @@ bool NPL::SpectraClient::Connect(){
   m_Sock = new TSocket(m_Address.c_str(),m_Port);
   if(m_Sock->IsValid()){
     NPL::SendInformation("NPL::SpectraClient","Successful connection to spectra server");
+    Sync();
     return true;
   }
   else{
