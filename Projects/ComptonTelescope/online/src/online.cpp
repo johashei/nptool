@@ -60,13 +60,13 @@ int main()
     // Load a file(s)
     std::ifstream is;
 //    i = 0;
-    switch (i % 6) {
-      case 0: is.open("./mfm.bin", std::ios::binary); break;
-      case 3: is.open("./133Ba.bin", std::ios::binary); break;
-      case 2: is.open("./241Am.bin", std::ios::binary); break;
-      case 1: is.open("./207Bi.bin", std::ios::binary); break;
-      case 4: is.open("./241Am-1.bin", std::ios::binary); break;
-      case 5: is.open("./241Am-2.bin", std::ios::binary); break;
+    switch (i % 3) {
+      case 3: is.open("./mfm.bin", std::ios::binary); break;
+      case 4: is.open("./133Ba.bin", std::ios::binary); break;
+      case 5: is.open("./241Am.bin", std::ios::binary); break;
+      case 0: is.open("./207Bi.bin", std::ios::binary); break;
+      case 1: is.open("./241Am-1.bin", std::ios::binary); break;
+      case 2: is.open("./241Am-2.bin", std::ios::binary); break;
     }
     is.seekg (0, std::ios::end);
     int length = is.tellg();

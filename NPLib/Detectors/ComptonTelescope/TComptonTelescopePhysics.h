@@ -69,6 +69,8 @@ class TComptonTelescopePhysics : public TObject, public NPL::VDetector
       // Calorimeter
       vector<double> Calor_E;
       vector<double> Calor_T;
+      vector<int>    CalorPosX;
+      vector<int>    CalorPosY;
    
 
    public:  // inherited from VDetector
@@ -156,7 +158,6 @@ class TComptonTelescopePhysics : public TObject, public NPL::VDetector
       
       TVector3 GetPositionOfInteraction(const int i) const;   
       TVector3 GetDetectorNormal(const int i) const;
-//      double   GetCalor_E();
 
    private:   // Parameter used in the analysis
       // By default take EX and TY.
