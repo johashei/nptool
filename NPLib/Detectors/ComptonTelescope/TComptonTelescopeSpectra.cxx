@@ -144,6 +144,7 @@ void TComptonTelescopeSpectra::InitPreTreatedSpectra()
     // BACK_CAL_MULT
     name = "CT"+NPL::itoa(i+1)+"_BACK_CAL_MULT";
     AddHisto1D(name, name, fStripX, 1, fStripX+1, "COMPTONTELESCOPE/CAL/MULT");
+
   }  // end loop on number of detectors
 }
 
@@ -169,8 +170,14 @@ void TComptonTelescopeSpectra::InitPhysicsSpectra()
     AddHisto1D(name, name, 1000, 1, 2000, "COMPTONTELESCOPE/PHY/CALOR");
   }
 
+  // Position on calorimeter
+  for (unsigned int i = 0 ; i < fNumberOfTelescope ; i++) { // loop on number of detectors
+    name = "CT"+NPL::itoa(i+1)+"_CALOR_POS";
+    AddHisto2D(name, name, 8, -24, 24, 8, -24, 24, "COMPTONTELESCOPE/PHY/CALOR_POS");
+  }
+
   // Sum spectrum
-  for (unsigned int i = 0; i < fNumberOfTelescope; i++) {
+  for (unsigned int i = 0; i < fNumberOfTelescope; i++) { // loop on number of detectors
     name = "CT"+NPL::itoa(i+1)+"_SUM_SPECTRUM";
     AddHisto1D(name, name, 1000, 1, 2000, "COMPTONTELESCOPE/PHY/CALOR");
   }
@@ -347,6 +354,18 @@ void TComptonTelescopeSpectra::FillPhysicsSpectra(TComptonTelescopePhysics* Phys
   // X-Y Energy correlation
   for (unsigned int i = 0; i < fNumberOfTelescope; i++) {
   }*/
+
+  // Position on calorimeter
+  for (unsigned int i = 0; i < fNumberOfTelescope; i++) {
+    name = "CT"+NPL::itoa(i+1)+"_CALOR_POS";
+    if (Physics->CalorPosX.size() == Physics->CalorPosY.size()) {
+      for (int j = 0; j < Physics->CalorPosX.size(); j++) {
+        FillSpectra(family, name, Physics->CalorPosX[j], Physics->CalorPosY[j]);
+      }
+    } else {
+      cout << "Position not treated because size of x and y position vectors differs." << endl;
+    }
+  }
 
   // Calorimeters spectra
   double energy = 0;

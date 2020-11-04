@@ -106,12 +106,25 @@ void TComptonTelescopePhysics::BuildSimplePhysicalEvent()
     }
   }
   
+  // Calculate an approximate position of interaction
+  int max = m_PreTreatedData->GetCTCalorimeterEEnergy(0);
+  unsigned int maxIndex = 0;
+  for (unsigned int i = 1; i <  m_PreTreatedData->GetCTCalorimeterEMult(); i++) {
+    if (max < m_PreTreatedData->GetCTCalorimeterEEnergy(i)) {
+      maxIndex = i;
+    }
+  }
+//  int maxIndex = max_element(mat.begin(), mat.end()) - mat.begin();
+//  cout << maxIndex << "x, y: " << 6*(maxIndex/8)-21 << ", " << 6*(maxIndex%8)-21 << endl;
+  CalorPosX.push_back(6*(maxIndex/8)-21);
+  CalorPosY.push_back(6*(maxIndex%8)-21);
+
   // Calculate a corrected energy for the calorimeter
   double charge = 0;
   int detectorNumber = 1;
   /*for (UShort_t i = 0; i < m_PreTreatedData->GetCTCalorimeterEMult(); ++i) {
     charge += fCalorimeter_Q(m_PreTreatedData, i);//Apply calibration other than pedestal and sum anodes
-  }//*/
+  }*/
   for (UShort_t i = 0; i < m_EventData->GetCTCalorimeterEMult(); ++i) {
     charge += fCalorimeter_Q(m_EventData, i);//Apply full calibration and sum anodes
   }//*/
@@ -431,6 +444,8 @@ void TComptonTelescopePhysics::Clear()
   // Calorimeter
   Calor_E.clear();
   Calor_T.clear();
+  CalorPosX.clear();
+  CalorPosY.clear();
 }
 
 
@@ -530,6 +545,8 @@ void TComptonTelescopePhysics::InitializeRootInputPhysics()
   inputChain->SetBranchStatus("Strip_Back",        true);
   inputChain->SetBranchStatus("Calor_E",        true);
   inputChain->SetBranchStatus("Calor_T",        true);
+  inputChain->SetBranchStatus("CalorPosX",      true);
+  inputChain->SetBranchStatus("CalorPosY",      true);
 }
 
 

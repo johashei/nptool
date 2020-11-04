@@ -91,7 +91,8 @@ void NPL::SpectraServer::HandleSocket(TSocket* s){
   if (s->IsA() == TServerSocket::Class()) {
     // accept new connection from spy
     TSocket* socket = ((TServerSocket*)s)->Accept();
-    m_Monitor->Add(socket,TMonitor::kRead|TMonitor::kWrite);
+//    m_Monitor->Add(socket,TMonitor::kRead|TMonitor::kWrite);
+    m_Monitor->Add(socket);
     m_Sockets->Add(socket);
     NPL::SendInformation("NPL::SpectraServer","Accepted new client connection");
   }

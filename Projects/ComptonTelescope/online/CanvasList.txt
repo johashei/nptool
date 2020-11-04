@@ -1,4 +1,22 @@
+Alias DSSSD
+ Action= Copy
+ Value= 1 2
+
+Alias Face
+ Action= Copy
+ Value= FRONT BACK
+
 Canvas
- Path= ComptonTelescope 
+ Path= Diffuseur DSSSD@DSSSD
+ Divide = 3 2
+ Histo= CT@DSSSD_FRONT_E_CAL CT@DSSSD_BACK_E_CAL CT@DSSSD_XY_COR CT@DSSSD_FRONT_CAL_MULT CT@DSSSD_BACK_CAL_MULT
+
+Canvas
+ Path= Calorimeter
  Divide= 1 2 
- Histo= CT1_CALOR_SPECTRUM CT1_CALOR_RAW_TRIGGER
+ Histo= CT1_CALOR_SPECTRUM CT1_CALOR_RAW_TRIGGER CT1_CALOR_POS
+
+Canvas
+ Path= ComptonTelescope
+ Divide= 1 1
+ Histo= CT1_SUM_SPECTRUM

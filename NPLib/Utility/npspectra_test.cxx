@@ -50,7 +50,7 @@ unsigned int i=0;
     }
     
     server->CheckRequest(); 
-    usleep(1000);
+//    usleep(1000);
     }
 
   return 0;

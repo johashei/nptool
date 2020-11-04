@@ -23,9 +23,7 @@ int main()
   // configure option manager
 //   NPOptionManager::getInstance()->Destroy();
 
-//  string arg = "-D ./ComptonCAM.detector -C Calibration.txt -GH -E Example2.reaction -P %i --circular",port);
-  string arg = "-D ./ComptonCAM.detector -C calibrations.txt -GH -E ./10He.reaction --circular";
-  //string arg = "-D ./ComptonCAM.detector -C calibrations.txt -GH -E ./10He.reaction";
+   string arg = "-D ./ComptonCAM.detector -C calibrations.txt -GH -E ./10He.reaction --circular";
   NPOptionManager::getInstance(arg);  
 
   // open ROOT output file
@@ -40,17 +38,10 @@ int main()
   m_NPDetectorManager->InitializeRootOutput();
 
   // configure spectra server
-  // seems to be needed to stat manually since despite a message saying the
-  // server is started, it is not the case!! (to be investigated)
   m_NPDetectorManager->SetSpectraServer();
-  // check spectra
-  m_NPDetectorManager->CheckSpectraServer();
-  // check if spectra server has some requests
-//  m_NPDetectorManager->GetSpectraServer()->CheckRequest();
 
   // instantiate raw ComptonCAM data pointer
   auto ccamData = new TComptonTelescopeData();
-  ccamData->Dump();
   // connect raw CCAM data pointer to physics class
   auto ccamPhys = (TComptonTelescopePhysics*) m_NPDetectorManager->GetDetector("ComptonTelescope");
   ccamPhys->SetRawDataPointer(ccamData);
@@ -68,14 +59,14 @@ int main()
   {
     // Load a file(s)
     std::ifstream is;
-    i = 0;
-    switch (i % 6) {
-      case 0: is.open("./mfm.bin", std::ios::binary); break;
-      case 3: is.open("./133Ba.bin", std::ios::binary); break;
-      case 2: is.open("./241Am.bin", std::ios::binary); break;
-      case 1: is.open("./207Bi.bin", std::ios::binary); break;
-      case 4: is.open("./241Am-1.bin", std::ios::binary); break;
-      case 5: is.open("./241Am-2.bin", std::ios::binary); break;
+//    i = 0;
+    switch (i % 3) {
+      case 3: is.open("./mfm.bin", std::ios::binary); break;
+      case 4: is.open("./133Ba.bin", std::ios::binary); break;
+      case 5: is.open("./241Am.bin", std::ios::binary); break;
+      case 0: is.open("./207Bi.bin", std::ios::binary); break;
+      case 1: is.open("./241Am-1.bin", std::ios::binary); break;
+      case 2: is.open("./241Am-2.bin", std::ios::binary); break;
     }
     is.seekg (0, std::ios::end);
     int length = is.tellg();
@@ -124,21 +115,21 @@ int main()
        m_NPDetectorManager->CheckSpectraServer();
 
        c++;
-       //usleep(10000);//Simulated 100Hz count rate
+       usleep(100);//Simulated 10kHz count rate
     }
   
-    //std::cout << "test compil\n";
-  
+    // delete buffer
     delete [] buffer;
 
-  }// End of main loop
+  } // end of main loop
 
-  // Fill spectra
+  // fill spectra
   m_NPDetectorManager->WriteSpectra();
 
-  // Essential
+  // delete DecodeR
   delete D;
 
+  // Essential
   #if __cplusplus > 199711L && NPMULTITHREADING
    m_NPDetectorManager->StopThread();
   #endif
