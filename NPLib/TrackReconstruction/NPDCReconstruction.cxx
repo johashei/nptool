@@ -26,6 +26,11 @@ DCReconstruction::DCReconstruction(){
   m_min=ROOT::Math::Factory::CreateMinimizer("Minuit2", "Migrad"); 
   m_func=ROOT::Math::Functor(this,&NPL::DCReconstruction::SumD,2); 
   m_min->SetFunction(m_func);
+  m_min->SetPrintLevel(0);
+  //m_min->SetMaxFunctionCalls(1000); 
+  //m_min->SetMaxIterations(1000);
+  m_min->SetTolerance(1e64);
+  m_min->SetPrecision(1e-10);
   }
 ////////////////////////////////////////////////////////////////////////////////
 DCReconstruction::~DCReconstruction(){
@@ -42,17 +47,19 @@ double DCReconstruction::BuildTrack2D(const vector<double>& X,const vector<doubl
   // Define the starting point of the fit: a straight line passing through the 
   // the first and last wire
   // z = ax+b -> x=(z-b)/a
-  ai = (Z[size-1]-Z[0])/(X[size-1]-R[size-1]-X[0]-R[0]);
-  bi = Z[0]-ai*(X[0]+R[0]);
+//  ai = (Z[size-1]-Z[0])/(X[size-1]-R[size-1]-X[0]-R[0]);
+//  bi = Z[0]-ai*(X[0]+R[0]);
+  ai = (Z[size-1]-Z[0])/(X[size-1]-X[0]);
+  bi = Z[0]-ai*(X[0]);
+
   parameter[0]=ai;
   parameter[1]=bi;
+
+  m_min->Clear(); 
   m_min->SetVariable(0,"a",parameter[0],1000);
   m_min->SetVariable(1,"b",parameter[1],1000);
-  m_min->SetTolerance(0.01);
-
   // Perform minimisation
   m_min->Minimize(); 
-
   // access set of parameter that produce the minimum
   const double *xs = m_min->X();
   a=xs[0];
@@ -106,7 +113,7 @@ void DCReconstruction::ResolvePlane(const TVector3& L,const double& ThetaU ,cons
 
 ////////////////////////////////////////////////////////////////////////////////
 double DCReconstruction::SumD(const double* parameter ){
-  unsigned int size = fitX->size();
+  unsigned int sizeX = fitX->size();
   // Compute the sum P of the distance between the circle and the track
   P = 0;
   a = parameter[0];
@@ -114,13 +121,14 @@ double DCReconstruction::SumD(const double* parameter ){
   ab= a*b;
   a2=a*a;
 
-  for(unsigned int i = 0 ; i < size ; i++){
+  for(unsigned int i = 0 ; i < sizeX ; i++){
     c = (*fitX)[i];
     d = (*fitZ)[i];
     r = (*fitR)[i];
     x = (a*d-ab+c)/(1+a2);
     z = a*x+b;
-    P+= sqrt(abs( (x-c)*(x-c)+(z-d)*(z-d)-r*r));
+    //P+= sqrt(abs( (x-c)*(x-c)+(z-d)*(z-d)-r*r));
+    P+= abs( (x-c)*(x-c)+(z-d)*(z-d)-r*r);
   }
   // return normalized power
   return P/size;
