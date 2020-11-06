@@ -290,7 +290,7 @@ void Target::ConstructDetector(G4LogicalVolume* world){
 
 
     // Back Bulge
-    if(m_FrontDeformation!=0){
+    if(m_BackDeformation!=0){
       double step = m_BackRadius/size;
       for(int i = size-1 ; i>=0 ; i--){
         OuterRadius.push_back(i*step);
@@ -309,14 +309,11 @@ void Target::ConstructDetector(G4LogicalVolume* world){
           m_TargetMaterial,
           "logicTarget");
 
-    new G4PVPlacement(0, G4ThreeVector(0, 0, 0), 
-        m_TargetLogic, "Target", world, false, 0);
-
     G4VisAttributes* TargetVisAtt = new G4VisAttributes(G4Colour(0., 0., 1.));
     m_TargetLogic->SetVisAttributes(TargetVisAtt);
 
-
-    // Front Window 
+///// Creating the windows volume
+    // X-Z target profile
     OuterRadius.clear();
     InnerRadius.clear();
     Z.clear();
@@ -325,53 +322,56 @@ void Target::ConstructDetector(G4LogicalVolume* world){
     if(m_FrontDeformation!=0){
       double step = m_FrontRadius/size;
       for(unsigned int i = 0 ; i < size ; i++){
-        InnerRadius.push_back(i*step);
         OuterRadius.push_back(i*step+m_FrontThickness);
-        Z.push_back(FrontProfile(i*step+m_FrontThickness,m_FrontThickness+m_TargetThickness*0.5,m_FrontDeformation,m_FrontRadius));
+        Z.push_back(FrontProfile(i*step,m_TargetThickness*0.5+m_FrontThickness,m_FrontDeformation,m_FrontRadius));
       } 
     }
 
-    G4Polycone* FrontSolid = 
-      new G4Polycone("solidFront", 0, 360*deg,Z.size(),&Z[0],&InnerRadius[0],&OuterRadius[0]);
+    // Nominal Part (same as target)
+    OuterRadius.push_back(m_FrontRadius);
+    Z.push_back(0.5*m_TargetThickness);
 
-    G4LogicalVolume* FrontLogic = 
-      new G4LogicalVolume(FrontSolid, 
-          m_FrontMaterial,
-          "logicFront");
+    OuterRadius.push_back(m_TargetRadius);
+    Z.push_back(0.5*m_TargetThickness);
 
-    new G4PVPlacement(0, G4ThreeVector(0, 0, 0), 
-        FrontLogic, "Target", world, false, 0);
-    G4VisAttributes* WindowsVisAtt = new G4VisAttributes(G4Colour(0.5, 0.5, 0.5,0.5));
-    FrontLogic->SetVisAttributes(WindowsVisAtt);
+    OuterRadius.push_back(m_TargetRadius);
+    Z.push_back(-0.5*m_TargetThickness);
 
+    OuterRadius.push_back(m_BackRadius);
+    Z.push_back(-0.5*m_TargetThickness);
 
-    // Back Window 
-    OuterRadius.clear();
-    InnerRadius.clear();
-    Z.clear();
 
     // Back Bulge
     if(m_BackDeformation!=0){
       double step = m_BackRadius/size;
-      for(unsigned int i = 0 ; i < size ; i++){
-        InnerRadius.push_back(i*step);
+      for(int i = size-1 ; i>=0 ; i--){
         OuterRadius.push_back(i*step+m_BackThickness);
-        Z.push_back(BackProfile(i*step+m_BackThickness,m_BackThickness+m_TargetThickness*0.5,m_BackDeformation,m_BackRadius));
+        Z.push_back(BackProfile(i*step,m_TargetThickness*0.5+m_BackThickness,m_BackDeformation,m_BackRadius));
       } 
     }
 
-    G4Polycone* BackSolid = 
-      new G4Polycone("solidBack", 0, 360*deg,Z.size(),&Z[0],&InnerRadius[0],&OuterRadius[0]);
 
-    G4LogicalVolume* BackLogic = 
-      new G4LogicalVolume(BackSolid, 
-          m_BackMaterial,
-          "logicBack");
+    InnerRadius.resize(Z.size(),0);
+
+    G4Polycone* WindowsSolid = 
+      new G4Polycone("solidWindows", 0, 360*deg,Z.size(),&Z[0],&InnerRadius[0],&OuterRadius[0]);
+
+    G4LogicalVolume* WindowsLogic = 
+      new G4LogicalVolume(WindowsSolid, 
+          m_FrontMaterial,
+          "logicWindows");
 
     new G4PVPlacement(0, G4ThreeVector(0, 0, 0), 
-        BackLogic, "Target", world, false, 0);
+        WindowsLogic, "TargetWindows", world, false, 0);
 
-    BackLogic->SetVisAttributes(WindowsVisAtt);
+    // Place the windows
+    G4VisAttributes* WindowsVisAtt = new G4VisAttributes(G4Colour(0.5, 0.5, 0.5,0.5));
+    WindowsLogic->SetVisAttributes(WindowsVisAtt);
+
+    // Place the target inside the windows
+    new G4PVPlacement(0, G4ThreeVector(0, 0, 0), 
+        m_TargetLogic, "Target", WindowsLogic, false, 0);
+
 
     // Frame
     OuterRadius.clear();

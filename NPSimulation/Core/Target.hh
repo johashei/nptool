@@ -14,7 +14,8 @@
  * Last update    : 06/11/2009                                               *
  *---------------------------------------------------------------------------*
  * Decription:                                                               *
- *  This class describe Cryogenic and standard Target. Derived fromNPS::VDetector*
+ *  This class describe Cryogenic and standard Target.                       *
+ *  Derived fromNPS::VDetector                                               *
  *                                                                           *
  *---------------------------------------------------------------------------*
  * Comment:                                                                  *
