@@ -46,8 +46,8 @@ ClassImp(TSamuraiFDC2Physics)
     m_EventPhysics      = this ;
     //m_Spectra           = NULL;
     ToTThreshold = 180;
-    DriftLowThreshold=0.5;
-    DriftUpThreshold=9.5;
+    DriftLowThreshold=0.2;
+    DriftUpThreshold=9.4;
   }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -58,7 +58,7 @@ void TSamuraiFDC2Physics::BuildSimplePhysicalEvent(){
 ///////////////////////////////////////////////////////////////////////////
 void TSamuraiFDC2Physics::BuildPhysicalEvent(){
   PreTreat();
-  RemoveNoise();
+  //RemoveNoise();
 
   // Map[detector & plane angle, vector of spatial information]
   static map<std::pair<unsigned int,double>, vector<double> > X ; 
@@ -98,10 +98,10 @@ void TSamuraiFDC2Physics::BuildPhysicalEvent(){
     TVector3 P(X0,0,0);
     P.RotateZ(it->first.second);
     VX0[it->first]=P;
-    // Direction of the vector in the plane
-    TVector3 D = TVector3(X100,0,0);
-    D.RotateZ(it->first.second);
-    VX100[it->first]=D;
+    // Position at z=100
+    TVector3 P100= TVector3(X100,0,0);
+    P100.RotateZ(it->first.second);
+    VX100[it->first]=P100;
 
   }
 
@@ -233,6 +233,8 @@ void TSamuraiFDC2Physics::PreTreat(){
         Time.push_back(time);
         ToT.push_back(etime-time);
         channel="SamuraiFDC2/L" + NPL::itoa(layer);
+        // rescalling is needed because calib are bad.
+        // to be fixed
         DriftLength.push_back(Cal->ApplySigmoid(channel,etime));
       }
     }
