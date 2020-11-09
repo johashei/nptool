@@ -1,5 +1,6 @@
 #include"NPDCReconstruction.h"
 #include "Math/Factory.h"
+#include "TError.h"
 /*****************************************************************************
  * Copyright (C) 2009-2020   this file is part of the NPTool Project         *
  *                                                                           *
@@ -27,10 +28,13 @@ DCReconstruction::DCReconstruction(){
   m_func=ROOT::Math::Functor(this,&NPL::DCReconstruction::SumD,2); 
   m_min->SetFunction(m_func);
   m_min->SetPrintLevel(0);
+
+  // this avoid error 
+  gErrorIgnoreLevel = kError;
   //m_min->SetMaxFunctionCalls(1000); 
   //m_min->SetMaxIterations(1000);
-  m_min->SetTolerance(1e64);
-  m_min->SetPrecision(1e-10);
+  //m_min->SetTolerance(1000);
+  //m_min->SetPrecision(1e-10);
   }
 ////////////////////////////////////////////////////////////////////////////////
 DCReconstruction::~DCReconstruction(){
@@ -47,17 +51,17 @@ double DCReconstruction::BuildTrack2D(const vector<double>& X,const vector<doubl
   // Define the starting point of the fit: a straight line passing through the 
   // the first and last wire
   // z = ax+b -> x=(z-b)/a
-//  ai = (Z[size-1]-Z[0])/(X[size-1]-R[size-1]-X[0]-R[0]);
-//  bi = Z[0]-ai*(X[0]+R[0]);
+  //  ai = (Z[size-1]-Z[0])/(X[size-1]-R[size-1]-X[0]-R[0]);
+  //  bi = Z[0]-ai*(X[0]+R[0]);
   ai = (Z[size-1]-Z[0])/(X[size-1]-X[0]);
   bi = Z[0]-ai*(X[0]);
 
-  parameter[0]=ai;
-  parameter[1]=bi;
+//  parameter[0]=ai;
+//  parameter[1]=bi;
 
   m_min->Clear(); 
-  m_min->SetVariable(0,"a",parameter[0],1000);
-  m_min->SetVariable(1,"b",parameter[1],1000);
+  m_min->SetLimitedVariable(0,"a",ai,1,ai*0.1,ai*10);
+  m_min->SetLimitedVariable(1,"b",bi,1,bi*0.1,bi*10);
   // Perform minimisation
   m_min->Minimize(); 
   // access set of parameter that produce the minimum
@@ -130,9 +134,9 @@ double DCReconstruction::SumD(const double* parameter ){
     //P+= sqrt(abs( (x-c)*(x-c)+(z-d)*(z-d)-r*r));
     P+= abs( (x-c)*(x-c)+(z-d)*(z-d)-r*r);
   }
+ 
   // return normalized power
   return P/size;
-
 }
 
 

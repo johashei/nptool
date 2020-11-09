@@ -88,7 +88,9 @@ void TSamuraiFDC2Physics::BuildPhysicalEvent(){
   VX0.clear();VX100.clear(),D.clear();
   for(auto it = X.begin();it!=X.end();++it){
     D[it->first]=m_reconstruction.BuildTrack2D(X[it->first],Z[it->first],R[it->first],X0,X100,a,b); 
-    
+   // std::ofstream f("distance.txt", std::ios::app);
+   // f<< D[it->first] << endl;
+   // f.close();
     // very large a means track perpendicular to the chamber, what happen when there is pile up
     if(abs(a)>1000)
       PileUp++;
@@ -116,11 +118,11 @@ void TSamuraiFDC2Physics::BuildPhysicalEvent(){
       if(it1!=it2 && it1->first.first==it2->first.first){// different plane, same detector
         m_reconstruction.ResolvePlane(it1->second,it1->first.second,it2->second,it2->first.second,P);
         
-        if(P.X()!=-10000){
+        if(P.X()!=-10000 && D[it1->first]<100 && D[it2->first]<100){
           C[it1->first.first].push_back(P);
           // Mean pos are weighted based on the the sum of distance from track
           // to hit obtained during the minimisation
-          W[it1->first.first].push_back(1./(D[it1->first]+D[it2->first]));
+          W[it1->first.first].push_back(1./sqrt(D[it1->first]*D[it2->first]));
           }
       }
     }
@@ -134,7 +136,7 @@ void TSamuraiFDC2Physics::BuildPhysicalEvent(){
       if(it1!=it2 && it1->first.first==it2->first.first){// different plane, same detector
         m_reconstruction.ResolvePlane(it1->second,it1->first.second,it2->second,it2->first.second,P);
 
-        if(P.X()!=-10000)
+        if(P.X()!=-10000&& D[it1->first]<100 && D[it2->first]<100)
           C100[it1->first.first].push_back(P);
       }
     }
@@ -235,7 +237,7 @@ void TSamuraiFDC2Physics::PreTreat(){
         channel="SamuraiFDC2/L" + NPL::itoa(layer);
         // rescalling is needed because calib are bad.
         // to be fixed
-        DriftLength.push_back(Cal->ApplySigmoid(channel,etime));
+        DriftLength.push_back(10-Cal->ApplySigmoid(channel,etime));
       }
     }
 
