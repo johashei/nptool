@@ -9,6 +9,7 @@
 
 // custom headers
 #include "DecodeR.h"
+#include "DecodeD.h"
 
 // C++ headers
 #include <iostream>
@@ -50,6 +51,8 @@ int main()
   std::cout << "Reading data\n";
   // instantiate DecodeR object reading calorimeter data flux
   DecodeR* D = new DecodeR(false);
+
+  DecodeD* DD = new DecodeD(true);
   
   int i = 0;
   int c = 0;
