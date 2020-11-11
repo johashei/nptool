@@ -79,7 +79,20 @@ int main()
     is.close();
     i++;
   
-    // Read from file(s)
+    // Read from file
+    DD -> setTree("20200128_10h44_bi207_conv.root");
+//  DD -> decodeEvent();
+//  DD -> Dump();
+    int dlength = DD -> getLength();
+    newframe_t* event;
+    while (DD -> getCursor() < dlength)
+    {
+      DD -> decodeEvent();
+      event = DD -> getEvent();
+      //Fill TComptonTelescopeData here (if possible)
+    }
+
+    // Read from file
     D -> setRaw(buffer);
 
     D -> decodeRawMFM(); // get rid of the first two (empty) events

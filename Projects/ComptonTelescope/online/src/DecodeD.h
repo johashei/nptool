@@ -11,15 +11,71 @@ using namespace std;
 #include "TFile.h"
 #include "TTree.h"
 
+enum Datatype {D_NONE = 0, D_ROOT, D_MFM};
+
+typedef struct {
+  uint8_t chain;            // Chain Number (0 or 1)
+  uint8_t nb_asic;          // ASIC Number
+  uint8_t chip_data;        // 0=Empty Frame;
+  uint8_t analog_trigger;
+  uint8_t seu;
+  uint32_t ch_status;
+  uint16_t ref_channel;
+  uint16_t sample[32];
+  uint16_t cm_data;
+  uint32_t timestamp;
+} frame_t;
+
+typedef struct
+{
+  uint8_t chip_data[3][8];
+  uint8_t analog_trigger[3][8];
+  uint8_t seu[3][8];
+  uint32_t ch_status[3][8];
+  uint16_t ref_channel[3][8];
+  uint16_t sample[3][8][32];
+  uint16_t cm_data[3][8];
+  uint32_t timestamp;
+} newframe_t;
 
 class DecodeD
 {
   private:
     bool verbose;
+    Datatype datatype;
+    long int cursor;
+    newframe_t event;
+
+    // For root data
+    TTree* t1;
+    long int length;
+    uint8_t** chip_data;
+    uint8_t** analog_trigger;
+    uint8_t** seu;
+    uint32_t** ch_status;
+    uint16_t** ref_channel;
+    uint16_t*** sample;
+    uint16_t** cm_data;
+    uint32_t* timestamp;
+
+    // For online data
 
   public:
     DecodeD(bool v);
     ~DecodeD();
+
+    void setTree(const char* filename);
+    void setRaw();
+
+    long int getCursor();
+    long int getLength();
+    newframe_t* getEvent();
+    // One may add a few getters here and deprecate getEvent to avoid requiring the class user to know the newframe_t struct
+    
+    void decodeEvent();
+
+    void Dump();
 };
 
 #endif
+
