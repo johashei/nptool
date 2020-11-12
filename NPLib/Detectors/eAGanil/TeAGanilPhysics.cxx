@@ -1,18 +1,18 @@
 /*****************************************************************************
- * Copyright (C) 2009-2020   this file is part of the NPTool Project       *
+ * Copyright (C) 2009-2020   this file is part of the NPTool Project         *
  *                                                                           *
  * For the licensing terms see $NPTOOL/Licence/NPTool_Licence                *
  * For the list of contributors see $NPTOOL/Licence/Contributors             *
  *****************************************************************************/
 
 /*****************************************************************************
- * Original Author: Adrien Matta  contact address: matta@lpccaen.in2p3.fr                        *
+ * Original Author: Adrien Matta  contact address: matta@lpccaen.in2p3.fr    *
  *                                                                           *
- * Creation Date  : October 2020                                           *
+ * Creation Date  : October 2020                                             *
  * Last update    :                                                          *
  *---------------------------------------------------------------------------*
  * Decription:                                                               *
- *  This class hold eAGanil Treated  data                               *
+ *  This class hold eAGanil Treated  data                                    *
  *                                                                           *
  *---------------------------------------------------------------------------*
  * Comment:                                                                  *
@@ -203,30 +203,18 @@ void TeAGanilPhysics::Clear() {
 
 ///////////////////////////////////////////////////////////////////////////
 void TeAGanilPhysics::ReadConfiguration(NPL::InputParser parser) {
-  vector<NPL::InputBlock*> blocks = parser.GetAllBlocksWithToken("eAGanil");
+  vector<NPL::InputBlock*> blocks = parser.GetAllBlocksWithTokenAndValue("eAGanil","Spectrometer");
   if(NPOptionManager::getInstance()->GetVerboseLevel())
     cout << "//// " << blocks.size() << " detectors found " << endl; 
 
-  vector<string> cart = {"POS","Shape"};
-  vector<string> sphe = {"R","Theta","Phi","Shape"};
-
+  vector<string> sphe = {"R","Theta","Phi","EntranceWidth","EntranceHeight","MomentumResolution"};
   for(unsigned int i = 0 ; i < blocks.size() ; i++){
-    if(blocks[i]->HasTokenList(cart)){
-      if(NPOptionManager::getInstance()->GetVerboseLevel())
-        cout << endl << "////  eAGanil " << i+1 <<  endl;
-    
-      TVector3 Pos = blocks[i]->GetTVector3("POS","mm");
-      string Shape = blocks[i]->GetString("Shape");
-      AddDetector(Pos,Shape);
-    }
-    else if(blocks[i]->HasTokenList(sphe)){
+    if(blocks[i]->HasTokenList(sphe)){
       if(NPOptionManager::getInstance()->GetVerboseLevel())
         cout << endl << "////  eAGanil " << i+1 <<  endl;
       double R = blocks[i]->GetDouble("R","mm");
       double Theta = blocks[i]->GetDouble("Theta","deg");
       double Phi = blocks[i]->GetDouble("Phi","deg");
-      string Shape = blocks[i]->GetString("Shape");
-      AddDetector(R,Theta,Phi,Shape);
     }
     else{
       cout << "ERROR: check your input file formatting " << endl;

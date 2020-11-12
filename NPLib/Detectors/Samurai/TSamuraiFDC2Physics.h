@@ -1,7 +1,7 @@
 #ifndef TSAMURAIFDC2PHYSICS_H
 #define TSAMURAIFDC2PHYSICS_H
 /*****************************************************************************
- * Copyright (C) 2009-2016    this file is part of the NPTool Project        *
+ * Copyright (C) 2009-2020    this file is part of the NPTool Project        *
  *                                                                           *
  * For the licensing terms see $NPTOOL/Licence/NPTool_Licence                *
  * For the list of contributors see $NPTOOL/Licence/Contributors             *

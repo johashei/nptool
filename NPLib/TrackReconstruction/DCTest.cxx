@@ -44,7 +44,7 @@ R__LOAD_LIBRARY(libNPTrackReconstruction.dylib)
         x.push_back(X);
         DrawCircle(X,Z,R);
       }
-      // add second track for pile up
+/*      // add second track for pile up
       a = rand.Uniform(-10,10);
       b = rand.Uniform(-100,100); 
       DrawTrack(a,b,3); 
@@ -59,52 +59,41 @@ R__LOAD_LIBRARY(libNPTrackReconstruction.dylib)
         x.push_back(X);
         DrawCircle(X,Z,R);
       }
-
+*/
+      // add noise
+      // Generate n points from the line
+/*      n = (int) rand.Uniform(1,3);
+      for(unsigned int i = 0 ; i < n ; i++){
+        double Z = i*stepZ-100;
+        z.push_back(Z); 
+        double R = rand.Uniform(-maxR,maxR);
+        r.push_back(R);
+        double X = rand.Uniform(-100,100);
+        x.push_back(X);
+        DrawCircle(X,Z,R);
+      }
+*/
+ 
       double x0,x100,af,bf;
       double res = dcr.BuildTrack2D(x,z,r,x0,x100,af,bf);
       cout << res << endl;
       DrawTrack(af,bf,1);
 
-      // Check 2D track crossing point
+      // Check 2D Minimize Func
       c->cd(2);
-      bck->Draw();
-      double ThetaL=-60*deg;
-      double ThetaH= 60*deg;
-      TVector3 L(rand.Uniform(-100,100),0,0);
-      TVector3 H(rand.Uniform(-100,100),0,0);
-      L.RotateZ(ThetaL);
-      H.RotateZ(ThetaH);
-      // direction of U and V wire
-      TVector3 u(0,1,0);
-      u.RotateZ(ThetaL);
+      TGraph* ga = dcr.Scan(af,bf,0,af*0.5,af*2);  
+      TGraph* gb = dcr.Scan(af,bf,1,bf*0.5,bf*2);  
+      ga->SetLineColor(kAzure+7);
+      ga->Draw("ac");
+      ga->GetYaxis()->SetRangeUser(0,1000);
 
-      TVector3 v(0,1,0);
-      v.RotateZ(ThetaH);
-
-      // Compute the coeff of the two line of vecotr u (v) going through H (L)
-      // dv : y = av*x+bv
-      double av = v.Y()/v.X();
-      double bv = H.Y() - av*H.X();
-
-      DrawTrack(av,bv,1);
-      // du : y = au*x+bu
-      double au = u.Y()/u.X();
-      double bu = L.Y() - au*L.X();
-
-      DrawTrack(au,bu,1);
-      TVector3 P;
-      dcr.ResolvePlane(L,ThetaL,H,ThetaH,P);
-      auto Lmk = new TMarker(L.X(),L.Y(),23);
-      auto Hmk = new TMarker(H.X(),H.Y(),27);
-      auto Pmk = new TMarker(P.X(),P.Y(),29);
-      Lmk->Draw();
-      Hmk->Draw();
-      Pmk->Draw();
-
+      gb->Draw("c");
+      
       c->Update();
       gPad->WaitPrimitive();
     }
   }
+
 // draw a track based on z=ax+b
 void DrawTrack(double a, double b, int style){
   double x[2]={-100,100};

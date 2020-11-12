@@ -1,6 +1,3 @@
-#include"NPDCReconstruction.h"
-#include "Math/Factory.h"
-#include "TError.h"
 /*****************************************************************************
  * Copyright (C) 2009-2020   this file is part of the NPTool Project         *
  *                                                                           *
@@ -19,6 +16,10 @@
  *  This class have all the method needed to analyse Drift Chambers          *
  *****************************************************************************/
 
+#include"NPDCReconstruction.h"
+#include "Math/Factory.h"
+#include "TError.h"
+#include "TGraph.h"
 using namespace std;
 using namespace NPL;
 
@@ -30,16 +31,16 @@ DCReconstruction::DCReconstruction(){
   m_min->SetPrintLevel(0);
 
   // this avoid error 
-  gErrorIgnoreLevel = kError;
+    gErrorIgnoreLevel = kError;
   //m_min->SetMaxFunctionCalls(1000); 
   //m_min->SetMaxIterations(1000);
-  //m_min->SetTolerance(1000);
+  //m_min->SetTolerance(1);
   //m_min->SetPrecision(1e-10);
-  }
+}
 ////////////////////////////////////////////////////////////////////////////////
 DCReconstruction::~DCReconstruction(){
   delete m_min;
-  }
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 double DCReconstruction::BuildTrack2D(const vector<double>& X,const vector<double>& Z,const vector<double>& R,double& X0,double& X100,double& a, double& b ){
@@ -47,23 +48,22 @@ double DCReconstruction::BuildTrack2D(const vector<double>& X,const vector<doubl
   fitZ=&Z;
   fitR=&R;
   // assume all X,Z,R of same size
-  size = X.size();
+  sizeX = X.size();
   // Define the starting point of the fit: a straight line passing through the 
   // the first and last wire
   // z = ax+b -> x=(z-b)/a
   //  ai = (Z[size-1]-Z[0])/(X[size-1]-R[size-1]-X[0]-R[0]);
   //  bi = Z[0]-ai*(X[0]+R[0]);
-  ai = (Z[size-1]-Z[0])/(X[size-1]-X[0]);
+  ai = (Z[sizeX-1]-Z[0])/(X[sizeX-1]-X[0]);
   bi = Z[0]-ai*(X[0]);
 
-//  parameter[0]=ai;
-//  parameter[1]=bi;
-
   m_min->Clear(); 
-  m_min->SetLimitedVariable(0,"a",ai,1,ai*0.1,ai*10);
-  m_min->SetLimitedVariable(1,"b",bi,1,bi*0.1,bi*10);
+  m_min->SetVariable(0,"a",ai,1);
+  m_min->SetVariable(1,"b",bi,1);
+
   // Perform minimisation
   m_min->Minimize(); 
+  //std::cout << "EDM:" <<  m_min->Edm() << std::endl;
   // access set of parameter that produce the minimum
   const double *xs = m_min->X();
   a=xs[0];
@@ -109,34 +109,54 @@ void DCReconstruction::ResolvePlane(const TVector3& L,const double& ThetaU ,cons
     xM=-10000;
     yM=-10000;
   }
-
   PosXY.SetXYZ(xM,yM,0);
-
 }
 
 
 ////////////////////////////////////////////////////////////////////////////////
 double DCReconstruction::SumD(const double* parameter ){
-  unsigned int sizeX = fitX->size();
   // Compute the sum P of the distance between the circle and the track
   P = 0;
   a = parameter[0];
   b = parameter[1];
   ab= a*b;
   a2=a*a;
-
   for(unsigned int i = 0 ; i < sizeX ; i++){
     c = (*fitX)[i];
     d = (*fitZ)[i];
     r = (*fitR)[i];
     x = (a*d-ab+c)/(1+a2);
     z = a*x+b;
-    //P+= sqrt(abs( (x-c)*(x-c)+(z-d)*(z-d)-r*r));
-    P+= abs( (x-c)*(x-c)+(z-d)*(z-d)-r*r);
+    p= (x-c)*(x-c)+(z-d)*(z-d)-r*r;
+    // numerical trick to have a smooth derivative instead of using abs
+    P+= sqrt(p*p+0.1);
   }
- 
+
   // return normalized power
-  return P/size;
+  return P/sizeX;
 }
 
 
+////////////////////////////////////////////////////////////////////////////////
+TGraph* DCReconstruction::Scan(double a, double b, int tovary, double minV, double maxV){
+  vector<double> x,y;
+  unsigned int sizeT=1000;
+  double step = (maxV-minV)/sizeT;
+  double p[2]={a,b};
+  for(unsigned int i = 0 ; i < sizeT ; i++){
+   if(!tovary){
+    p[0]=minV+step*i; 
+    x.push_back(p[0]);
+    y.push_back(SumD(p));
+   }
+
+   else{
+    p[1]=minV+step*i; 
+    x.push_back(p[1]);
+    y.push_back(SumD(p));
+   }
+  }
+
+  TGraph* g = new TGraph(x.size(),&x[0],&y[0]);
+  return g;
+}
