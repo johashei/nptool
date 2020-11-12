@@ -185,6 +185,13 @@ class TSamuraiFDC2Physics : public TObject, public NPL::VDetector{
     // Retrieve raw and pre-treated data
     TSamuraiFDC2Data* GetRawData()        const {return m_EventData;}
     TSamuraiFDC2Data* GetPreTreatedData() const {return m_PreTreatedData;}
+  
+    double GetPosX(){return PosX;}
+    double GetPosY(){return PosY;}
+    double GetThetaX(){return ThetaX;}
+    double GetDevX(){return devX;}
+    double GetDevY(){return devY;}
+    int GetPileUp(){return PileUp;}
 
   private:   //   Root Input and Output tree classes
     TSamuraiFDC2Data*         m_EventData;//!
