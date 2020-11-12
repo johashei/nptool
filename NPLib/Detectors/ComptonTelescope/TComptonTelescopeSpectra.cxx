@@ -86,19 +86,19 @@ void TComptonTelescopeSpectra::InitRawSpectra()
     // DSSD
     // FRONT_E_RAW
     name = "CT"+NPL::itoa(i+1)+"_FRONT_E_RAW";
-    AddHisto2D(name, name, fStripX, 1, fStripX+1, 512, 0, 8192, "COMPTONTELESCOPE/RAW/FRONTE");
+    AddHisto2D(name, name, fStripX, 1, fStripX+1, 512, 0, 1024, "COMPTONTELESCOPE/RAW/FRONTE");
 
     // BACK_E_RAW
     name = "CT"+NPL::itoa(i+1)+"_BACK_E_RAW";
-    AddHisto2D(name, name, fStripY, 1, fStripY+1, 512, 0, 8192, "COMPTONTELESCOPE/RAW/BACKE");
+    AddHisto2D(name, name, fStripY, 1, fStripY+1, 512, 0, 1024, "COMPTONTELESCOPE/RAW/BACKE");
 
     // FRONT_T_RAW
     name = "CT"+NPL::itoa(i+1)+"_FRONT_T_RAW";
-    AddHisto2D(name, name, fStripX, 1, fStripX+1, 512, 0, 8192, "COMPTONTELESCOPE/RAW/FRONTT");
+    AddHisto2D(name, name, fStripX, 1, fStripX+1, 512, 0, 1024, "COMPTONTELESCOPE/RAW/FRONTT");
 
     // BACK_T_RAW
     name = "CT"+NPL::itoa(i+1)+"_BACK_T_RAW";
-    AddHisto2D(name, name, fStripY, 1, fStripY+1, 512, 0, 8192, "COMPTONTELESCOPE/RAW/BACKT");
+    AddHisto2D(name, name, fStripY, 1, fStripY+1, 512, 0, 1024, "COMPTONTELESCOPE/RAW/BACKT");
 
     // FRONT_RAW_MULT
     name = "CT"+NPL::itoa(i+1)+"_FRONT_RAW_MULT";
