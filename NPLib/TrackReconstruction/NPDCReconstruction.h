@@ -34,10 +34,11 @@
  *    intersaction in any given plane. This is done using ResolvePlane.      *
  *    - Resolving plane for two Z plane will provide a point and a direction *
  *****************************************************************************/
-#include<vector>
-#include"TVector3.h"
+#include <vector>
+#include "TVector3.h"
 #include "Math/Minimizer.h"
 #include "Math/Functor.h"
+class TGraph;
 namespace NPL{
 
   class DCReconstruction{
@@ -57,6 +58,13 @@ namespace NPL{
       // Function used by the minimizer in BuildTrack2D
       double SumD(const double* parameter );
 
+      
+      // For debugging/optimisation
+      // Scan Sumd versus parameter a or b (tovary =0 for a, 1 for b)
+      // return a TGraph for display
+      TGraph* Scan(double a, double b, int tovary, double minV, double maxV);
+
+
     private: // private member used by SumD
       ROOT::Math::Minimizer* m_min;
       ROOT::Math::Functor    m_func;
@@ -64,15 +72,14 @@ namespace NPL{
       const std::vector<double>* fitZ;
       const std::vector<double>* fitR;
       // used by SumD
-      unsigned int size ;
-      double P,a,b,ab,a2,c,d,x,z,r;
+      unsigned int sizeX ;
+      double P,p,a,b,ab,a2,c,d,x,z,r;
       // used by BuildTrack
       double ai,bi;
       double parameter[2];
       // used by resolve plane
       long double av,bv,au,bu;
       double xM,yM;
-
 
   };
 }

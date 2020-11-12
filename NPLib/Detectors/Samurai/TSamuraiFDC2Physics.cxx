@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (C) 2009-2016   this file is part of the NPTool Project         *
+ * Copyright (C) 2009-2020   this file is part of the NPTool Project         *
  *                                                                           *
  * For the licensing terms see $NPTOOL/Licence/NPTool_Licence                *
  * For the list of contributors see $NPTOOL/Licence/Contributors             *
@@ -58,7 +58,7 @@ void TSamuraiFDC2Physics::BuildSimplePhysicalEvent(){
 ///////////////////////////////////////////////////////////////////////////
 void TSamuraiFDC2Physics::BuildPhysicalEvent(){
   PreTreat();
-  //RemoveNoise();
+  RemoveNoise();
 
   // Map[detector & plane angle, vector of spatial information]
   static map<std::pair<unsigned int,double>, vector<double> > X ; 
@@ -68,7 +68,7 @@ void TSamuraiFDC2Physics::BuildPhysicalEvent(){
   X.clear();Z.clear();R.clear();
   unsigned int size = Detector.size();
   for(unsigned int i = 0 ; i < size ; i++){
-    if( DriftLength[i] > DriftLowThreshold && DriftLength[i] < DriftUpThreshold){
+    if(DriftLength[i] > DriftLowThreshold && DriftLength[i] < DriftUpThreshold){
       det = Detector[i];
       layer = Layer[i];
       wire = Wire[i]; 
@@ -88,9 +88,9 @@ void TSamuraiFDC2Physics::BuildPhysicalEvent(){
   VX0.clear();VX100.clear(),D.clear();
   for(auto it = X.begin();it!=X.end();++it){
     D[it->first]=m_reconstruction.BuildTrack2D(X[it->first],Z[it->first],R[it->first],X0,X100,a,b); 
-   std::ofstream f("distance.txt", std::ios::app);
+ /*  std::ofstream f("distance.txt", std::ios::app);
    f<< D[it->first] << endl;
-   f.close();
+   f.close();*/
     // very large a means track perpendicular to the chamber, what happen when there is pile up
     if(abs(a)>1000)
       PileUp++;
@@ -341,9 +341,9 @@ void TSamuraiFDC2Physics::AddDC(string name, NPL::XmlParser& xml){
       else if(sDir=="Y")
         T=90*deg;
       else if(sDir=="U")
-        T=30*deg;
-      else if(sDir=="V")
         T=-30*deg;
+      else if(sDir=="V")
+        T=+30*deg;
       else{
         cout << "ERROR: Unknown layer orientation for Samurai FDC2"<< endl;
         exit(1);
