@@ -706,9 +706,8 @@ double Ransac::Fit3D(vector<int> X, vector<int> Y, vector<double> Z, vector<doub
     Q=Xm=Ym=Zm=0.;
     double total_charge=0;
     Sxx=Syy=Szz=Sxy=Sxz=Syz=0.;
-    
-    for (auto i : inliners)
-    {
+    unsigned int sizeI = inliners.size();  
+    for (unsigned int  i= 0; i< sizeI ; i++){
         if(X[i]>119)total_charge+=Charge[i];
         Q+=Charge[i]/10.;
         Xm+=X[i]*Charge[i]/10.;
