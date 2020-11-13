@@ -120,7 +120,7 @@ class TSamuraiFDC2Physics : public TObject, public NPL::VDetector{
     // since the calibration is a sigmoid there quite a few event at the edge 
     double DriftLowThreshold;//! Minimum Drift length to keep the hit 
     double DriftUpThreshold;//! Maximum Drift length to keep the hit
-  
+    double PowerThreshold;//! Maximum P2 minimisation value to keep the track   
     void RemoveNoise();
     // Construct the 2D track and ref position at Z=0 and Z=100 based on X,Z and Radius provided
 
