@@ -158,7 +158,7 @@ void eAGanil::ReadConfiguration(NPL::InputParser parser){
   if(NPOptionManager::getInstance()->GetVerboseLevel())
     cout << "//// " << blocks.size() << " detectors found " << endl; 
 
-  vector<string> sphe = {"R","Theta","Phi","EntranceWidth","EntranceHeigh","MomentumResolution"};
+  vector<string> sphe = {"R","Theta","Phi","EntranceWidth","EntranceHeight","MomentumResolution"};
 
   for(unsigned int i = 0 ; i < blocks.size() ; i++){
     if(blocks[i]->HasTokenList(sphe)){
@@ -168,7 +168,7 @@ void eAGanil::ReadConfiguration(NPL::InputParser parser){
       double Theta = blocks[i]->GetDouble("Theta","deg");
       double Phi = blocks[i]->GetDouble("Phi","deg");
       double EW = blocks[i]->GetDouble("EntranceWidth","cm");
-      double EH = blocks[i]->GetDouble("EntranceHeigh","cm");
+      double EH = blocks[i]->GetDouble("EntranceHeight","cm");
       double MR = blocks[i]->GetDouble("MomentumResolution","void"); 
       AddDetector(R,Theta,Phi,EW,EH,MR);
     }
