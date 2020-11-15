@@ -63,7 +63,7 @@ namespace Sofia_NS{
   const double EnergyThreshold       = 0.1*MeV;
   const double ResoTime              = 0.007*ns;
   const double ResoEnergy            = 1.0*MeV;
-  const double tof_plastic_height    = 600*mm;
+  const double tof_plastic_height    = 660*mm;
   const double tof_plastic_width     = 32*mm;
   const double tof_plastic_thickness = 0.5*mm;
   const string Material              = "BC400";
