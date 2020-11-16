@@ -1,0 +1,19 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Target
+ THICKNESS= 2 mm
+ RADIUS=	40 mm
+ MATERIAL= Pb
+ ANGLE= 0 deg
+ X= 0 mm
+ Y= 0 mm
+ Z= 0 m
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Sofia
+ R= 8 m
+ THETA= -9 deg
+ PHI= 0 deg
+ Build_GLAD= 1
+ GLAD_DistanceFromTarget= 3.5 m
+ GLAD_MagField= 1.8 T 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+

@@ -553,9 +553,10 @@ void GEF::FissionGENERAL()
 {
   float ZsqrA_fis;
 
-  //ZsqrA_fis = Csng(I_Z_CN^2) / Csng(I_A_CN);
-  ZsqrA_fis = pow(I_Z_CN,2)/I_A_CN;
-  Escission_lim = 0;//900.0 * exp(-ZsqrA_fis/13.0); // from PRC 86 (2012) 034605
+  ZsqrA_fis = Csng(I_Z_CN^2) / Csng(I_A_CN);
+  //ZsqrA_fis = pow(I_Z_CN,2)/I_A_CN;
+  //Escission_lim = 0;//900.0 * exp(-ZsqrA_fis/13.0); // from PRC 86 (2012) 034605
+  Escission_lim = 900.0 * exp(-ZsqrA_fis/13.0); // from PRC 86 (2012) 034605
   CentralZ_FM();
   I_N_CN = I_A_CN - I_Z_CN;
   MeanDefScission();
