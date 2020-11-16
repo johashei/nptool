@@ -45,9 +45,10 @@ ClassImp(TSamuraiFDC2Physics)
     m_PreTreatedData    = new TSamuraiFDC2Data ;
     m_EventPhysics      = this ;
     //m_Spectra           = NULL;
-    ToTThreshold = 180;
-    DriftLowThreshold=0.2;
-    DriftUpThreshold=9.4;
+    ToTThreshold_L = 180;
+    ToTThreshold_H = 1000;
+    DriftLowThreshold=0.4 ;
+    DriftUpThreshold=9.3;
     PowerThreshold=14;
   }
 
@@ -233,7 +234,7 @@ void TSamuraiFDC2Physics::PreTreat(){
           etime=0;
       }
       // a valid wire must have an edge
-      if(etime && time && etime-time>ToTThreshold){
+      if(etime && time && etime-time>ToTThreshold_L && etime-time<ToTThreshold_H){
         Detector.push_back(det);
         Layer.push_back(layer);       
         Wire.push_back(wire);

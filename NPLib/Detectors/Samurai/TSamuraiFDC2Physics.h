@@ -116,7 +116,8 @@ class TSamuraiFDC2Physics : public TObject, public NPL::VDetector{
     map<SamuraiDCIndex,double> Wire_Angle;//! Wire Angle (0 for X, 90 for Y, U and V are typically at +/-30)
   
   private: // Analysis
-    double ToTThreshold;//! a ToT threshold to remove noise
+    double ToTThreshold_H;//! a ToT Low threshold to remove noise
+    double ToTThreshold_L;//! a ToT High threshold to remove noise
     // since the calibration is a sigmoid there quite a few event at the edge 
     double DriftLowThreshold;//! Minimum Drift length to keep the hit 
     double DriftUpThreshold;//! Maximum Drift length to keep the hit
