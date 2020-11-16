@@ -150,7 +150,7 @@ void TAnnularS1Physics::PreTreat(){
   }
 
   //   Sector T
-  unsigned int sizeSectorT = m_EventData->GetS1ThetaTMult();
+  unsigned int sizeSectorT = m_EventData->GetS1PhiTMult();
   for(unsigned int i = 0 ; i < sizeSectorT ; ++i){
     m_PreTreatedData->SetS1PhiTDetectorNbr( m_EventData->GetS1PhiTDetectorNbr(i) );
     m_PreTreatedData->SetS1PhiTStripNbr( m_EventData->GetS1PhiTStripNbr(i) );
@@ -239,7 +239,7 @@ void TAnnularS1Physics::ReadAnalysisConfig(){
     getline(AnalysisConfigFile, LineBuffer);
 
     // search for "header"
-    if (LineBuffer.compare(0, 11, "ConfigAnnularS1") == 0) ReadingStatus = true;
+    if (LineBuffer.compare(0, 15, "ConfigAnnularS1") == 0) ReadingStatus = true;
 
     // loop on tokens and data
     while (ReadingStatus ) {
@@ -255,7 +255,7 @@ void TAnnularS1Physics::ReadAnalysisConfig(){
       else if (whatToDo=="MAX_STRIP_MULTIPLICITY") {
         AnalysisConfigFile >> DataBuffer;
         m_MaximumStripMultiplicityAllowed = atoi(DataBuffer.c_str() );
-        cout << "MAXIMUN STRIP MULTIPLICITY " << m_MaximumStripMultiplicityAllowed << endl;
+        cout << "MAXIMUM STRIP MULTIPLICITY " << m_MaximumStripMultiplicityAllowed << endl;
       }
 
       else if (whatToDo=="STRIP_ENERGY_MATCHING_SIGMA") {
