@@ -674,7 +674,7 @@ void TMust2Physics::ReadAnalysisConfig() {
       else if (whatToDo == "MAX_STRIP_MULTIPLICITY") {
         AnalysisConfigFile >> DataBuffer;
         m_MaximumStripMultiplicityAllowed = atoi(DataBuffer.c_str());
-        cout << "MAXIMUN STRIP MULTIPLICITY "
+        cout << "MAXIMUM STRIP MULTIPLICITY "
              << m_MaximumStripMultiplicityAllowed << endl;
       }
 
