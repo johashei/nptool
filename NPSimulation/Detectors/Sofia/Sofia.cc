@@ -272,7 +272,7 @@ void Sofia::ReadSensitive(const G4Event* ){
     if(Energy>Sofia_NS::EnergyThreshold){
       double Time = RandGauss::shoot(Scorer->GetTime(i),Sofia_NS::ResoTime);
       int DetectorNbr = level[0];
-      int PlasticNbr = level[1];
+      int PlasticNbr = level[1]-1;
       m_Event->SetDetectorNbr(DetectorNbr);
       m_Event->SetPlasticNbr(PlasticNbr);
       m_Event->SetEnergy(Energy);
