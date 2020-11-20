@@ -98,7 +98,7 @@ void TSamuraiFDC2Physics::BuildPhysicalEvent(){
    }
    */
     // very large a means track perpendicular to the chamber, what happen when there is pile up
-    if(abs(a)>1000)
+    if(abs(a)>5000)
       PileUp++;
 
     Mult+=X[it->first].size();
