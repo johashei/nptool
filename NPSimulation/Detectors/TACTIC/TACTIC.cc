@@ -130,7 +130,7 @@ G4LogicalVolume* TACTIC::BuildCylindricalDetector(){
     vector<G4Material*> GasComponent;
     
     for(unsigned int i=0; i<NumberOfGasMix; i++){
-      if(m_GasMaterial[i] == "CO2") GasComponent.push_back(MaterialManager::getInstance()->GetGasFromLibrary(m_GasMaterial[i], 1.0/bar, m_Temperature));
+      //      if(m_GasMaterial[i] == "CO2") GasComponent.push_back(MaterialManager::getInstance()->GetGasFromLibrary(m_GasMaterial[i], 1.0/bar, m_Temperature));
       if(m_GasMaterial[i] == "P10_gas") {
 	//G4Material *P10_gas = new G4Material("P10_gas", 0.00156 * g /cm3, 3, kStateGas, m_Temperature, 1.0/bar); //density for SRIM (1 atm);
 	G4Material *P10_gas = new G4Material("P10_gas", 0.00156*g/cm3, 3);
@@ -293,18 +293,18 @@ void TACTIC::ReadSensitive(const G4Event* event ){
   m_Event->Clear();
 
   ofstream file;
-
+  /*
   G4THitsMap<G4double*>* BeamHitMap;
   std::map<G4int, G4double**>::iterator Beam_itr;
   G4int BeamCollectionID = G4SDManager::GetSDMpointer()->GetCollectionID("TACTICScorer/BeamScorer");
   BeamHitMap = (G4THitsMap<G4double*>*)(event->GetHCofThisEvent()->GetHC(BeamCollectionID));
-
+  */
   file.open("signal.dat", std::ios::app);
   file << "Event" << endl;
   file.close();
   
   file.open("out.dat",std::ios::app);
-
+  /*
   for (Beam_itr = BeamHitMap->GetMap()->begin(); Beam_itr != BeamHitMap->GetMap()->end(); Beam_itr++) {
     G4double* Info = *(Beam_itr->second);
     //file <<  floor(((Info[3]+TACTIC_NS::active_length*0.5)/(TACTIC_NS::active_length/TACTIC_NS::NumberOfStrips))) << "\t"; // To get PAD number
@@ -318,7 +318,7 @@ void TACTIC::ReadSensitive(const G4Event* event ){
   }
 
   BeamHitMap->clear();
-  
+  */
   G4THitsMap<G4double*>* EjectHitMap;
   std::map<G4int, G4double**>::iterator Eject_itr;
   G4int EjectCollectionID = G4SDManager::GetSDMpointer()->GetCollectionID("TACTICScorer/EjectScorer");
@@ -353,16 +353,16 @@ void TACTIC::InitializeScorers() {
 
   // Otherwise the scorer is initialised
   G4VPrimitiveScorer* EjectScorer = new TACTICScorer::Gas_Scorer("EjectScorer",1,TACTIC_NS::active_length,(int)TACTIC_NS::NumberOfStrips);
-  G4VPrimitiveScorer* BeamScorer = new TACTICScorer::Gas_Scorer("BeamScorer",1,TACTIC_NS::active_length,(int)TACTIC_NS::NumberOfStrips);
-  //G4SDParticleFilter* EjectFilter = new G4SDParticleFilter("EjectFilter","proton");
-  G4SDParticleFilter* EjectFilter = new G4SDParticleFilter("EjectFilter","alpha"); //For studying alpha source data
-  G4SDParticleFilter* BeamFilter = new G4SDParticleFilter("BeamFilter");
-  BeamFilter->addIon(11,21);
-  BeamFilter->addIon(10,18);
-  EjectScorer->SetFilter(EjectFilter);
-  BeamScorer->SetFilter(BeamFilter);
+  //G4VPrimitiveScorer* BeamScorer = new TACTICScorer::Gas_Scorer("BeamScorer",1,TACTIC_NS::active_length,(int)TACTIC_NS::NumberOfStrips);
+  /////G4SDParticleFilter* EjectFilter = new G4SDParticleFilter("EjectFilter","proton");
+  //G4SDParticleFilter* EjectFilter = new G4SDParticleFilter("EjectFilter","alpha"); //For studying alpha source data
+  //G4SDParticleFilter* BeamFilter = new G4SDParticleFilter("BeamFilter");
+  //BeamFilter->addIon(11,21);
+  //BeamFilter->addIon(10,18);
+  //EjectScorer->SetFilter(EjectFilter);
+  //BeamScorer->SetFilter(BeamFilter);
 
-  m_Scorer->RegisterPrimitive(BeamScorer);
+  //m_Scorer->RegisterPrimitive(BeamScorer);
   m_Scorer->RegisterPrimitive(EjectScorer);
 
   G4SDManager::GetSDMpointer()->AddNewDetector(m_Scorer);
