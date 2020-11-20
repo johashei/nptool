@@ -1,5 +1,5 @@
-#ifndef TDCDATA_H
-#define TDCDATA_H
+#ifndef TSamuraiFDC2Data_H
+#define TSamuraiFDC2Data_H
 #include "TObject.h"
 #include <vector>
 class TSamuraiFDC2Data: public TObject{
@@ -8,11 +8,11 @@ class TSamuraiFDC2Data: public TObject{
     ~TSamuraiFDC2Data();
 
   private:
-    std::vector<int> fDC_DetectorNbr;
-    std::vector<int> fDC_LayerNbr;
-    std::vector<int> fDC_WireNbr;
-    std::vector<double> fDC_Time;
-    std::vector<int> fDC_Edge;
+    std::vector<int> fFDC2_DetectorNbr;
+    std::vector<int> fFDC2_LayerNbr;
+    std::vector<int> fFDC2_WireNbr;
+    std::vector<double> fFDC2_Time;
+    std::vector<int> fFDC2_Edge;
   
   public:
     void Clear();
@@ -22,14 +22,14 @@ class TSamuraiFDC2Data: public TObject{
   
   public:
     void SetData(const int& Det, const int& Layer, const int& Wire, const double& Time, const int& Edge);
-    unsigned int Mult(){return fDC_DetectorNbr.size();};
+    unsigned int Mult(){return fFDC2_DetectorNbr.size();};
     unsigned int MultLayer(unsigned int det , unsigned int layer, int edge=-1);
     std::vector<int> GetWire(unsigned int det , unsigned int layer);
-    int const GetDetectorNbr(const unsigned int& i){return fDC_DetectorNbr[i];};
-    int const GetLayerNbr(const unsigned int& i){return fDC_LayerNbr[i];};
-    int const GetWireNbr(const unsigned int& i){return fDC_WireNbr[i];};
-    double const GetTime(const unsigned int& i){return fDC_Time[i];};
-    int const GetEdge(const unsigned int& i){return fDC_Edge[i];};
+    int const GetDetectorNbr(const unsigned int& i){return fFDC2_DetectorNbr[i];};
+    int const GetLayerNbr(const unsigned int& i){return fFDC2_LayerNbr[i];};
+    int const GetWireNbr(const unsigned int& i){return fFDC2_WireNbr[i];};
+    double const GetTime(const unsigned int& i){return fFDC2_Time[i];};
+    int const GetEdge(const unsigned int& i){return fFDC2_Edge[i];};
 
     ClassDef(TSamuraiFDC2Data,1); 
 };

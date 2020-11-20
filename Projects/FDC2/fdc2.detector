@@ -11,3 +11,6 @@ Target
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 SAMURAIFDC2
   XML= SAMURAIFDC2.xml
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+SAMURAIFDC0
+  XML= SAMURAIFDC0_20200109.xml

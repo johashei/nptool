@@ -1,5 +1,5 @@
-#ifndef TSAMURAIFDC2PHYSICS_H
-#define TSAMURAIFDC2PHYSICS_H
+#ifndef TSAMURAIFDC0PHYSICS_H
+#define TSAMURAIFDC0PHYSICS_H
 /*****************************************************************************
  * Copyright (C) 2009-2020    this file is part of the NPTool Project        *
  *                                                                           *
@@ -14,7 +14,7 @@
  * Last update    :                                                          *
  *---------------------------------------------------------------------------*
  * Decription:                                                               *
- *  This class hold SamuraiFDC2 treated data                                 *
+ *  This class hold SamuraiFDC0 treated data                                 *
  *                                                                           *
  *---------------------------------------------------------------------------*
  * Comment:                                                                  *
@@ -27,9 +27,9 @@
 #include <map>
 
 // NPL
-#include "TSamuraiFDC2Data.h"
+#include "TSamuraiFDC0Data.h"
 #include "SamuraiDCIndex.h"
-//#include "TSamuraiFDC2Spectra.h"
+//#include "TSamuraiFDC0Spectra.h"
 #include "NPCalibrationManager.h"
 #include "NPVDetector.h"
 #include "NPInputParser.h"
@@ -37,16 +37,17 @@
 #include "NPDCReconstruction.h"
 // ROOT 
 #include "TVector3.h" 
-// Forward declaration
-//class TSamuraiFDC2Spectra;
 
+// Forward declaration
+//class TSamuraiFDC0Spectra;
 
 
 using namespace std ;
-class TSamuraiFDC2Physics : public TObject, public NPL::VDetector{
+
+class TSamuraiFDC0Physics : public TObject, public NPL::VDetector{
   public:
-    TSamuraiFDC2Physics();
-    ~TSamuraiFDC2Physics() {};
+    TSamuraiFDC0Physics();
+    ~TSamuraiFDC0Physics() {};
 
   public: 
     void Clear();   
@@ -145,7 +146,7 @@ class TSamuraiFDC2Physics : public TObject, public NPL::VDetector{
     // Write Spectra to file
     void WriteSpectra();
 
-  public:      //   Specific to SamuraiFDC2 Array
+  public:      //   Specific to SamuraiFDC0 Array
 
     //   Clear The PreTeated object
     void ClearPreTreatedData()   {m_PreTreatedData->Clear();}
@@ -154,8 +155,8 @@ class TSamuraiFDC2Physics : public TObject, public NPL::VDetector{
     void PreTreat();
 
     // Retrieve raw and pre-treated data
-    TSamuraiFDC2Data* GetRawData()        const {return m_EventData;}
-    TSamuraiFDC2Data* GetPreTreatedData() const {return m_PreTreatedData;}
+    TSamuraiFDC0Data* GetRawData()        const {return m_EventData;}
+    TSamuraiFDC0Data* GetPreTreatedData() const {return m_PreTreatedData;}
   
     double GetPosX(){return PosX;}
     double GetPosY(){return PosY;}
@@ -165,20 +166,20 @@ class TSamuraiFDC2Physics : public TObject, public NPL::VDetector{
     int GetPileUp(){return PileUp;}
 
   private:   //   Root Input and Output tree classes
-    TSamuraiFDC2Data*         m_EventData;//!
-    TSamuraiFDC2Data*         m_PreTreatedData;//!
-    TSamuraiFDC2Physics*      m_EventPhysics;//!
+    TSamuraiFDC0Data*         m_EventData;//!
+    TSamuraiFDC0Data*         m_PreTreatedData;//!
+    TSamuraiFDC0Physics*      m_EventPhysics;//!
 
 
   private: // Spectra Class
-   // TSamuraiFDC2Spectra* m_Spectra; // !
+   // TSamuraiFDC0Spectra* m_Spectra; // !
 
   public: // Spectra Getter
     map< string , TH1*> GetSpectra(); 
 
   public: // Static constructor to be passed to the Detector Factory
     static NPL::VDetector* Construct();
-    ClassDef(TSamuraiFDC2Physics,1)  // SamuraiFDC2Physics structure
+    ClassDef(TSamuraiFDC0Physics,1)  // SamuraiFDC0Physics structure
 };
 
 #endif

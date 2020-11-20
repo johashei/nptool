@@ -71,6 +71,7 @@ namespace NPL{
       const std::vector<double>* fitX;
       const std::vector<double>* fitZ;
       const std::vector<double>* fitR;
+
       // used by SumD
       unsigned int sizeX ;
       double P,p,a,b,ab,a2,c,d,x,z,r;

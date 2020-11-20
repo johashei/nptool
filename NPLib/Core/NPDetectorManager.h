@@ -92,7 +92,7 @@ namespace NPL{
       void InitThreadPool(); 
       bool IsDone();
 
-#endif
+    #endif
 
     private: // Target property
       double m_TargetThickness;
