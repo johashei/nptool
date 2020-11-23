@@ -10,7 +10,7 @@ if(libMinuit2_FOUND)
   message(STATUS "Minuit2 support enabled for TrackReconstruction.")
   add_definitions(-DHAVE_MINUIT2)
 else()
-  message(STATUS "Minuit2 support disabled for TrackReconstruction.")
+  message(STATUS "Minuit2 support disabled for TrackReconstruction: *** NPDCReconstruction will not work at execution ***")
 endif()      
 
 
