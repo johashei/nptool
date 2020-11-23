@@ -34,7 +34,13 @@
 #include "NPVDetector.h"
 #include "NPInputParser.h"
 #include "NPXmlParser.h"
+
+#if __cplusplus > 199711L && NPMULTITHREADING 
+#include "NPDCReconstructionMT.h"
+#else
 #include "NPDCReconstruction.h"
+#endif
+
 // ROOT 
 #include "TVector3.h" 
 
@@ -97,7 +103,11 @@ class TSamuraiFDC0Physics : public TObject, public NPL::VDetector{
     // Construct the 2D track and ref position at Z=0 and Z=100 based on X,Z and Radius provided
 
     // Object use to perform the DC reconstruction
+    #if __cplusplus > 199711L && NPMULTITHREADING 
+    NPL::DCReconstructionMT m_reconstruction;//!
+    #else
     NPL::DCReconstruction m_reconstruction;//!
+    #endif
 
   public: //   Innherited from VDetector Class
 
