@@ -45,7 +45,10 @@ class TSofiaData : public TObject {
     vector<int>      fTWIN_AnodeNbr;
     vector<double>   fTWIN_AnodeEnergy;
     vector<double>   fTWIN_AnodeTime;
-
+    double           fTWIN_Esum1;
+    double           fTWIN_Esum2;
+    double           fTWIN_Esum3;
+    double           fTWIN_Esum4;
 
   //////////////////////////////////////////////////////////////
   // Constructor and destructor
@@ -80,6 +83,10 @@ class TSofiaData : public TObject {
     inline void SetTwinAnodeNbr(int Anode){fTWIN_AnodeNbr.push_back(Anode);};//!
     inline void SetTwinAnodeEnergy(double Energy){fTWIN_AnodeEnergy.push_back(Energy);};//!
     inline void SetTwinAnodeTime(double Time){fTWIN_AnodeTime.push_back(Time);};//!
+    inline void SetTwinEsum1(double E){fTWIN_Esum1=E;};//!
+    inline void SetTwinEsum2(double E){fTWIN_Esum2=E;};//!
+    inline void SetTwinEsum3(double E){fTWIN_Esum3=E;};//!
+    inline void SetTwinEsum4(double E){fTWIN_Esum4=E;};//!
 
     //////////////////////    GETTERS    ////////////////////////
     // TOF
@@ -95,6 +102,10 @@ class TSofiaData : public TObject {
     inline int GetTwinAnodeNbr(const unsigned int &i) const {return fTWIN_AnodeNbr[i];}//!
     inline double GetTwinAnodeEnergy(const unsigned int &i) const {return fTWIN_AnodeEnergy[i];}//!
     inline double GetTwinAnodeTime(const unsigned int &i) const {return fTWIN_AnodeTime[i];}//!
+    inline double GetTwinEsum1() const {return fTWIN_Esum1;}//!
+    inline double GetTwinEsum2() const {return fTWIN_Esum2;}//!
+    inline double GetTwinEsum3() const {return fTWIN_Esum3;}//!
+    inline double GetTwinEsum4() const {return fTWIN_Esum4;}//!
 
   //////////////////////////////////////////////////////////////
   // Required for ROOT dictionnary

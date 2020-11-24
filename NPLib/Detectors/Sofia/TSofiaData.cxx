@@ -55,6 +55,11 @@ void TSofiaData::Clear() {
   fTWIN_AnodeNbr.clear();
   fTWIN_AnodeEnergy.clear();
   fTWIN_AnodeTime.clear();
+  
+  fTWIN_Esum1 = -10;
+  fTWIN_Esum2 = -10;
+  fTWIN_Esum3 = -10;
+  fTWIN_Esum4 = -10;
 }
 
 
