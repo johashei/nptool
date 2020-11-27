@@ -1560,7 +1560,7 @@
 <geo>16</geo>
 <ch>7</ch>
 </SAMURAIFDC0>
-<!--<SAMURAIFDC0>
+<SAMURAIFDC0>
 <ID>105</ID>
 <NAME>FDC0_3_8</NAME>
 <FPL>13</FPL>
@@ -1604,7 +1604,7 @@
 <det>28</det>
 <geo>16</geo>
 <ch>10</ch>
-</SAMURAIFDC0>-->
+</SAMURAIFDC0>
 <SAMURAIFDC0>
 <ID>108</ID>
 <NAME>FDC0_3_11</NAME>

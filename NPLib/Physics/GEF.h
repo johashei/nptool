@@ -62,20 +62,20 @@ public:
   GEF(NPL::Particle FissNucl);
   ~GEF(void);
   
-  inline double GetBrhoffl(void){return Brhoffl;}
-  inline double GetBrhoffh(void){return Brhoffh;}
-  inline double GetThffl(void){return Thlab_light;}
-  inline double GetThffh(void){return Thlab_heavy;}
-  inline double GetPhffl(void){return Phlab_light;}
-  inline double GetPhffh(void){return Phlab_heavy;}
-  inline float GetKEffl(void){return KElab_light;}
-  inline float GetKEffh(void){return KElab_heavy;}
-  inline float GetVffl(void){return vlab_light;}
-  inline float GetVffh(void){return vlab_heavy;}
-  inline int GetZffl(void){return I_Z_light_sci;}
-  inline int GetZffh(void){return I_Z_heavy_sci;}
-  inline int GetAffl(void){return I_A_light_sci;}
-  inline int GetAffh(void){return I_A_heavy_sci;}
+  inline double GetBrhoffl(void) {return Brhoffl;}
+  inline double GetBrhoffh(void) {return Brhoffh;}
+  inline double GetThffl(void)   {return Thlab_light;}
+  inline double GetThffh(void)   {return Thlab_heavy;}
+  inline double GetPhffl(void)   {return Phlab_light;}
+  inline double GetPhffh(void)   {return Phlab_heavy;}
+  inline float  GetKEffl(void)   {return KElab_light;}
+  inline float  GetKEffh(void)   {return KElab_heavy;}
+  inline float  GetVffl(void)    {return vlab_light;}
+  inline float  GetVffh(void)    {return vlab_heavy;}
+  inline int    GetZffl(void)    {return I_Z_light_sci;}
+  inline int    GetZffh(void)    {return I_Z_heavy_sci;}
+  inline int    GetAffl(void)    {return I_A_light_sci;}
+  inline int    GetAffh(void)    {return I_A_heavy_sci;}
 
   float* GetNeutronEnergyFrag1() {return Array_E_n1_frag1;}
   float* GetNeutronEnergyFrag2() {return Array_E_n2_frag2;}

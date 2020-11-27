@@ -50,6 +50,13 @@ ClassImp(TSamuraiFDC2Physics)
     DriftLowThreshold=0.4 ;
     DriftUpThreshold=9.3;
     PowerThreshold=5;
+
+    #if __cplusplus > 199711L && NPMULTITHREADING 
+    // one thread for each plan X,U,V = 3
+    // ! more than this will not help !
+    m_reconstruction.SetNumberOfThread(3);
+    m_reconstruction.InitThreadPool();
+    #endif 
   }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -87,9 +94,26 @@ void TSamuraiFDC2Physics::BuildPhysicalEvent(){
   static map<std::pair<unsigned int,double>, TVector3 > VX0 ;  
   static map<std::pair<unsigned int,double>, TVector3 > VX100 ;  
   static map<std::pair<unsigned int,double>, double > D ;// the minimum distance  
+  static unsigned int uid=0;
   VX0.clear();VX100.clear(),D.clear();
   for(auto it = X.begin();it!=X.end();++it){
+#if __cplusplus > 199711L && NPMULTITHREADING 
+    m_reconstruction.AddPlan(uid++,X[it->first],Z[it->first],R[it->first]); 
+#else
     D[it->first]=m_reconstruction.BuildTrack2D(X[it->first],Z[it->first],R[it->first],X0,X100,a,b); 
+#endif 
+    }
+
+#if __cplusplus > 199711L && NPMULTITHREADING 
+  // do all plan at once in parallele, return when all plan are done
+  m_reconstruction.BuildTrack2D();
+  uid=0;
+#endif
+
+  for(auto it = X.begin();it!=X.end();++it){
+#if __cplusplus > 199711L && NPMULTITHREADING 
+  D[it->first]=m_reconstruction.GetResults(uid++,X0,X100,a,b); 
+#endif
 
   /* // for Debug, write a file of 
    { std::ofstream f("distance.txt", std::ios::app);
@@ -110,7 +134,6 @@ void TSamuraiFDC2Physics::BuildPhysicalEvent(){
     TVector3 P100= TVector3(X100,0,0);
     P100.RotateZ(it->first.second);
     VX100[it->first]=P100;
-
   }
 
   // Reconstruct the central position (z=0) for each detector
