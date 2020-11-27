@@ -75,10 +75,11 @@ include_directories("Core/")
 include_directories("Physics/")
 include_directories("TrackReconstruction/")
 include_directories("Online/")
+include_directories("Neutron/")
 
 # Call the macro
 subdirlist(SUB_DIRECTORY ${CMAKE_BINARY_DIR})
-set(SUB_DIRECTORY ${SUB_DIRECTORY} Core Physics TrackReconstruction Calibration Online Utility)
+set(SUB_DIRECTORY ${SUB_DIRECTORY} Core Physics TrackReconstruction Calibration Online Utility Neutron)
 # Add each sub folder to the project
 set(TARGET_LIST "")
 foreach(subdir ${SUB_DIRECTORY})
