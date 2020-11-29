@@ -80,7 +80,7 @@ ClassImp(TMust2Physics)
   m_SiLi_MatchingY.resize(16, 0);
 
   m_SiLi_MatchingX[0] = 112;
-  m_SiLi_MatchingY[1] = 112;
+  m_SiLi_MatchingY[0] = 112;
 
   m_SiLi_MatchingX[1] = 112;
   m_SiLi_MatchingY[1] = 80;
