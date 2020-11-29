@@ -58,11 +58,14 @@ class Sofia : public NPS::VDetector{
 
     G4AssemblyVolume* BuildTOFDetector();
     G4LogicalVolume* BuildGLAD();
+    G4LogicalVolume* BuildTwinMusic();
   
   private:
     G4LogicalVolume* m_PlasticTof;
     G4LogicalVolume* m_GLAD;
     G4AssemblyVolume* m_TofWall;
+    G4LogicalVolume* m_TwinMusic;
+    G4LogicalVolume* m_AnodeDriftArea;
     
     ////////////////////////////////////////////////////
     //////  Inherite from NPS::VDetector class /////////
@@ -90,6 +93,7 @@ class Sofia : public NPS::VDetector{
 
     //   Associated Scorer
     G4MultiFunctionalDetector* m_TofScorer ;
+    G4MultiFunctionalDetector* m_TwinScorer ;
     ////////////////////////////////////////////////////
     ///////////Event class to store Data////////////////
     ////////////////////////////////////////////////////
@@ -105,13 +109,20 @@ class Sofia : public NPS::VDetector{
     vector<double>  m_Theta;
     vector<double>  m_Phi; 
     
+    // GLAD //
     int m_Build_GLAD;
     double m_GLAD_MagField;
     double m_GLAD_DistanceFromTarget;
-   
+  
+    // Twin Music //
+    int m_Build_Twin_Music;
+    double m_Twin_Music_DistanceFromTarget;
+    string m_Twin_Music_Gas;
+
     // Visualisation Attribute
     G4VisAttributes* m_VisSquare;
     G4VisAttributes* m_VisGLAD;
+    G4VisAttributes* m_VisTwin;
 
   // Needed for dynamic loading of the library
   public:

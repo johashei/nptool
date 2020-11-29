@@ -4,8 +4,8 @@
 %%Beam energy given in MeV ; Excitation in MeV ; emmitance in rad
 Beam
  Particle= 238U
- Energy= 166600
- SigmaEnergy= 1e-5
+ Energy= 166000
+ SigmaEnergy= 2
  SigmaX= 1 cm
  SigmaY= 1 cm
  SigmaThetaX= 0 

@@ -1,5 +1,6 @@
-#ifndef NPDCRECONSTRUCTION_H
-#define NPDCRECONSTRUCTION_H
+#ifndef NPDCRECONSTRUCTIONMT_H
+#define NPDCRECONSTRUCTIONMT_H
+#if __cplusplus > 199711L // require c++11 
 /*****************************************************************************
  * Copyright (C) 2009-2020   this file is part of the NPTool Project         *
  *                                                                           *
@@ -34,23 +35,34 @@
  *    intersaction in any given plane. This is done using ResolvePlane.      *
  *    - Resolving plane for two Z plane will provide a point and a direction *
  *****************************************************************************/
+
 #include <vector>
+#include <map>
 #include "TVector3.h"
 #include "Math/Minimizer.h"
 #include "Math/Functor.h"
+#include <thread>
+
+
 class TGraph;
 namespace NPL{
 
-  class DCReconstruction{
+  class DCReconstructionMT{
     public:
-      DCReconstruction();
-      ~DCReconstruction();
+      DCReconstructionMT(unsigned int number_thread=1);
+      ~DCReconstructionMT();
 
     public:
+      // Set number of thread
+      // require to stop and reinit the thread 
+      void SetNumberOfThread(unsigned int number_thread){m_nbr_thread=number_thread;};
+      void AddPlan(unsigned int ID,const std::vector<double>& X, const std::vector<double>& Z, const std::vector<double>& R);
+      double GetResults(unsigned int ID,double& X0,double& X100,double& a, double& b);
       // Build a track in 2D based on drift circle of Radius R and position X,Z
       // return X0(X100) the X position at Z=0 (Z=100)
       // return a and b the coeff of the 2D line
-      double BuildTrack2D(const std::vector<double>& X,const std::vector<double>& Z,const std::vector<double>& R,double& X0,double& X100,double& a, double& b );
+      // when all thread are done
+      void BuildTrack2D();
 
       // Compute X and Y crossing coordinate of 2 plane of Wire
       void ResolvePlane(const TVector3& L,const double& ThetaU ,const TVector3& H, const double& ThetaV, TVector3& PosXY);
@@ -66,23 +78,38 @@ namespace NPL{
 
 
     private: // private member used by SumD
-      ROOT::Math::Minimizer* m_min;
-      ROOT::Math::Functor    m_func;
-      const std::vector<double>* fitX;
-      const std::vector<double>* fitZ;
-      const std::vector<double>* fitR;
+      // data to minize index by thread ID
+      std::map<unsigned int,unsigned int> sizeX;
+      std::map<unsigned int,unsigned int> m_uid; // match thread id and user id
+      std::map<unsigned int,const std::vector<double>*> fitX;
+      std::map<unsigned int,const std::vector<double>*> fitZ;
+      std::map<unsigned int,const std::vector<double>*> fitR;
+      // Computed value indexed by user ID
+      std::map<unsigned int,double> m_minimum;
+      std::map<unsigned int,double> m_X0;
+      std::map<unsigned int,double> m_X100;
+      std::map<unsigned int,double> m_a;
+      std::map<unsigned int,double> m_b;
+
+    private: // Thread Pool defined if C++11 is available
+      unsigned int m_nbr_thread;
+      std::vector<std::thread> m_ThreadPool;
+      std::vector<bool> m_Ready;
+      bool m_stop;
+
+    public: // Init the Thread Pool
+      void StopThread();
+      void StartThread(ROOT::Math::Minimizer*,unsigned int);
+      void InitThreadPool(); 
+      bool IsDone();
+
 
       // used by SumD
-      unsigned int sizeX ;
-      double P,p,a,b,ab,a2,c,d,x,z,r;
-      // used by BuildTrack
-      double ai,bi;
-      double parameter[2];
       // used by resolve plane
       long double av,bv,au,bu;
       double xM,yM;
 
   };
 }
-
-#endif
+#endif//c++11
+#endif//ndef
