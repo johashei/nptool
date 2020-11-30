@@ -12,13 +12,13 @@
  * Last update    :                                                          *
  *---------------------------------------------------------------------------*
  * Decription:                                                               *
- *  This class hold SamuraiFDC2 treated data                                 *
+ *  This class hold SamuraiFDC0 treated data                                 *
  *                                                                           *
  *---------------------------------------------------------------------------*
  * Comment:                                                                  *
  *                                                                           *
  *****************************************************************************/
-#include "TSamuraiFDC2Physics.h"
+#include "TSamuraiFDC0Physics.h"
 
 //   STL
 #include <sstream>
@@ -38,34 +38,35 @@
 using namespace NPUNITS;
 ///////////////////////////////////////////////////////////////////////////
 
-ClassImp(TSamuraiFDC2Physics)
+ClassImp(TSamuraiFDC0Physics)
   ///////////////////////////////////////////////////////////////////////////
-  TSamuraiFDC2Physics::TSamuraiFDC2Physics(){
-    m_EventData         = new TSamuraiFDC2Data ;
-    m_PreTreatedData    = new TSamuraiFDC2Data ;
+  TSamuraiFDC0Physics::TSamuraiFDC0Physics(){
+    m_EventData         = new TSamuraiFDC0Data ;
+    m_PreTreatedData    = new TSamuraiFDC0Data ;
     m_EventPhysics      = this ;
     //m_Spectra           = NULL;
-    ToTThreshold_L = 180;
-    ToTThreshold_H = 1000;
-    DriftLowThreshold=0.4 ;
-    DriftUpThreshold=9.3;
+    ToTThreshold_L = 0;
+    ToTThreshold_H = 180;
+    DriftLowThreshold=0.1 ;
+    DriftUpThreshold=2.4;
     PowerThreshold=5;
 
     #if __cplusplus > 199711L && NPMULTITHREADING 
-    // one thread for each plan X,U,V = 3
-    // ! more than this will not help !
-    m_reconstruction.SetNumberOfThread(3);
+    // one thread for each plan X,Y = 2
+    // ! more than that this will not help !
+    m_reconstruction.SetNumberOfThread(2);
     m_reconstruction.InitThreadPool();
     #endif 
+
   }
 
 ///////////////////////////////////////////////////////////////////////////
-void TSamuraiFDC2Physics::BuildSimplePhysicalEvent(){
+void TSamuraiFDC0Physics::BuildSimplePhysicalEvent(){
   BuildPhysicalEvent();
 }
 
 ///////////////////////////////////////////////////////////////////////////
-void TSamuraiFDC2Physics::BuildPhysicalEvent(){
+void TSamuraiFDC0Physics::BuildPhysicalEvent(){
   PreTreat();
 //  RemoveNoise();
 
@@ -83,6 +84,7 @@ void TSamuraiFDC2Physics::BuildPhysicalEvent(){
       wire = Wire[i]; 
       SamuraiDCIndex idx(det,layer,wire);
       std::pair<unsigned int, double> p(det,Wire_Angle[idx]);
+      //cout << det << " " << layer << " " << wire << endl;
       X[p].push_back(Wire_X[idx]); 
       Z[p].push_back(Wire_Z[idx]); 
       R[p].push_back(DriftLength[i]); 
@@ -97,13 +99,13 @@ void TSamuraiFDC2Physics::BuildPhysicalEvent(){
   static unsigned int uid=0;
   VX0.clear();VX100.clear(),D.clear();
   for(auto it = X.begin();it!=X.end();++it){
+
 #if __cplusplus > 199711L && NPMULTITHREADING 
     m_reconstruction.AddPlan(uid++,X[it->first],Z[it->first],R[it->first]); 
 #else
     D[it->first]=m_reconstruction.BuildTrack2D(X[it->first],Z[it->first],R[it->first],X0,X100,a,b); 
 #endif 
     }
-
 #if __cplusplus > 199711L && NPMULTITHREADING 
   // do all plan at once in parallele, return when all plan are done
   m_reconstruction.BuildTrack2D();
@@ -115,12 +117,12 @@ void TSamuraiFDC2Physics::BuildPhysicalEvent(){
   D[it->first]=m_reconstruction.GetResults(uid++,X0,X100,a,b); 
 #endif
 
-  /* // for Debug, write a file of 
-   { std::ofstream f("distance.txt", std::ios::app);
+   // for Debug, write a file of 
+/*   { std::ofstream f("distance.txt", std::ios::app);
    f<< D[it->first] << endl;
    f.close();
    }
-   */
+  */ 
     // very large a means track perpendicular to the chamber, what happen when there is pile up
     if(abs(a)>5000)
       PileUp++;
@@ -134,8 +136,9 @@ void TSamuraiFDC2Physics::BuildPhysicalEvent(){
     TVector3 P100= TVector3(X100,0,0);
     P100.RotateZ(it->first.second);
     VX100[it->first]=P100;
-  }
 
+  }
+  
   // Reconstruct the central position (z=0) for each detector
   static map<unsigned int,vector<TVector3> > C ;  
   static map<unsigned int,vector<double> > W ; // weight based on D  
@@ -145,8 +148,9 @@ void TSamuraiFDC2Physics::BuildPhysicalEvent(){
   for(auto it1 = VX0.begin();it1!=VX0.end();++it1){
     for(auto it2 = it1;it2!=VX0.end();++it2){
       if(it1!=it2 && it1->first.first==it2->first.first){// different plane, same detector
+        //cout << "FDC0" << endl;
         m_reconstruction.ResolvePlane(it1->second,it1->first.second,it2->second,it2->first.second,P);
-        
+        // cout << "done " << D[it1->first] << " " << D[it2->first] << endl;
         if(P.X()!=-10000 && D[it1->first]<PowerThreshold&& D[it2->first]<PowerThreshold){
           C[it1->first.first].push_back(P);
           // Mean pos are weighted based on the the sum of distance from track
@@ -172,7 +176,7 @@ void TSamuraiFDC2Physics::BuildPhysicalEvent(){
   }
 
   // Build the Reference position by averaging all possible pair 
-  size = C[2].size();
+  size = C[0].size();
   static double PosX100,PosY100,norm;
   if(size){
     PosX=0;
@@ -181,14 +185,13 @@ void TSamuraiFDC2Physics::BuildPhysicalEvent(){
     PosY100=0;
     norm=0;
     for(unsigned int i = 0 ; i < size ; i++){
-      PosX+= C[2][i].X()*W[2][i]; 
-      PosY+= C[2][i].Y()*W[2][i]; 
-      PosX100+= C100[2][i].X()*W[2][i]; 
-      PosY100+= C100[2][i].Y()*W[2][i]; 
-      norm+=W[2][i];
-      //        cout << C[2][i].X() << " (" << C[2][i].Y() << ") ";
+      PosX+= C[0][i].X()*W[0][i]; 
+      PosY+= C[0][i].Y()*W[0][i]; 
+      PosX100+= C100[0][i].X()*W[0][i]; 
+      PosY100+= C100[0][i].Y()*W[0][i]; 
+      norm+=W[0][i];
     } 
-    // cout << endl;
+    
     MultMean=size;
     // Mean position at Z=0
     PosX=PosX/norm; 
@@ -200,8 +203,8 @@ void TSamuraiFDC2Physics::BuildPhysicalEvent(){
     devX=0;
     devY=0;
     for(unsigned int i = 0 ; i < size ; i++){
-      devX+=W[2][i]*(C[2][i].X()-PosX)*(C[2][i].X()-PosX);
-      devY+=W[2][i]*(C[2][i].Y()-PosY)*(C[2][i].Y()-PosY);
+      devX+=W[0][i]*(C[0][i].X()-PosX)*(C[0][i].X()-PosX);
+      devY+=W[0][i]*(C[0][i].Y()-PosY)*(C[0][i].Y()-PosY);
     }
 
     devX=sqrt(devX/((size-1)*norm));
@@ -221,7 +224,7 @@ void TSamuraiFDC2Physics::BuildPhysicalEvent(){
   return;
 }
 ///////////////////////////////////////////////////////////////////////////
-void TSamuraiFDC2Physics::PreTreat(){
+void TSamuraiFDC0Physics::PreTreat(){
   ClearPreTreatedData();
   static CalibrationManager* Cal = CalibrationManager::getInstance();
   static string channel;
@@ -263,10 +266,8 @@ void TSamuraiFDC2Physics::PreTreat(){
         Wire.push_back(wire);
         Time.push_back(time);
         ToT.push_back(etime-time);
-        channel="SamuraiFDC2/L" + NPL::itoa(layer);
-        // rescalling is needed because calib are bad.
-        // to be fixed
-        DriftLength.push_back(10-Cal->ApplySigmoid(channel,etime));
+        channel="SamuraiFDC0/L" + NPL::itoa(layer);
+        DriftLength.push_back(2.5-Cal->ApplySigmoid(channel,etime));
       }
     }
 
@@ -274,7 +275,7 @@ void TSamuraiFDC2Physics::PreTreat(){
   return;
 }
 ///////////////////////////////////////////////////////////////////////////
-void TSamuraiFDC2Physics::RemoveNoise(){
+void TSamuraiFDC0Physics::RemoveNoise(){
   // Remove the noise by looking if a matching wire exist in the adjacent layer
   // this done by looking at the closest plane with the same orientation
   unsigned int size = Detector.size(); 
@@ -314,7 +315,7 @@ void TSamuraiFDC2Physics::RemoveNoise(){
   return;
 }
 ///////////////////////////////////////////////////////////////////////////
-void TSamuraiFDC2Physics::Clear(){
+void TSamuraiFDC0Physics::Clear(){
   MultMean=0;
   PileUp=0;
   Mult=0;
@@ -335,30 +336,30 @@ void TSamuraiFDC2Physics::Clear(){
 ////   Innherited from VDetector Class   ////
 
 ///////////////////////////////////////////////////////////////////////////
-void TSamuraiFDC2Physics::ReadConfiguration(NPL::InputParser parser){
-  vector<NPL::InputBlock*> blocks = parser.GetAllBlocksWithToken("SAMURAIFDC2");
+void TSamuraiFDC0Physics::ReadConfiguration(NPL::InputParser parser){
+  vector<NPL::InputBlock*> blocks = parser.GetAllBlocksWithToken("SAMURAIFDC0");
   if(NPOptionManager::getInstance()->GetVerboseLevel())
     cout << "//// " << blocks.size() << " detector(s) found " << endl; 
 
   vector<string> token= {"XML"};
 
   for(unsigned int i = 0 ; i < blocks.size() ; i++){
-    cout << endl << "////  Samurai FDC2 (" << i+1 << ")" << endl;
+    cout << endl << "////  Samurai FDC0 (" << i+1 << ")" << endl;
     string xmlpath = blocks[i]->GetString("XML");
     NPL::XmlParser xml;
     xml.LoadFile(xmlpath);
-    AddDC("SAMURAIFDC2",xml);
+    AddDC("SAMURAIFDC0",xml);
   }
 }
 
 ///////////////////////////////////////////////////////////////////////////
-void TSamuraiFDC2Physics::AddDC(string name, NPL::XmlParser& xml){
+void TSamuraiFDC0Physics::AddDC(string name, NPL::XmlParser& xml){
   std::vector<NPL::XML::block*> b = xml.GetAllBlocksWithName(name);  
-  // FDC2 case
-  if(name=="SAMURAIFDC2"){
-    unsigned int det=2;
-    unsigned int size = b.size();
-    for(unsigned int i = 0 ; i < size ; i++){
+  // FDC0 case
+  if(name=="SAMURAIFDC0"){
+    unsigned int det=0;
+    unsigned int sizeB = b.size();
+    for(unsigned int i = 0 ; i < sizeB ; i++){
       unsigned int layer = b[i]->AsInt("layer"); 
       unsigned int wire  = b[i]->AsInt("wireid"); 
       double X = b[i]->AsDouble("wirepos");  
@@ -366,15 +367,15 @@ void TSamuraiFDC2Physics::AddDC(string name, NPL::XmlParser& xml){
       string sDir = b[i]->AsString("anodedir");
       double T=0;
       if(sDir=="X")
-        T=0*deg;
+        T= 0*deg;
       else if(sDir=="Y")
-        T=90*deg;
+        T= -90*deg;
       else if(sDir=="U")
         T=-30*deg;
       else if(sDir=="V")
         T=+30*deg;
       else{
-        cout << "ERROR: Unknown layer orientation for Samurai FDC2"<< endl;
+        cout << "ERROR: Unknown layer orientation for Samurai FDC0"<< endl;
         exit(1);
       }
       SamuraiDCIndex idx(det,layer,wire);
@@ -386,26 +387,26 @@ void TSamuraiFDC2Physics::AddDC(string name, NPL::XmlParser& xml){
 }
 
 ///////////////////////////////////////////////////////////////////////////
-void TSamuraiFDC2Physics::InitSpectra(){  
-  //m_Spectra = new TSamuraiFDC2Spectra(m_NumberOfDetector);
+void TSamuraiFDC0Physics::InitSpectra(){  
+  //m_Spectra = new TSamuraiFDC0Spectra(m_NumberOfDetector);
 }
 
 ///////////////////////////////////////////////////////////////////////////
-void TSamuraiFDC2Physics::FillSpectra(){  
+void TSamuraiFDC0Physics::FillSpectra(){  
   //  m_Spectra -> FillRawSpectra(m_EventData);
   //  m_Spectra -> FillPreTreatedSpectra(m_PreTreatedData);
   //  m_Spectra -> FillPhysicsSpectra(m_EventPhysics);
 }
 ///////////////////////////////////////////////////////////////////////////
-void TSamuraiFDC2Physics::CheckSpectra(){  
+void TSamuraiFDC0Physics::CheckSpectra(){  
   //  m_Spectra->CheckSpectra();  
 }
 ///////////////////////////////////////////////////////////////////////////
-void TSamuraiFDC2Physics::ClearSpectra(){  
+void TSamuraiFDC0Physics::ClearSpectra(){  
   // To be done
 }
 ///////////////////////////////////////////////////////////////////////////
-map< string , TH1*> TSamuraiFDC2Physics::GetSpectra() {
+map< string , TH1*> TSamuraiFDC0Physics::GetSpectra() {
   /*  if(m_Spectra)
       return m_Spectra->GetMapHisto();
       else{
@@ -418,62 +419,62 @@ map< string , TH1*> TSamuraiFDC2Physics::GetSpectra() {
 } 
 
 ///////////////////////////////////////////////////////////////////////////
-void TSamuraiFDC2Physics::WriteSpectra(){
+void TSamuraiFDC0Physics::WriteSpectra(){
   // m_Spectra->WriteSpectra();
 }
 ///////////////////////////////////////////////////////////////////////////
-void TSamuraiFDC2Physics::AddParameterToCalibrationManager(){
+void TSamuraiFDC0Physics::AddParameterToCalibrationManager(){
   CalibrationManager* Cal = CalibrationManager::getInstance();
 
   // each layer
-  for( int l = 0 ; l < 14 ; ++l){
-    Cal->AddParameter("SamuraiFDC2", "L"+ NPL::itoa(l),"FDC2_L"+ NPL::itoa(l));
+  for( int l = 0 ; l < 8 ; ++l){
+    Cal->AddParameter("SamuraiFDC0", "L"+ NPL::itoa(l),"FDC0_L"+ NPL::itoa(l));
   }
 
 }
 
 ///////////////////////////////////////////////////////////////////////////
-void TSamuraiFDC2Physics::InitializeRootInputRaw(){
+void TSamuraiFDC0Physics::InitializeRootInputRaw(){
   TChain* inputChain = RootInput::getInstance()->GetChain()   ;
-  inputChain->SetBranchStatus( "SamuraiFDC2" , true );
+  inputChain->SetBranchStatus( "SamuraiFDC0" , true );
   // The following line is necessary only for system were the tree is splitted
   // (older root version). The found argument silenced the Branches not found
   // warning for non splitted tree.
   if(inputChain->FindBranch("fDC_*"))
     inputChain->SetBranchStatus( "fDC_*",true);
-  inputChain->SetBranchAddress( "SamuraiFDC2" , &m_EventData );
+  inputChain->SetBranchAddress( "SamuraiFDC0" , &m_EventData );
 
 }
 
 ///////////////////////////////////////////////////////////////////////////
-void TSamuraiFDC2Physics::InitializeRootInputPhysics(){
+void TSamuraiFDC0Physics::InitializeRootInputPhysics(){
 }
 
 ///////////////////////////////////////////////////////////////////////////
-void TSamuraiFDC2Physics::InitializeRootOutput(){
+void TSamuraiFDC0Physics::InitializeRootOutput(){
   TTree* outputTree = RootOutput::getInstance()->GetTree();
-  outputTree->Branch( "SamuraiFDC2" , "TSamuraiFDC2Physics" , &m_EventPhysics );
+  outputTree->Branch( "SamuraiFDC0" , "TSamuraiFDC0Physics" , &m_EventPhysics );
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 //            Construct Method to be pass to the DetectorFactory              //
 ////////////////////////////////////////////////////////////////////////////////
-NPL::VDetector* TSamuraiFDC2Physics::Construct(){
-  return (NPL::VDetector*) new TSamuraiFDC2Physics();
+NPL::VDetector* TSamuraiFDC0Physics::Construct(){
+  return (NPL::VDetector*) new TSamuraiFDC0Physics();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 //            Registering the construct method to the factory                 //
 ////////////////////////////////////////////////////////////////////////////////
 extern "C"{
-  class proxy_samuraiFDC2{
+  class proxy_samuraiFDC0{
     public:
-      proxy_samuraiFDC2(){
-        NPL::DetectorFactory::getInstance()->AddToken("SAMURAIFDC2","Samurai");
-        NPL::DetectorFactory::getInstance()->AddDetector("SAMURAIFDC2",TSamuraiFDC2Physics::Construct);
+      proxy_samuraiFDC0(){
+        NPL::DetectorFactory::getInstance()->AddToken("SAMURAIFDC0","Samurai");
+        NPL::DetectorFactory::getInstance()->AddDetector("SAMURAIFDC0",TSamuraiFDC0Physics::Construct);
       }
   };
 
-  proxy_samuraiFDC2 p_samuraiFDC2;
+  proxy_samuraiFDC0 p_samuraiFDC0;
 }
 

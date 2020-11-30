@@ -40,6 +40,10 @@ using namespace NPUNITS;
 #include "TChain.h"
 ///////////////////////////////////////////////////////////////////////////
 
+//   Global
+TRandom *Rand = new TRandom3();
+
+
 ClassImp(TAnnularS1Physics)
   ///////////////////////////////////////////////////////////////////////////
   TAnnularS1Physics::TAnnularS1Physics(){
@@ -150,7 +154,7 @@ void TAnnularS1Physics::PreTreat(){
   }
 
   //   Sector T
-  unsigned int sizeSectorT = m_EventData->GetS1ThetaTMult();
+  unsigned int sizeSectorT = m_EventData->GetS1PhiTMult();
   for(unsigned int i = 0 ; i < sizeSectorT ; ++i){
     m_PreTreatedData->SetS1PhiTDetectorNbr( m_EventData->GetS1PhiTDetectorNbr(i) );
     m_PreTreatedData->SetS1PhiTStripNbr( m_EventData->GetS1PhiTStripNbr(i) );
@@ -239,7 +243,7 @@ void TAnnularS1Physics::ReadAnalysisConfig(){
     getline(AnalysisConfigFile, LineBuffer);
 
     // search for "header"
-    if (LineBuffer.compare(0, 11, "ConfigAnnularS1") == 0) ReadingStatus = true;
+    if (LineBuffer.compare(0, 15, "ConfigAnnularS1") == 0) ReadingStatus = true;
 
     // loop on tokens and data
     while (ReadingStatus ) {
@@ -255,7 +259,7 @@ void TAnnularS1Physics::ReadAnalysisConfig(){
       else if (whatToDo=="MAX_STRIP_MULTIPLICITY") {
         AnalysisConfigFile >> DataBuffer;
         m_MaximumStripMultiplicityAllowed = atoi(DataBuffer.c_str() );
-        cout << "MAXIMUN STRIP MULTIPLICITY " << m_MaximumStripMultiplicityAllowed << endl;
+        cout << "MAXIMUM STRIP MULTIPLICITY " << m_MaximumStripMultiplicityAllowed << endl;
       }
 
       else if (whatToDo=="STRIP_ENERGY_MATCHING_SIGMA") {
@@ -534,6 +538,32 @@ TVector3 TAnnularS1Physics::GetPositionOfInteraction(const int i) const{
 
   return(Position) ;
 
+}
+///////////////////////////////////////////////////////////////////////////////////////////////////////////
+TVector3 TAnnularS1Physics::GetRandomisedPositionOfInteraction(const int i) const{
+
+  double R_Min = 24;
+  double R_Max = 48;
+
+  double Phi_Min = 0  ;
+  double Phi_Max = 360;
+
+  int NumberofRing = 16 ; //Per Quadrant
+  int NumberofSector = 16 ; //Per detector, ( 4 in each Quad)
+
+  double rho_half_range = 0.5*(R_Max-R_Min)/NumberofRing  ; // ring strip spacing in mm
+  double phi_half_range = 0.5*(Phi_Max-Phi_Min)/NumberofSector ; //radial strip spacing in rad
+  TVector3 OriginalPosition = GetPositionOfInteraction(i);
+  double rho = OriginalPosition.Perp();
+  double phi = OriginalPosition.Phi();
+  double z = OriginalPosition.Z();
+  // randomises within a given detector ring and sector
+  double rho_min2 = (rho-rho_half_range)*(rho-rho_half_range) ; // ^2 to reproduce a randomization in the arc
+  double rho_max2 = (rho+rho_half_range)*(rho+rho_half_range) ;
+  double rho_rand = sqrt(Rand->Uniform(rho_min2,rho_max2));// sqrt is necessary for realistic randomise!
+  double phi_rand = phi + Rand->Uniform(-phi_half_range, +phi_half_range)*M_PI/180;
+
+  return( TVector3(rho_rand*cos(phi_rand),rho_rand*sin(phi_rand),z) ) ;
 }
 /////////////////////////////
 void TAnnularS1Physics::InitializeStandardParameter(){

@@ -13,7 +13,10 @@ Sofia
  THETA= -9 deg
  PHI= 0 deg
  Build_GLAD= 1
- GLAD_DistanceFromTarget= 3.5 m
+ GLAD_DistanceFromTarget= 3.3 m
  GLAD_MagField= 1.8 T 
+ Build_Twin_Music= 1
+ Twin_Music_DistanceFromTarget= 1.5 m
+ Twin_Music_Gas= P10_1atm
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

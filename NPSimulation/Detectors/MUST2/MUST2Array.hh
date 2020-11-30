@@ -34,16 +34,17 @@
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 namespace MUST2
 {
-   // Resolution
-   const G4double ResoTimeMust = 0.212765957    ;// = 500ps                 //   Unit is  ns/2.35
-   const G4double ResoSiLi     = 0.028          ;// = 130 keV of resolution //   Unit is MeV/2.35
-   const G4double ResoCsI      = 0.08           ;// = 188 kev of resolution //   Unit is MeV/2.35
-   const G4double ResoStrip    = 0.0149         ;// 0.0223 = 52keV of Resolution   //   Unit is MeV/2.35  14.861996
-   const G4double TimeOffset   = 500            ;// 500 ns stop
-   // Threshold
-   const G4double ThresholdSi   = 500 * keV;
-   const G4double ThresholdSiLi = 500 * keV;
-   const G4double ThresholdCsI  = 500 * keV;
+   // Default Resolution
+   G4double ResoTimeMust = 0.2127         ;// = 500ps                 //   Unit is  ns/2.35
+   G4double ResoStrip    = 0.022          ;// 0.0223 = 52keV of Resolution   //   Unit is MeV/2.35  14.861996
+   G4double ResoSiLi     = 0.055          ;// = 130 keV of resolution //   Unit is MeV/2.35
+   G4double ResoCsI      = 0.080          ;// = 188 kev of resolution //   Unit is MeV/2.35
+   G4double TimeOffset   = 500            ;// 500 ns stop
+   // Default Threshold
+   G4double ThresholdSiX  = 500 * keV;
+   G4double ThresholdSiY  = 500 * keV;
+   G4double ThresholdSiLi = 200 * keV; // typically shielded by the DSSD
+   G4double ThresholdCsI  = 200 * keV;
    // Geometry
    const G4double FaceFront = 11.*cm ;
    const G4double FaceBack = 16.5*cm ;

@@ -44,11 +44,22 @@ TSofiaData::~TSofiaData() {
 
 //////////////////////////////////////////////////////////////////////
 void TSofiaData::Clear() {
-  // Energy
+  // TOF
   fTOF_DetectorNbr.clear();
   fTOF_PlasticNbr.clear();
   fTOF_Energy.clear();
   fTOF_Time.clear();
+  
+  // TWIN
+  fTWIN_SectorNbr.clear();
+  fTWIN_AnodeNbr.clear();
+  fTWIN_AnodeEnergy.clear();
+  fTWIN_AnodeTime.clear();
+  
+  fTWIN_Esum1 = -10;
+  fTWIN_Esum2 = -10;
+  fTWIN_Esum3 = -10;
+  fTWIN_Esum4 = -10;
 }
 
 
@@ -60,6 +71,7 @@ void TSofiaData::Dump() const {
 
   // Energy
   size_t mysize = fTOF_DetectorNbr.size();
+  cout << "TWIN_Mult: " << GetTwinMult() << endl;
   cout << "TOF_Mult: " << mysize << endl;
  
 }

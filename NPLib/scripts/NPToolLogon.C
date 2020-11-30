@@ -15,33 +15,26 @@
  *             shared libraries.                                             *
  *                                                                           *
  *---------------------------------------------------------------------------*
- * Comment: This script should be called in your rootlogon.C file            *
- *          See example in NPTool/Misc/rootlogon.C                           *
+ * Comment: This script should be called in your .rootlogon.C file           *
  *                                                                           *
  *                                                                           *
  *****************************************************************************/
 
 // C++ headers
-#include<iostream>
 #include<string>
-#include<stdlib.h>
-using namespace std;
 
 // ROOT headers
 #include"TSystem.h"
 #include"TROOT.h"
 #include"TList.h"
 #include"TSystemDirectory.h"
-#include"TString.h"
-#include"TRandom.h"
-#include"TRandom2.h"
 
 bool contains(std::string path,std::string search){
   if(path.find(search)!=std::string::npos) 
     return true;
   else
     return false;
-  }
+}
 
 /////////////////////////////////////////////////////
 void NPToolLogon(){ 
@@ -57,23 +50,23 @@ void NPToolLogon(){
 #endif
 
   // Create the NPTool Stype
-  string NPLPath = gSystem->Getenv("NPTOOL");  
-  gROOT->ProcessLine(Form(".x %s/NPLib/scripts/Style_nptool.C",NPLPath.c_str()));
-  gROOT->ProcessLine(Form(".x %s/NPLib/scripts/Style_nponline.C",NPLPath.c_str()));
+  std::string NPLPath = gSystem->Getenv("NPTOOL");  
+  gROOT->ProcessLine(Form(".x %s/NPLib/scripts/Style_nptool.C+",NPLPath.c_str()));
+  gROOT->ProcessLine(Form(".x %s/NPLib/scripts/Style_nponline.C+",NPLPath.c_str()));
 
   // Change the standard random generator to TRandom2
-  gRandom = new TRandom2();
+  //gRandom = new TRandom2();
 
-  string currentpath = gSystem->Getenv("PWD");
-  string path = gSystem->Getenv("NPTOOL");
- 
+  std::string currentpath = gSystem->Getenv("PWD");
+  std::string path = gSystem->Getenv("NPTOOL");
+
   // Add include path
   gROOT->ProcessLine(Form(".include %s/NPLib/include", path.c_str()));
 
   // Test if the root map exist, 
   // if yes exit
   // if no load the nptool lib
-  string command = "ls "+path+"/NPLib/lib/*.rootmap > /dev/null 2> /dev/null";
+  std::string command = "ls "+path+"/NPLib/lib/*.rootmap > /dev/null 2> /dev/null";
   int return_value = system(command.c_str());
   bool check = false;
 
@@ -131,7 +124,7 @@ void NPToolLogon(){
     // Since the libdir.GetListOfFiles() commands cds to the
     // libidr directory, one has to return to the initial
     // directory
-    gSystem->cd(currentpath.c_str());
+    //gSystem->cd(currentpath.c_str());
   }
 }
 

@@ -2,9 +2,9 @@
 TACTIC
  POS= 0 0 0 mm
  Shape= Cylindrical
- GasMaterial_1 = P10_gas
-% GasMaterial_1 = He_gas
- GasMaterial_2 = CO2
+% GasMaterial_1 = P10_gas
+ GasMaterial_1 = He_gas
+ GasMaterial_2 = G4_CARBON_DIOXIDE
  GasFraction_1 = 100
  GasFraction_2 = 0
  Temperature = 293.15 kelvin
