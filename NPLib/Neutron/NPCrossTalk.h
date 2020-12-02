@@ -36,7 +36,7 @@ namespace NPL{
 
       void AddHitVector(const std::vector<double>& X, const std::vector<double>& Y,const std::vector<double>& Z, const std::vector<double>& dX, const std::vector<double>& dY, const std::vector<double>& dZ, const std::vector<double>& T);
 
-      std::vector<double> ComputeCrossTalk();
+      std::vector<int> ComputeCrossTalk();
 
       int GetFirstN();
 
@@ -51,7 +51,7 @@ namespace NPL{
       const std::vector<double>* HitT;
 
       std::vector<int> ClustHit;
-      std::vector<double> m_Neutrons;
+      std::vector<int> m_Neutrons;
       double coef;
       unsigned int sizeHit ;
       int FirstHit;

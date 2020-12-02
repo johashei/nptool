@@ -55,7 +55,7 @@ void CrossTalk::AddHitVector(const vector<double>& X, const vector<double>& Y, c
   sizeHit = X.size();
 }
 
-vector<double> CrossTalk::ComputeCrossTalk(){
+vector<int> CrossTalk::ComputeCrossTalk(){
 
   FirstHit = -1;
 
