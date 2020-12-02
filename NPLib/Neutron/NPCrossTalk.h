@@ -51,9 +51,11 @@ namespace NPL{
       const std::vector<double>* HitT;
 
       std::vector<int> ClustHit;
+      std::vector<double> m_Neutrons;
       double coef;
       unsigned int sizeHit ;
-      int FirstHit ;     
+      int FirstHit;
+      
   };
 }
 
