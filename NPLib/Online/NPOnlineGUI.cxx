@@ -136,26 +136,28 @@ void NPL::OnlineGUI::ResetAll(){
 }
 ////////////////////////////////////////////////////////////////////////////////
 void NPL::OnlineGUI::ResetCurrent(){
-   TCanvas* c = m_EmbeddedCanvas->GetCanvas();
+  TCanvas* c = m_EmbeddedCanvas->GetCanvas();
   if (!c)
     return;
 
+  // reset log scale attribute
   gPad->SetLogx(false);
   gPad->SetLogy(false);
   gPad->SetLogz(false);
 
-
-     TList* list = gPad->GetListOfPrimitives();
-    int Hsize = list->GetSize();
-    for(int h = 0 ; h < Hsize ; h++){
-      TObject* obj = list->At(h);
-      if(obj->InheritsFrom(TH1::Class())){
+  // loop on histograms, reset axis and content
+  TList* list = gPad->GetListOfPrimitives();
+  int Hsize = list->GetSize();
+  for(int h = 0 ; h < Hsize ; h++){
+     TObject* obj = list->At(h);
+     if(obj->InheritsFrom(TH1::Class())){
         TH1* h = (TH1*) obj;
         h->GetXaxis()->UnZoom();
         h->GetYaxis()->UnZoom();
         h->GetZaxis()->UnZoom();
-      }
-    }
+        h->Reset("ICESM");
+     }
+  }
   c->Update();
 }
 ////////////////////////////////////////////////////////////////////////////////

@@ -14,7 +14,7 @@ Canvas
 Canvas
  Path= Calorimeter
  Divide= 1 2 
- Histo= CT1_CALOR_SPECTRUM CT1_CALOR_RAW_TRIGGER CT1_CALOR_POS
+ Histo= CT1_CALOR_SPECTRUM CT1_CALOR_POS
 
 Canvas
  Path= ComptonTelescope
