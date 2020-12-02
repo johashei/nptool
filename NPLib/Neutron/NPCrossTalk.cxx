@@ -80,10 +80,10 @@ vector<int> CrossTalk::ComputeCrossTalk(){
       Dist = sqrt((x2-x1)*(x2-x1) + (y2-y1)*(y2-y1) + (z2-z1)*(z2-z1));
       if(Dist < coef*dR1){
         if(ID_ClustHit[jj] < ID_ClustHit[j]){
-          ID_ClustHit[j] == ID_ClustHit[jj]; 
+          ID_ClustHit[j] = ID_ClustHit[jj]; 
         }
         else if(ID_ClustHit[jj] > ID_ClustHit[j]){
-          ID_ClustHit[jj] == ID_ClustHit[j];
+          ID_ClustHit[jj] = ID_ClustHit[j];
         }
       }
     }
@@ -134,6 +134,7 @@ vector<int> CrossTalk::ComputeCrossTalk(){
       x2 = (*HitX)[mapOfFirstN[i]], y2 = (*HitY)[mapOfFirstN[i]], z2 = (*HitZ)[mapOfFirstN[i]], t2 = (*HitT)[mapOfFirstN[i]]; 
       Dist = sqrt((x2-x1)*(x2-x1) + (y2-y1)*(y2-y1) + (z2-z1)*(z2-z1));
       Dmax = (t2-t1)*v_n;
+      cout << Dmax << endl;
       if(Dist < Dmax){
         if(t1 < t2){
           CrossTalk.push_back(j);
