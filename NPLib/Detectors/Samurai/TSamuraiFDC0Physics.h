@@ -171,6 +171,7 @@ class TSamuraiFDC0Physics : public TObject, public NPL::VDetector{
     double GetPosX(){return PosX;}
     double GetPosY(){return PosY;}
     double GetThetaX(){return ThetaX;}
+    double GetPhiY(){return PhiY;}
     double GetDevX(){return devX;}
     double GetDevY(){return devY;}
     int GetPileUp(){return PileUp;}

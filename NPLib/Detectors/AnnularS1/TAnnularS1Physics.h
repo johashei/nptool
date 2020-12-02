@@ -34,6 +34,7 @@
 #include "TVector2.h" 
 #include "TVector3.h" 
 #include "TObject.h"
+#include "TRandom3.h"
 
 using namespace std ;
 
@@ -146,6 +147,7 @@ class TAnnularS1Physics : public TObject, public NPL::VDetector{
     int GetEventMultiplicity() const { return EventMultiplicity; };
 
     TVector3 GetPositionOfInteraction(const int i) const;   
+    TVector3 GetRandomisedPositionOfInteraction(const int i) const;
     TVector3 GetDetectorNormal(const int i) const;
 
   private:   //   Parameter used in the analysis

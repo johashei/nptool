@@ -695,7 +695,109 @@ void MUST2Array::ReadConfiguration(NPL::InputParser parser) {
     if (blocks[i]->GetString("VIS") == "all")
       m_non_sensitive_part_visiualisation = true;
   }
+
+  ////////////////////
+  //Read the thresholds from the analysis config 
+  ////////////////////  
+  
+  bool ReadingStatus = false;
+
+  // path to file
+  string FileName = "./configs/ConfigMust2.dat";
+
+  // open analysis config file
+  ifstream AnalysisConfigFile;
+  AnalysisConfigFile.open(FileName.c_str());
+
+  if (!AnalysisConfigFile.is_open()) {
+    cout << " No ConfigMust2.dat found: Default parameters loaded for "
+            "Analysis "
+         << FileName << endl;
+    return;
+  }
+  cout << " Loading user parameters for Analysis from ConfigMust2.dat " << endl;
+
+  // read analysis config file
+  string LineBuffer, DataBuffer, whatToDo;
+
+  while (!AnalysisConfigFile.eof()) {
+    // Pick-up next line
+    getline(AnalysisConfigFile, LineBuffer);
+    // search for "header"
+    if (LineBuffer.compare(0, 11, "ConfigMust2") == 0)
+      ReadingStatus = true;
+
+    // loop on tokens and data
+    while (ReadingStatus) {
+
+      whatToDo = "";
+      AnalysisConfigFile >> whatToDo;
+      // Search for comment symbol (%)
+      if (whatToDo.compare(0, 1, "%") == 0) {
+        AnalysisConfigFile.ignore(numeric_limits<streamsize>::max(), '\n');
+      }
+      //Resolutions
+      else if (whatToDo == "SI_E_RESOLUTION") {
+        AnalysisConfigFile >> DataBuffer;
+        ResoStrip = atof(DataBuffer.c_str());
+        ResoStrip = ResoStrip*keV/2.35;
+        cout << whatToDo << " " << ResoStrip  << " MeV/2.35 "<< endl;
+      }
+      else if (whatToDo == "SILI_E_RESOLUTION") {
+        AnalysisConfigFile >> DataBuffer;
+        ResoSiLi = atof(DataBuffer.c_str());
+        ResoSiLi = ResoSiLi*keV/2.35;
+        cout << whatToDo << " " << ResoSiLi  << " MeV/2.35 "<< endl;
+      }
+      else if (whatToDo == "CSI_E_RESOLUTION") {
+        AnalysisConfigFile >> DataBuffer;
+        ResoCsI = atof(DataBuffer.c_str());
+        ResoCsI = ResoCsI*keV/2.35;
+        cout << whatToDo << " " << ResoCsI  << " MeV/2.35 "<< endl;
+      }
+      //Time
+      else if (whatToDo == "MUST_T_RESOLUTION") {
+        AnalysisConfigFile >> DataBuffer;
+        ResoTimeMust = atof(DataBuffer.c_str());
+        ResoTimeMust = ResoTimeMust*ns/2.35;
+        cout << whatToDo << " " << ResoTimeMust  << " ns/2.35 "<< endl;
+      }
+      else if (whatToDo == "SI_T_OFFSET") {
+        AnalysisConfigFile >> DataBuffer;
+        TimeOffset = atof(DataBuffer.c_str());
+        TimeOffset = TimeOffset*ns;
+        cout << whatToDo << " " << TimeOffset  << " ns "<< endl;
+      }
+      //Thresholds
+      else if (whatToDo == "SI_X_E_THRESHOLD") {
+        AnalysisConfigFile >> DataBuffer;
+        ThresholdSiX = atof(DataBuffer.c_str());
+        ThresholdSiX = ThresholdSiX*keV;
+        cout << whatToDo << " " << ThresholdSiX  << " MeV "<< endl;
+      }
+      else if (whatToDo == "SI_Y_E_THRESHOLD") {
+        AnalysisConfigFile >> DataBuffer;
+        ThresholdSiY = atof(DataBuffer.c_str());
+        ThresholdSiY = ThresholdSiY*keV;
+        cout << whatToDo << " " << ThresholdSiY  << " MeV "<< endl;
+      }
+      else if (whatToDo == "SILI_E_THRESHOLD") {
+        AnalysisConfigFile >> DataBuffer;
+        ThresholdSiLi = atof(DataBuffer.c_str());
+        ThresholdSiLi = ThresholdSiLi*keV;
+        cout << whatToDo << " " << ThresholdSiLi  << " MeV "<< endl;
+      }
+      else if (whatToDo == "CSI_E_THRESHOLD") {
+        AnalysisConfigFile >> DataBuffer;
+        ThresholdCsI = atof(DataBuffer.c_str());
+        ThresholdCsI = ThresholdCsI*keV;
+        cout << whatToDo << " " << ThresholdCsI  << " MeV "<< endl;
+      } 
+      else if (AnalysisConfigFile.eof()) ReadingStatus = false;
+    }
+  }
 }
+
 
 // Construct detector and inialise sensitive part.
 // Called After DetecorConstruction::AddDetector Method
@@ -860,7 +962,7 @@ void MUST2Array::ReadSensitive(const G4Event*) {
     double timeX = TimeOffset - RandGauss::shoot(it->second.second, ResoTimeMust);
     unsigned int strip = it->first-1000000*(it->first/1000000);
     unsigned int det   = it->first/1000000;
-    if (energyX > ThresholdSi) {
+    if (energyX > ThresholdSiX) {
       trig.insert(det);
       SiScoredHit = true;
       m_Event->SetStripXE(det, strip ,
@@ -906,7 +1008,7 @@ void MUST2Array::ReadSensitive(const G4Event*) {
     double timeY = TimeOffset - RandGauss::shoot(it->second.second, ResoTimeMust);
     unsigned int strip = it->first-1000000*(it->first/1000000);
     unsigned int det   = it->first/1000000;
-    if (energyY > ThresholdSi) {
+    if (energyY > ThresholdSiY) {
       trig.insert(det);
       SiScoredHit = true;
       m_Event->SetStripYE(det, strip ,

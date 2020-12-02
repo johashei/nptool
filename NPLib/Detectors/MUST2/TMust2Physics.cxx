@@ -60,10 +60,10 @@ ClassImp(TMust2Physics)
   m_SiLi_E_RAW_Threshold = 8200;
   m_CsI_E_RAW_Threshold  = 8200;
   // Calibrated Threshold
-  m_Si_X_E_Threshold = 0;
-  m_Si_Y_E_Threshold = 0;
-  m_SiLi_E_Threshold = 0;
-  m_CsI_E_Threshold  = 0;
+  m_Si_X_E_Threshold = 0*keV;
+  m_Si_Y_E_Threshold = 0*keV;
+  m_SiLi_E_Threshold = 0*keV;
+  m_CsI_E_Threshold  = 0*keV;
 
   m_Ignore_not_matching_SiLi = false;
   m_Ignore_not_matching_CsI  = false;
@@ -80,7 +80,7 @@ ClassImp(TMust2Physics)
   m_SiLi_MatchingY.resize(16, 0);
 
   m_SiLi_MatchingX[0] = 112;
-  m_SiLi_MatchingY[1] = 112;
+  m_SiLi_MatchingY[0] = 112;
 
   m_SiLi_MatchingX[1] = 112;
   m_SiLi_MatchingY[1] = 80;
@@ -674,7 +674,7 @@ void TMust2Physics::ReadAnalysisConfig() {
       else if (whatToDo == "MAX_STRIP_MULTIPLICITY") {
         AnalysisConfigFile >> DataBuffer;
         m_MaximumStripMultiplicityAllowed = atoi(DataBuffer.c_str());
-        cout << "MAXIMUN STRIP MULTIPLICITY "
+        cout << "MAXIMUM STRIP MULTIPLICITY "
              << m_MaximumStripMultiplicityAllowed << endl;
       }
 
@@ -803,31 +803,30 @@ void TMust2Physics::ReadAnalysisConfig() {
 
       else if (whatToDo == "SI_X_E_THRESHOLD") {
         AnalysisConfigFile >> DataBuffer;
-        m_Si_X_E_Threshold = atof(DataBuffer.c_str());
-        cout << whatToDo << " " << m_Si_X_E_Threshold << endl;
+        m_Si_X_E_Threshold = atof(DataBuffer.c_str()) *keV ;
+        cout << whatToDo << " " << m_Si_X_E_Threshold << " MeV"  << endl;
       }
 
       else if (whatToDo == "SI_Y_E_THRESHOLD") {
         AnalysisConfigFile >> DataBuffer;
-        m_Si_Y_E_Threshold = atof(DataBuffer.c_str());
-        cout << whatToDo << " " << m_Si_Y_E_Threshold << endl;
+        m_Si_Y_E_Threshold = atof(DataBuffer.c_str()) *keV;
+        cout << whatToDo << " " << m_Si_Y_E_Threshold << " MeV"  << endl;
       }
 
       else if (whatToDo == "SILI_E_THRESHOLD") {
         AnalysisConfigFile >> DataBuffer;
-        m_SiLi_E_Threshold = atof(DataBuffer.c_str());
-        cout << whatToDo << " " << m_SiLi_E_Threshold << endl;
+        m_SiLi_E_Threshold = atof(DataBuffer.c_str()) *keV;
+        cout << whatToDo << " " << m_SiLi_E_Threshold << " MeV"  << endl;
       }
 
       else if (whatToDo == "CSI_E_THRESHOLD") {
         AnalysisConfigFile >> DataBuffer;
-        m_CsI_E_Threshold = atof(DataBuffer.c_str());
-        cout << whatToDo << " " << m_CsI_E_Threshold << endl;
+        m_CsI_E_Threshold = atof(DataBuffer.c_str()) *keV;
+        cout << whatToDo << " " << m_CsI_E_Threshold << " MeV"  << endl;
       }
 
-      else {
-        ReadingStatus = false;
-      }
+      else if (AnalysisConfigFile.eof()) ReadingStatus = false;
+      
     }
   }
 }
@@ -1398,7 +1397,6 @@ double fSiLi_E(const TMust2Data* m_EventData, const int& i) {
   name += "_SiLi";
   name += NPL::itoa(m_EventData->GetMMSiLiEPadNbr(i));
   name += "_E";
-
   return CalibrationManager::getInstance()->ApplyCalibration(
       name, m_EventData->GetMMSiLiEEnergy(i),1);
 }
