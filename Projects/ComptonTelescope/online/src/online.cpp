@@ -47,7 +47,8 @@ void setCTTrackerFront(TComptonTelescopeData* ccamData, newframe_t* event, int d
     ccamData -> SetCTTrackerFrontETowerNbr(1);
     ccamData -> SetCTTrackerFrontEDetectorNbr(detNbr);
     ccamData -> SetCTTrackerFrontEStripNbr(k+1);
-    ccamData -> SetCTTrackerFrontEEnergy(event->sample[detNbr-1][faceNbr-1][k]);
+    //ccamData -> SetCTTrackerFrontEEnergy(event->sample[detNbr-1][faceNbr-1][k]);
+    ccamData -> SetCTTrackerFrontEEnergy(event->sample[faceNbr-1][detNbr-1][k]);
   }//End of loop on strips
 }
 
@@ -62,7 +63,8 @@ void setCTTrackerBack(TComptonTelescopeData* ccamData, newframe_t* event, int de
     ccamData -> SetCTTrackerBackETowerNbr(1);
     ccamData -> SetCTTrackerBackEDetectorNbr(detNbr);
     ccamData -> SetCTTrackerBackEStripNbr(k+1);
-    ccamData -> SetCTTrackerBackEEnergy(event->sample[detNbr-1][faceNbr-1][k]);
+    //ccamData -> SetCTTrackerBackEEnergy(event->sample[detNbr-1][faceNbr-1][k]);
+    ccamData -> SetCTTrackerBackEEnergy(event->sample[faceNbr-1][detNbr-1][k]);
   }//End of loop on strips
 }
 
@@ -129,18 +131,21 @@ int main()
   // Set some constants
   const int pixelNumber = 64;
   const int stripNumber = 32;
-  const bool loopForever = true;
-  while (loopForever or i<1)
+//  const bool loopForever = true;
+  const bool loopForever = false;
+//  while (loopForever or i<1)
+  while (loopForever or i<3)
   { 
     // Load a root file and setup DecodeD
     DD -> setTree("20200128_10h44_bi207_conv.root");
     int dlength = DD -> getLength();
 
-    while (DD -> getCursor() < dlength and (loopForever or i<1))
+//    while (DD -> getCursor() < dlength and (loopForever or i<1))
+    while (DD -> getCursor() < dlength and (loopForever or i<3))
     {
       // Load a ROSMAP file
       std::ifstream is;
-      i = 1;
+//      i = 1;
       switch (i % 3) {
         case 3: is.open("./mfm.bin", std::ios::binary); break;
         case 4: is.open("./133Ba.bin", std::ios::binary); break;
