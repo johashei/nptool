@@ -51,8 +51,8 @@ class TComptonTelescopeSpectra:public VSpectra {
 
   private: // Information on Compton Telescope 
     unsigned int fNumberOfTelescope;
-    unsigned int fStripX;
-    unsigned int fStripY;
+    unsigned int fNumberOfStripsFront;
+    unsigned int fNumberOfStripsBack;
     unsigned int fCalorimeterNPixels;
 };
 

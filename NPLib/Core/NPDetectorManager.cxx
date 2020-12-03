@@ -393,11 +393,10 @@ void NPL::DetectorManager::InitThreadPool(){
   m_ThreadPool.clear();
   m_Ready.clear();
   std::map<std::string,VDetector*>::iterator it;
-
+  m_Ready.resize(m_Detector.size(),false);
   unsigned int i = 0;
   for (it = m_Detector.begin(); it != m_Detector.end(); ++it) { 
     m_ThreadPool.push_back( std::thread( &NPL::DetectorManager::StartThread,this,it->second,i++) );
-    m_Ready.push_back(false);
   }
 
   m_stop = false;
