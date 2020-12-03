@@ -40,7 +40,6 @@ CrossTalk::~CrossTalk(){
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 void CrossTalk::AddHitVector(const vector<double>& X, const vector<double>& Y, const vector<double>& Z,const vector<double>& dX, const vector<double>& dY, const vector<double>& dZ, const vector<double> &T){
 
   HitX = &X;
@@ -55,6 +54,10 @@ void CrossTalk::AddHitVector(const vector<double>& X, const vector<double>& Y, c
   sizeHit = X.size();
 }
 
+bool cmp(pair<int,double>& a, pair<int,double>&b){
+    return a.second < b.second;
+}
+
 vector<int> CrossTalk::ComputeCrossTalk(){
 
   FirstHit = -1;
@@ -62,6 +65,20 @@ vector<int> CrossTalk::ComputeCrossTalk(){
   static double x1,y1,z1,dx1,dy1,dz1,t1;
   static double x2,y2,z2,dx2,dy2,dz2,t2;
   static double Dist, dR1, dR2;
+
+  //Attribute a new index based on the time arrive from the first to the last hit
+  //Using vector of pairs
+
+  static vector<pair<int, double>> pairSortedID;
+  pairSortedID.clear();
+  for(int i = 0; i < sizeHit; i++){
+    pairSortedID.emplace_back(i, (*HitT)[i]);
+  }
+  sort(pairSortedID.begin(), pairSortedID.end(), cmp);
+  static vector<unsigned int> SortedID;
+  for(int i = 0; i < sizeHit; i++){
+    SortedID.push_back(pairSortedID[i].first);
+  }
 
   // A different Cluster number (starting at 1) is assigned to each hit
   static vector<int> ID_ClustHit;
@@ -123,6 +140,7 @@ vector<int> CrossTalk::ComputeCrossTalk(){
   }
    
   FirstHit = FirstN;
+  
   static double v_n, Dmax;
   static vector<double> CrossTalk;
   CrossTalk.clear();
@@ -160,7 +178,6 @@ vector<int> CrossTalk::ComputeCrossTalk(){
   }
 
   return m_Neutrons;
-
 
 }
 
