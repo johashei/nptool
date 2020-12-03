@@ -2,7 +2,7 @@
 Beam
   Particle= electron
   Energy= 500 MeV
-  SigmaEnergy= 0.25 MeV
+  SigmaEnergy= 0.0 MeV
   SigmaThetaX= 0.1 deg
   SigmaPhiY= 0.1 deg
   SigmaX= 0.1 mm

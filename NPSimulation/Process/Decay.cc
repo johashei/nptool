@@ -97,6 +97,8 @@ G4bool Decay::ModelTrigger(const G4FastTrack& fastTrack) {
 
 ////////////////////////////////////////////////////////////////////////////////
 void Decay::DoIt(const G4FastTrack& fastTrack,G4FastStep& fastStep){
+
+  cout << m_ExcitationEnergy << endl;
   // Get the track info
   const G4Track* PrimaryTrack = fastTrack.GetPrimaryTrack();
   G4ThreeVector pdirection = PrimaryTrack->GetMomentum().unit();

@@ -12,7 +12,7 @@
  * Last update    :                                                          *
  *---------------------------------------------------------------------------*
  * Decription:                                                               *
- *  This class describe  eAGanil analysis project                            *
+ *  This class describe eAGanil analysis project                             *
  *                                                                           *
  *---------------------------------------------------------------------------*
  * Comment:                                                                  *
@@ -45,11 +45,13 @@ void Analysis::Init(){
    Inter = new TInteractionCoordinates();
    RootInput:: getInstance()->GetChain()->SetBranchAddress("InteractionCoordinates",&Inter);
    RootInput:: getInstance()->GetChain()->SetBranchAddress("ReactionConditions",&Initial ); 
+   RootInput:: getInstance()->GetChain()->SetBranchAddress("Run",&Run ); 
    RootOutput::getInstance()->GetTree()->Branch("Ex",&Ex);
    RootOutput::getInstance()->GetTree()->Branch("ELab",&ELab);
    RootOutput::getInstance()->GetTree()->Branch("ThetaLab",&ThetaLab);
    RootOutput::getInstance()->GetTree()->Branch("Detected",&Detected);
    RootOutput::getInstance()->GetTree()->Branch("Resolution",&Resolution);
+   RootOutput::getInstance()->GetTree()->Branch("Run",&Run);
    m_reaction.ReadConfigurationFile(NPOptionManager::getInstance()->GetReactionFile());
    Resolution={5e-2,1e-2,5e-3,1e-3,5e-4,1e-4,5e-5,1e-5,5e-6,1e-6};
 }
@@ -63,14 +65,16 @@ void Analysis::TreatEvent(){
   unsigned int sizeR = Resolution.size();
  for(unsigned int i = 0 ; i < sizeR ; i++){
   
-  double E = Rand.Gaus(Energy,Energy*Resolution[i]);
+  //double E = Rand.Gaus(Energy,Energy*Resolution[i]);
   //double E = Rand.Gaus(Energy,Energy*1e-4);
-  //double T = Rand.Gaus(Theta,Theta*Resolution[i]);
-   double ExO = m_reaction.ReconstructRelativistic(E,Theta);
-  //double ExO = m_reaction.ReconstructRelativistic(Energy,T);
+//  double T = Rand.Gaus(Theta,Theta*Resolution[i]);
+  //double ExO = m_reaction.ReconstructRelativistic(E,Theta);
+//  double ExO = m_reaction.ReconstructRelativistic(Energy,T);
+
+  double ExO = m_reaction.ReconstructRelativistic(Energy,Theta);
   Ex.push_back(ExO);
   ThetaLab.push_back(Theta/deg);
-  ELab.push_back(E);
+  //ELab.push_back(E);
   if(Inter->GetDetectedMultiplicity())
     Detected.push_back(1);
   else
