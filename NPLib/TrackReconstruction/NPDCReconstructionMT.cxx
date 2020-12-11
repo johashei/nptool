@@ -188,11 +188,9 @@ void NPL::DCReconstructionMT::InitThreadPool(){
   for (unsigned int i=0; i < m_nbr_thread; i++) { 
     //Create the minimiser (deleted by the thread)
     ROOT::Math::Minimizer* mini=ROOT::Math::Factory::CreateMinimizer("Minuit2", "Migrad"); 
-
     // Register minimiser for futur deletion
     m_ThreadPool.push_back( std::thread(&NPL::DCReconstructionMT::StartThread,this,mini,i) );
   }
-
   m_stop = false;
   for(auto& th: m_ThreadPool){
     th.detach();

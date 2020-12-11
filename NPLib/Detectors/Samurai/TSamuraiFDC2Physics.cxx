@@ -26,11 +26,11 @@
 #include <cmath>
 #include <stdlib.h>
 #include <limits>
+using namespace std;
 
 //   NPL
 #include "RootInput.h"
 #include "RootOutput.h"
-#include "TAsciiFile.h"
 #include "NPOptionManager.h"
 #include "NPDetectorFactory.h"
 #include "NPSystemOfUnits.h"
@@ -50,13 +50,6 @@ ClassImp(TSamuraiFDC2Physics)
     DriftLowThreshold=0.4 ;
     DriftUpThreshold=9.3;
     PowerThreshold=5;
-
-    #if __cplusplus > 199711L && NPMULTITHREADING 
-    // one thread for each plan X,U,V = 3
-    // ! more than this will not help !
-    m_reconstruction.SetNumberOfThread(3);
-    m_reconstruction.InitThreadPool();
-    #endif 
   }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -349,6 +342,17 @@ void TSamuraiFDC2Physics::ReadConfiguration(NPL::InputParser parser){
     xml.LoadFile(xmlpath);
     AddDC("SAMURAIFDC2",xml);
   }
+
+
+#if __cplusplus > 199711L && NPMULTITHREADING 
+  if(blocks.size()){
+    // one thread for each plan X,U,V = 3
+    // ! more than this will not help !
+    m_reconstruction.SetNumberOfThread(3);
+    m_reconstruction.InitThreadPool();
+   }
+#endif 
+
 }
 
 ///////////////////////////////////////////////////////////////////////////

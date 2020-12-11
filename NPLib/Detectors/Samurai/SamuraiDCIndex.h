@@ -36,12 +36,14 @@ class SamuraiDCIndex{
      m_norme=Norme();
    };  
   
-  unsigned int m_det;
-  unsigned int m_layer;
-  unsigned int m_wire;
-  unsigned int m_norme;
+  private:
+    unsigned int m_det;
+    unsigned int m_layer;
+    unsigned int m_wire;
+    unsigned int m_norme;
     
   inline int Norme() const {return (m_det*1000000000+m_layer*1000000+m_wire);} ;
+
   bool operator<(const SamuraiDCIndex i2){
     return this->Norme()<i2.Norme();
     }

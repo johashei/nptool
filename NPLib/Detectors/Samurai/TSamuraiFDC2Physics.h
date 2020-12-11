@@ -48,7 +48,6 @@
 
 
 
-using namespace std ;
 class TSamuraiFDC2Physics : public TObject, public NPL::VDetector{
   public:
     TSamuraiFDC2Physics();
@@ -60,16 +59,16 @@ class TSamuraiFDC2Physics : public TObject, public NPL::VDetector{
 
   public:
     //   Provide Physical Multiplicity
-    vector<double> DriftLength;
-    vector<int> Detector;
-    vector<int> Layer;
-    vector<int> Wire;
-    vector<double> Time;
-    vector<double> ToT;
-    vector<bool>   Matched;
+    std::vector<double> DriftLength;
+    std::vector<int> Detector;
+    std::vector<int> Layer;
+    std::vector<int> Wire;
+    std::vector<double> Time;
+    std::vector<double> ToT;
+    std::vector<bool>   Matched;
     // Computed variable
-    vector<TVector3> ParticleDirection;
-    vector<TVector3> MiddlePosition;
+    std::vector<TVector3> ParticleDirection;
+    std::vector<TVector3> MiddlePosition;
 
     double PosX;
     double PosY;
@@ -86,10 +85,10 @@ class TSamuraiFDC2Physics : public TObject, public NPL::VDetector{
     TVector3 ProjectedPosition(double Z);
 
   private: // Charateristic of the DC 
-    void AddDC(string name, NPL::XmlParser&);//! take the XML file and fill in Wire_X and Layer_Angle
-    map<SamuraiDCIndex,double> Wire_X;//! X position of the wires
-    map<SamuraiDCIndex,double> Wire_Z;//! Z position of the wires
-    map<SamuraiDCIndex,double> Wire_Angle;//! Wire Angle (0 for X, 90 for Y, U and V are typically at +/-30)
+    void AddDC(std::string name, NPL::XmlParser&);//! take the XML file and fill in Wire_X and Layer_Angle
+    std::map<SamuraiDCIndex,double> Wire_X;//! X position of the wires
+    std::map<SamuraiDCIndex,double> Wire_Z;//! Z position of the wires
+    std::map<SamuraiDCIndex,double> Wire_Angle;//! Wire Angle (0 for X, 90 for Y, U and V are typically at +/-30)
   
   private: // Analysis
     double ToTThreshold_H;//! a ToT Low threshold to remove noise
@@ -98,7 +97,7 @@ class TSamuraiFDC2Physics : public TObject, public NPL::VDetector{
     double DriftLowThreshold;//! Minimum Drift length to keep the hit 
     double DriftUpThreshold;//! Maximum Drift length to keep the hit
     double PowerThreshold;//! Maximum P2 minimisation value to keep the track   
-    void RemoveNoise();
+    void RemoveNoise();//!
     // Construct the 2D track and ref position at Z=0 and Z=100 based on X,Z and Radius provided
 
     // Object use to perform the DC reconstruction
@@ -163,7 +162,7 @@ class TSamuraiFDC2Physics : public TObject, public NPL::VDetector{
     void ClearPreTreatedData()   {m_PreTreatedData->Clear();}
 
     //   Remove bad channel, calibrate the data and apply threshold
-    void PreTreat();
+    void PreTreat();//!
 
     // Retrieve raw and pre-treated data
     TSamuraiFDC2Data* GetRawData()        const {return m_EventData;}
@@ -186,7 +185,7 @@ class TSamuraiFDC2Physics : public TObject, public NPL::VDetector{
    // TSamuraiFDC2Spectra* m_Spectra; // !
 
   public: // Spectra Getter
-    map< string , TH1*> GetSpectra(); 
+    std::map< std::string , TH1*> GetSpectra(); 
 
   public: // Static constructor to be passed to the Detector Factory
     static NPL::VDetector* Construct();

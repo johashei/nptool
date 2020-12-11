@@ -2,6 +2,7 @@
 #define TSamuraiFDC0Data_H
 #include "TObject.h"
 #include <vector>
+
 class TSamuraiFDC0Data: public TObject{
   public:
     TSamuraiFDC0Data();

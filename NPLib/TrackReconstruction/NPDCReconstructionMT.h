@@ -70,12 +70,10 @@ namespace NPL{
       // Function used by the minimizer in BuildTrack2D
       double SumD(const double* parameter );
 
-      
       // For debugging/optimisation
       // Scan Sumd versus parameter a or b (tovary =0 for a, 1 for b)
       // return a TGraph for display
       TGraph* Scan(double a, double b, int tovary, double minV, double maxV);
-
 
     private: // private member used by SumD
       // data to minize index by thread ID
@@ -98,11 +96,11 @@ namespace NPL{
       bool m_stop;
 
     public: // Init the Thread Pool
-      void StopThread();
-      void StartThread(ROOT::Math::Minimizer*,unsigned int);
-      void InitThreadPool(); 
-      bool IsDone();
 
+      void InitThreadPool(); 
+      void StartThread(ROOT::Math::Minimizer*,unsigned int);
+      void StopThread();
+      bool IsDone();
 
       // used by SumD
       // used by resolve plane

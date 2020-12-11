@@ -23,6 +23,7 @@
 
 #include "BeamReaction.hh"
 #include "G4Electron.hh"
+#include "G4IonTable.hh"
 #include "G4Gamma.hh"
 #include "G4SystemOfUnits.hh"
 #include "G4EmCalculator.hh"
