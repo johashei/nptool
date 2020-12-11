@@ -90,21 +90,23 @@ void TSamuraiFDC2Physics::BuildPhysicalEvent(){
   static unsigned int uid=0;
   VX0.clear();VX100.clear(),D.clear();
   for(auto it = X.begin();it!=X.end();++it){
-#if __cplusplus > 199711L && NPMULTITHREADING 
+#if __cplusplus > 199711L && NPMULTITHREADING
     m_reconstruction.AddPlan(uid++,X[it->first],Z[it->first],R[it->first]); 
 #else
     D[it->first]=m_reconstruction.BuildTrack2D(X[it->first],Z[it->first],R[it->first],X0,X100,a,b); 
 #endif 
     }
 
-#if __cplusplus > 199711L && NPMULTITHREADING 
+#if __cplusplus > 199711L && NPMULTITHREADING
+
   // do all plan at once in parallele, return when all plan are done
   m_reconstruction.BuildTrack2D();
   uid=0;
 #endif
 
   for(auto it = X.begin();it!=X.end();++it){
-#if __cplusplus > 199711L && NPMULTITHREADING 
+#if __cplusplus > 199711L && NPMULTITHREADING
+ 
   D[it->first]=m_reconstruction.GetResults(uid++,X0,X100,a,b); 
 #endif
 
@@ -344,7 +346,8 @@ void TSamuraiFDC2Physics::ReadConfiguration(NPL::InputParser parser){
   }
 
 
-#if __cplusplus > 199711L && NPMULTITHREADING 
+#if __cplusplus > 199711L && NPMULTITHREADING
+ 
   if(blocks.size()){
     // one thread for each plan X,U,V = 3
     // ! more than this will not help !

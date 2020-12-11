@@ -21,13 +21,13 @@
 #include "Math/Factory.h"
 #include "TError.h"
 #include "TGraph.h"
+#include "TVector3.h"
+
 using namespace std;
 using namespace NPL;
 
 ////////////////////////////////////////////////////////////////////////////////
 DCReconstructionMT::DCReconstructionMT(unsigned int number_thread){
-  // this avoid error  printout
-  gErrorIgnoreLevel = kError;
   m_nbr_thread= number_thread;
 }
 ////////////////////////////////////////////////////////////////////////////////
@@ -181,6 +181,10 @@ TGraph* DCReconstructionMT::Scan(double a, double b, int tovary, double minV, do
 }
 ////////////////////////////////////////////////////////////////////////////////
 void NPL::DCReconstructionMT::InitThreadPool(){
+
+  // this avoid error printout during fitting
+  gErrorIgnoreLevel = kError;
+
   StopThread();
   m_ThreadPool.clear();
   m_Ready.clear();

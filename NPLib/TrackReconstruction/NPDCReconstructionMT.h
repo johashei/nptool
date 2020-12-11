@@ -36,27 +36,31 @@
  *    - Resolving plane for two Z plane will provide a point and a direction *
  *****************************************************************************/
 
-#include <vector>
+// stl
 #include <map>
-#include "TVector3.h"
+#include <vector>
+#include <thread>
+// ROOT
 #include "Math/Minimizer.h"
 #include "Math/Functor.h"
-#include <thread>
 
-
+class TVector3;
 class TGraph;
 namespace NPL{
 
   class DCReconstructionMT{
     public:
-      DCReconstructionMT(unsigned int number_thread=1);
+      DCReconstructionMT(){DCReconstructionMT(1);};
+      DCReconstructionMT(unsigned int number_thread);
       ~DCReconstructionMT();
 
     public:
       // Set number of thread
-      // require to stop and reinit the thread 
+      // require to stop and reinit the thread for this to be taken into account
       void SetNumberOfThread(unsigned int number_thread){m_nbr_thread=number_thread;};
+      // Add a plan to the job list
       void AddPlan(unsigned int ID,const std::vector<double>& X, const std::vector<double>& Z, const std::vector<double>& R);
+      // Get results back for the plan with corresponding ID
       double GetResults(unsigned int ID,double& X0,double& X100,double& a, double& b);
       // Build a track in 2D based on drift circle of Radius R and position X,Z
       // return X0(X100) the X position at Z=0 (Z=100)
@@ -89,6 +93,11 @@ namespace NPL{
       std::map<unsigned int,double> m_a;
       std::map<unsigned int,double> m_b;
 
+      // used by resolve plane
+      long double av,bv,au,bu;
+      double xM,yM;
+
+
     private: // Thread Pool defined if C++11 is available
       unsigned int m_nbr_thread;
       std::vector<std::thread> m_ThreadPool;
@@ -101,11 +110,6 @@ namespace NPL{
       void StartThread(ROOT::Math::Minimizer*,unsigned int);
       void StopThread();
       bool IsDone();
-
-      // used by SumD
-      // used by resolve plane
-      long double av,bv,au,bu;
-      double xM,yM;
 
   };
 }
