@@ -40,10 +40,6 @@
 #include <map>
 #include <vector>
 #include <thread>
-// ROOT
-#include "Math/Minimizer.h"
-#include "Math/Functor.h"
-
 class TVector3;
 class TGraph;
 namespace NPL{
@@ -97,7 +93,6 @@ namespace NPL{
       long double av,bv,au,bu;
       double xM,yM;
 
-
     private: // Thread Pool defined if C++11 is available
       unsigned int m_nbr_thread;
       std::vector<std::thread> m_ThreadPool;
@@ -107,7 +102,7 @@ namespace NPL{
     public: // Init the Thread Pool
 
       void InitThreadPool(); 
-      void StartThread(ROOT::Math::Minimizer*,unsigned int);
+      void StartThread(unsigned int);
       void StopThread();
       bool IsDone();
 

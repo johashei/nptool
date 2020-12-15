@@ -18,7 +18,11 @@
  *****************************************************************************/
 
 #include"NPDCReconstructionMT.h"
+
+// ROOT
 #include "Math/Factory.h"
+#include "Math/Minimizer.h"
+#include "Math/Functor.h"
 #include "TError.h"
 #include "TGraph.h"
 #include "TVector3.h"
@@ -29,6 +33,9 @@ using namespace NPL;
 ////////////////////////////////////////////////////////////////////////////////
 DCReconstructionMT::DCReconstructionMT(unsigned int number_thread){
   m_nbr_thread= number_thread;
+  // force loading of the minimizer plugin ahead
+  ROOT::Math::Minimizer* mini=ROOT::Math::Factory::CreateMinimizer("Minuit2", "Migrad"); 
+  delete mini;
 }
 ////////////////////////////////////////////////////////////////////////////////
 DCReconstructionMT::~DCReconstructionMT(){
@@ -190,10 +197,8 @@ void NPL::DCReconstructionMT::InitThreadPool(){
   m_Ready.clear();
   m_Ready.resize(m_nbr_thread,false);
   for (unsigned int i=0; i < m_nbr_thread; i++) { 
-    //Create the minimiser (deleted by the thread)
-    ROOT::Math::Minimizer* mini=ROOT::Math::Factory::CreateMinimizer("Minuit2", "Migrad"); 
     // Register minimiser for futur deletion
-    m_ThreadPool.push_back( std::thread(&NPL::DCReconstructionMT::StartThread,this,mini,i) );
+    m_ThreadPool.push_back( std::thread(&NPL::DCReconstructionMT::StartThread,this,i) );
   }
   m_stop = false;
   for(auto& th: m_ThreadPool){
@@ -201,17 +206,21 @@ void NPL::DCReconstructionMT::InitThreadPool(){
   }
 }
 ////////////////////////////////////////////////////////////////////////////////
-void DCReconstructionMT::StartThread(ROOT::Math::Minimizer* mini,unsigned int id){
-  // Let the main thread start 
-  std::this_thread::sleep_for(std::chrono::milliseconds(100));
-  // create the functor 
-  // each threads needs its own or the minisation is not thread safe 
-  ROOT::Math::Functor* func= new ROOT::Math::Functor(this,&NPL::DCReconstructionMT::SumD,3); 
-  mini->SetFunction(*func);
-  mini->SetPrintLevel(0);
+void DCReconstructionMT::StartThread(unsigned int id){
+  // usefull variable
   double ai,bi;
   unsigned int uid;
   const double* xs;
+  // create the functor 
+  // each threads needs its own or the minisation is not thread safe 
+  ROOT::Math::Functor* func= new ROOT::Math::Functor(this,&NPL::DCReconstructionMT::SumD,3); 
+  //Create the minimiser (deleted by the thread)
+  ROOT::Math::Minimizer* mini=ROOT::Math::Factory::CreateMinimizer("Minuit2", "Migrad"); 
+  mini->SetFunction(*func);
+  mini->SetPrintLevel(0);
+
+  // Let the main thread start
+  std::this_thread::sleep_for(std::chrono::milliseconds(100));
   while(true){
     // Do the job if possible
     if(m_Ready[id]){
