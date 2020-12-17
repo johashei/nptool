@@ -32,7 +32,6 @@ CrossTalk::CrossTalk(){
   coef = 3;
   // this avoid error 
   gErrorIgnoreLevel = kError;
-  /* FirstHit = -1; */
 
 }
 ////////////////////////////////////////////////////////////////////////////////
@@ -60,26 +59,24 @@ bool cmp(pair<int,double>& a, pair<int,double>&b){
 
 vector<int> CrossTalk::ComputeCrossTalk(){
 
-  FirstHit = -1;
-
   static double x1,y1,z1,dx1,dy1,dz1,t1;
   static double x2,y2,z2,dx2,dy2,dz2,t2;
   static double Dist, dR1, dR2;
 
   //Attribute a new index based on the time arrive from the first to the last hit
   //Using vector of pairs (ID,Time)
-  static vector<pair<int, double>> pairSortedID;
-  pairSortedID.clear();
+  static vector<pair<int, double>> pair_SortedID;
+  pair_SortedID.clear();
   for(int i = 0; i < sizeHit; i++){
-    pairSortedID.emplace_back(i, (*HitT)[i]);
+    pair_SortedID.emplace_back(i, (*HitT)[i]);
   }
   //Sort pair vector (ID,Time) in Time
-  sort(pairSortedID.begin(), pairSortedID.end(), cmp);
-  static vector<unsigned int> SortedID;
-  SortedID.clear();
+  sort(pair_SortedID.begin(), pair_SortedID.end(), cmp);
+  
+  m_SortedID.clear();
   //Put new ID sorted in a vector
   for(int i = 0; i < sizeHit; i++){
-    SortedID.push_back(pairSortedID[i].first);
+    m_SortedID.push_back(pair_SortedID[i].first);
   }
 
   // A different Cluster number (starting at 1) is assigned to each hit
@@ -89,18 +86,16 @@ vector<int> CrossTalk::ComputeCrossTalk(){
     ID_ClustHit.push_back(i+1);
   }
   
-  FirstHit = SortedID[0];
-  
   //Test each Dist(n-n) to find clusters
   //When 2 neutrons are part of a the same cluster, change their ID_ClustHit for the lowest
   //Create a map to hold the Hit_ID for each cluster 
   static map<unsigned int, vector<unsigned int>> mapOfClust;
   mapOfClust.clear();
   for(int j = 0; j < sizeHit-1; j++){
-    x1 = (*HitX)[SortedID[j]], y1 = (*HitY)[SortedID[j]], z1 = (*HitZ)[SortedID[j]], dx1 = (*HitdX)[SortedID[j]], dy1 = (*HitdY)[SortedID[j]], dz1 = (*HitdZ)[SortedID[j]], t1 = (*HitT)[SortedID[j]];   
+    x1 = (*HitX)[m_SortedID[j]], y1 = (*HitY)[m_SortedID[j]], z1 = (*HitZ)[m_SortedID[j]], dx1 = (*HitdX)[m_SortedID[j]], dy1 = (*HitdY)[m_SortedID[j]], dz1 = (*HitdZ)[m_SortedID[j]], t1 = (*HitT)[m_SortedID[j]];   
     dR1 = sqrt( dx1*dx1 + dy1*dy1 + dz1*dz1);  
     for(int jj = j+1; jj < sizeHit ; jj++){
-      x2 = (*HitX)[SortedID[jj]], y2 = (*HitY)[SortedID[jj]], z2 = (*HitZ)[SortedID[jj]];   
+      x2 = (*HitX)[m_SortedID[jj]], y2 = (*HitY)[m_SortedID[jj]], z2 = (*HitZ)[m_SortedID[jj]];   
       Dist = sqrt((x2-x1)*(x2-x1) + (y2-y1)*(y2-y1) + (z2-z1)*(z2-z1));
       if(Dist < coef*dR1){
         if(ID_ClustHit[jj] < ID_ClustHit[j]){
@@ -114,7 +109,7 @@ vector<int> CrossTalk::ComputeCrossTalk(){
   }
 
   for(unsigned int i = 0; i < sizeHit; i++){
-    mapOfClust[ID_ClustHit[i]].push_back(SortedID[i]);
+    mapOfClust[ID_ClustHit[i]].push_back(m_SortedID[i]);
   }
 
   //Put first hit in time of each cluster in a new map mapOfHead and remake the numbering of clusters (1,2,3...)
@@ -122,11 +117,14 @@ vector<int> CrossTalk::ComputeCrossTalk(){
   static unsigned int NbrOfClust;
   mapOfHead.clear();
   NbrOfClust = mapOfClust.size();
- 
+
+
+
   static unsigned int count;
-  count=1;
+  count=1, m_HeadClust.clear();
   for(auto itr = mapOfClust.begin(); itr != mapOfClust.end(); itr++){
     mapOfHead[count] = itr->second[0];
+    m_HeadClust.push_back(itr->second[0]);
     count++;
   } 
 
@@ -159,12 +157,14 @@ vector<int> CrossTalk::ComputeCrossTalk(){
   for(auto itr = mapOfHead.begin(); itr != mapOfHead.end(); itr++){
     m_Neutrons.push_back(itr->second);
   }
-
   return m_Neutrons;
-
 }
 
-int CrossTalk::GetFirstN(){
-  return FirstHit;
+vector<int> CrossTalk::GetSortedHits(){
+  return m_SortedID;
 }
+vector<int> CrossTalk::GetHeadClust(){
+  return m_HeadClust;
+}
+
 

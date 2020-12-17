@@ -37,8 +37,8 @@ namespace NPL{
       void AddHitVector(const std::vector<double>& X, const std::vector<double>& Y,const std::vector<double>& Z, const std::vector<double>& dX, const std::vector<double>& dY, const std::vector<double>& dZ, const std::vector<double>& T);
 
       std::vector<int> ComputeCrossTalk();
-
-      int GetFirstN();
+      std::vector<int> GetSortedHits();
+      std::vector<int> GetHeadClust();
 
     private: // private member used by
       ROOT::Math::Functor    m_func;
@@ -49,12 +49,13 @@ namespace NPL{
       const std::vector<double>* HitdY;
       const std::vector<double>* HitdZ;
       const std::vector<double>* HitT;
-
+      
+      std::vector<int> m_SortedID;
+      std::vector<int> m_HeadClust;
       std::vector<int> ClustHit;
       std::vector<int> m_Neutrons;
       double coef;
       unsigned int sizeHit ;
-      int FirstHit;
       
   };
 }
