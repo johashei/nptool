@@ -1,103 +1,108 @@
 %%%%%%%%%%Detector%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%1
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%1
 Target
- THICKNESS= 9.5 
- RADIUS= 7.5 mm
- MATERIAL= CD2 
- Angle= 0 deg
- X= 0 mm
- Y= 0 mm
- Z= 0 mm
+ THICKNESS= 4.76 micrometer
+ ANGLE= 0 deg
+ RADIUS= 10 mm
+ MATERIAL= CD2
+ X= 0
+ Y= 0
+ Z= 0
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%1
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+CATSDetector
+ X1_Y1=  35.56 -35.56  -2658 mm
+ X28_Y28= -35.56  35.56  -2658 mm
+ X1_Y28= 35.56  35.56  -2658 mm
+ X28_Y1=  -35.56 -35.56  -2658 mm
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+CATSDetector
+ X28_Y1=  -35.56  35.56   -2045 mm
+ X1_Y28= 35.56 -35.56   -2045 mm
+ X28_Y28= -35.56 -35.56   -2045 mm
+ X1_Y1=  35.56  35.56   -2045 mm
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%% Telescope 1 %%%%%%%
+M2Telescope
+ X128_Y128=  115.88  9.61  154.54 mm
+ X128_Y1=  104.8  101.89  125.09 mm 
+ X1_Y1=  14.55  102.4  160.63 mm
+ X1_Y128=  25.63  10.12  190.08 mm
+ SI=  1.00
+ SILI= 0.00
+ CSI= 1.00
+ VIS= all
+
+%%%%%%% Telescope 2 %%%%%%%
+M2Telescope
+ X128_Y128=  -11.23  102.42  160.87 mm
+ X128_Y1=  -101.39  102.39  124.37 mm
+ X1_Y1=  -113.17  10.36  153.56 mm
+ X1_Y128=  -23.03  10.38  190.05 mm
+ SI=  1.00
+ SILI= 0.00
+ CSI= 1.00
+ VIS= all
+
+%%%%%%% Telescope 3 %%%%%%%
+M2Telescope
+ X128_Y128=  -113.28  -12.52  153.32 mm
+ X128_Y1=  -101.58  -104.77  124.82 mm
+ X1_Y1=  -11.39  -104.58  161.48 mm
+ X1_Y128=  -23.1  -12.34  189.98 mm
+ SI= 1.00
+ SILI= 0.00
+ CSI= 1.00
+ VIS= all
+
+%%%%%%% Telescope 4 %%%%%%%
+M2Telescope
+ X128_Y128=  13.82  -104.92  160.72 mm
+ X128_Y1=  104.3  -104.95  125.08 mm
+ X1_Y1=  115.75  -12.73  153.76 mm
+ X1_Y128=  25.23  -12.65  189.43 mm
+ SI= 1.00
+ SILI= 0.00
+ CSI= 1.00
+ VIS= all
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-GaspardTracker Trapezoid
- R= -90 mm
- THETA= 60 deg
- PHI= 0 deg
- BETA= 0 0 0 deg
- FIRSTSTAGE= 1
- SECONDSTAGE= 0
- THIRDSTAGE= 0
- VIS= all
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%GaspardTracker Trapezoid
- R= -90 mm
- THETA= 60 deg
- PHI= 45 deg
- BETA= -60 0 -90 deg
- FIRSTSTAGE= 1
- SECONDSTAGE= 0 
- THIRDSTAGE= 0
- VIS= all
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%GaspardTracker Trapezoid
- R= -90 mm
- THETA= 60 deg
- PHI= 90 deg
- BETA= -60 0 -90 deg
- FIRSTSTAGE= 1
- SECONDSTAGE= 0
- THIRDSTAGE= 0
- VIS= all
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%GaspardTracker Trapezoid
- R= -90 mm
- THETA= 60 deg
- PHI= 135 deg
- BETA= -60 0 -90 deg
- FIRSTSTAGE= 1
- SECONDSTAGE= 0
- THIRDSTAGE= 0
- VIS= all
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%GaspardTracker Trapezoid
- R= -90 mm
- THETA= 60 deg
- PHI= 180 deg
- BETA= -60 0 -90 deg
- FIRSTSTAGE= 1
- SECONDSTAGE= 0
- THIRDSTAGE= 0
- VIS= all
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%GaspardTracker Trapezoid
- R= -90 mm
- THETA= 60 deg
- PHI= 225 deg
- BETA= -60 0 -90 deg
- FIRSTSTAGE= 1
- SECONDSTAGE= 0
- THIRDSTAGE= 0
- VIS= all
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%GaspardTracker Trapezoid
- R= -90 mm
- THETA= 60 deg
- PHI= 270 deg
- BETA= -60 0 -90 deg
- FIRSTSTAGE= 1
- SECONDSTAGE= 0
- THIRDSTAGE= 0
- VIS= all
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%GaspardTracker Trapezoid
- R= -90 mm
- THETA= 60 deg
- PHI= 315 deg
- BETA= -60 0 -90 deg
- FIRSTSTAGE= 1
- SECONDSTAGE= 0
- THIRDSTAGE= 0
- VIS= all
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Mugast Trapezoid 
+ DetectorNumber= 7
+ X128_Y1=	44.063	102.884	-30.345	mm
+ X1_Y1=	-47.423	102.884	-30.345	mm
+ X1_Y128=	-14.275	35.783	-110.312	mm
+ X128_Y128=	10.915	35.783	-110.312	mm
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Mugast Trapezoid 
+ DetectorNumber= 3
+ X128_Y1=	111.464	-10.14	-30.345	mm
+ X1_Y1=	83.193	76.895	-30.345	mm
+ X1_Y128=	29.62	24.634	-110.312	mm
+ X128_Y128=	37.405	0.677	-110.312	mm
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Mugast Trapezoid      
+ DetectorNumber= 1
+ X128_Y1=	24.825	-109.134	-30.345	mm
+ X1_Y1=	98.84	-55.36	-30.345	mm
+ X1_Y128=	32.582	-20.558	-110.312	mm
+ X128_Y128=	12.202	-35.365	-110.312	mm
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Mugast Trapezoid      
+ DetectorNumber= 5
+ X128_Y1=	-96.121	-57.335	-30.345	mm
+ X1_Y1=	-22.107	-111.109	-30.345	mm
+ X1_Y128=	-9.484	-37.34	-110.312	mm
+ X128_Y128=	-29.863	-22.533	-110.312	mm
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-Tiara Barrel
- InnerBarrel= 0
- OuterBarrel= 0
- Chamber= 0
- X= 0 mm
- Y= 0 mm
- Z= 0 mm
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
-
+Mugast Trapezoid      
+ DetectorNumber= 4
+ X128_Y1=	-84.232	73.70	-30.345	mm
+ X1_Y1=	-112.503	-13.31	-30.345	mm
+ X1_Y128=	-38.443	-2.519	-110.312	mm
+ X128_Y128=	-30.659	21.438	-110.312	mm
