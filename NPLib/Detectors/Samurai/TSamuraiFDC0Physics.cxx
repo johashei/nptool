@@ -350,8 +350,8 @@ void TSamuraiFDC0Physics::ReadConfiguration(NPL::InputParser parser){
     // ! more than that this will not help !
     m_reconstruction.SetNumberOfThread(2);
     m_reconstruction.InitThreadPool();
-#endif 
   }
+#endif 
 }
 
 ///////////////////////////////////////////////////////////////////////////

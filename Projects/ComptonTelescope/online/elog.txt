@@ -1,10 +1,8 @@
 elog
-  host= caeelog.in2p3.fr 
-  port= 443
+  host= 127.0.0.1 
+  port= 8090 
   ssl= 0
-  logbook= MUST2
-  username= matta
-  password= adrien!
+  logbook= CCAM
 attribute Author
   values= ccam 
 attribute Subject
