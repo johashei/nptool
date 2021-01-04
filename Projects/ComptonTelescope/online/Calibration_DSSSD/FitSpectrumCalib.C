@@ -20,61 +20,127 @@
 using namespace std;
 
 Double_t fpeaks(Double_t*, Double_t*);
+Double_t fpeaks_BG(Double_t*, Double_t*);
 Double_t gaussianPeak(Double_t*, Double_t*);
 Double_t indivFcn(Double_t*, Double_t*);
 Double_t indivFcn_BG(Double_t*, Double_t*);
 Double_t fit_pol1(Double_t*, Double_t*);
+Double_t fit_pol2(Double_t*, Double_t*);
 void     AddPeak(Double_t, Double_t, Double_t);
 void     RemovePeak(Double_t, Double_t);
 Double_t CalibUncertainty(Double_t, TF1*, TMatrixDSym);
 
-static vector<Double_t>  peakList;
+static vector<Double_t>  peakList, peakListP;
 static Int_t            npeaks;
 static Int_t            pmin, pmax, rmin, rmax;
-Bool_t Fit_withBGLin;
 Bool_t reject;
 
 #define NBSTRIPS  32
 
 
-void FitSpectrumCalib(Bool_t isFitBGLin = 1)
+void FitSpectrumCalib()
 {
 
   const int dimE = 6;
   double Energy[dimE] = {481.6935e-3, 553.8372e-3, 565.8473e-3, 975.651e-3, 1047.795e-3, 1059.805e-3}; // MeV
   double error_E[dimE] = {0.0021e-3, 0.0021e-3, 0.0021e-3, 0.003e-3, 0.003e-3, 0.003e-3};
-  //double Energy[dimE] = {481.6935, 553.8372, 975.651, 1047.795};
-  //double error_E[dimE] = {0.0021, 0.0021, 0.003, 0.003};
 
-
-  // fit range
+  // range for pedestal
   pmin = 40;
-  pmax = 980;
-  // range to remove from the fit
   rmin = 70;
+  // range for spectrum
   rmax = 300;
-
+  pmax = 980;
 
   // misc.
-  Fit_withBGLin = isFitBGLin;
   peakList.clear();
+  peakListP.clear();
 
   // define canvas
-  TCanvas *c1 = new TCanvas("c1", "resultats", 1000, 700);
-  c1->Draw();    
+  TCanvas *c1 = new TCanvas("c1", "spectrum", 1000, 700);
+  TCanvas *c2 = new TCanvas("c2", "pedestal", 1000, 700);
+  // declare TGraph for calibration
+  TGraphErrors* gr_calib = new TGraphErrors();
 
   // open file and get histo
-  TFile *inFile = new TFile("./Histograms/20200128_10h44_bi207_conv_RawDSSSDHistos.root");
+  TFile *inFile = new TFile("20200128_10h44_bi207_conv_RawDSSSDHistos.root");
 
   // Front strips
   for (int k = 0; k < NBSTRIPS; k++)
   {
 
+    cout << "\n Fitting histo " << Form("h_D1_FRONT_E%d", k+1) << endl;
+
+    ///// Pedestal fit /////
+    cout << "\n" << "/////////// Pedestal fit  //////////////" << endl;
+    c2->cd();
+
+    // peak search
+    TH1F *histP = (TH1F*) inFile->Get(Form("h_D1_FRONT_E%d", k+1));
+    histP->GetXaxis()->SetRangeUser(pmin, rmin);
+    TSpectrum *sP = new TSpectrum();
+    npeaks = sP->Search(histP, 3, "nobackground", 0.5); // hist, sigma, option, threshold
+    cout << "Found " << npeaks << " peaks to fit" << endl;
+    Double_t *xpeaksP = sP->GetPositionX();
+    peakListP.clear();
+    for (Int_t i = 0; i < npeaks; ++i) {
+      peakListP.push_back(xpeaksP[i]);
+      cout << i << "\t" << xpeaksP[i] << endl;
+    }
+    sort(peakListP.begin(), peakListP.end());
+
+    // fit first peak with gaussian function, no linear background
+    Double_t parP[100];      
+    parP[0] = 2.;  // width        
+    parP[1] = 0;  // exponential decay
+    //parP[1] = 0.4;  // exponential decay
+    for (Int_t p = 0; p < 1; p++) {
+      Double_t xp = peakListP[p];
+      cout << "xp " << xp << endl;
+      Int_t bin  = histP->GetXaxis()->FindBin(xp);
+      Double_t yp = histP->GetBinContent(bin);           
+      parP[2] = xp; // mean
+      parP[3] = yp; // amplitude
+    }
+    TF1 *fitP = new TF1("fitP", fpeaks, parP[2]-3, parP[2]+3, 4);
+    TVirtualFitter::Fitter(histP, 4);
+    fitP->SetParameters(parP);
+    fitP->SetParLimits(0, 1, 20); // width
+    fitP->FixParameter(1, 0); // no exponential decay
+    //fitP->SetParLimits(1, 0.01, 10); // exponential decay
+    fitP->SetParLimits(2, parP[2]-10, parP[2]+10); // mean
+    fitP->SetParLimits(3, 1e2, 1e10); // amplitude
+    fitP->SetNpx(1000);
+    TFitResultPtr rP = histP->Fit("fitP", "RS");
+    Int_t fitStatusP = rP;
+    cout << "status " << fitStatusP << endl;
+    cout << endl;
+    TMatrixDSym covP = rP->GetCovarianceMatrix();
+
+    // write pedestal fit in root file
+    TFile *fP = new TFile("./fit/Fit_pedestal_207Bi_spectrum.root","UPDATE");
+    c2->SetName(Form("h_D1_FRONT_E%d_ped", k));
+    c2->Write();
+    fP->Close();
+
+    // Add in TGraph
+    Double_t paramP[2];
+    paramP[0] = fitP->GetParameter(2); // mean
+    paramP[1] = fitP->GetParError(2); // error mean
+    gr_calib->SetPoint(0, paramP[0], 0);
+    gr_calib->SetPointError(0, paramP[1], 0);
+    gr_calib->Draw();
+
+
     if (k != 1) // remove strip front 2 with no data
     {
+
+      //////// Spectrum fit //////
+      cout << "\n" << "/////////// Spectrum //////////////" << endl;
+      c1->cd();
+
       // open histo
       TH1F *hist = (TH1F*) inFile->Get(Form("h_D1_FRONT_E%d", k+1));
-      cout << "Fitting histo " << Form("h_D1_FRONT_E%d", k+1) << endl;
       hist->GetXaxis()->SetRangeUser(rmax, pmax);
 
       // peak search
@@ -127,15 +193,12 @@ void FitSpectrumCalib(Bool_t isFitBGLin = 1)
         par[2*p+3] = yp;
       }
 
-      if(Fit_withBGLin) {
-        par[2*npeaks+2] = 150.; // y-intercept
-        par[2*npeaks+3] = -0.15; // slope
-      }
+      par[2*npeaks+2] = 150.; // y-intercept
+      par[2*npeaks+3] = -0.15; // slope
 
       // define fit function and parameters
-      Int_t nparams = 2*npeaks + 2; // gaussian width and exponential tail parameters
-      if (Fit_withBGLin) nparams += 2;
-      TF1 *fit = new TF1("fit", fpeaks, rmax, pmax, nparams);
+      Int_t nparams = 2*npeaks + 4; // gaussian width and exponential tail parameters + background
+      TF1 *fit = new TF1("fit", fpeaks_BG, rmax, pmax, nparams);
       TVirtualFitter::Fitter(hist, nparams);
       fit->SetParameters(par);
 
@@ -144,12 +207,12 @@ void FitSpectrumCalib(Bool_t isFitBGLin = 1)
       fit->FixParameter(1, 0); // to fit only with gaussian
       for (Int_t p = 0; p < npeaks; p++) {
         cout << "niveau " << par[2*p+2] << endl;
-        /*      if (par[2*p+2] < (rmin+rmax)/2) {
-                fit->SetParLimits(2*p+2, pmin, pmax);    // position(mean parameter)
-                }
-                else {
-                fit->SetParLimits(2*p+2, pmin2, pmax2);    // position(mean parameter)
-                }*/
+        //if (par[2*p+2] < (rmin+rmax)/2) {
+        //fit->SetParLimits(2*p+2, pmin, pmax);    // position(mean parameter)
+        //}
+        //else {
+        //fit->SetParLimits(2*p+2, pmin2, pmax2);    // position(mean parameter)
+        //}
 
         if (p==2 || p==5) { // doublet
           fit->SetParLimits(2*p+2, par[2*(p-1)+2]+5, par[2*(p-1)+2]+12); // position(mean parameter) 
@@ -164,10 +227,8 @@ void FitSpectrumCalib(Bool_t isFitBGLin = 1)
       }
 
       // constrain for background
-      if (Fit_withBGLin) {
-        fit->SetParLimits(2*npeaks+2, 100, 500);
-        fit->SetParLimits(2*npeaks+3, -0.4, -0.1);
-      }
+      fit->SetParLimits(2*npeaks+2, 100, 500);
+      fit->SetParLimits(2*npeaks+3, -0.4, -0.1);
 
       // fit spectrum
       cout << endl;
@@ -180,7 +241,6 @@ void FitSpectrumCalib(Bool_t isFitBGLin = 1)
       cout << "status " << fitStatus << endl;
       cout << endl;
       TMatrixDSym cov = r->GetCovarianceMatrix();
-      //   r->Print("V");
 
       // individual skewed gaussian function
       TF1 *signalFcn = new TF1("signalFcn", indivFcn, rmax, pmax, 4); // "4": nb of parameters
@@ -195,12 +255,6 @@ void FitSpectrumCalib(Bool_t isFitBGLin = 1)
       signalFcn_BG->SetLineStyle(2);
       signalFcn_BG->SetLineWidth(2);
       signalFcn_BG->SetNpx(500);
-
-      // open output files
-      ofstream myfile("peak_param.txt");
-
-      // declare TGraph for calibration
-      TGraphErrors* gr_calib= new TGraphErrors(4);
 
       // draw individual contributions
       Double_t param[8];
@@ -219,41 +273,17 @@ void FitSpectrumCalib(Bool_t isFitBGLin = 1)
         signalFcn->SetParameters(param);
         signalFcn->DrawCopy("same");
 
-        // write peak parameters in myfile
-        myfile << param[1] << "\t"<< param[5] << endl;
-
         // Fill TGraph
-        gr_calib->SetPoint(i, param[1], Energy[i]);
-        gr_calib->SetPointError(i, param[5], error_E[i]);
+        gr_calib->SetPoint(i+1, param[1], Energy[i]);
+        gr_calib->SetPointError(i+1, param[5], error_E[i]);
 
       } // end loop on number of peaks
 
       // remove small doublet peak
-      gr_calib->RemovePoint(2);
-      gr_calib->RemovePoint(4);
+      gr_calib->RemovePoint(3);
+      gr_calib->RemovePoint(5);
 
-      // fit 
-      TF1 *fit1 = new TF1("fit1", fit_pol1, 300, 1000, 2);
-      fit1->SetParNames("p0","p1");
-      fit1->SetParameters(0,1.1);
-      TFitResultPtr graph=gr_calib->Fit(fit1,"RS");
-      graph->Print("V");
-
-      // write fit param in txt file
-      ofstream fitParam_file("DSSSD_calibration.txt", ios::app);
-      fitParam_file << Form("COMPTONTELESCOPE_D1_STRIP_FRONT%d_E",k) << " " << fit1->GetParameter(0) << " " << fit1->GetParameter(1) << endl;
-      //fitParam_file << Form("COMPTONTELESCOPE_D1_STRIP_FRONT%d_E",k) << " " << fit1->GetParameter(1) << " " << fit1->GetParameter(0) << endl;
-      fitParam_file.close();
-
-
-      // write graph in root file
-      TFile *calibFile = new TFile("graph_calib_207Bi_spectrum.root","update");
-      gr_calib->SetNameTitle(Form("grCalib_D1_Front%d", k), Form("D1_Front%d", k));
-      gr_calib->GetXaxis()->SetTitle("position (channel)");
-      gr_calib->GetYaxis()->SetTitle("Energy (MeV)");
-      gr_calib->Write();
-      calibFile->Close();
-
+      // Background parameters
       Double_t paramBG[4];
       paramBG[0] = fit->GetParameter(2*npeaks+2); // y-intercept 
       paramBG[2] = fit->GetParError(2*npeaks+2);  // y-intercept uncertainty
@@ -263,30 +293,119 @@ void FitSpectrumCalib(Bool_t isFitBGLin = 1)
       signalFcn_BG->SetParameters(paramBG);
       signalFcn_BG->DrawCopy("same");
 
-      // close files
-      myfile.close();
-
       //write in a root file
-      TFile *f = new TFile("./Histograms/Fit_207Bi_spectrum.root","UPDATE");
+      TFile *f = new TFile("./fit/Fit_noPedestal_207Bi_spectrum.root","UPDATE");
       c1->SetName(Form("h_D1_FRONT_E%d", k));
       c1->Write();
-      //hist->Write();
-      //signalFcn->Write();
       f->Close();
+
+
+      ////////// calibration //////////
+      cout << "\n" << "/////////// calibration //////////////" << endl;
+
+      // fit TGraph pol2
+      TF1 *fitP2 = new TF1("fitP2", fit_pol2, 0, 1000, 3);
+      fitP2->SetParNames("p0","p1","p2");
+      //      fitP2->SetParLimits(0,
+      fitP2->SetParameters(-0.09,0.001,-5e-11);
+      TFitResultPtr graphP2 = gr_calib->Fit(fitP2, "RS");
+      graphP2->Print("V");
+
+      // write fit param in txt file
+      ofstream fitParam_fileP2("./calib/DSSSD_calibration_withPed_pol2.txt", ios::app);
+      fitParam_fileP2 << Form("COMPTONTELESCOPE_D1_STRIP_FRONT%d_E",k) << " " << fitP2->GetParameter(0) << " " << fitP2->GetParameter(1) << " " << fitP2->GetParameter(2) << endl;
+      fitParam_fileP2.close();
+
+      // write graph in root file
+      TFile *calibFileP2 = new TFile("./calib/graph_calib_207Bi_spectrum_withPed_pol2.root", "update");
+      gr_calib->SetNameTitle(Form("grCalib_D1_Front%d", k), Form("D1_Front%d", k));
+      gr_calib->GetXaxis()->SetTitle("position (channel)");
+      gr_calib->GetYaxis()->SetTitle("Energy (MeV)");
+      gr_calib->Write();
+      calibFileP2->Close();
+
     }
-}
+
+  }
 
 
-  // Back strips
+  /////// Back strips
   for (int k = 0; k < NBSTRIPS; k++)
   {
 
     // change range
-    rmax = 370;
+    pmin = 30;
+    rmax = 370; 
+
+    cout << "\n Fitting histo " << Form("h_D1_BACK_E%d", k+1) << endl;
+
+    ///// Pedestal fit /////
+    cout << "\n" << "/////////// Pedestal fit  //////////////" << endl;
+    c2->cd();
+
+    // peak search
+    TH1F *histP = (TH1F*) inFile->Get(Form("h_D1_BACK_E%d", k+1));
+    histP->GetXaxis()->SetRangeUser(pmin, rmin);
+    TSpectrum *sP = new TSpectrum();
+    npeaks = sP->Search(histP, 3, "nobackground", 0.5); // hist, sigma, option, threshold
+    cout << "Found " << npeaks << " peaks to fit" << endl;
+    Double_t *xpeaksP = sP->GetPositionX();
+    peakListP.clear();
+    for (Int_t i = 0; i < npeaks; ++i) {
+      peakListP.push_back(xpeaksP[i]);
+      cout << i << "\t" << xpeaksP[i] << endl;
+    }
+    sort(peakListP.begin(), peakListP.end());
+
+    // fit first peak with gaussian function, no linear background
+    Double_t parP[100];      
+    parP[0] = 2.;  // width        
+    parP[1] = 0;  // exponential decay
+    //parP[1] = 0.4;  // exponential decay
+    for (Int_t p = 0; p < 1; p++) {
+      Double_t xp = peakListP[p];
+      cout << "xp " << xp << endl;
+      Int_t bin  = histP->GetXaxis()->FindBin(xp);
+      Double_t yp = histP->GetBinContent(bin);           
+      parP[2] = xp; // mean
+      parP[3] = yp; // amplitude
+    }
+    TF1 *fitP = new TF1("fitP", fpeaks, parP[2]-6, parP[2]+6, 4);
+    TVirtualFitter::Fitter(histP, 4);
+    fitP->SetParameters(parP);
+    fitP->SetParLimits(0, 1, 20); // width
+    fitP->FixParameter(1, 0); // no exponential decay
+    //fitP->SetParLimits(1, 0.01, 10); // exponential decay
+    fitP->SetParLimits(2, parP[2]-10, parP[2]+10); // mean
+    fitP->SetParLimits(3, 1e2, 1e10); // amplitude
+    fitP->SetNpx(1000);
+    TFitResultPtr rP = histP->Fit("fitP", "RS");
+    Int_t fitStatusP = rP;
+    cout << "status " << fitStatusP << endl;
+    cout << endl;
+    TMatrixDSym covP = rP->GetCovarianceMatrix();
+
+    // write pedestal fit in root file
+    TFile *fP = new TFile("./fit/Fit_pedestal_207Bi_spectrum.root","UPDATE");
+    c2->SetName(Form("h_D1_BACK_E%d_ped", k));
+    c2->Write();
+    fP->Close();
+
+    // Add in TGraph
+    Double_t paramP[2];
+    paramP[0] = fitP->GetParameter(2); // mean
+    paramP[1] = fitP->GetParError(2); // error mean
+    gr_calib->SetPoint(0, paramP[0], 0);
+    gr_calib->SetPointError(0, paramP[1], 0);
+    gr_calib->Draw();
+
+
+    //////// Spectrum fit //////
+    cout << "\n" << "/////////// Spectrum //////////////" << endl;
+    c1->cd();
 
     // open histo
     TH1F *hist = (TH1F*) inFile->Get(Form("h_D1_BACK_E%d", k+1));
-    cout << "Fitting histo " << Form("h_D1_BACK_E%d", k+1) << endl;
     hist->GetXaxis()->SetRangeUser(rmax, pmax);
 
     // peak search
@@ -318,7 +437,7 @@ void FitSpectrumCalib(Bool_t isFitBGLin = 1)
     AddPeak(480, rmax, 500); 
     AddPeak(930, 700, pmax); 
 
-    // 7 peaks found for strip 26
+    // 7 peaks found  
     if (k == 24 || k == 25) RemovePeak(700,830);
 
     // order peaks and get number of peaks
@@ -339,15 +458,12 @@ void FitSpectrumCalib(Bool_t isFitBGLin = 1)
       par[2*p+3] = yp;
     }
 
-    if(Fit_withBGLin) {
-      par[2*npeaks+2] = 150.; // y-intercept
-      par[2*npeaks+3] = -0.15; // slope
-    }
+    par[2*npeaks+2] = 150.; // y-intercept
+    par[2*npeaks+3] = -0.15; // slope
 
     // define fit function and parameters
-    Int_t nparams = 2*npeaks + 2; // gaussian width and exponential tail parameters
-    if (Fit_withBGLin) nparams += 2;
-    TF1 *fit = new TF1("fit", fpeaks, rmax, pmax, nparams);
+    Int_t nparams = 2*npeaks + 4; // gaussian width and exponential tail parameters + background
+    TF1 *fit = new TF1("fit", fpeaks_BG, rmax, pmax, nparams);
     TVirtualFitter::Fitter(hist, nparams);
     fit->SetParameters(par);
 
@@ -356,12 +472,12 @@ void FitSpectrumCalib(Bool_t isFitBGLin = 1)
     fit->FixParameter(1, 0); // to fit only with gaussian
     for (Int_t p = 0; p < npeaks; p++) {
       cout << "niveau " << par[2*p+2] << endl;
-      /*      if (par[2*p+2] < (rmin+rmax)/2) {
-              fit->SetParLimits(2*p+2, pmin, pmax);    // position(mean parameter)
-              }
-              else {
-              fit->SetParLimits(2*p+2, pmin2, pmax2);    // position(mean parameter)
-              }*/
+      //if (par[2*p+2] < (rmin+rmax)/2) {
+      //fit->SetParLimits(2*p+2, pmin, pmax);    // position(mean parameter)
+      //}
+      //else {
+      //fit->SetParLimits(2*p+2, pmin2, pmax2);    // position(mean parameter)
+      //}
 
       if (p==2 || p==5) { // doublet
         fit->SetParLimits(2*p+2, par[2*(p-1)+2]+5, par[2*(p-1)+2]+12); // position(mean parameter) 
@@ -376,10 +492,8 @@ void FitSpectrumCalib(Bool_t isFitBGLin = 1)
     }
 
     // constrain for background
-    if (Fit_withBGLin) {
-      fit->SetParLimits(2*npeaks+2, 100, 500);
-      fit->SetParLimits(2*npeaks+3, -0.4, -0.1);
-    }
+    fit->SetParLimits(2*npeaks+2, 100, 500);
+    fit->SetParLimits(2*npeaks+3, -0.4, -0.1);
 
     // fit spectrum
     cout << endl;
@@ -392,7 +506,6 @@ void FitSpectrumCalib(Bool_t isFitBGLin = 1)
     cout << "status " << fitStatus << endl;
     cout << endl;
     TMatrixDSym cov = r->GetCovarianceMatrix();
-    //   r->Print("V");
 
     // individual skewed gaussian function
     TF1 *signalFcn = new TF1("signalFcn", indivFcn, rmax, pmax, 4); // "4": nb of parameters
@@ -407,12 +520,6 @@ void FitSpectrumCalib(Bool_t isFitBGLin = 1)
     signalFcn_BG->SetLineStyle(2);
     signalFcn_BG->SetLineWidth(2);
     signalFcn_BG->SetNpx(500);
-
-    // open output files
-    ofstream myfile("peak_param.txt");
-
-    // declare TGraph for calibration
-    TGraphErrors* gr_calib= new TGraphErrors(4);
 
     // draw individual contributions
     Double_t param[8];
@@ -431,41 +538,17 @@ void FitSpectrumCalib(Bool_t isFitBGLin = 1)
       signalFcn->SetParameters(param);
       signalFcn->DrawCopy("same");
 
-      // write peak parameters in myfile
-      myfile << param[1] << "\t"<< param[5] << endl;
-
       // Fill TGraph
-      gr_calib->SetPoint(i, param[1], Energy[i]);
-      gr_calib->SetPointError(i, param[5], error_E[i]);
+      gr_calib->SetPoint(i+1, param[1], Energy[i]);
+      gr_calib->SetPointError(i+1, param[5], error_E[i]);
 
     } // end loop on number of peaks
 
     // remove small doublet peak
-    gr_calib->RemovePoint(2);
-    gr_calib->RemovePoint(4);
+    gr_calib->RemovePoint(3);
+    gr_calib->RemovePoint(5);
 
-    // fit 
-    TF1 *fit1 = new TF1("fit1", fit_pol1, 300, 1000, 2);
-    fit1->SetParNames("p0","p1");
-    fit1->SetParameters(0.025,0.0011);
-    TFitResultPtr graph=gr_calib->Fit(fit1,"RS");
-    graph->Print("V");
-
-    // write fit param in txt file
-    ofstream fitParam_file("DSSSD_calibration.txt", ios::app);
-    fitParam_file << Form("COMPTONTELESCOPE_D1_STRIP_BACK%d_E",k) << " " << fit1->GetParameter(0) << " " << fit1->GetParameter(1) << endl;
-    //fitParam_file << Form("COMPTONTELESCOPE_D1_STRIP_BACK%d_E",k) << " " << fit1->GetParameter(1) << " " << fit1->GetParameter(0) << endl;
-    fitParam_file.close();
-
- 
-    // write graph in root file
-    TFile *calibFile = new TFile("graph_calib_207Bi_spectrum.root","update");
-    gr_calib->SetNameTitle(Form("grCalib_D1_Back%d", k), Form("D1_Back%d", k));
-    gr_calib->GetXaxis()->SetTitle("position (channel)");
-    gr_calib->GetYaxis()->SetTitle("Energy (MeV)");
-    gr_calib->Write();
-    calibFile->Close();
-    
+    // Background parameters
     Double_t paramBG[4];
     paramBG[0] = fit->GetParameter(2*npeaks+2); // y-intercept 
     paramBG[2] = fit->GetParError(2*npeaks+2);  // y-intercept uncertainty
@@ -475,16 +558,37 @@ void FitSpectrumCalib(Bool_t isFitBGLin = 1)
     signalFcn_BG->SetParameters(paramBG);
     signalFcn_BG->DrawCopy("same");
 
-    // close files
-    myfile.close();
-
     //write in a root file
-    TFile *f = new TFile("./Histograms/Fit_207Bi_spectrum.root","UPDATE");
+    TFile *f = new TFile("./fit/Fit_noPedestal_207Bi_spectrum.root","UPDATE");
     c1->SetName(Form("h_D1_BACK_E%d", k));
     c1->Write();
-    //hist->Write();
-    //signalFcn->Write();
     f->Close();
+
+
+    ////////// calibration //////////
+    cout << "\n" << "/////////// calibration //////////////" << endl;
+
+    // fit TGraph pol2
+    TF1 *fitP2 = new TF1("fitP2", fit_pol2, 0, 1000, 3);
+    fitP2->SetParNames("p0","p1","p2");
+    //      fitP2->SetParLimits(0,
+    fitP2->SetParameters(-0.09,0.001,-5e-11);
+    TFitResultPtr graphP2 = gr_calib->Fit(fitP2, "RS");
+    graphP2->Print("V");
+
+    // write fit param in txt file
+    ofstream fitParam_fileP2("./calib/DSSSD_calibration_withPed_pol2.txt", ios::app);
+    fitParam_fileP2 << Form("COMPTONTELESCOPE_D1_STRIP_BACK%d_E",k) << " " << fitP2->GetParameter(0) << " " << fitP2->GetParameter(1) << " " << fitP2->GetParameter(2) << endl;
+    fitParam_fileP2.close();
+
+    // write graph in root file
+    TFile *calibFileP2 = new TFile("./calib/graph_calib_207Bi_spectrum_withPed_pol2.root", "update");
+    gr_calib->SetNameTitle(Form("grCalib_D1_Back%d", k), Form("D1_Back%d", k));
+    gr_calib->GetXaxis()->SetTitle("position (channel)");
+    gr_calib->GetYaxis()->SetTitle("Energy (MeV)");
+    gr_calib->Write();
+    calibFileP2->Close();
+
 
   }
 
@@ -517,7 +621,6 @@ void RemovePeak(Double_t brmin, Double_t brmax)
    peakList.erase(peakList.begin()+last-number+1, peakList.begin()+last+1);
 }
 
-
 // fit fonction without background
 Double_t fpeaks(Double_t *x, Double_t *par) 
 {
@@ -545,10 +648,39 @@ Double_t fpeaks(Double_t *x, Double_t *par)
       }
    }
 
-   // Linear background
-   if (Fit_withBGLin) {
-     result += par[2*npeaks+2] + par[2*npeaks+3] * x[0];
+   return result;
+}
+
+
+// fit fonction with background
+Double_t fpeaks_BG(Double_t *x, Double_t *par) 
+{
+   if (reject && x[0] > (rmin) && x[0] < (rmax)) {
+      TF1::RejectPoint();
+      return 0;
    }
+
+   Double_t result = 0;
+
+   // skewed gaussian
+   Double_t width = par[0];
+   Double_t tail = par[1];
+   for (Int_t p = 0; p < npeaks; p++) {
+      Double_t mean  = par[2*p+2];
+      Double_t norm  = par[2*p+3];
+      Double_t arg = (x[0] - mean) / width;
+      // if "small tail" : use a simple gaussian fonction
+      if (tail < 1e-1) {
+      //if (tail < 1e-6) {
+         result += norm * TMath::Gaus(x[0], mean, width);
+      }
+      else {
+         result += norm * TMath::Exp((x[0] - mean)/tail) * TMath::Erfc(arg + width/2/tail);
+      }
+   }
+
+   // Linear background
+   result += par[2*npeaks+2] + par[2*npeaks+3] * x[0];
 
    return result;
 }
@@ -590,6 +722,13 @@ Double_t fit_pol1(Double_t *x, Double_t *par)
 {
   Double_t fit_pol1 = par[0] + par[1]*x[0];
   return fit_pol1;
+}
+
+//// fit polynomial degree 2
+Double_t fit_pol2(Double_t *x, Double_t *par)
+{
+  Double_t fit_pol2 = par[0] + par[1]*x[0] + par[2]*x[0]*x[0];
+  return fit_pol2;
 }
 
 Double_t CalibUncertainty(Double_t x, TF1* f, TMatrixDSym cov)

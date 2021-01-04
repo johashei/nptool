@@ -81,7 +81,12 @@ void TComptonTelescopePhysics::BuildSimplePhysicalEvent()
 
   //// DSSSD analysis ////
 
-  if (CheckEvent() == 1) {   // case where multiplicity front = multiplicity back
+  // Check event type
+  Int_t evtType = CheckEvent();
+
+  // Remove: general case
+//  if (CheckEvent() == 1) {   // case where multiplicity front = multiplicity back
+  
     vector<TVector2> couple = Match_Front_Back();
     EventMultiplicity = couple.size();
 
@@ -93,6 +98,7 @@ void TComptonTelescopePhysics::BuildSimplePhysicalEvent()
       Double_t Back_E  = m_PreTreatedData->GetCTTrackerBackEEnergy(couple[i].Y());
 
       // Fill TComptonTelescopePhysics members
+      EventType.push_back(evtType);
       DetectorNumber.push_back(N);
       StripFront_E.push_back(Front_E);
       StripBack_E.push_back(Back_E);
@@ -107,7 +113,7 @@ void TComptonTelescopePhysics::BuildSimplePhysicalEvent()
       Strip_Front.push_back(Front);
       Strip_Back.push_back(Back);
     }
-  }
+//  } // end check event
   
 
   //// Calorimeter analysis ////
@@ -155,9 +161,14 @@ void TComptonTelescopePhysics::PreTreat()
   // Front, energy
   for (UShort_t i = 0; i < m_EventData->GetCTTrackerFrontEMult(); ++i) {
 
-    if (m_EventData->GetCTTrackerFrontEEnergy(i) > m_StripFront_E_RAW_Threshold && 
-        IsValidChannel("Front", m_EventData->GetCTTrackerFrontEDetectorNbr(i), m_EventData->GetCTTrackerFrontEStripNbr(i))) {
+//    cout << "Det = " << m_EventData->GetCTTrackerFrontEDetectorNbr(i) << " ; strip = " << m_EventData->GetCTTrackerFrontEStripNbr(i) << " ; E raw = " << m_EventData->GetCTTrackerFrontEEnergy(i) << endl;
+
+//    cout << "E raw th = " << m_StripFront_E_RAW_Threshold << endl;
+    if (m_EventData->GetCTTrackerFrontEEnergy(i) > m_StripFront_E_RAW_Threshold &&
+        IsValidChannel("Front", m_EventData->GetCTTrackerFrontEDetectorNbr(i), m_EventData->GetCTTrackerFrontEStripNbr(i))) {     
+//      cout << "Det = " << m_EventData->GetCTTrackerFrontEDetectorNbr(i) << " ; strip = " << m_EventData->GetCTTrackerFrontEStripNbr(i) << " ; E raw sup th = " << m_EventData->GetCTTrackerFrontEEnergy(i) << endl;
       Double_t E = fStrip_Front_E(m_EventData, i);//Calibration happens here
+//      cout << "Det = " << m_EventData->GetCTTrackerFrontEDetectorNbr(i) << " ; strip = " << m_EventData->GetCTTrackerFrontEStripNbr(i) << " ; E cal = " << E << endl;
       if (E > m_StripFront_E_Threshold) {
         m_PreTreatedData->SetFrontE(
             m_EventData->GetCTTrackerFrontETowerNbr(i),
@@ -170,6 +181,7 @@ void TComptonTelescopePhysics::PreTreat()
         m_PreTreatedData->SetCTTrackerFrontEEnergy(E);
 */
       }
+//      cout << "Det = " << m_PreTreatedData->GetCTTrackerFrontEDetectorNbr(i) << " ; strip = " << m_PreTreatedData->GetCTTrackerFrontEStripNbr(i) << " ; E pretreat = " << m_PreTreatedData->GetCTTrackerFrontEEnergy(i) << endl;
     }
   }
 
@@ -257,6 +269,12 @@ int TComptonTelescopePhysics::CheckEvent()
   // same multiplicity on front and back side 
   if (m_PreTreatedData->GetCTTrackerBackEMult() == m_PreTreatedData->GetCTTrackerFrontEMult())
     return 1 ; // Regular Event
+
+  // possibly interstrip
+  else if (m_PreTreatedData->GetCTTrackerFrontEMult() == m_PreTreatedData->GetCTTrackerBackEMult()+1 || 
+           m_PreTreatedData->GetCTTrackerFrontEMult() == m_PreTreatedData->GetCTTrackerBackEMult()-1) {
+    return 2;
+  }
 
   else
     return -1 ; // Rejected Event
@@ -378,7 +396,7 @@ void TComptonTelescopePhysics::ReadAnalysisConfig()
       else if (whatToDo == "DISABLE_ALL") {
         AnalysisConfigFile >> DataBuffer;
         cout << "\t" << whatToDo << "\t" << DataBuffer << endl;
-        Int_t Detector = atoi(DataBuffer.substr(2,1).c_str());
+        Int_t Detector = atoi(DataBuffer.substr(18,1).c_str());
         vector< bool > ChannelStatus;
         ChannelStatus.resize(m_NumberOfStrips, false);
         m_FrontChannelStatus[Detector-1] = ChannelStatus;
@@ -388,14 +406,19 @@ void TComptonTelescopePhysics::ReadAnalysisConfig()
       else if (whatToDo == "DISABLE_CHANNEL") {
         AnalysisConfigFile >> DataBuffer;
         cout << "\t" << whatToDo << "\t" << DataBuffer << endl;
-        Int_t Detector = atoi(DataBuffer.substr(2,1).c_str());
+        //Int_t Detector = atoi(DataBuffer.substr(2,1).c_str());
+        Int_t Detector = atoi(DataBuffer.substr(18,1).c_str());
         Int_t channel = -1;
-        if (DataBuffer.compare(3,5,"FRONT") == 0) {
-          channel = atoi(DataBuffer.substr(7).c_str());
+        //if (DataBuffer.compare(3,5,"FRONT") == 0) {
+        if (DataBuffer.compare(26,5,"FRONT") == 0) {
+          //channel = atoi(DataBuffer.substr(7).c_str());
+          channel = atoi(DataBuffer.substr(31).c_str());
           *(m_FrontChannelStatus[Detector-1].begin()+channel) = false;
         }
-        else if (DataBuffer.compare(3,4,"BACK") == 0) {
-          channel = atoi(DataBuffer.substr(7).c_str());
+        //else if (DataBuffer.compare(3,4,"BACK") == 0) {
+        else if (DataBuffer.compare(26,4,"BACK") == 0) {
+          //channel = atoi(DataBuffer.substr(7).c_str());
+          channel = atoi(DataBuffer.substr(30).c_str());
           *(m_BackChannelStatus[Detector-1].begin()+channel) = false;
         }
       }

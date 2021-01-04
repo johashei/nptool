@@ -46,8 +46,7 @@ void setCTTrackerFront(TComptonTelescopeData* ccamData, newframe_t* event, int d
   for (int k = 0; k < stripNumber; k++) {//Loop on strips
     ccamData -> SetCTTrackerFrontETowerNbr(1);
     ccamData -> SetCTTrackerFrontEDetectorNbr(detNbr);
-    ccamData -> SetCTTrackerFrontEStripNbr(k+1);
-    //ccamData -> SetCTTrackerFrontEEnergy(event->sample[detNbr-1][faceNbr-1][k]);
+    ccamData -> SetCTTrackerFrontEStripNbr(k);
     ccamData -> SetCTTrackerFrontEEnergy(event->sample[faceNbr-1][detNbr-1][k]);
   }//End of loop on strips
 }
@@ -62,8 +61,7 @@ void setCTTrackerBack(TComptonTelescopeData* ccamData, newframe_t* event, int de
   for (int k = 0; k < stripNumber; k++) {//Loop on strips
     ccamData -> SetCTTrackerBackETowerNbr(1);
     ccamData -> SetCTTrackerBackEDetectorNbr(detNbr);
-    ccamData -> SetCTTrackerBackEStripNbr(k+1);
-    //ccamData -> SetCTTrackerBackEEnergy(event->sample[detNbr-1][faceNbr-1][k]);
+    ccamData -> SetCTTrackerBackEStripNbr(k);
     ccamData -> SetCTTrackerBackEEnergy(event->sample[faceNbr-1][detNbr-1][k]);
   }//End of loop on strips
 }
