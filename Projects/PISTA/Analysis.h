@@ -46,6 +46,7 @@ class Analysis: public NPL::VAnalysis{
 
   private:
     double OriginalBeamEnergy;
+    double OriginalEx;
     double BeamEnergy;
     double R;
     double XTarget;
@@ -53,6 +54,8 @@ class Analysis: public NPL::VAnalysis{
     double ZTarget;
     double OriginalElab;
     double Elab;
+    double DeltaE;
+    double Eres;
     double ThetaLab;
     double ThetaCM;
     double OptimumEx;
