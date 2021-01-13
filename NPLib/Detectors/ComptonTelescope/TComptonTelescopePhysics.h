@@ -54,25 +54,25 @@ class TComptonTelescopePhysics : public TObject, public NPL::VDetector
 
 
    public:  // data obtained after BuildPhysicalEvent() and stored in ROOT output file
+      //   DSSD
       Int_t EventMultiplicity;
       vector<int> EventType;
       vector<int> DetectorNumber;
-      //   DSSD
-      vector<double> Strip_E;
-      vector<double> Strip_T;
-      vector<double> StripFront_E;
-      vector<double> StripFront_T;
-      vector<double> StripBack_E;
-      vector<double> StripBack_T;
       vector<int>    Strip_Front;
       vector<int>    Strip_Back;
+      vector<double> Strip_E;
+      vector<double> Strip_T;
+      vector<double> Front_Energy;
+      vector<double> Back_Energy;
+      vector<double> StripFront_T;
+      vector<double> StripBack_T;
       // Calorimeter
       vector<double> Calor_E;
       vector<double> Calor_T;
       vector<int>    CalorPosX;
       vector<int>    CalorPosY;
-   
 
+ 
    public:  // inherited from VDetector
       // Read stream at ConfigFile to pick-up parameters of detector (Position,...) using Token
       void ReadConfiguration(NPL::InputParser);
@@ -155,6 +155,13 @@ class TComptonTelescopePhysics : public TObject, public NPL::VDetector
 
       // To be called after a build Physical Event 
       int GetEventMultiplicity() const {return EventMultiplicity;};
+      int GetTowerNumber(const int i) {return TowerNumber[i];};
+      int GetDetectorNumber(const int i) {return DetectorNumber[i];};
+      int GetFrontStrip(const int i) {return Strip_Front[i];};
+      int GetBackStrip(const int i) {return Strip_Back[i];};
+      double GetFrontEnergy(const int i) {return Front_Energy[i];};
+      double GetBackEnergy(const int i) {return Back_Energy[i];};
+      double GetHalfEnergy(const int i) {return Half_Energy[i];};
       
       TVector3 GetPositionOfInteraction(const int i) const;   
       TVector3 GetDetectorNormal(const int i) const;
@@ -211,6 +218,19 @@ class TComptonTelescopePhysics : public TObject, public NPL::VDetector
    public: // Static constructor to be passed to the Detector Factory
      static NPL::VDetector* Construct();
      ClassDef(TComptonTelescopePhysics,1)  // ComptonTelescopePhysics structure
+
+
+    public: // Add data for DSSSD analysis
+      // counters
+      Int_t m_nCounterEvt; //!
+      Int_t m_nCounterHit; //!
+      Int_t m_CounterEvt[50]; //!
+      Int_t m_CounterHit[50]; //!
+      // physical events
+      vector<int> TowerNumber;
+      vector<double> Half_Energy;
+ 
+
 };
 
 
