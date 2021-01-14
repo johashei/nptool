@@ -139,9 +139,9 @@ void TPISTAPhysics::AddDetector(double R, double Theta, double Phi){
 
 ///////////////////////////////////////////////////////////////////////////
 TVector3 TPISTAPhysics::GetPositionOfInteraction(const int i){
-  TVector3 Position = TVector3(GetStripPositionX(DetectorNumber[i], E_StripX[i], E_StripY[i]),
-      GetStripPositionY(DetectorNumber[i], E_StripX[i], E_StripY[i]),
-      GetStripPositionZ(DetectorNumber[i], E_StripX[i], E_StripY[i]));
+  TVector3 Position = TVector3(GetStripPositionX(DetectorNumber[i], E_StripX[i], DE_StripY[i]),
+      GetStripPositionY(DetectorNumber[i], E_StripX[i], DE_StripY[i]),
+      GetStripPositionZ(DetectorNumber[i], E_StripX[i], DE_StripY[i]));
   
   /*TVector3 Position = TVector3(GetStripPositionX(DetectorNumber[i], DE_StripX[i], E_StripY[i]),
       GetStripPositionY(DetectorNumber[i], DE_StripX[i], E_StripY[i]),
@@ -211,7 +211,8 @@ void TPISTAPhysics::BuildPhysicalEvent() {
           DetectorNumber.push_back(DE_N);
           DE_StripX.push_back(DE_X);
           DE_StripY.push_back(DE_Y);
-          DE.push_back(DE_YE);
+          //DE.push_back(DE_YE);
+          DE.push_back(DE_XE);
           E_StripX.push_back(E_X);
           E_StripY.push_back(E_Y);
           E.push_back(E_XE);
