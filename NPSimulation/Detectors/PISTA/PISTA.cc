@@ -350,7 +350,7 @@ void PISTA::InitializeScorers() {
   G4VPrimitiveScorer* SecondStageScorer = new DSSDScorers::PS_Rectangle("SecondStageScorer",1,
       TrapezoidBaseLarge,
       TrapezoidHeight,
-      122,1);
+      62,1);
 
   G4VPrimitiveScorer* InteractionFirstStage = new InteractionScorers::PS_Interactions("InteractionFirstStage",ms_InterCoord,0);
   G4VPrimitiveScorer* InteractionSecondStage = new InteractionScorers::PS_Interactions("InteractionSecondStage",ms_InterCoord,0);

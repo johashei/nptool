@@ -58,10 +58,10 @@ void Analysis::Init(){
 ////////////////////////////////////////////////////////////////////////////////
 void Analysis::TreatEvent(){
   ReInitValue();
-  OriginalThetaLab = ReactionConditions->GetTheta(0);
-  OriginalElab = ReactionConditions->GetKineticEnergy(0);
-  OriginalBeamEnergy = ReactionConditions->GetBeamEnergy();
-  OriginalEx = ReactionConditions->GetExcitation4();
+  //OriginalThetaLab = ReactionConditions->GetTheta(0);
+  //OriginalElab = ReactionConditions->GetKineticEnergy(0);
+  //OriginalBeamEnergy = ReactionConditions->GetBeamEnergy();
+  //OriginalEx = ReactionConditions->GetExcitation4();
 
   int mult = InteractionCoordinates->GetDetectedMultiplicity();
   if(mult>0){
@@ -91,11 +91,15 @@ void Analysis::TreatEvent(){
       DeltaE = PISTA->DE[i];
       Eres = PISTA->E[i];
 
-      PID = pow(Energy,1.78)-pow(PISTA->E[i],1.78);
       TVector3 HitDirection = PISTA->GetPositionOfInteraction(i)-PositionOnTarget;
       //ThetaLab = HitDirection.Angle(BeamDirection);
       ThetaLab = HitDirection.Angle(TVector3(0,0,1));
       ThetaDetectorSurface = HitDirection.Angle(-PISTA->GetDetectorNormal(i));
+      
+      DeltaE = DeltaE/cos(ThetaDetectorSurface);
+      //PID = pow(Energy,1.78)-pow(PISTA->E[i],1.78);
+      PID = pow(DeltaE+Eres,1.78)-pow(Eres,1.78);
+
       ThetaNormalTarget = HitDirection.Angle(TVector3(0,0,1));
       Elab = Be10C.EvaluateInitialEnergy(Energy,TargetThickness*0.5,ThetaNormalTarget);
       OptimumEx = Transfer->ReconstructRelativistic(OriginalElab, OriginalThetaLab*deg);

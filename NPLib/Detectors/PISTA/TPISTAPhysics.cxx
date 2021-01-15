@@ -67,11 +67,9 @@ void TPISTAPhysics::AddDetector(TVector3){
 void TPISTAPhysics::AddDetector(double R, double Theta, double Phi){
   m_NumberOfDetectors++;
 
-  //double Height = 118; // mm
   double Height = 61.8; // mm
-  //double Base = 95; // mm
   double Base = 78.1; // mm
-  double NumberOfStripsX = 122;
+  double NumberOfStripsX = 62;
   double NumberOfStripsY = 97;
   
   double StripPitchHeight = Height / NumberOfStripsY; // mm
@@ -153,21 +151,21 @@ TVector3 TPISTAPhysics::GetPositionOfInteraction(const int i){
 
 ///////////////////////////////////////////////////////////////////////////
 TVector3 TPISTAPhysics::GetDetectorNormal(const int i){
-  TVector3 U = TVector3(GetStripPositionX(DetectorNumber[i],122,1),
-      GetStripPositionY(DetectorNumber[i],122,1),
-      GetStripPositionZ(DetectorNumber[i],122,1))
+  TVector3 U = TVector3(GetStripPositionX(DetectorNumber[i],62,1),
+      GetStripPositionY(DetectorNumber[i],62,1),
+      GetStripPositionZ(DetectorNumber[i],62,1))
 
-    -TVector3(GetStripPositionX(DetectorNumber[i],122,1),
-      GetStripPositionY(DetectorNumber[i],122,1),
-      GetStripPositionZ(DetectorNumber[i],122,1));
+    -TVector3(GetStripPositionX(DetectorNumber[i],62,1),
+      GetStripPositionY(DetectorNumber[i],62,1),
+      GetStripPositionZ(DetectorNumber[i],62,1));
 
-  TVector3 V = TVector3(GetStripPositionX(DetectorNumber[i],122,97),
-      GetStripPositionY(DetectorNumber[i],122,97),
-      GetStripPositionZ(DetectorNumber[i],122,97))
+  TVector3 V = TVector3(GetStripPositionX(DetectorNumber[i],62,97),
+      GetStripPositionY(DetectorNumber[i],62,97),
+      GetStripPositionZ(DetectorNumber[i],62,97))
 
-    -TVector3(GetStripPositionX(DetectorNumber[i],122,1),
-      GetStripPositionY(DetectorNumber[i],122,1),
-      GetStripPositionZ(DetectorNumber[i],122,1));
+    -TVector3(GetStripPositionX(DetectorNumber[i],62,1),
+      GetStripPositionY(DetectorNumber[i],62,1),
+      GetStripPositionZ(DetectorNumber[i],62,1));
 
   TVector3 Normal = U.Cross(V);
 
