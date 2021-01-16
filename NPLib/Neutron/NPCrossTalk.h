@@ -21,10 +21,12 @@
  *****************************************************************************/
 #include <vector>
 #include "TVector3.h"
+#include "TGraph2DErrors.h"
 #include "Math/Functor.h"
 #include <map>
 
 class TGraph;
+
 namespace NPL{
 
   class CrossTalk{
@@ -37,7 +39,10 @@ namespace NPL{
       void AddHitVector(const std::vector<double>& X, const std::vector<double>& Y,const std::vector<double>& Z, const std::vector<double>& dX, const std::vector<double>& dY, const std::vector<double>& dZ, const std::vector<double>& T);
 
       std::vector<int> ComputeCrossTalk();
+      std::vector<int> ComputeCrossTalk_HyperSphere();
       std::vector<int> GetSortedHits();
+      std::vector<TGraph> GetClusters();
+      TGraph2DErrors *Get3DClusters();
       std::vector<int> GetHeadClust();
 
     private: // private member used by
@@ -51,7 +56,10 @@ namespace NPL{
       const std::vector<double>* HitT;
       
       std::vector<int> m_SortedID;
+      std::map<unsigned int, std::vector<unsigned int>> mapOfClust;
       std::vector<int> m_HeadClust;
+      std::vector<TGraph> Clusters_2D;
+      TGraph2DErrors *Clusters_3D = new TGraph2DErrors();
       std::vector<int> ClustHit;
       std::vector<int> m_Neutrons;
       double coef;
