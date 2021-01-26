@@ -54,6 +54,8 @@ class TComptonTelescopeSpectra:public VSpectra {
     unsigned int fNumberOfDetectors;
     unsigned int fNumberOfStripsFront;
     unsigned int fNumberOfStripsBack;
+    double fStripEnergyMatchingSigma;
+    double fStripEnergyMatchingNumberOfSigma;
     unsigned int fNumberOfCounters;
     unsigned int fCalorimeterNPixels;
 };

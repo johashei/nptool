@@ -32,8 +32,8 @@ void ExtractRawHisto_DSSSD_E(const char* filename = "20200128_10h44_bi207_conv")
 {
 
    // open the output ROOT file
-   TString outFileName = "./Histograms/";
-   outFileName += filename;
+//   TString outFileName = "./Histograms/";
+   TString outFileName = filename;
    outFileName += "_RawDSSSDHistos.root";
    cout << "output file: " << outFileName << endl;
    TFile *outFile = new TFile(outFileName, "recreate");

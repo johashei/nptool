@@ -131,14 +131,15 @@ int main()
   const int stripNumber = 32;
 //  const bool loopForever = true;
   const bool loopForever = false;
-//  while (loopForever or i<1)
+  //while (loopForever or i<12)
   while (loopForever or i<3)
   { 
     // Load a root file and setup DecodeD
+    //DD -> setTree("20200128_11h58_am241_conv.root");
     DD -> setTree("20200128_10h44_bi207_conv.root");
     int dlength = DD -> getLength();
 
-//    while (DD -> getCursor() < dlength and (loopForever or i<1))
+    //while (DD -> getCursor() < dlength and (loopForever or i<12))
     while (DD -> getCursor() < dlength and (loopForever or i<3))
     {
       // Load a ROSMAP file
