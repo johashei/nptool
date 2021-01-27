@@ -5,6 +5,7 @@
 #include "TSpectrum.h"
 #include "TF1.h"
 #include "TGraph.h"
+#include "TGraphErrors.h"
 #include "TLine.h"
 #include "TMath.h"
 #include "TVirtualFitter.h"
@@ -46,13 +47,22 @@ void FitSpectrumCalib()
   double Energy[dimE] = {481.6935e-3, 553.8372e-3, 565.8473e-3, 975.651e-3, 1047.795e-3, 1059.805e-3}; // MeV
   double error_E[dimE] = {0.0021e-3, 0.0021e-3, 0.0021e-3, 0.003e-3, 0.003e-3, 0.003e-3};
 
+  // run 20200128_10h44_bi207_conv.root
   // range for pedestal
-  pmin = 40;
-  rmin = 70;
+//  pmin = 40;
+//  rmin = 70;
+  // range for spectrum
+//  rmax = 300;
+//  pmax = 980;
+
+  // run bb7_3309-7_bi207_20210126_13h09_run5_conv.root
+  // range for pedestal
+  pmin = 20;
+  rmin = 100;
   // range for spectrum
   rmax = 300;
   pmax = 980;
-
+ 
   // misc.
   peakList.clear();
   peakListP.clear();
@@ -64,7 +74,8 @@ void FitSpectrumCalib()
   TGraphErrors* gr_calib = new TGraphErrors();
 
   // open file and get histo
-  TFile *inFile = new TFile("20200128_10h44_bi207_conv_RawDSSSDHistos.root");
+//  TFile *inFile = new TFile("20200128_10h44_bi207_conv_RawDSSSDHistos.root");
+  TFile *inFile = new TFile("bb7_3309-7_bi207_20210126_13h09_run5_conv_RawDSSSDHistos.root");
 
   // Front strips
   for (int k = 0; k < NBSTRIPS; k++)
@@ -133,7 +144,8 @@ void FitSpectrumCalib()
     gr_calib->Draw();
 
 
-    if (k != 1) // remove strip front 2 with no data
+//    if (k != 1) // remove strip front 2 with no data
+    if (k != 21) // remove strip front 2 with no data
     {
 
       //////// Spectrum fit //////
@@ -379,9 +391,19 @@ void FitSpectrumCalib()
   for (int k = 0; k < NBSTRIPS; k++)
   {
 
+
+    if (k != 4 && k != 5 && k != 6) // remove strip front 2 with no data
+    {
+    // run 20200128_10h44_bi207_conv.root
     // change range
-    pmin = 30;
-    rmax = 370; 
+//    pmin = 30;
+//    rmax = 370; 
+
+    // run bb7_3309-7_bi207_20210126_13h09_run5_conv_RawDSSSDHistos.root
+    // change range
+    pmin = 10;
+    rmax = 300;
+    pmax = 1022;
 
     cout << "\n Fitting histo " << Form("h_D1_BACK_E%d", k+1) << endl;
 
@@ -444,7 +466,6 @@ void FitSpectrumCalib()
     gr_calib->SetPoint(0, paramP[0], 0);
     gr_calib->SetPointError(0, paramP[1], 0);
     gr_calib->Draw();
-
 
     //////// Spectrum fit //////
     cout << "\n" << "/////////// Spectrum //////////////" << endl;
@@ -679,7 +700,7 @@ void FitSpectrumCalib()
     gr_calib3->Write();
     calibFileP3->Close();
 
-
+    }
   }
 
 }

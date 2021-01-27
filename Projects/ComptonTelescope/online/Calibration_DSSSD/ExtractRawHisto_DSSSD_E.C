@@ -22,8 +22,8 @@ using namespace std;
 #include "TH2.h"
 
 // custom headers
-#include "/homeijclab/meyer/nptool/Projects/ComptonTelescope/online/src/DecodeD.h"
-#include "/homeijclab/meyer/nptool/Projects/ComptonTelescope/online/src/DecodeD.cpp"
+#include "../src/DecodeD.h"
+#include "../src/DecodeD.cpp"
 
 #define NBDETECTORS	1	
 #define	NBSTRIPS	32
@@ -72,7 +72,7 @@ void ExtractRawHisto_DSSSD_E(const char* filename = "20200128_10h44_bi207_conv")
    newframe_t* event;
 
 	 // run to analyse
-	 DD -> setTree(Form("/homeijclab/meyer/nptool/Projects/ComptonTelescope/online/%s.root",filename));
+	 DD -> setTree(Form("../../data/%s.root",filename));
    int dlength = DD -> getLength();
 
    while (DD -> getCursor() < dlength) {
