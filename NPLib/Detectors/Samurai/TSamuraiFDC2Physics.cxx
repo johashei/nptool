@@ -26,11 +26,11 @@
 #include <cmath>
 #include <stdlib.h>
 #include <limits>
+using namespace std;
 
 //   NPL
 #include "RootInput.h"
 #include "RootOutput.h"
-#include "TAsciiFile.h"
 #include "NPOptionManager.h"
 #include "NPDetectorFactory.h"
 #include "NPSystemOfUnits.h"
@@ -49,7 +49,7 @@ ClassImp(TSamuraiFDC2Physics)
     ToTThreshold_H = 1000;
     DriftLowThreshold=0.4 ;
     DriftUpThreshold=9.3;
-    PowerThreshold=14;
+    PowerThreshold=5;
   }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -60,7 +60,7 @@ void TSamuraiFDC2Physics::BuildSimplePhysicalEvent(){
 ///////////////////////////////////////////////////////////////////////////
 void TSamuraiFDC2Physics::BuildPhysicalEvent(){
   PreTreat();
-  RemoveNoise();
+//  RemoveNoise();
 
   // Map[detector & plane angle, vector of spatial information]
   static map<std::pair<unsigned int,double>, vector<double> > X ; 
@@ -87,9 +87,28 @@ void TSamuraiFDC2Physics::BuildPhysicalEvent(){
   static map<std::pair<unsigned int,double>, TVector3 > VX0 ;  
   static map<std::pair<unsigned int,double>, TVector3 > VX100 ;  
   static map<std::pair<unsigned int,double>, double > D ;// the minimum distance  
+  static unsigned int uid=0;
   VX0.clear();VX100.clear(),D.clear();
   for(auto it = X.begin();it!=X.end();++it){
+#if __cplusplus > 199711L && NPMULTITHREADING
+    m_reconstruction.AddPlan(uid++,X[it->first],Z[it->first],R[it->first]); 
+#else
     D[it->first]=m_reconstruction.BuildTrack2D(X[it->first],Z[it->first],R[it->first],X0,X100,a,b); 
+#endif 
+    }
+
+#if __cplusplus > 199711L && NPMULTITHREADING
+
+  // do all plan at once in parallele, return when all plan are done
+  m_reconstruction.BuildTrack2D();
+  uid=0;
+#endif
+
+  for(auto it = X.begin();it!=X.end();++it){
+#if __cplusplus > 199711L && NPMULTITHREADING
+ 
+  D[it->first]=m_reconstruction.GetResults(uid++,X0,X100,a,b); 
+#endif
 
   /* // for Debug, write a file of 
    { std::ofstream f("distance.txt", std::ios::app);
@@ -98,7 +117,7 @@ void TSamuraiFDC2Physics::BuildPhysicalEvent(){
    }
    */
     // very large a means track perpendicular to the chamber, what happen when there is pile up
-    if(abs(a)>1000)
+    if(abs(a)>5000)
       PileUp++;
 
     Mult+=X[it->first].size();
@@ -110,7 +129,6 @@ void TSamuraiFDC2Physics::BuildPhysicalEvent(){
     TVector3 P100= TVector3(X100,0,0);
     P100.RotateZ(it->first.second);
     VX100[it->first]=P100;
-
   }
 
   // Reconstruct the central position (z=0) for each detector
@@ -326,6 +344,18 @@ void TSamuraiFDC2Physics::ReadConfiguration(NPL::InputParser parser){
     xml.LoadFile(xmlpath);
     AddDC("SAMURAIFDC2",xml);
   }
+
+
+#if __cplusplus > 199711L && NPMULTITHREADING
+ 
+  if(blocks.size()){
+    // one thread for each plan X,U,V = 3
+    // ! more than this will not help !
+    m_reconstruction.SetNumberOfThread(3);
+    m_reconstruction.InitThreadPool();
+   }
+#endif 
+
 }
 
 ///////////////////////////////////////////////////////////////////////////

@@ -39,12 +39,12 @@ G4bool PS_Process::ProcessHits(G4Step* aStep, G4TouchableHistory*){
   G4String processname;
   if(aStep->GetPostStepPoint()->GetProcessDefinedStep() != NULL){
     processname = aStep->GetPostStepPoint()->GetProcessDefinedStep()->GetProcessName();
-
+    
     t_processname.push_back(processname);
     t_processtime.push_back(aStep->GetPreStepPoint()->GetGlobalTime());
   }
 
-  G4int trackID;
+  /*G4int trackID;
   //G4int parentID;
   G4String volumename, particlename;
   //G4double step_length;
@@ -76,9 +76,7 @@ G4bool PS_Process::ProcessHits(G4Step* aStep, G4TouchableHistory*){
         }
       }
     }
-  }
-
-
+  }*/
 
   return TRUE;
 }

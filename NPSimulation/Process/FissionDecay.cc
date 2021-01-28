@@ -160,6 +160,7 @@ void FissionDecay::DoIt(const G4FastTrack& fastTrack,G4FastStep& fastStep){
   m_FissionConditions->SetA_CN(m_CompoundParticle.GetA());
   m_FissionConditions->SetEx_CN(m_ExcitationEnergy);
   m_FissionConditions->SetELab_CN(energy);
+  m_FissionConditions->SetThetaLab_CN(pdirection.theta()*180./3.1415);
 
   // Fission Process
   m_FissionConditions->Set_TKE(TKE);
@@ -189,10 +190,12 @@ void FissionDecay::DoIt(const G4FastTrack& fastTrack,G4FastStep& fastStep){
     Momentum=Momentum.unit();
 
     double Brho = FissionFragment[i].GetBrho();
+    double KineticEnergy = FissionFragment[i].GetEnergy();
 
     m_FissionConditions->SetFragmentZ(FFZ);
     m_FissionConditions->SetFragmentA(FFA);
-    m_FissionConditions->SetFragmentKineticEnergy(DEK[i]);
+    //m_FissionConditions->SetFragmentKineticEnergy(DEK[i]);
+    m_FissionConditions->SetFragmentKineticEnergy(KineticEnergy);
     m_FissionConditions->SetFragmentBrho(Brho);
     m_FissionConditions->SetFragmentTheta(Momentum.theta()/deg);
     m_FissionConditions->SetFragmentPhi(Momentum.phi()/deg);

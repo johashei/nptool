@@ -94,6 +94,34 @@ class TComptonTelescopeData : public TObject {
       void SetCTTrackerBackTDetectorNbr(const UShort_t DetNbr)    {fCT_Tracker_BackT_DetectorNbr.push_back(DetNbr);}
       void SetCTTrackerBackTStripNbr(const UShort_t StripNbr)     {fCT_Tracker_BackT_StripNbr.push_back(StripNbr);}
       void SetCTTrackerBackTTime(const Double_t Time)             {fCT_Tracker_BackT_Time.push_back(Time);}
+      // set all Front E
+      void SetFrontE(const UShort_t& TowNbr, const UShort_t DetNbr, const UShort_t StripNbr, const Double_t Energy) {
+        SetCTTrackerFrontETowerNbr(TowNbr);
+        SetCTTrackerFrontEDetectorNbr(DetNbr);
+        SetCTTrackerFrontEStripNbr(StripNbr);
+        SetCTTrackerFrontEEnergy(Energy);
+      };
+      // set all Back E
+      void SetBackE(const UShort_t& TowNbr, const UShort_t DetNbr, const UShort_t StripNbr, const Double_t Energy) {
+        SetCTTrackerBackETowerNbr(TowNbr);
+        SetCTTrackerBackEDetectorNbr(DetNbr);
+        SetCTTrackerBackEStripNbr(StripNbr);
+        SetCTTrackerBackEEnergy(Energy);
+      };
+      // set all Front T
+      void SetFrontT(const UShort_t& TowNbr, const UShort_t DetNbr, const UShort_t StripNbr, const Double_t Time) {
+        SetCTTrackerFrontTTowerNbr(TowNbr);
+        SetCTTrackerFrontTDetectorNbr(DetNbr);
+        SetCTTrackerFrontTStripNbr(StripNbr);
+        SetCTTrackerFrontTTime(Time);
+      };
+      // set all Back T
+      void SetBackT(const UShort_t& TowNbr, const UShort_t DetNbr, const UShort_t StripNbr, const Double_t Time) {
+        SetCTTrackerBackTTowerNbr(TowNbr);
+        SetCTTrackerBackTDetectorNbr(DetNbr);
+        SetCTTrackerBackTStripNbr(StripNbr);
+        SetCTTrackerBackTTime(Time);
+      };
 
       // Calorimeter
       // (E)
@@ -113,6 +141,8 @@ class TComptonTelescopeData : public TObject {
       // (X,E)
       UShort_t   GetCTTrackerFrontEMult()                      const {return fCT_Tracker_FrontE_TowerNbr.size();}
       UShort_t   GetCTTrackerFrontETowerNbr(const Int_t i)     const {return fCT_Tracker_FrontE_TowerNbr[i];}
+      UShort_t GetCTTracker_FrontE_Detector_Mult()
+const {return fCT_Tracker_FrontE_DetectorNbr.size();}
       UShort_t   GetCTTrackerFrontEDetectorNbr(const Int_t i)  const {return fCT_Tracker_FrontE_DetectorNbr[i];}
       UShort_t   GetCTTrackerFrontEStripNbr(const Int_t i)     const {return fCT_Tracker_FrontE_StripNbr[i];}
       Double_t   GetCTTrackerFrontEEnergy(const Int_t i)       const {return fCT_Tracker_FrontE_Energy[i];}

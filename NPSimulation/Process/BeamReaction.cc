@@ -23,6 +23,7 @@
 
 #include "BeamReaction.hh"
 #include "G4Electron.hh"
+#include "G4IonTable.hh"
 #include "G4Gamma.hh"
 #include "G4SystemOfUnits.hh"
 #include "G4EmCalculator.hh"
@@ -454,7 +455,7 @@ void NPS::BeamReaction::DoIt(const G4FastTrack& fastTrack,
     G4int Heavy_A = m_QFS.GetParticleB()->GetA();
 
     G4ParticleDefinition* HeavyName;
-    HeavyName = IonTable->GetIon(Heavy_Z, Heavy_A);
+    HeavyName = IonTable->GetIon(Heavy_Z, Heavy_A,m_QFS.GetExcitationB());
 
     // Set the Energy of the reaction
     m_QFS.SetBeamEnergy(reac_energy);

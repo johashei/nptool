@@ -33,8 +33,6 @@
 #include <iostream>
 #if __cplusplus > 199711L 
 #include <thread>
-#include <mutex>
-#include <condition_variable>
 #endif
 
 
@@ -92,7 +90,7 @@ namespace NPL{
       void InitThreadPool(); 
       bool IsDone();
 
-#endif
+    #endif
 
     private: // Target property
       double m_TargetThickness;

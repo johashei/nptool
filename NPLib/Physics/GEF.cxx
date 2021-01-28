@@ -4786,7 +4786,7 @@ void GEF::FromCMtoLAB(void)
   Bcm_light = sqrt(1.-1./pow(Gcm_light,2));
   Bcm_heavy = sqrt(1.-1./pow(Gcm_heavy,2));
 
-  //cout << Ekinlight_sci << " " << Ekinheavy_sci << " " << Ekinlight_sci+ Ekinheavy_sci << endl;
+ //cout << Ekinlight_sci << " " << Ekinheavy_sci << " " << Ekinlight_sci+ Ekinheavy_sci << endl;
 
   KElab_light = KElab_heavy= 0;
   KElab_light = (Gfis*Gcm_light*M_light +Gfis*Bfis*Gcm_light*Bcm_light*M_light*cos(Thcm_light))-M_light;
@@ -4801,7 +4801,7 @@ void GEF::FromCMtoLAB(void)
   Blab_heavy = sqrt(1.-1./pow(Glab_heavy,2));
   vlab_light = Blab_light*29.9792458;
   vlab_heavy=Blab_heavy*29.9792458;
-
+ 
   //Note that I am not taking account the angle of the fissioning system
   Thlab_light = Thlab_heavy=0;
   if(Blab_light>0)

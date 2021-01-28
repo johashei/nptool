@@ -568,7 +568,7 @@ void Scone::ReadSensitive(const G4Event* ){
     m_Event->SetProtonTime(proton_time[i]);
   }
 
-  Process_scorer->clear();
+  //Process_scorer->clear();
 
   ///////////
   // Process scorer for Gd
@@ -583,25 +583,29 @@ void Scone::ReadSensitive(const G4Event* ){
       GdCaptureTime = GdProcess_scorer->GetProcessTime(i);
     }
   }
-  if(kPlasticCapture){
-    m_Event->SetCapture(1);
-    m_Event->SetCaptureTime(PlasticCaptureTime);
-  }
-  else if(kGdCapture){
+  if(kGdCapture){
     m_Event->SetCapture(2);
     m_Event->SetCaptureTime(GdCaptureTime);
   }
+ 
+  else if(kPlasticCapture){
+    m_Event->SetCapture(1);
+    m_Event->SetCaptureTime(PlasticCaptureTime);
+  }
+  
   else m_Event->SetCapture(0);
   GdProcess_scorer->clear();
 
   ///////////
   // Process scorer for fission chamber
-  ProcessScorers::PS_Process* FCProcess_scorer = (ProcessScorers::PS_Process*) m_FCScorer->GetPrimitive(0);
-  vector<int> FC_process = FCProcess_scorer->GetFCProcess();
-  for(unsigned int i=0; i<FC_process.size(); i++){
-    m_Event->SetFCProcess(FC_process[i]);
+  if(m_BuildFissionChamber==1){
+    ProcessScorers::PS_Process* FCProcess_scorer = (ProcessScorers::PS_Process*) m_FCScorer->GetPrimitive(0);
+    vector<int> FC_process = FCProcess_scorer->GetFCProcess();
+    for(unsigned int i=0; i<FC_process.size(); i++){
+      m_Event->SetFCProcess(FC_process[i]);
+    }
+    FCProcess_scorer->clear();
   }
-  FCProcess_scorer->clear();
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

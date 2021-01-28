@@ -27,9 +27,10 @@ G4bool Gas_Scorer::ProcessHits(G4Step* aStep, G4TouchableHistory*){
   G4double* Infos = new G4double[12];
   //G4double w_value = 26.31*eV;
   m_Position  = aStep->GetPreStepPoint()->GetPosition();
-  
+
   Infos[0] = aStep->GetTrack()->GetTrackID();
 
+  /*
   Infos[1] = -1.;
   if (aStep->GetTrack()->GetDefinition()->GetParticleName() == "Ne18") Infos[1] = 0.;
   if (aStep->GetTrack()->GetDefinition()->GetParticleName() == "Na21") Infos[1] = 1.;
@@ -38,7 +39,10 @@ G4bool Gas_Scorer::ProcessHits(G4Step* aStep, G4TouchableHistory*){
   if (aStep->GetTrack()->GetDefinition()->GetParticleName() == "Li8") Infos[1] = 4.;
   if (aStep->GetTrack()->GetDefinition()->GetParticleName() == "B11") Infos[1] = 5;
   if (aStep->GetTrack()->GetDefinition()->GetParticleName() == "neutron") Infos[1] = 6;
+  */
 
+  Infos[1] = aStep->GetTrack()->GetParticleDefinition()->GetAtomicNumber();;
+  
   Infos[2] = aStep->GetPreStepPoint()->GetGlobalTime();
   Infos[3] = aStep->GetPreStepPoint()->GetKineticEnergy();
   Infos[4] = aStep->GetTotalEnergyDeposit() - aStep->GetNonIonizingEnergyDeposit();

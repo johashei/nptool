@@ -464,8 +464,11 @@ void Particle::GetParticleName() {
 void Particle::EnergyToBrho(double Q){
   if(Q==-1000)
      Q=GetZ();
-
-  fBrho = sqrt(pow(fKineticEnergy,2) + 2*fKineticEnergy*Mass()) * 1e6 * e_SI / (c_light*1e6) / (Q * e_SI);
+ 
+  EnergyToBeta();
+  BetaToGamma();
+  //fBrho = sqrt(pow(fKineticEnergy,2) + 2*fKineticEnergy*Mass()) * 1e6 * e_SI / (c_light*1e6) / (Q * e_SI);
+  fBrho = 3.107*GetA()/Q*fBeta*fGamma;
 }
 
 

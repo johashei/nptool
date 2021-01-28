@@ -46,6 +46,7 @@ class Analysis: public NPL::VAnalysis{
    NPL::Reaction m_reaction;
    vector<double> Ex,ELab,ThetaLab,Resolution;
    vector<int> Detected;
+   int Run;
   private:
    TeAGanilPhysics* eAGanil;
    TInteractionCoordinates* Inter;   

@@ -51,17 +51,18 @@ void NPL::FissionDecay::ReadConfiguration(NPL::InputParser parser){
   else HasFissionToken=1;
 
   std::vector<std::string> token = 
-  {"CompoundNucleus","FissionModel","Shoot_FF","Shoot_neutron","Shoot_gamma"};
+  {"CompoundNucleus","FissionModel","VamosChargeStates","Shoot_FF","Shoot_neutron","Shoot_gamma"};
 
   unsigned int size = blocks.size();
   for(unsigned int i = 0 ; i < size ; i++){
     if(blocks[i]->HasTokenList(token)){
       m_CompoundName = blocks[i]->GetString("CompoundNucleus");
       m_FissionModelName = blocks[i]->GetString("FissionModel");
+      m_VamosChargeStates = blocks[i]->GetInt("VamosChargeStates");
       m_shoot_FF = blocks[i]->GetInt("Shoot_FF");
       m_shoot_neutron = blocks[i]->GetInt("Shoot_neutron");
       m_shoot_gamma = blocks[i]->GetInt("Shoot_gamma");
- 
+
       m_Compound = NPL::Particle(m_CompoundName);
       if(m_FissionModelName=="GEF") m_FissionModel = new GEF(m_Compound);
     }
@@ -93,6 +94,7 @@ bool NPL::FissionDecay::GenerateEvent(string CompoundName, double MEx,double MEK
   Momentum.Unit();
   double Theta = Momentum.Theta();
   double Phi = Momentum.Phi();
+  double Lfis = 0;
 
   m_Compound = NPL::Particle(CompoundName);
   m_Compound.SetExcitationEnergy(MEx);
@@ -100,7 +102,7 @@ bool NPL::FissionDecay::GenerateEvent(string CompoundName, double MEx,double MEK
   if(m_FissionModelName=="GEF"){
     if(m_FissionModel->IsValid(m_Compound.GetZ(), m_Compound.GetA())){
       worked=true;
-      m_FissionModel->InitCompound(MEx,MEK);
+      m_FissionModel->InitCompound(MEx,MEK,Lfis,Theta,Phi);
       m_FissionModel->Treat();
 
       int Ah = m_FissionModel->GetAffh();
@@ -110,12 +112,20 @@ bool NPL::FissionDecay::GenerateEvent(string CompoundName, double MEx,double MEK
 
       double KEl = m_FissionModel->GetKEffl();
       double KEh = m_FissionModel->GetKEffh();
+      double Brhol = m_FissionModel->GetBrhoffl();
+      double Brhoh = m_FissionModel->GetBrhoffh();
 
       NPL::Particle FFl = NPL::Particle(Zl,Al);
       NPL::Particle FFh = NPL::Particle(Zh,Ah);
-      FFl.SetKineticEnergy(KEl);
-      FFh.SetKineticEnergy(KEh);
-
+      if(m_VamosChargeStates==1){
+        // Include Charge states distribtuion from Baron et al. NIM 328 (1993) 177-182
+        FFl.SetBrho(Brhol);
+        FFh.SetBrho(Brhoh);
+      }
+      else{
+        FFl.SetKineticEnergy(KEl);
+        FFh.SetKineticEnergy(KEh);
+      }
       FissionFragments.push_back(FFl);
       FissionFragments.push_back(FFh);
       Ex.push_back(0);
@@ -150,7 +160,7 @@ bool NPL::FissionDecay::GenerateEvent(string CompoundName, double MEx,double MEK
       DPy.push_back(Momentumh.Y());
       DPz.push_back(Momentuml.Z());
       DPz.push_back(Momentumh.Z());
-      
+
       TKE = m_FissionModel->GetTKE();
       KE1 = m_FissionModel->GetKE1();
       KE2 = m_FissionModel->GetKE2();
@@ -163,7 +173,7 @@ bool NPL::FissionDecay::GenerateEvent(string CompoundName, double MEx,double MEK
       //for(int i=0; i<51; i++) {
       //  cout << "En= " << En1[i] << endl;
       //}
-      
+
       Eg1 = m_FissionModel->GetGammaEnergyFrag1();
       //cout << "----- Gamma energy: " << endl;
       //for(int i=0; i<101; i++){
