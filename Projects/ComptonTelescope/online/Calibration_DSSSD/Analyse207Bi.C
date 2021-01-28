@@ -26,6 +26,7 @@
 #include "TString.h"
 #include "TLatex.h"
 #include "TLegend.h"
+#include "TPaveStats.h"
 #include "TStyle.h"
 #include "TLine.h"
 #include "TError.h"
@@ -42,7 +43,8 @@
 #include <algorithm>
 using namespace std;
 
-#define NCHANNELS    32
+#define DETECTOR_ID       1
+#define NCHANNELS        32
 #define BACKGROUND_MIN  300
 #define BACkGROUND_MAX 1000
 
@@ -55,7 +57,7 @@ Double_t fpeaks(Double_t*, Double_t*);
 Double_t gaussianPeak(Double_t*, Double_t*);
 
 
-void Analyse207Bi(const char* name = "2019-09-03__11_44_58__vata4xx_acq_log_hist.root",
+void Analyse207Bi(const char* name = "bb7_3309-7_bi207_20210126_13h09_run5_conv_RawDSSSDHistos.root",
                   Bool_t isPside = 1, Int_t channel = 15)
 {
    // no statistical box, no histogram name, no fit info
@@ -67,7 +69,7 @@ void Analyse207Bi(const char* name = "2019-09-03__11_44_58__vata4xx_acq_log_hist
 
    ///////////////////////////////////////////////////////////////////////////
 	// 207Bi information
-   std::vector<Double_t> mainLineEnergy = {481.69, 975.65};
+   std::vector<Double_t> mainLineEnergy = {481.69,  975.65};
    std::vector<Double_t> LLineEnergy    = {553.84, 1047.80};
    std::vector<Double_t> MLineEnergy    = {565.85, 1059.81};
    
@@ -86,10 +88,19 @@ void Analyse207Bi(const char* name = "2019-09-03__11_44_58__vata4xx_acq_log_hist
 
    ///////////////////////////////////////////////////////////////////////////
    // open output pdf file
-   string date_time = sname.substr(0, 20);
-   TString pdfname = Form("Analyse207Bi_%s.pdf", date_time.c_str());
+   string label = sname.substr(4, 6);
+   cout << "label = " << label << endl;
+   cout << "sname = " << sname << endl;
+   label += sname.substr(16, 20);
+   cout << "label = " << label << endl;
+   TString pdfname = Form("Analyse207Bi_%s.pdf", label.c_str());
    can->Print(Form("%s[", pdfname.Data()));
 
+   ///////////////////////////////////////////////////////////////////////////
+   // open output calib file
+   string fname = (isPside) ? Form("DSSSD_D%d_Calibration_Front_E.txt",DETECTOR_ID) : Form("DSSSD_D%d_Calibration_Back_E.txt",DETECTOR_ID);
+   ofstream calibFile(fname.c_str(), std::ios::out);
+   
    ///////////////////////////////////////////////////////////////////////////
    // define some functions
    auto fcalib  = new TF1("fcalib", "pol1", 1024);
@@ -137,7 +148,7 @@ void Analyse207Bi(const char* name = "2019-09-03__11_44_58__vata4xx_acq_log_hist
 
          ///////////////////////////////////////////////////////////////////////////
          // get histogram
-         string hname = (isPside) ? Form("h_D1_FRONT_E%d",n+1) : Form("h_D1_BACK_E%d",n+1);
+         string hname = (isPside) ? Form("h_D%d_FRONT_E%d",DETECTOR_ID,n+1) : Form("h_D%d_BACK_E%d",DETECTOR_ID,n+1);
          auto h = (TH1F*) f->Get(hname.c_str());
          h->Sumw2();
          // draw histogram
@@ -147,6 +158,11 @@ void Analyse207Bi(const char* name = "2019-09-03__11_44_58__vata4xx_acq_log_hist
 //         pad->SetBottomMargin(1e-5);
          h->GetYaxis()->CenterTitle();
          h->DrawCopy();
+
+         ///////////////////////////////////////////////////////////////////////////
+         // clear variables
+         position.clear(); positionError.clear();
+         energy.clear();   energyError.clear();
 
          ///////////////////////////////////////////////////////////////////////////
          // find pedestal position 
@@ -164,8 +180,8 @@ void Analyse207Bi(const char* name = "2019-09-03__11_44_58__vata4xx_acq_log_hist
          auto fitF = h->GetFunction("gaus");
          position.push_back(fitF->GetParameter(1));
          positionError.push_back(fitF->GetParError(1));
-         energy.push_back(0);
-         energyError.push_back(1);
+         energy.push_back(0 * 1e-3);
+         energyError.push_back(1 * 1e-3);
          
          ///////////////////////////////////////////////////////////////////////////
          // substract background
@@ -306,13 +322,13 @@ void Analyse207Bi(const char* name = "2019-09-03__11_44_58__vata4xx_acq_log_hist
             // K-transition
             position.push_back(fit->GetParameter(1));
             positionError.push_back(fit->GetParError(1));
-            energy.push_back(mainLineEnergy[p]);
-            energyError.push_back(1);
+            energy.push_back(mainLineEnergy[p] * 1e-3);
+            energyError.push_back(1 * 1e-3);
             // L-transition
             position.push_back(fit->GetParameter(3));
             positionError.push_back(fit->GetParError(3));
-            energy.push_back(LLineEnergy[p]);
-            energyError.push_back(1);
+            energy.push_back(LLineEnergy[p] * 1e-3);
+            energyError.push_back(1 * 1e-3);
 
             ///////////////////////////////////////////////////////////////////////////
             // fill fwhm data
@@ -335,10 +351,21 @@ void Analyse207Bi(const char* name = "2019-09-03__11_44_58__vata4xx_acq_log_hist
                                             &position[0], &energy[0],
                                             &positionError[0], &energyError[0]);
          grFullCalib->Draw("a*");
-         auto fitFullCalib = new TF1("pol3", "[0]+[1]*x+[2]*x*x+[3]*x*x*x", 0, 1023);
-         fitFullCalib->SetParameters(-130, 2, -1.3e-3, -5.4e-7);
-         grFullCalib->Fit("pol3", "R");
+         grFullCalib->GetXaxis()->SetTitle("ADC channel");
+         grFullCalib->GetYaxis()->SetTitle("Energy (MeV)");
+         grFullCalib->Draw("same");
+         auto fitFullCalib = new TF1("fitFullCalib", "pol3", 0, 1024);
+         fitFullCalib->SetParameters(-1.35e-1, 2e-3, -1.3e-6, 5e-10);
+         grFullCalib->Fit("fitFullCalib", "QR");
 
+         ///////////////////////////////////////////////////////////////////////////
+         // write calibration coefficients
+         string token = (isPside) ? Form("COMPTONTELESCOPE_D%d_STRIP_FRONT%d_E",DETECTOR_ID,n) : Form("COMPTONTELESCOPE_D%d_STRIP_BACK%d_E",DETECTOR_ID,n);
+         calibFile << token;
+         for (int p = 0; p < fitFullCalib->GetNpar(); ++p) {
+            calibFile << "\t" << fitFullCalib->GetParameter(p);
+         }
+         calibFile << "\n";
 
          ///////////////////////////////////////////////////////////////////////////
          // channel information
@@ -359,11 +386,21 @@ void Analyse207Bi(const char* name = "2019-09-03__11_44_58__vata4xx_acq_log_hist
          tex = new TLatex(0.65, 0.7, Form("%3.0f keV + CE L,M", mainLineEnergy[1]));
          tex->SetNDC(); tex->SetTextSize(0.1); tex->SetTextFont(42); tex->Draw();
 
+         canC->cd();
+         tex = new TLatex(0.2, 0.8, Form("channel N%d", n));
+         if (isPside) tex = new TLatex(0.2, 0.8, Form("channel P%d", n));
+         tex->SetNDC(); tex->SetTextSize(0.05); tex->SetTextFont(42); tex->Draw();
+
          // fill pdf file
          can->Update();
          can->Print(pdfname.Data());
+         canC->Print(pdfname.Data());
       }
    } // end loop on channels
+
+   ///////////////////////////////////////////////////////////////////////////
+   // close calibration file
+   calibFile.close();
 
    ///////////////////////////////////////////////////////////////////////////
    // draw analysis result
