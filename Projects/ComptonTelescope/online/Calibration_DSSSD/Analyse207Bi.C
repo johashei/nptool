@@ -357,6 +357,7 @@ void Analyse207Bi(const char* name = "bb7_3309-7_bi207_20210126_13h09_run5_conv_
          auto fitFullCalib = new TF1("fitFullCalib", "pol3", 0, 1024);
          fitFullCalib->SetParameters(-1.35e-1, 2e-3, -1.3e-6, 5e-10);
          grFullCalib->Fit("fitFullCalib", "QR");
+         canC->Update();
 
          ///////////////////////////////////////////////////////////////////////////
          // write calibration coefficients
