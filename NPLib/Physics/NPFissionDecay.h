@@ -57,6 +57,7 @@ namespace NPL{
         std::vector<NPL::Particle> m_FissionFragment;
         std::vector<double> m_FissionFragmentMasses;
         int HasFissionToken; 
+        bool m_VamosChargeStates;
         bool m_shoot_FF;
         bool m_shoot_neutron;
         bool m_shoot_gamma;
