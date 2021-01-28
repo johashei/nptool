@@ -33,7 +33,8 @@ class TStrasseData : public TObject {
   //////////////////////////////////////////////////////////////
   // data members are hold into vectors in order 
   // to allow multiplicity treatment
-  private: 
+  // private: 
+  public: 
     // First Stage Front Energy
     vector<unsigned short>  fInner_TE_DetectorNbr;
     vector<unsigned short>  fInner_TE_StripNbr;

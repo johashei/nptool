@@ -92,6 +92,7 @@ namespace NPL{
     bool fshootB; // shoot beam-like ejectile
     bool fshoot1; // shoot light ejectile &
     bool fshoot2; // shoot light ejectile 2
+    bool fUseExInGeant4; 
     
     public:
     Particle GetParticle(string name, NPL::InputParser parser);
@@ -178,16 +179,17 @@ namespace NPL{
     Particle*  GetParticleB()               {return &fParticleB;}
     Particle*  GetParticle1()               {return &fParticle1;}
     Particle*  GetParticle2()               {return &fParticle2;}
-    double     GetExcitationA()             {return fExcitationA;}
-    double     GetExcitationB()             {return fExcitationB;}
     bool     GetShoot1()         const        {return fshoot1;}
     bool     GetShoot2()         const        {return fshoot2;}
     bool     GetShootB()         const        {return fshootB;}
     double   GetThetaCM()        const        {return fThetaCM;}
     double   GetPhiCM()          const        {return fPhiCM;}
     double   GetMomentumSigma()  const        {return fMomentumSigma;}
+    bool      GetUseExInGeant4() const { return fUseExInGeant4; }
+    double   GetExcitationA() const           {return fExcitationA;}
+    double   GetExcitationB() const           {return fExcitationB;}
     TVector3 GetInternalMomentum() const   {return fInternalMomentum;}
-   
+ 
     TLorentzVector*  GetEnergyImpulsionLab_A() {return &fEnergyImpulsionLab_A;}
     TLorentzVector*  GetEnergyImpulsionLab_T() {return &fEnergyImpulsionLab_T;}
     TLorentzVector*  GetEnergyImpulsionLab_a() {return &fEnergyImpulsionLab_a;}

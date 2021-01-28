@@ -198,7 +198,6 @@ G4LogicalVolume* Strasse::BuildInnerDetector(){
       +Inner_PCB_StarboardWidth
       +Inner_PCB_PortWidth;
 
-
     vector<G4TwoVector> PCBCrossSection;
     double l1 = Inner_PCB_Thickness*0.5/tan(Inner_PCB_BevelAngle);
 
@@ -219,7 +218,8 @@ G4LogicalVolume* Strasse::BuildInnerDetector(){
       new G4LogicalVolume(PCBFull,m_MaterialVacuum,"logicBoxDetector", 0, 0, 0);
     m_InnerDetector->SetVisAttributes(G4VisAttributes::Invisible);
 
-    // Build the PCB
+    ///////////////////////////////////////////////////////////////////////////
+    // Build the external PCB layer
     // Calculate the hole shift within the PCB
     double Width_Shift= -0.5*Inner_PCB_Width + 0.5*Inner_Wafer_Width // Flush to border
       +Inner_PCB_PortWidth; // add the port side shift
@@ -255,6 +255,85 @@ G4LogicalVolume* Strasse::BuildInnerDetector(){
         logicPCB,"Strasse_Inner_PCB",m_InnerDetector,
         false,0);
 
+    ///////////////////////////////////////////////////////////////////////////
+    // Build the internal PCB layer
+    double offsetPCB2 = -0.3;
+    double Inner_PCB2_Thickness = Inner_PCB_Thickness + offsetPCB2;
+
+    double Inner_PCB2_StarboardWidth = Inner_PCB_StarboardWidth;
+    double Inner_PCB2_PortWidth = Inner_PCB_PortWidth; 
+    double Inner_PCB2_UpstreamWidth =Inner_PCB_UpstreamWidth; 
+    double Inner_PCB2_MidWidth =Inner_PCB_MidWidth; 
+    double Inner_PCB2_DownstreamWidth =Inner_PCB_DownstreamWidth; 
+
+    // perpendicular to beam axis
+    double Inner_PCB2_Width= Inner_Wafer_Width-Inner_PCB_PortWidth*2
+      +Inner_PCB2_StarboardWidth
+      +Inner_PCB2_PortWidth;
+
+    vector<G4TwoVector> PCB2CrossSection;
+    double l21 = Inner_PCB2_Thickness*0.5/tan(Inner_PCB_BevelAngle);
+
+    PCB2CrossSection.push_back(G4TwoVector(Inner_PCB2_Width*0.5-l21,-Inner_PCB2_Thickness*0.5));
+    PCB2CrossSection.push_back(G4TwoVector(Inner_PCB2_Width*0.5,Inner_PCB2_Thickness*0.5));
+    PCB2CrossSection.push_back(G4TwoVector(-Inner_PCB2_Width*0.5-l21,Inner_PCB2_Thickness*0.5));
+    PCB2CrossSection.push_back(G4TwoVector(-Inner_PCB2_Width*0.5,-Inner_PCB2_Thickness*0.5));
+
+    double Inner_PCB2_Length= 2*(Inner_Wafer_Length-Inner_PCB_PortWidth)
+      +Inner_PCB2_UpstreamWidth
+      +Inner_PCB2_MidWidth
+      +Inner_PCB2_DownstreamWidth;
+
+    G4ExtrudedSolid* PCB2Full =
+      new G4ExtrudedSolid("PCB2Full",
+          PCB2CrossSection,
+          Inner_PCB2_Length*0.5,// half length
+          G4TwoVector(0,0),1,// offset, scale
+          G4TwoVector(0,0),1);// offset, scale
+
+    // Calculate the hole shift within the PCB
+    double Width_Shift2= -0.5*Inner_PCB2_Width + 0.5*(Inner_Wafer_Width-1) // Flush to border
+      +Inner_PCB2_PortWidth; // add the port side shift
+
+    double Length_Shift21 = -0.5*Inner_PCB2_Length + 0.5*(Inner_Wafer_Length-1) // Flush to border
+      + Inner_PCB2_UpstreamWidth;// add Upstream side shift
+
+    double Length_Shift22 = Length_Shift21 // overlap detector 1
+      + Inner_Wafer_Length // at opposing edge
+      + Inner_PCB2_MidWidth; // after mid width
+
+    G4ThreeVector HoleShift21 = G4ThreeVector(0, 0, 0);
+    G4Box* HoleShape2 = new G4Box("HoleShape2",
+        Inner_PCB2_Width*0.5 -2,
+        Inner_PCB2_Thickness,
+        Inner_PCB2_Length*0.5-2);
+
+    // Substracting the hole Shape from the Stock PCB
+    G4SubtractionSolid* PCB2_1 = new G4SubtractionSolid("PCB2_1", PCB2Full, HoleShape2,
+        new G4RotationMatrix,HoleShift21);
+      
+    G4ThreeVector HoleCenterBar = G4ThreeVector(0, 0, 0);
+    G4Box* HoleShapeCenterBar = new G4Box("HoleShapeCenterBar",
+        Inner_PCB2_Width*0.5,
+        Inner_PCB2_Thickness,
+      0.5*mm);
+
+    // Substracting the hole Shape from the Stock PCB
+    G4SubtractionSolid* PCB2_2 = new G4SubtractionSolid("PCB2_2", PCB2_1, HoleShapeCenterBar,
+        new G4RotationMatrix,HoleCenterBar);
+
+    // Sub Volume PCB
+    G4LogicalVolume* logicPCB2 =
+      new G4LogicalVolume(PCB2_2,m_MaterialPCB,"logicPCB2", 0, 0, 0);
+    logicPCB2->SetVisAttributes(PCBVisAtt);
+
+    new G4PVPlacement(new G4RotationMatrix(0,0,0),
+        G4ThreeVector(0,-0.5*offsetPCB2,0),
+        logicPCB2,"Strasse_Inner_PCB2",m_InnerDetector,
+        false,0);
+
+    /////////////////////////////////////////////////////////////////////////// 
+    // Build the Wafer
     // Sub volume Wafer
     G4Box*  WaferShape = new G4Box("WaferShape",
         Inner_Wafer_Width*0.5,
@@ -269,11 +348,10 @@ G4LogicalVolume* Strasse::BuildInnerDetector(){
       new G4LogicalVolume(WaferShape,m_MaterialSilicon,"logicWafer2", 0, 0, 0);
     logicWafer2->SetVisAttributes(GuardRingVisAtt);
 
-
     new G4PVPlacement(new G4RotationMatrix(0,0,0),
         G4ThreeVector(0,0.5*Inner_Wafer_Thickness
           +Inner_Wafer_AlThickness
-          -0.5*Inner_PCB_Thickness,0)// flush the wafer to the pcb on one side
+          -0.5*Inner_PCB_Thickness,0) // flush the wafer to the pcb on one side
         +HoleShift1, // Shift wafer in the hole 
         logicWafer1,"Strasse_Inner_Wafer1",m_InnerDetector,
         false,0);
@@ -301,8 +379,6 @@ G4LogicalVolume* Strasse::BuildInnerDetector(){
       new G4LogicalVolume(ActiveWaferShape,m_MaterialSilicon,"logicActiveWafer2", 0, 0, 0);
     logicActiveWafer2->SetVisAttributes(SiliconVisAtt);
     logicActiveWafer2->SetSensitiveDetector(m_InnerScorer2);
-
-
 
     new G4PVPlacement(new G4RotationMatrix(0,0,0),
         G4ThreeVector(0,0,0.5*(Inner_Wafer_PADExternal-Inner_Wafer_PADInternal)), // assymetric pading for bounding
@@ -974,5 +1050,3 @@ extern"C" {
 
   proxy_nps_Strasse p_nps_Strasse;
 }
-
-

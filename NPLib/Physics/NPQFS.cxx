@@ -80,6 +80,8 @@ QFS::QFS(){
     fshoot2=true;
     fisotropic = true;
 
+    fUseExInGeant4=true;
+
     fTheta2VsTheta1 = 0;
     fPhi2VsPhi1 = 0;
 
@@ -223,6 +225,7 @@ void QFS::CalculateVariables(){
 
     mA =  fParticleA.Mass();           // Beam mass in MeV
     mT =  fParticleT.Mass();           // Target mass in MeV 
+    fParticleB.SetExcitationEnergy(fExcitationB);
     mB =  fParticleB.Mass();           // Heavy residual mass in MeV 
     m1 =  mT;                        // scattered target nucleon (same mass);
     m2 =  fParticle2.Mass();           // knocked out cluster mass in MeV 
@@ -525,8 +528,9 @@ void QFS::CalculateVariablesOld(){
     //cout<<"---- COMPUTE ------"<<endl;
    // cout<<"--CM--"<<endl; 
 
-    mA = fParticleA.Mass();            // Beam mass in MeV
+    mA =  fParticleA.Mass();            // Beam mass in MeV
     mT =  fParticleT.Mass();           // Target mass in MeV 
+    fParticleB.SetExcitationEnergy(fExcitationB);
     mB =  fParticleB.Mass();           // Heavy residual mass in MeV 
     m1 =  mT;                        // scattered target nucleon (same mass);
     m2 =  fParticle2.Mass();           // knocked out cluster mass in MeV 
