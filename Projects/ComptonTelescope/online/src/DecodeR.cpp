@@ -31,9 +31,9 @@ DecodeR::~DecodeR()
   delete [] mat;
 }
 
-long int DecodeR::combineBytes(int length)
+long unsigned int DecodeR::combineBytes(int length)
 { // Endianness fixed here. Also, probably not optimised for real time operations
-  long int n = 0;
+  long unsigned int n = 0;
   for (int i = 0; i<length; i++) {
     n = n + (((unsigned char) raw[cursor+i]) << 8*(length-i-1));
   }
@@ -103,19 +103,24 @@ long int DecodeR::getCursor()
 
 char DecodeR::getSource()
 {
-  cout << "Deprecated function getSource: use getPixelNumberInstead" << endl;
+  cout << "Deprecated function getSource: use getPixelNumber instead" << endl;
   return sourceID;
 }
 
 char DecodeR::getChannel()
 {
-  cout << "Deprecated function getChannel: use getPixelNumberInstead" << endl;
+  cout << "Deprecated function getChannel: use getPixelNumber instead" << endl;
   return channelID;
 }
 
 char DecodeR::getPixelNumber()
 {
   return F[sourceID*16+channelID];
+}
+
+char DecodeR::getDetectorNumber()
+{
+  return detNbr;
 }
 
 void DecodeR::decodeRaw()
@@ -201,6 +206,37 @@ void DecodeR::decodeRaw()
     }
   } else
   { cout << "Packet Type is not 0xd5 nor 0xd4 -> not analysed." << endl; }
+}
+
+void DecodeR::decodeBlobMFM()
+{
+  if (raw) {
+    if (verbose)
+      { cout << "Decoding (blob) in progress ..." << endl; }
+    long int cursorAtBeginning = cursor;
+    // metaType byte
+    char metaType = raw[cursor];
+    cursor++;
+    // Size of frame
+    long int frameSize = combineBytes(3);
+    // Data source
+    detNbr = raw[cursor];
+    cursor++;
+    // Frame Type
+    int frameType = combineBytes(2);
+    // Revision
+    char revision = raw[cursor];
+    cursor++;
+    if (verbose)
+      {cout << int(metaType) << endl << frameSize << endl << int(detNbr) << endl << frameType << endl << int(revision) << endl; }
+    // Reading the actual data
+    if (verbose)
+      { cout << endl << "Curseur: " << cursor << endl; }
+    decodeRaw();
+    if (verbose)
+      { cout << endl << "Curseur: " << cursor << endl; }
+    cursor = cursorAtBeginning + frameSize;
+  }
 }
 
 void DecodeR::decodeRawMFM()
