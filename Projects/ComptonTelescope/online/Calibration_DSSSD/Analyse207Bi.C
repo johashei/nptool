@@ -46,7 +46,7 @@ using namespace std;
 #define DETECTOR_ID       1
 #define NCHANNELS        32
 #define BACKGROUND_MIN  300
-#define BACkGROUND_MAX 1000
+#define BACKGROUND_MAX 1000
 
 // variables
 static std::vector<Double_t> peakListForFit;
@@ -89,10 +89,7 @@ void Analyse207Bi(const char* name = "bb7_3309-7_bi207_20210126_13h09_run5_conv_
    ///////////////////////////////////////////////////////////////////////////
    // open output pdf file
    string label = sname.substr(4, 6);
-   cout << "label = " << label << endl;
-   cout << "sname = " << sname << endl;
    label += sname.substr(16, 20);
-   cout << "label = " << label << endl;
    label += (isPside) ? "_pside" : "_nside";
    TString pdfname = Form("Analyse207Bi_%s.pdf", label.c_str());
    can->Print(Form("%s[", pdfname.Data()));
@@ -186,7 +183,7 @@ void Analyse207Bi(const char* name = "bb7_3309-7_bi207_20210126_13h09_run5_conv_
          
          ///////////////////////////////////////////////////////////////////////////
          // substract background
-         h->GetXaxis()->SetRangeUser(BACKGROUND_MIN, BACkGROUND_MAX);
+         h->GetXaxis()->SetRangeUser(BACKGROUND_MIN, BACKGROUND_MAX);
          auto background = (TH1F*) h->ShowBackground(50, "");
          background->SetLineColor(kRed);
          background->Draw("same");
@@ -225,7 +222,7 @@ void Analyse207Bi(const char* name = "bb7_3309-7_bi207_20210126_13h09_run5_conv_
             else {
                energyGuess = (mainLineEnergy[1]-fcalib->GetParameter(0))/fcalib->GetParameter(1);;
             }
-            AddPeak(energyGuess, BACKGROUND_MIN, BACkGROUND_MAX);
+            AddPeak(energyGuess, BACKGROUND_MIN, BACKGROUND_MAX);
          }
          // order peak position
          sort(peakList.begin(), peakList.end());
