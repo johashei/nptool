@@ -68,7 +68,7 @@ TComptonTelescopeSpectra::TComptonTelescopeSpectra(unsigned int NumberOfTelescop
    fNumberOfStripsFront=32;
    fNumberOfStripsBack=32;
    fStripEnergyMatchingSigma = 0.006;
-   fStripEnergyMatchingNumberOfSigma = 3;
+   fStripEnergyMatchingNumberOfSigma = 2;
    fNumberOfCounters=50;
    fCalorimeterNPixels=64;
 
