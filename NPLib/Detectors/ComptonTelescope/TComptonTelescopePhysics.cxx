@@ -52,6 +52,7 @@ TComptonTelescopePhysics::TComptonTelescopePhysics()
   m_nCounterEvt(50),
   m_nCounterHit(50),
   m_MaximumStripMultiplicityAllowed(32),
+  m_MultOneOnly(false),
   m_StripEnergyMatchingSigma(0.006),      // MeV
   m_StripEnergyMatchingNumberOfSigma(3),  
   m_StripFront_E_RAW_Threshold(0),
@@ -274,11 +275,6 @@ void TComptonTelescopePhysics::PreTreat()
             m_EventData->GetCTTrackerFrontEDetectorNbr(i),
             m_EventData->GetCTTrackerFrontEStripNbr(i),
             E);
-/*        m_PreTreatedData->SetCTTrackerFrontETowerNbr(m_EventData->GetCTTrackerFrontETowerNbr(i));
-        m_PreTreatedData->SetCTTrackerFrontEDetectorNbr(m_EventData->GetCTTrackerFrontEDetectorNbr(i));
-        m_PreTreatedData->SetCTTrackerFrontEStripNbr(m_EventData->GetCTTrackerFrontEStripNbr(i));
-        m_PreTreatedData->SetCTTrackerFrontEEnergy(E);
-*/
       }
     }
   }
@@ -304,11 +300,6 @@ void TComptonTelescopePhysics::PreTreat()
             m_EventData->GetCTTrackerBackEDetectorNbr(i),
             m_EventData->GetCTTrackerBackEStripNbr(i),
             E);
-/*        m_PreTreatedData->SetCTTrackerBackETowerNbr(m_EventData->GetCTTrackerBackETowerNbr(i));
-        m_PreTreatedData->SetCTTrackerBackEDetectorNbr( m_EventData->GetCTTrackerBackEDetectorNbr(i));
-        m_PreTreatedData->SetCTTrackerBackEStripNbr( m_EventData->GetCTTrackerBackEStripNbr(i));
-        m_PreTreatedData->SetCTTrackerBackEEnergy(E);
-*/
       }
     }
   }
@@ -324,12 +315,6 @@ void TComptonTelescopePhysics::PreTreat()
         m_EventData->GetCTTrackerFrontTStripNbr(i),
         m_EventData->GetCTTrackerFrontTTime(i));
     //cout << "Pretreat time front : T" << m_EventData->GetCTTrackerFrontTTowerNbr(i) << " D" << m_EventData->GetCTTrackerFrontTDetectorNbr(i) << " Strip " << m_EventData->GetCTTrackerFrontTStripNbr(i) << " time " << m_EventData->GetCTTrackerFrontTTime(i) << endl;
-  
-/*    m_PreTreatedData->SetCTTrackerFrontTTowerNbr(m_EventData->GetCTTrackerFrontTTowerNbr(i));
-    m_PreTreatedData->SetCTTrackerFrontTDetectorNbr(m_EventData->GetCTTrackerFrontTDetectorNbr(i));
-    m_PreTreatedData->SetCTTrackerFrontTStripNbr(m_EventData->GetCTTrackerFrontTStripNbr(i));
-    m_PreTreatedData->SetCTTrackerFrontTTime(m_EventData->GetCTTrackerFrontTTime(i));
-*/    
   }
 
   // Back, time
@@ -342,12 +327,6 @@ void TComptonTelescopePhysics::PreTreat()
         m_EventData->GetCTTrackerBackTStripNbr(i),
         m_EventData->GetCTTrackerBackTTime(i));
     //cout << "Pretreat time back : T" << m_EventData->GetCTTrackerBackTTowerNbr(i) << " D" << m_EventData->GetCTTrackerBackTDetectorNbr(i) << " Strip " << m_EventData->GetCTTrackerBackTStripNbr(i) << " time " << m_EventData->GetCTTrackerBackTTime(i) << endl;
-
-/*    m_PreTreatedData->SetCTTrackerBackTTowerNbr(m_EventData->GetCTTrackerBackTTowerNbr(i));
-    m_PreTreatedData->SetCTTrackerBackTDetectorNbr(m_EventData->GetCTTrackerBackTDetectorNbr(i));
-    m_PreTreatedData->SetCTTrackerBackTStripNbr(m_EventData->GetCTTrackerBackTStripNbr(i));
-    m_PreTreatedData->SetCTTrackerBackTTime(m_EventData->GetCTTrackerBackTTime(i));
-*/    
   }
 
 
@@ -457,11 +436,12 @@ vector<TVector2> TComptonTelescopePhysics::Match_Front_Back()
   }
 
   // keep only mult = 1
-  if (ArrayOfGoodCouple.size() > 1) {
-    m_CounterEvt[15] = 1; // nb of events with couple size > 1
-    ArrayOfGoodCouple.clear();
+  if (m_MultOneOnly) {
+    if (ArrayOfGoodCouple.size() > 1) {
+      m_CounterEvt[15] = 1; // nb of events with couple size > 1
+      ArrayOfGoodCouple.clear();
+    }
   }
-
 
   return ArrayOfGoodCouple;
 }
@@ -531,6 +511,12 @@ void TComptonTelescopePhysics::ReadAnalysisConfig()
         AnalysisConfigFile >> DataBuffer;
         m_MaximumStripMultiplicityAllowed = atoi(DataBuffer.c_str());
         cout << "\t" << whatToDo << "\t" << m_MaximumStripMultiplicityAllowed << endl;
+      }
+      
+      else if (whatToDo == "ONLY_GOOD_COUPLE_WITH_MULTIPLICITY_ONE") {
+        AnalysisConfigFile >> DataBuffer;
+        if (DataBuffer == "ON") m_MultOneOnly = true;
+        cout << "\t" << whatToDo << "\t" << DataBuffer << endl;
       }
 
       else if (whatToDo == "FRONT_BACK_ENERGY_MATCHING_SIGMA") {

@@ -179,6 +179,7 @@ class TComptonTelescopePhysics : public TObject, public NPL::VDetector
       // Give the allowance in percent of the difference in energy between X and Y
       double m_StripEnergyMatchingSigma;              //!
       double m_StripEnergyMatchingNumberOfSigma;      //!
+      bool m_MultOneOnly; //!
 
       //  Threshold
       double m_StripFront_E_RAW_Threshold;   //!

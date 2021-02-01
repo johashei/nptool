@@ -46,7 +46,7 @@ TComptonTelescopeSpectra::TComptonTelescopeSpectra(){
   fNumberOfStripsFront=32;
   fNumberOfStripsBack=32;
   fStripEnergyMatchingSigma = 0.006;
-  fStripEnergyMatchingNumberOfSigma = 3;
+  fStripEnergyMatchingNumberOfSigma = 2;
   fNumberOfCounters=50;
   fCalorimeterNPixels=64;
 }
@@ -165,7 +165,11 @@ void TComptonTelescopeSpectra::InitPreTreatedSpectra()
       // E Front and Back vs Strip
       name = "CT"+NPL::itoa(i+1)+"_DSSSD"+NPL::itoa(j+1)+"_FRONT_BACK_E_CAL";
       AddHisto2D(name, name, ntot, 0, ntot, 1400, 0, 1.4, "COMPTONTELESCOPE/CAL/ENERGY");
-      
+ 
+      // Front-Back Energy Correlation
+      name = "CT"+NPL::itoa(i+1)+"_DSSSD"+NPL::itoa(j+1)+"_FB_COR_CAL";
+      AddHisto2D(name, name, 1400,0,1.4, 1400,0,1.4, "COMPTONTELESCOPE/CAL/ENERGYCOR");
+   
       // Front E spectrum
       name = "CT"+NPL::itoa(i+1)+"_DSSSD"+NPL::itoa(j+1)+"_FRONTECAL_SPECTRUM";
       AddHisto1D(name, name, 1400, 0, 1.4, "COMPTONTELESCOPE/CAL/ENERGYSPEC");
@@ -213,10 +217,12 @@ void TComptonTelescopeSpectra::InitPreTreatedSpectra()
       // + energy sum = E Front
       name = "CT"+NPL::itoa(i+1)+"_DSSSD"+NPL::itoa(j+1)+"_BACK_E_INTERSTRIP";
       AddHisto2D(name, name, 1400, 0, 1.4, 1400, 0, 1.4, "COMPTONTELESCOPE/CAL/INTERSTRIP");
-
-      // Front-Back Energy Correlation
-      name = "CT"+NPL::itoa(i+1)+"_DSSSD"+NPL::itoa(j+1)+"_FB_COR_CAL";
-      AddHisto2D(name, name, 1400,0,1.4, 1400,0,1.4, "COMPTONTELESCOPE/CAL/ENERGYCOR");
+      // FB correlation for interstrip
+      name = "CT"+NPL::itoa(i+1)+"_DSSSD"+NPL::itoa(j+1)+"_FB_COR_INTERSTRIP";
+      AddHisto2D(name, name, 1400, 0, 1.4, 1400, 0, 1.4, "COMPTONTELESCOPE/CAL/INTERSTRIP");      
+      // Half E spectrum for interstrip
+      name = "CT"+NPL::itoa(i+1)+"_DSSSD"+NPL::itoa(j+1)+"_HALFE_INTERSTRIP";
+      AddHisto1D(name, name, 1400, 0, 1.4, "COMPTONTELESCOPE/CAL/INTERSTRIP");
 
       // Time multiplicity
       // Front
@@ -622,24 +628,53 @@ void TComptonTelescopeSpectra::FillPreTreatedSpectra(TComptonTelescopeData* PreT
       name = "CT"+NPL::itoa(PreTreatedData->GetCTTrackerFrontETowerNbr(0))+"_DSSSD"+NPL::itoa(PreTreatedData->GetCTTrackerFrontEDetectorNbr(0))+"_FRONT_E_CLOSE_STRIP";
       family = "COMPTONTELESCOPE/CAL/INTERSTRIP";
       FillSpectra(family,name, PreTreatedData->GetCTTrackerFrontEEnergy(0),PreTreatedData->GetCTTrackerFrontEEnergy(1));
+
+      // interstrip
       if (abs((PreTreatedData->GetCTTrackerBackEEnergy(0)-(PreTreatedData->GetCTTrackerFrontEEnergy(0)+PreTreatedData->GetCTTrackerFrontEEnergy(1)))/2.)< fStripEnergyMatchingNumberOfSigma*fStripEnergyMatchingSigma) {
+        // EF(i+-1) vs EF(i)
         name = "CT"+NPL::itoa(PreTreatedData->GetCTTrackerFrontETowerNbr(0))+"_DSSSD"+NPL::itoa(PreTreatedData->GetCTTrackerFrontEDetectorNbr(0))+"_FRONT_E_INTERSTRIP";
         family = "COMPTONTELESCOPE/CAL/INTERSTRIP";
         FillSpectra(family,name, PreTreatedData->GetCTTrackerFrontEEnergy(0), PreTreatedData->GetCTTrackerFrontEEnergy(1));
+      
+        // EB vs EF(i) and EF(i+-1)
+        name = "CT"+NPL::itoa(PreTreatedData->GetCTTrackerFrontETowerNbr(0))+"_DSSSD"+NPL::itoa(PreTreatedData->GetCTTrackerFrontEDetectorNbr(0))+"_FB_COR_INTERSTRIP";
+        family = "COMPTONTELESCOPE/CAL/INTERSTRIP";
+        FillSpectra(family,name, PreTreatedData->GetCTTrackerFrontEEnergy(0),PreTreatedData->GetCTTrackerBackEEnergy(0));
+        FillSpectra(family,name, PreTreatedData->GetCTTrackerFrontEEnergy(1),PreTreatedData->GetCTTrackerBackEEnergy(0));        
+
+        // Spectrum
+        name = "CT"+NPL::itoa(PreTreatedData->GetCTTrackerFrontETowerNbr(0))+"_DSSSD"+NPL::itoa(PreTreatedData->GetCTTrackerFrontEDetectorNbr(0))+"_HALFE_INTERSTRIP";
+        family = "COMPTONTELESCOPE/CAL/INTERSTRIP";
+        FillSpectra(family,name, (PreTreatedData->GetCTTrackerBackEEnergy(0)+PreTreatedData->GetCTTrackerFrontEEnergy(0)+PreTreatedData->GetCTTrackerFrontEEnergy(1))/2.);
       }
     }
   }
+
   // Back
   if (PreTreatedData->GetCTTrackerBackEMult() == 2 && PreTreatedData->GetCTTrackerFrontEMult() == 1) {
     if (PreTreatedData->GetCTTrackerBackEStripNbr(0) == PreTreatedData->GetCTTrackerBackEStripNbr(1)+1 || PreTreatedData->GetCTTrackerBackEStripNbr(0) == PreTreatedData->GetCTTrackerBackEStripNbr(1)-1) {
       name = "CT"+NPL::itoa(PreTreatedData->GetCTTrackerBackETowerNbr(0))+"_DSSSD"+NPL::itoa(PreTreatedData->GetCTTrackerBackEDetectorNbr(0))+"_BACK_E_CLOSE_STRIP";
       family = "COMPTONTELESCOPE/CAL/INTERSTRIP";
       FillSpectra(family,name, PreTreatedData->GetCTTrackerBackEEnergy(0),PreTreatedData->GetCTTrackerBackEEnergy(1));
+  
+      // interstrip
       if (abs((PreTreatedData->GetCTTrackerFrontEEnergy(0)-(PreTreatedData->GetCTTrackerBackEEnergy(0)+PreTreatedData->GetCTTrackerBackEEnergy(1)))/2.)< fStripEnergyMatchingNumberOfSigma*fStripEnergyMatchingSigma) {
+        // EB(i+-1) vs EB(i)
         name = "CT"+NPL::itoa(PreTreatedData->GetCTTrackerBackETowerNbr(0))+"_DSSSD"+NPL::itoa(PreTreatedData->GetCTTrackerBackEDetectorNbr(0))+"_BACK_E_INTERSTRIP";
         family = "COMPTONTELESCOPE/CAL/INTERSTRIP";
         FillSpectra(family,name, PreTreatedData->GetCTTrackerBackEEnergy(0), PreTreatedData->GetCTTrackerBackEEnergy(1));
-      }
+      
+        // EF vs EB(i) and EB(i+-1)
+        name = "CT"+NPL::itoa(PreTreatedData->GetCTTrackerFrontETowerNbr(0))+"_DSSSD"+NPL::itoa(PreTreatedData->GetCTTrackerFrontEDetectorNbr(0))+"_FB_COR_INTERSTRIP";
+        family = "COMPTONTELESCOPE/CAL/INTERSTRIP";
+        FillSpectra(family,name, PreTreatedData->GetCTTrackerFrontEEnergy(0),PreTreatedData->GetCTTrackerBackEEnergy(0));
+        FillSpectra(family,name, PreTreatedData->GetCTTrackerFrontEEnergy(0),PreTreatedData->GetCTTrackerBackEEnergy(1));        
+ 
+        // Spectrum
+        name = "CT"+NPL::itoa(PreTreatedData->GetCTTrackerFrontETowerNbr(0))+"_DSSSD"+NPL::itoa(PreTreatedData->GetCTTrackerFrontEDetectorNbr(0))+"_HALFE_INTERSTRIP";
+        family = "COMPTONTELESCOPE/CAL/INTERSTRIP";
+        FillSpectra(family,name, (PreTreatedData->GetCTTrackerFrontEEnergy(0)+PreTreatedData->GetCTTrackerBackEEnergy(0)+PreTreatedData->GetCTTrackerBackEEnergy(1))/2.);
+    }
     }
   }
 
