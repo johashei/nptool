@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
-// This macro calibrates DSSSD with a 207Bi source.                          //
+// This macro calibrates DSSSDs with a 207Bi source.                         //
 //                                                                           //
 // It treats either all ASIC channels (channel = -1) or a single one         //
 // (specify channel number). A boolean (isPside) should indicate whether the //
@@ -58,7 +58,7 @@ Double_t gaussianPeak(Double_t*, Double_t*);
 
 
 void Analyse207Bi(const char* name = "bb7_3309-7_bi207_20210126_13h09_run5_conv_RawDSSSDHistos.root",
-                  Bool_t isPside = 1, Int_t channel = 15)
+                  Bool_t isPside = 1, Int_t channel = 20)
 {
    // no statistical box, no histogram name, no fit info
    if (gStyle->GetOptStat())  gStyle->SetOptStat(0);
@@ -93,6 +93,7 @@ void Analyse207Bi(const char* name = "bb7_3309-7_bi207_20210126_13h09_run5_conv_
    cout << "sname = " << sname << endl;
    label += sname.substr(16, 20);
    cout << "label = " << label << endl;
+   label += (isPside) ? "_pside" : "_nside";
    TString pdfname = Form("Analyse207Bi_%s.pdf", label.c_str());
    can->Print(Form("%s[", pdfname.Data()));
 
@@ -239,6 +240,7 @@ void Analyse207Bi(const char* name = "bb7_3309-7_bi207_20210126_13h09_run5_conv_
          // loop on "480"- and "975"-keV features
          // p = 0 -> 480 keV
          // p = 1 -> 975 keV
+         Double_t sigma480 = 0;
          for (UInt_t p = 0; p < mainLineEnergy.size(); ++p) {
             can->cd(3+p);
             pad = (TPad*) can->FindObject(Form("can_%d", 3+p));                                  
@@ -290,9 +292,15 @@ void Analyse207Bi(const char* name = "bb7_3309-7_bi207_20210126_13h09_run5_conv_
 
             // positive amplitudes and position in range
             for (UInt_t i = 0; i < peakListForFit.size(); ++i) {
-               fit->SetParLimits(1 + 2*i, fit->GetParameter(1+2*i)-20,
-                                          fit->GetParameter(1+2*i)+20);
+               // +/- 10 channels prevents L and M inversion
+               fit->SetParLimits(1 + 2*i, fit->GetParameter(1+2*i)-10,
+                                          fit->GetParameter(1+2*i)+10);
                fit->SetParLimits(2 + 2*i, 0, 1e5);
+            }
+
+            // width of 975 keV line within 20% of 480 keV line
+            if (p == 1) {
+               fit->SetParLimits(0, sigma480/1.1, sigma480*1.1);
             }
 
             // fit spectrum
@@ -316,6 +324,9 @@ void Analyse207Bi(const char* name = "bb7_3309-7_bi207_20210126_13h09_run5_conv_
                signalFcn->SetParameters(param);
                signalFcn->DrawCopy("same");
             }
+
+            // get resolution for the 480 keV line
+            sigma480 = param[2];
 
             ///////////////////////////////////////////////////////////////////////////
             // fill calibration arrays
