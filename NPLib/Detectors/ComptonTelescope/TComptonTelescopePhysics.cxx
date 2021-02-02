@@ -59,8 +59,6 @@ TComptonTelescopePhysics::TComptonTelescopePhysics()
   m_StripFront_E_Threshold(0),  // MeV
   m_StripBack_E_RAW_Threshold(0),
   m_StripBack_E_Threshold(0),  // MeV
-  m_Calorimeter_E_RAW_Threshold(0), // Before pedestal subtraction (ADC)
-  m_Calorimeter_E_Threshold(0), // After pedestal subtraction (ADC)
   m_Take_E_Front(true), // p-side
   m_NumberOfDetectors(0),
   m_NumberOfStrips(32),
@@ -214,35 +212,54 @@ void TComptonTelescopePhysics::BuildSimplePhysicalEvent()
 
 
   //// Calorimeter analysis ////
+  int nCalorTriggered = m_PreTreatedData -> GetCTCalorimeterTMult();
 
-  // Calculate an approximate position of interaction
-  int max = m_PreTreatedData->GetCTCalorimeterEEnergy(0);
-  unsigned int maxIndex = 0;
-  for (unsigned int i = 1; i <  m_PreTreatedData->GetCTCalorimeterEMult(); i++) {
-    if (max < m_PreTreatedData->GetCTCalorimeterEEnergy(i)) {
-      maxIndex = i;
-    }
-  }
-//  int maxIndex = max_element(mat.begin(), mat.end()) - mat.begin();
-//  cout << maxIndex << "x, y: " << 6*(maxIndex/8)-21 << ", " << 6*(maxIndex%8)-21 << endl;
-  CalorPosX.push_back(6*(maxIndex/8)-21);
-  CalorPosY.push_back(6*(maxIndex%8)-21);
-
-  // Calculate a corrected energy for the calorimeter
   double charge = 0;
-  int detectorNumber = 1;
-  /*for (UShort_t i = 0; i < m_PreTreatedData->GetCTCalorimeterEMult(); ++i) {
-    charge += fCalorimeter_Q(m_PreTreatedData, i);//Apply calibration other than pedestal and sum anodes
-  }*/
-  for (UShort_t i = 0; i < m_EventData->GetCTCalorimeterEMult(); ++i) {
-    charge += fCalorimeter_Q(m_EventData, i);//Apply full calibration and sum anodes
-  }//*/
-  Calor_E.push_back(fCalorimeter_E(charge, detectorNumber));
-
-  for (UShort_t i = 0; i < m_PreTreatedData->GetCTCalorimeterTMult(); ++i) {
-    Calor_T.push_back(m_PreTreatedData->GetCTCalorimeterTTime(i));
-  }
-
+  unsigned int maxIndex = 0, cursor = 0;
+  int max = 0;
+  UShort_t detectorNumber = 0;
+  for (int j = 0; j < nCalorTriggered; j++) {
+    cursor = j*m_NPixels;
+    // Calculate an approximate position of interaction
+    maxIndex = 0;
+    max = m_PreTreatedData->GetCTCalorimeterEEnergy(maxIndex);
+    for (unsigned int i = 1; i < m_NPixels; i++) {
+      if (max < m_PreTreatedData->GetCTCalorimeterEEnergy(cursor+i)) {
+        maxIndex = i;
+      }
+    }//  int maxIndex = max_element(mat.begin(), mat.end()) - mat.begin(); cout << maxIndex << "x, y: " << 6*(maxIndex/8)-21 << ", " << 6*(maxIndex%8)-21 << endl;
+    CalorPosX.push_back(6*(maxIndex/8)-21);
+    CalorPosY.push_back(6*(maxIndex%8)-21);
+  
+    // Export pretreated data for NN analysis
+    detectorNumber = m_PreTreatedData->GetCTCalorimeterEDetectorNbr(j*m_NPixels);
+    vector<int> data;
+    data.clear();
+    data.resize(m_NPixels, 0);
+    for (int i = 0; i < m_NPixels; i++) {
+      if (m_PreTreatedData->GetCTCalorimeterEChannelNbr(i+cursor) == i) {
+        data[i] = m_PreTreatedData->GetCTCalorimeterEEnergy(i+cursor);
+      } else {
+        cout << "Inconsistency found in channel ordering while filling CalorData: field #" << cursor+i << endl;
+      }
+    }
+    CalorData.insert(pair<int, vector<int>>(detectorNumber, data));
+/*    CalorID.push_back(detectorNumber);
+    for (int i = cursor; i < cursor+m_NPixels; i++) {
+      CalorData.push_back(m_PreTreatedData->GetCTCalorimeterEEnergy(i));
+    }*/
+  
+    // Calculate a corrected energy for the calorimeter
+    /*for (UShort_t i = 0; i < m_PreTreatedData->GetCTCalorimeterEMult(); ++i) {
+      charge += fCalorimeter_Q(m_PreTreatedData, i);//Apply calibration other than pedestal and sum anodes
+    }*/
+    for (UShort_t i = cursor; i < cursor+m_NPixels; ++i) {
+      charge += fCalorimeter_Q(m_EventData, i);//Apply full calibration and sum anodes
+    }//*/
+    Calor_E.push_back(fCalorimeter_E(charge, detectorNumber));
+  
+    Calor_T.push_back(m_PreTreatedData->GetCTCalorimeterTTime(j));
+  }//End of loop on triggered calorimeter detectors
   //   if (DetectorNumber.size() == 1) return;
 }
 
@@ -331,27 +348,14 @@ void TComptonTelescopePhysics::PreTreat()
 
 
   // Calorimeter
-  // Energy
-
-  for (UShort_t i = 0; i < m_EventData->GetCTCalorimeterEMult(); ++i) {
-    if (m_EventData->GetCTCalorimeterEEnergy(i) > m_Calorimeter_E_RAW_Threshold) {
-      Double_t E = fCalorimeter_ped(m_EventData, i);//Calibration happens here (pedestal subtraction only)
-      if (E > m_Calorimeter_E_Threshold) {
-        m_PreTreatedData->SetCTCalorimeterETowerNbr(m_EventData->GetCTCalorimeterETowerNbr(i));
-        m_PreTreatedData->SetCTCalorimeterEDetectorNbr(m_EventData->GetCTCalorimeterEDetectorNbr(i));
-        m_PreTreatedData->SetCTCalorimeterEChannelNbr(m_EventData->GetCTCalorimeterEChannelNbr(i));
-        m_PreTreatedData->SetCTCalorimeterEEnergy(E);
-      }
-    }
-  }
-  
-  // Time
+  int data[m_NPixels];
   for (UShort_t i = 0; i < m_EventData->GetCTCalorimeterTMult(); ++i) {
-    m_PreTreatedData->SetCTCalorimeterTTowerNbr(m_EventData->GetCTCalorimeterTTowerNbr(i));
-    m_PreTreatedData->SetCTCalorimeterTDetectorNbr(m_EventData->GetCTCalorimeterTDetectorNbr(i));
-    m_PreTreatedData->SetCTCalorimeterTChannelNbr(m_EventData->GetCTCalorimeterTChannelNbr(i));
-    m_PreTreatedData->SetCTCalorimeterTTime(m_EventData->GetCTCalorimeterTTime(i));
+    for (int j = 0; j < m_NPixels; j++) {
+      data[j] = fCalorimeter_ped(m_EventData, i*m_NPixels+j);
+    }
+    m_PreTreatedData -> SetCTCalorimeter(m_EventData->GetCTCalorimeterTTowerNbr(i), m_EventData->GetCTCalorimeterEDetectorNbr(i*m_NPixels), m_EventData->GetCTCalorimeterTChannelNbr(i), m_EventData->GetCTCalorimeterTTime(i), data, m_NPixels);
   }
+
 }
 
 
@@ -595,17 +599,6 @@ void TComptonTelescopePhysics::ReadAnalysisConfig()
         cout << whatToDo << " " << m_StripBack_E_Threshold << endl;
       }
 
-      else if (whatToDo=="CALORIMETER_E_RAW_THRESHOLD") {
-        AnalysisConfigFile >> DataBuffer;
-        m_Calorimeter_E_RAW_Threshold = atoi(DataBuffer.c_str());
-        cout << whatToDo << " " << m_Calorimeter_E_RAW_Threshold << endl;
-      }
-
-      else if (whatToDo=="CALORIMETER_E_THRESHOLD") {
-        AnalysisConfigFile >> DataBuffer;
-        m_Calorimeter_E_Threshold = atoi(DataBuffer.c_str());
-        cout << whatToDo << " " << m_Calorimeter_E_Threshold << endl;
-      }
 
       else {
         ReadingStatus = false;
@@ -650,6 +643,7 @@ void TComptonTelescopePhysics::Clear()
   Calor_T.clear();
   CalorPosX.clear();
   CalorPosY.clear();
+  CalorData.clear();
 }
 
 
@@ -713,7 +707,8 @@ void TComptonTelescopePhysics::AddParameterToCalibrationManager()
     }
     for (int j = 0; j < m_NPixels; ++j) {
       Cal->AddParameter("COMPTONTELESCOPE", "D"+ NPL::itoa(i+1)+"_CHANNEL"+ NPL::itoa(j)+"_E",  "COMPTONTELESCOPE_D"+ NPL::itoa(i+1)+"_CHANNEL"+ NPL::itoa(j)+"_E");
-      Cal->AddParameter("COMPTONTELESCOPE", "D"+ NPL::itoa(i+1)+"_CHANNEL"+ NPL::itoa(j)+"_PED",  "COMPTONTELESCOPE_D"+ NPL::itoa(i+1)+"_CHANNEL"+ NPL::itoa(j)+"_PED");
+      Cal->AddParameter("COMPTONTELESCOPE", "D"+ NPL::itoa(i+3)+"_CHANNEL"+ NPL::itoa(j)+"_PED",  "COMPTONTELESCOPE_D"+ NPL::itoa(i+3)+"_CHANNEL"+ NPL::itoa(j)+"_PED");
+      Cal->AddParameter("COMPTONTELESCOPE", "D"+ NPL::itoa(i+4)+"_CHANNEL"+ NPL::itoa(j)+"_PED",  "COMPTONTELESCOPE_D"+ NPL::itoa(i+4)+"_CHANNEL"+ NPL::itoa(j)+"_PED");
     }
     Cal->AddParameter("COMPTONTELESCOPE", "D"+ NPL::itoa(i+1)+"_Q_E", "COMPTONTELESCOPE_D"+ NPL::itoa(i+1)+"_Q_E");
   }
@@ -754,6 +749,7 @@ void TComptonTelescopePhysics::InitializeRootInputPhysics()
   inputChain->SetBranchStatus("Calor_T",        true);
   inputChain->SetBranchStatus("CalorPosX",      true);
   inputChain->SetBranchStatus("CalorPosY",      true);
+  inputChain->SetBranchStatus("CalorData",      true);
 }
 
 

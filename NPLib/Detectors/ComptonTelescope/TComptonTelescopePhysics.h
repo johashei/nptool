@@ -71,6 +71,8 @@ class TComptonTelescopePhysics : public TObject, public NPL::VDetector
       vector<double> Calor_T;
       vector<int>    CalorPosX;
       vector<int>    CalorPosY;
+      multimap<int, vector<int>> CalorData;
+   
 
  
    public:  // inherited from VDetector
@@ -171,7 +173,7 @@ class TComptonTelescopePhysics : public TObject, public NPL::VDetector
    private:   // Parameter used in the analysis
       // By default take EX and TY.
       bool m_Take_E_Front;      //!
-      int m_NPixels;            //!
+      const int m_NPixels;            //!
 
       // If multiplicity is greater than m_MaximumStripMultiplicityAllowed 
       // after PreTreat(), event is not treated
@@ -186,8 +188,6 @@ class TComptonTelescopePhysics : public TObject, public NPL::VDetector
       double m_StripFront_E_Threshold;       //!
       double m_StripBack_E_RAW_Threshold;    //!
       double m_StripBack_E_Threshold;        //!
-      double m_Calorimeter_E_RAW_Threshold;  //!
-      double m_Calorimeter_E_Threshold;      //!
 
    public:  // methods used in event treatment 
       vector<TVector2> Match_Front_Back();
