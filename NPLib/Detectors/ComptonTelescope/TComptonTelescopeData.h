@@ -125,7 +125,8 @@ class TComptonTelescopeData : public TObject {
 
       // Calorimeter
       // (E)
-      void SetCTCalorimeterETowerNbr(const UShort_t TowNbr)       {fCT_Calorimeter_E_TowerNbr.push_back(TowNbr);}
+      void SetCTCalorimeter(const UShort_t TowNbr, const UShort_t DetNbr, const UShort_t ChannelNbr, const Double_t Time, int* data, const int pixelNumber);
+/*      void SetCTCalorimeterETowerNbr(const UShort_t TowNbr)       {fCT_Calorimeter_E_TowerNbr.push_back(TowNbr);}
       void SetCTCalorimeterEDetectorNbr(const UShort_t DetNbr)    {fCT_Calorimeter_E_DetectorNbr.push_back(DetNbr);}
       void SetCTCalorimeterEChannelNbr(const UShort_t ChannelNbr) {fCT_Calorimeter_E_ChannelNbr.push_back(ChannelNbr);}
       void SetCTCalorimeterEEnergy(const Double_t Energy)         {fCT_Calorimeter_E_Energy.push_back(Energy);}
@@ -133,7 +134,7 @@ class TComptonTelescopeData : public TObject {
       void SetCTCalorimeterTTowerNbr(const UShort_t TowNbr)       {fCT_Calorimeter_T_TowerNbr.push_back(TowNbr);}
       void SetCTCalorimeterTDetectorNbr(const UShort_t DetNbr)    {fCT_Calorimeter_T_DetectorNbr.push_back(DetNbr);}
       void SetCTCalorimeterTChannelNbr(const UShort_t ChannelNbr) {fCT_Calorimeter_T_ChannelNbr.push_back(ChannelNbr);}
-      void SetCTCalorimeterTTime(const Double_t Time)             {fCT_Calorimeter_T_Time.push_back(Time);}
+      void SetCTCalorimeterTTime(const Double_t Time)             {fCT_Calorimeter_T_Time.push_back(Time);}*/
 
 
       /////////////////////           GETTERS           ////////////////////////
@@ -141,8 +142,7 @@ class TComptonTelescopeData : public TObject {
       // (X,E)
       UShort_t   GetCTTrackerFrontEMult()                      const {return fCT_Tracker_FrontE_TowerNbr.size();}
       UShort_t   GetCTTrackerFrontETowerNbr(const Int_t i)     const {return fCT_Tracker_FrontE_TowerNbr[i];}
-      UShort_t GetCTTracker_FrontE_Detector_Mult()
-const {return fCT_Tracker_FrontE_DetectorNbr.size();}
+      UShort_t   GetCTTracker_FrontE_Detector_Mult()           const {return fCT_Tracker_FrontE_DetectorNbr.size();}
       UShort_t   GetCTTrackerFrontEDetectorNbr(const Int_t i)  const {return fCT_Tracker_FrontE_DetectorNbr[i];}
       UShort_t   GetCTTrackerFrontEStripNbr(const Int_t i)     const {return fCT_Tracker_FrontE_StripNbr[i];}
       Double_t   GetCTTrackerFrontEEnergy(const Int_t i)       const {return fCT_Tracker_FrontE_Energy[i];}
@@ -167,7 +167,7 @@ const {return fCT_Tracker_FrontE_DetectorNbr.size();}
 
       // Calorimeter 
       //(E)
-      UShort_t   GetCTCalorimeterEMult()                       const {return fCT_Calorimeter_E_TowerNbr.size();}
+//      UShort_t   GetCTCalorimeterEMult()                       const {return fCT_Calorimeter_E_TowerNbr.size();}
       UShort_t   GetCTCalorimeterETowerNbr(const Int_t i)      const {return fCT_Calorimeter_E_TowerNbr[i];}
       UShort_t   GetCTCalorimeterEDetectorNbr(const Int_t i)   const {return fCT_Calorimeter_E_DetectorNbr[i];}
       UShort_t   GetCTCalorimeterEChannelNbr(const Int_t i)    const {return fCT_Calorimeter_E_ChannelNbr[i];}

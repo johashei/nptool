@@ -39,7 +39,19 @@ TComptonTelescopeData::~TComptonTelescopeData()
 {
 }
 
-
+void TComptonTelescopeData::SetCTCalorimeter(const UShort_t TowNbr, const UShort_t DetNbr, const UShort_t ChannelNbr, const Double_t Time, int* data, const int pixelNumber)
+{
+  fCT_Calorimeter_T_TowerNbr.push_back(TowNbr);
+  fCT_Calorimeter_T_DetectorNbr.push_back(1);
+  fCT_Calorimeter_T_ChannelNbr.push_back(ChannelNbr);
+  fCT_Calorimeter_T_Time.push_back(Time);
+  for (int i = 0; i < pixelNumber; i++) {
+    fCT_Calorimeter_E_TowerNbr.push_back(TowNbr);
+    fCT_Calorimeter_E_DetectorNbr.push_back(DetNbr);
+    fCT_Calorimeter_E_ChannelNbr.push_back(i);
+    fCT_Calorimeter_E_Energy.push_back(data[i]);
+  }
+}
 
 void TComptonTelescopeData::Clear()
 {
