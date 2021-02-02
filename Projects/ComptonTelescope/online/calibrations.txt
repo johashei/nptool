@@ -1,4 +1,6 @@
 CalibrationFilePath
   ./calibrations/DSSSD_calibration.txt
   ./calibrations/CeBr3_PED.txt
+  ./calibrations/CeBr3_PED3.txt
+  ./calibrations/CeBr3_PED4.txt
   ./calibrations/CeBr3_E.txt
