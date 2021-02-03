@@ -58,10 +58,10 @@ void Analysis::Init(){
 ////////////////////////////////////////////////////////////////////////////////
 void Analysis::TreatEvent(){
   ReInitValue();
-  //OriginalThetaLab = ReactionConditions->GetTheta(0);
-  //OriginalElab = ReactionConditions->GetKineticEnergy(0);
-  //OriginalBeamEnergy = ReactionConditions->GetBeamEnergy();
-  //OriginalEx = ReactionConditions->GetExcitation4();
+  OriginalThetaLab = ReactionConditions->GetTheta(0);
+  OriginalElab = ReactionConditions->GetKineticEnergy(0);
+  OriginalBeamEnergy = ReactionConditions->GetBeamEnergy();
+  OriginalEx = ReactionConditions->GetExcitation4();
 
   int mult = InteractionCoordinates->GetDetectedMultiplicity();
   if(mult>0){
@@ -85,6 +85,7 @@ void Analysis::TreatEvent(){
   BeamEnergy = 1428.;//InitialConditions->GetIncidentInitialKineticEnergy();
   BeamEnergy = U238C.Slow(BeamEnergy,TargetThickness*0.5,0);
   Transfer->SetBeamEnergy(BeamEnergy);
+  //Transfer->SetBeamEnergy(OriginalBeamEnergy);
   if(PISTA->EventMultiplicity==1){
     for(unsigned int i = 0; i<PISTA->EventMultiplicity; i++){
       double Energy = PISTA->DE[i] + PISTA->E[i];

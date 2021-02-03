@@ -23,7 +23,6 @@
 
 #include "BeamReaction.hh"
 #include "G4Electron.hh"
-#include "G4IonTable.hh"
 #include "G4Gamma.hh"
 #include "G4SystemOfUnits.hh"
 #include "G4EmCalculator.hh"
@@ -191,8 +190,8 @@ G4bool NPS::BeamReaction::ModelTrigger(const G4FastTrack& fastTrack) {
       }
     }
     else if(m_ReactionType==Fusion){
-        return true;
-      }
+      return true;
+    }
   }
 
   return false;
@@ -455,7 +454,11 @@ void NPS::BeamReaction::DoIt(const G4FastTrack& fastTrack,
     G4int Heavy_A = m_QFS.GetParticleB()->GetA();
 
     G4ParticleDefinition* HeavyName;
-    HeavyName = IonTable->GetIon(Heavy_Z, Heavy_A,m_QFS.GetExcitationB());
+    if (m_QFS.GetUseExInGeant4())
+      HeavyName
+        = IonTable->GetIon(Heavy_Z, Heavy_A, m_QFS.GetExcitationB() * MeV);
+    else
+      HeavyName = IonTable->GetIon(Heavy_Z, Heavy_A);
 
     // Set the Energy of the reaction
     m_QFS.SetBeamEnergy(reac_energy);
@@ -584,7 +587,7 @@ void NPS::BeamReaction::DoIt(const G4FastTrack& fastTrack,
     m_ReactionConditions->SetThetaCM(m_QFS.GetThetaCM() / deg);
     m_ReactionConditions->SetInternalMomentum(m_QFS.GetInternalMomentum());
     //m_ReactionConditions->SetExcitationEnergy3(m_QFS.GetExcitation3());
-    //m_ReactionConditions->SetExcitationEnergy4(m_QFS.GetExcitation4());
+    m_ReactionConditions->SetExcitationEnergy4(m_QFS.GetExcitationB());
     // Momuntum X 1,2 and B //
     m_ReactionConditions->SetMomentumDirectionX(momentum_kine1_world.x());
     m_ReactionConditions->SetMomentumDirectionX(momentum_kine2_world.x());
@@ -611,7 +614,7 @@ void NPS::BeamReaction::DoIt(const G4FastTrack& fastTrack,
     fastStep.SetPrimaryTrackFinalTime(time);// FIXME
     fastStep.KillPrimaryTrack();
     fastStep.SetPrimaryTrackPathLength(0.0);
-    
+
     static G4IonTable* IonTable
       = G4ParticleTable::GetParticleTable()->GetIonTable();
     //////Define the kind of particle to shoot////////

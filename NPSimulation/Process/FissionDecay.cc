@@ -160,6 +160,7 @@ void FissionDecay::DoIt(const G4FastTrack& fastTrack,G4FastStep& fastStep){
   m_FissionConditions->SetA_CN(m_CompoundParticle.GetA());
   m_FissionConditions->SetEx_CN(m_ExcitationEnergy);
   m_FissionConditions->SetELab_CN(energy);
+  m_FissionConditions->SetThetaLab_CN(pdirection.theta()*180./3.1415);
 
   // Fission Process
   m_FissionConditions->Set_TKE(TKE);

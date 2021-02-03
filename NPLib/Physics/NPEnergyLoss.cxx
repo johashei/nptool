@@ -359,12 +359,14 @@ double   EnergyLoss::EvaluateEnergyFromDeltaE(  double DeltaE           , // Ene
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 double EnergyLoss::Eval(double energy) const {
+  // cout << energy << endl;
   if(energy < 0){
     cout << "WARNING: negative energy given to NPL::EnergyLoss" << endl;
     return 0;
   }
   else if (energy!=energy){
     cout << "WARNING: nan energy given to NPL::EnergyLoss" << endl;
+    exit (1);
     return 0;
   }
     

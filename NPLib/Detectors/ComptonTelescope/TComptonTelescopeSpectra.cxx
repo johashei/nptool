@@ -45,6 +45,8 @@ TComptonTelescopeSpectra::TComptonTelescopeSpectra(){
   fNumberOfDetectors = 1;
   fNumberOfStripsFront=32;
   fNumberOfStripsBack=32;
+  fStripEnergyMatchingSigma = 0.006;
+  fStripEnergyMatchingNumberOfSigma = 2;
   fNumberOfCounters=50;
   fCalorimeterNPixels=64;
 }
@@ -65,6 +67,8 @@ TComptonTelescopeSpectra::TComptonTelescopeSpectra(unsigned int NumberOfTelescop
    fNumberOfDetectors = 1;
    fNumberOfStripsFront=32;
    fNumberOfStripsBack=32;
+   fStripEnergyMatchingSigma = 0.006;
+   fStripEnergyMatchingNumberOfSigma = 2;
    fNumberOfCounters=50;
    fCalorimeterNPixels=64;
 
@@ -95,32 +99,41 @@ void TComptonTelescopeSpectra::InitRawSpectra()
 
      // FRONT_E_RAW
       name = "CT"+NPL::itoa(i+1)+"_DSSSD"+NPL::itoa(j+1)+"_FRONT_E_RAW";
-      AddHisto2D(name, name, fNumberOfStripsFront, 0, fNumberOfStripsFront, 512, 0, 1024, "COMPTONTELESCOPE/RAW/FRONTE");
+      AddHisto2D(name, name, fNumberOfStripsFront, 0, fNumberOfStripsFront, 512, 0, 1024, "COMPTONTELESCOPE/RAW/ENERGY");
 
       // BACK_E_RAW
       name = "CT"+NPL::itoa(i+1)+"_DSSSD"+NPL::itoa(j+1)+"_BACK_E_RAW";
-      AddHisto2D(name, name, fNumberOfStripsBack, 0, fNumberOfStripsBack, 512, 0, 1024, "COMPTONTELESCOPE/RAW/BACKE");
+      AddHisto2D(name, name, fNumberOfStripsBack, 0, fNumberOfStripsBack, 512, 0, 1024, "COMPTONTELESCOPE/RAW/ENERGY");
 
       // E Front and Back vs Strip
       name = "CT"+NPL::itoa(i+1)+"_DSSSD"+NPL::itoa(j+1)+"_FRONT_BACK_E_RAW";
-      AddHisto2D(name, name, ntot, 0, ntot, 512, 0, 1024, "COMPTONTELESCOPE/RAW/FRONT_BACK_E");
+      AddHisto2D(name, name, ntot, 0, ntot, 512, 0, 1024, "COMPTONTELESCOPE/RAW/ENERGY");
  
       // FRONT_T_RAW
       name = "CT"+NPL::itoa(i+1)+"_DSSSD"+NPL::itoa(j+1)+"_FRONT_T_RAW";
-      AddHisto1D(name, name, 10000, 0, 1e10, "COMPTONTELESCOPE/RAW/FRONTT");
+      AddHisto1D(name, name, 5000, 0, 5e9, "COMPTONTELESCOPE/RAW/TIME");
 
       // BACK_T_RAW
       name = "CT"+NPL::itoa(i+1)+"_DSSSD"+NPL::itoa(j+1)+"_BACK_T_RAW";
-      AddHisto1D(name, name, 10000, 0, 1e10, "COMPTONTELESCOPE/RAW/BACKT");
+      AddHisto1D(name, name, 5000, 0, 5e9, "COMPTONTELESCOPE/RAW/TIME");
 
       // FRONT_RAW_MULT
       name = "CT"+NPL::itoa(i+1)+"_DSSSD"+NPL::itoa(j+1)+"_FRONT_RAW_MULT";
-      AddHisto1D(name, name, fNumberOfStripsFront, 0, fNumberOfStripsFront+1, "COMPTONTELESCOPE/RAW/MULT");
+      AddHisto1D(name, name, fNumberOfStripsFront+1, 0, fNumberOfStripsFront+1, "COMPTONTELESCOPE/RAW/MULT");
 
       // BACK_RAW_MULT
       name = "CT"+NPL::itoa(i+1)+"_DSSSD"+NPL::itoa(j+1)+"_BACK_RAW_MULT";
-      AddHisto1D(name, name, fNumberOfStripsFront, 0, fNumberOfStripsFront+1, "COMPTONTELESCOPE/RAW/MULT");
-    }
+      AddHisto1D(name, name, fNumberOfStripsBack+1, 0, fNumberOfStripsBack+1, "COMPTONTELESCOPE/RAW/MULT");
+
+      // Time multiplicity
+      // Front
+      name = "CT"+NPL::itoa(i+1)+"_DSSSD"+NPL::itoa(j+1)+"_T_FRONT_RAW_MULT";
+      AddHisto1D(name, name, fNumberOfStripsFront+1, 0, fNumberOfStripsFront+1, "COMPTONTELESCOPE/RAW/MULT");
+      // Back
+      name = "CT"+NPL::itoa(i+1)+"_DSSSD"+NPL::itoa(j+1)+"_T_BACK_RAW_MULT";
+      AddHisto1D(name, name, fNumberOfStripsBack+1, 0, fNumberOfStripsBack+1, "COMPTONTELESCOPE/RAW/MULT");
+
+   }
 
     // CALORIMETER
     name = "CT"+NPL::itoa(i+1)+"_CALOR_RAW_TRIGGER";
@@ -143,35 +156,81 @@ void TComptonTelescopeSpectra::InitPreTreatedSpectra()
 
       // FRONT_E_CAL
       name = "CT"+NPL::itoa(i+1)+"_DSSSD"+NPL::itoa(j+1)+"_FRONT_E_CAL";
-      AddHisto2D(name, name, fNumberOfStripsFront, 0, fNumberOfStripsFront, 1400, 0, 1.4, "COMPTONTELESCOPE/CAL/FRONTE");
+      AddHisto2D(name, name, fNumberOfStripsFront, 0, fNumberOfStripsFront, 1400, 0, 1.4, "COMPTONTELESCOPE/CAL/ENERGY");
 
       // BACK_E_CAL
       name = "CT"+NPL::itoa(i+1)+"_DSSSD"+NPL::itoa(j+1)+"_BACK_E_CAL";
-      AddHisto2D(name, name, fNumberOfStripsBack, 0, fNumberOfStripsBack, 1400, 0, 1.4, "COMPTONTELESCOPE/CAL/BACKE");
+      AddHisto2D(name, name, fNumberOfStripsBack, 0, fNumberOfStripsBack, 1400, 0, 1.4, "COMPTONTELESCOPE/CAL/ENERGY");
 
       // E Front and Back vs Strip
       name = "CT"+NPL::itoa(i+1)+"_DSSSD"+NPL::itoa(j+1)+"_FRONT_BACK_E_CAL";
-      AddHisto2D(name, name, ntot, 0, ntot, 1400, 0, 1.4, "COMPTONTELESCOPE/CAL/FRONT_BACK_E");
-      
+      AddHisto2D(name, name, ntot, 0, ntot, 1400, 0, 1.4, "COMPTONTELESCOPE/CAL/ENERGY");
+ 
+      // Front-Back Energy Correlation
+      name = "CT"+NPL::itoa(i+1)+"_DSSSD"+NPL::itoa(j+1)+"_FB_COR_CAL";
+      AddHisto2D(name, name, 1400,0,1.4, 1400,0,1.4, "COMPTONTELESCOPE/CAL/ENERGYCOR");
+   
+      // Front E spectrum
+      name = "CT"+NPL::itoa(i+1)+"_DSSSD"+NPL::itoa(j+1)+"_FRONTECAL_SPECTRUM";
+      AddHisto1D(name, name, 1400, 0, 1.4, "COMPTONTELESCOPE/CAL/ENERGYSPEC");
+
+      // Back E spectrum
+      name = "CT"+NPL::itoa(i+1)+"_DSSSD"+NPL::itoa(j+1)+"_BACKECAL_SPECTRUM";
+      AddHisto1D(name, name, 1400, 0, 1.4, "COMPTONTELESCOPE/CAL/ENERGYSPEC");
+
       // FRONT_T_CAL
       name = "CT"+NPL::itoa(i+1)+"_DSSSD"+NPL::itoa(j+1)+"_FRONT_T_CAL";
-      AddHisto1D(name, name, 10000, 0, 1e10, "COMPTONTELESCOPE/CAL/FRONTT");
+      AddHisto1D(name, name, 5000, 0, 5e9, "COMPTONTELESCOPE/CAL/TIME");
 
       // BACK_T_CAL
       name = "CT"+NPL::itoa(i+1)+"_DSSSD"+NPL::itoa(j+1)+"_BACK_T_CAL";
-      AddHisto1D(name, name, 10000, 0, 1e10, "COMPTONTELESCOPE/CAL/BACKT");
+      AddHisto1D(name, name, 5000, 0, 5e9, "COMPTONTELESCOPE/CAL/TIME");
 
       // FRONT_CAL_MULT
       name = "CT"+NPL::itoa(i+1)+"_DSSSD"+NPL::itoa(j+1)+"_FRONT_CAL_MULT";
-      AddHisto1D(name, name, fNumberOfStripsFront, 0, fNumberOfStripsFront+1, "COMPTONTELESCOPE/CAL/MULT");
+      AddHisto1D(name, name, fNumberOfStripsFront+1, 0, fNumberOfStripsFront+1, "COMPTONTELESCOPE/CAL/MULT");
 
       // BACK_CAL_MULT
       name = "CT"+NPL::itoa(i+1)+"_DSSSD"+NPL::itoa(j+1)+"_BACK_CAL_MULT";
-      AddHisto1D(name, name, fNumberOfStripsFront, 0, fNumberOfStripsFront+1, "COMPTONTELESCOPE/CAL/MULT");
+      AddHisto1D(name, name, fNumberOfStripsBack+1, 0, fNumberOfStripsBack+1, "COMPTONTELESCOPE/CAL/MULT");
 
-      // Front-Back Energy Correlation
-      name = "CT"+NPL::itoa(i+1)+"_DSSSD"+NPL::itoa(j+1)+"_FB_COR_CAL";
-      AddHisto2D(name, name, 1400,0,1.4, 1400,0,1.4, "COMPTONTELESCOPE/CAL/FB");
+      // Event type 1 multiplicity
+      name = "CT"+NPL::itoa(i+1)+"_DSSSD"+NPL::itoa(j+1)+"_EVENTTYPE1_CAL_MULT";
+      AddHisto1D(name, name, fNumberOfStripsBack+1, 0, fNumberOfStripsBack+1, "COMPTONTELESCOPE/CAL/EVENTTYPEMULT");
+
+      // Event type 2 multiplicity
+      name = "CT"+NPL::itoa(i+1)+"_DSSSD"+NPL::itoa(j+1)+"_EVENTTYPE2_CAL_MULT";
+      AddHisto1D(name, name, fNumberOfStripsBack+1, 0, fNumberOfStripsBack+1, "COMPTONTELESCOPE/CAL/EVENTTYPEMULT");
+
+      // Possible interstrip
+      // Front
+      // side by side strips
+      name = "CT"+NPL::itoa(i+1)+"_DSSSD"+NPL::itoa(j+1)+"_FRONT_E_CLOSE_STRIP";
+      AddHisto2D(name, name, 1400, 0, 1.4, 1400, 0, 1.4, "COMPTONTELESCOPE/CAL/INTERSTRIP");
+      // + energy sum = E Back
+      name = "CT"+NPL::itoa(i+1)+"_DSSSD"+NPL::itoa(j+1)+"_FRONT_E_INTERSTRIP";
+      AddHisto2D(name, name, 1400, 0, 1.4, 1400, 0, 1.4, "COMPTONTELESCOPE/CAL/INTERSTRIP");
+      // Back
+      // side by side strips
+      name = "CT"+NPL::itoa(i+1)+"_DSSSD"+NPL::itoa(j+1)+"_BACK_E_CLOSE_STRIP";
+      AddHisto2D(name, name, 1400, 0, 1.4, 1400, 0, 1.4, "COMPTONTELESCOPE/CAL/INTERSTRIP");
+      // + energy sum = E Front
+      name = "CT"+NPL::itoa(i+1)+"_DSSSD"+NPL::itoa(j+1)+"_BACK_E_INTERSTRIP";
+      AddHisto2D(name, name, 1400, 0, 1.4, 1400, 0, 1.4, "COMPTONTELESCOPE/CAL/INTERSTRIP");
+      // FB correlation for interstrip
+      name = "CT"+NPL::itoa(i+1)+"_DSSSD"+NPL::itoa(j+1)+"_FB_COR_INTERSTRIP";
+      AddHisto2D(name, name, 1400, 0, 1.4, 1400, 0, 1.4, "COMPTONTELESCOPE/CAL/INTERSTRIP");      
+      // Half E spectrum for interstrip
+      name = "CT"+NPL::itoa(i+1)+"_DSSSD"+NPL::itoa(j+1)+"_HALFE_INTERSTRIP";
+      AddHisto1D(name, name, 1400, 0, 1.4, "COMPTONTELESCOPE/CAL/INTERSTRIP");
+
+      // Time multiplicity
+      // Front
+      name = "CT"+NPL::itoa(i+1)+"_DSSSD"+NPL::itoa(j+1)+"_T_FRONT_CAL_MULT";
+      AddHisto1D(name, name, fNumberOfStripsFront+1, 0, fNumberOfStripsFront+1, "COMPTONTELESCOPE/CAL/MULT");
+      // Back
+      name = "CT"+NPL::itoa(i+1)+"_DSSSD"+NPL::itoa(j+1)+"_T_BACK_CAL_MULT";
+      AddHisto1D(name, name, fNumberOfStripsBack+1, 0, fNumberOfStripsBack+1, "COMPTONTELESCOPE/CAL/MULT");
 
     }  // end loop on number of detectors
   }// end loop on number of telescopes
@@ -187,10 +246,10 @@ void TComptonTelescopeSpectra::InitPhysicsSpectra()
 
   // counters
   name = "CT_DSSSD_COUNTERS_EVTS";
-  AddHisto1D(name, name, fNumberOfCounters, 0, fNumberOfCounters, "COMPTONTELESCOPE/PHY");
+  AddHisto1D(name, name, fNumberOfCounters, 0, fNumberOfCounters, "COMPTONTELESCOPE/PHY/COUNTER");
 
   name = "CT_DSSSD_COUNTERS_HITS";
-  AddHisto1D(name, name, fNumberOfCounters, 0, fNumberOfCounters, "COMPTONTELESCOPE/PHY");
+  AddHisto1D(name, name, fNumberOfCounters, 0, fNumberOfCounters, "COMPTONTELESCOPE/PHY/COUNTER");
 
   // loop on number of telescopes
   for (unsigned int i = 0 ; i < fNumberOfTelescope ; i++) {
@@ -201,33 +260,48 @@ void TComptonTelescopeSpectra::InitPhysicsSpectra()
 
       // E Front + Back vs Strip
       name = "CT"+NPL::itoa(i+1)+"_DSSSD"+NPL::itoa(j+1)+"_FRONT_BACK_E_PHY";
-      AddHisto2D(name, name, ntot, 0, ntot, 1400, 0, 1.4, "COMPTONTELESCOPE/PHY");
+      AddHisto2D(name, name, ntot, 0, ntot, 1400, 0, 1.4, "COMPTONTELESCOPE/PHY/ENERGY");
 
       // front back Energy Correlation
       name = "CT"+NPL::itoa(i+1)+"_DSSSD"+NPL::itoa(j+1)+"_FB_COR_PHY";
-      AddHisto2D(name, name, 1400,0,1.4, 1400,0,1.4, "COMPTONTELESCOPE/PHY");
+      AddHisto2D(name, name, 1400,0,1.4, 1400,0,1.4, "COMPTONTELESCOPE/PHY/ENERGYCOR");
  
       // Front E spectrum
       name = "CT"+NPL::itoa(i+1)+"_DSSSD"+NPL::itoa(j+1)+"_FRONTE_SPECTRUM";
-      AddHisto1D(name, name, 1400, 0, 1.4, "COMPTONTELESCOPE/PHY");
+      AddHisto1D(name, name, 1400, 0, 1.4, "COMPTONTELESCOPE/PHY/ENERGYSPEC");
 
       // Back E spectrum
       name = "CT"+NPL::itoa(i+1)+"_DSSSD"+NPL::itoa(j+1)+"_BACKE_SPECTRUM";
-      AddHisto1D(name, name, 1400, 0, 1.4, "COMPTONTELESCOPE/PHY");
+      AddHisto1D(name, name, 1400, 0, 1.4, "COMPTONTELESCOPE/PHY/ENERGYSPEC");
 
       // Half E spectrum
       name = "CT"+NPL::itoa(i+1)+"_DSSSD"+NPL::itoa(j+1)+"_HALFE_SPECTRUM";
-      AddHisto1D(name, name, 1400, 0, 1.4, "COMPTONTELESCOPE/PHY");
+      AddHisto1D(name, name, 1400, 0, 1.4, "COMPTONTELESCOPE/PHY/ENERGYSPEC");
 
       // Multiplicity
       int MultMax = fNumberOfStripsFront*fNumberOfStripsBack;
       name = "CT"+NPL::itoa(i+1)+"_DSSSD"+NPL::itoa(j+1)+"_MULT_PHYS";
-      AddHisto1D(name, name, MultMax, 0, MultMax, "COMPTONTELESCOPE/PHY");
- 
-      // X-Y Impact Matrix
-      //  name = "CT_IMPACT_MATRIX";
-      //  AddHisto2D(name, name,500,-150,150,500,-150,150, "COMPTONTELESCOPE/PHY");
+      AddHisto1D(name, name, MultMax+1, 0, MultMax+1, "COMPTONTELESCOPE/PHY/MULT");
 
+      // Time
+      // Front
+      name = "CT"+NPL::itoa(i+1)+"_DSSSD"+NPL::itoa(j+1)+"_FRONT_T_PHY";
+      AddHisto1D(name, name, 5000, -2000, 5e9, "COMPTONTELESCOPE/PHY/TIME");
+      // Back
+      name = "CT"+NPL::itoa(i+1)+"_DSSSD"+NPL::itoa(j+1)+"_BACK_T_PHY";
+      AddHisto1D(name, name, 5000, -2000, 5e9, "COMPTONTELESCOPE/PHY/TIME");
+
+      // Hit pattern
+      name = "CT"+NPL::itoa(i+1)+"_DSSSD_HIT_PHY";
+      int ntotF = fNumberOfStripsFront * fNumberOfDetectors;
+      int ntotB = fNumberOfStripsBack  * fNumberOfDetectors;
+      AddHisto2D(name, name, ntotF, 0, ntotF, ntotB, 0, ntotB, "COMPTONTELESCOPE/PHY/HITPATTERN");
+
+/* 
+      // X-Y Impact Matrix
+      name = "CT"+NPL::itoa(i+1)+"_DSSSD"+NPL::itoa(j+1)+"_IMPACT_MATRIX";
+      AddHisto2D(name, name,500,-150,150,500,-150,150, "COMPTONTELESCOPE/PHY/IMPACTMATRIX");
+*/
     }
 
     //// Calorimeter
@@ -256,27 +330,31 @@ void TComptonTelescopeSpectra::FillRawSpectra(TComptonTelescopeData* RawData)
   string family;
 
   // FRONT_E 
-  for (unsigned int i = 0; i < RawData->GetCTTrackerFrontEMult(); i++) {
+  for (unsigned int i = 0; i < RawData->GetCTTrackerFrontEMult(); i++) {    
     name = "CT"+NPL::itoa(RawData->GetCTTrackerFrontETowerNbr(i))+"_DSSSD"+NPL::itoa(RawData->GetCTTrackerFrontEDetectorNbr(i))+"_FRONT_E_RAW";
-    family = "COMPTONTELESCOPE/RAW/FRONTE";
-
+    family = "COMPTONTELESCOPE/RAW/ENERGY";
+//    if (RawData->GetCTTrackerFrontTTime(i) > 3e9) {
+//    if (RawData->GetCTTrackerBackEMult() == 0) {
     FillSpectra(family,name,
           RawData->GetCTTrackerFrontEStripNbr(i),
           RawData->GetCTTrackerFrontEEnergy(i));
+//    }
   }
 
   // BACK_E
   for (unsigned int i = 0; i < RawData->GetCTTrackerBackEMult(); i++) {
     name = "CT"+NPL::itoa(RawData->GetCTTrackerBackETowerNbr(i))+"_DSSSD"+NPL::itoa(RawData->GetCTTrackerBackEDetectorNbr(i))+"_BACK_E_RAW";
-    family = "COMPTONTELESCOPE/RAW/BACKE";
-
+    family = "COMPTONTELESCOPE/RAW/ENERGY";
+//    if (RawData->GetCTTrackerBackTTime(i) > 3e9) {
+//    if (RawData->GetCTTrackerFrontEMult() == 0) {
     FillSpectra(family,name,
           RawData->GetCTTrackerBackEStripNbr(i),
           RawData->GetCTTrackerBackEEnergy(i));
+//    }
   }
 
   // E Front Back vs Strip
-  family = "COMPTONTELESCOPE/RAW/FRONT_BACK_E";
+  family = "COMPTONTELESCOPE/RAW/ENERGY";
   for (unsigned int i = 0; i < RawData->GetCTTrackerFrontEMult(); i++) {
     name = "CT"+NPL::itoa(RawData->GetCTTrackerFrontETowerNbr(i))+"_DSSSD"+NPL::itoa(RawData->GetCTTrackerFrontEDetectorNbr(i))+"_FRONT_BACK_E_RAW";
     FillSpectra(family, name,
@@ -293,34 +371,27 @@ void TComptonTelescopeSpectra::FillRawSpectra(TComptonTelescopeData* RawData)
   // FRONT_T
   for (unsigned int i = 0; i < RawData->GetCTTrackerFrontTMult(); i++) {
     name = "CT"+NPL::itoa(RawData->GetCTTrackerFrontETowerNbr(i))+"_DSSSD"+NPL::itoa(RawData->GetCTTrackerFrontTDetectorNbr(i))+"_FRONT_T_RAW";
-    family = "COMPTONTELESCOPE/RAW/FRONTT";
-
+    family = "COMPTONTELESCOPE/RAW/TIME";
     FillSpectra(family,name,RawData->GetCTTrackerFrontTTime(i));
-    //FillSpectra(family,name,RawData->GetCTTrackerFrontTStripNbr(i),RawData->GetCTTrackerFrontTTime(i));
   }
   // BACK_T
   for (unsigned int i = 0; i < RawData->GetCTTrackerBackTMult(); i++) {
     name = "CT"+NPL::itoa(RawData->GetCTTrackerFrontETowerNbr(i))+"_DSSSD"+NPL::itoa(RawData->GetCTTrackerBackTDetectorNbr(i))+"_BACK_T_RAW";
-    family = "COMPTONTELESCOPE/RAW/BACKT";
-
+    family = "COMPTONTELESCOPE/RAW/TIME";
     FillSpectra(family,name,RawData->GetCTTrackerBackTTime(i));
-    //FillSpectra(family,name,RawData->GetCTTrackerBackTStripNbr(i),RawData->GetCTTrackerBackTTime(i));
   }
 
   // FRONT MULT
   int myMULT[fNumberOfTelescope][fNumberOfDetectors];
-  //int myMULT[fNumberOfTelescope];
   for (unsigned int i = 0; i < fNumberOfTelescope; i++) {
     for (unsigned int j = 0; j < fNumberOfDetectors; j++) {
       myMULT[i][j] = 0 ; 
     }
   }
-
   for (unsigned int i = 0 ; i < RawData->GetCTTrackerFrontEMult(); i++) { 
      myMULT[RawData->GetCTTrackerFrontETowerNbr(i)-1][RawData->GetCTTrackerFrontEDetectorNbr(i)-1] += 1;  
      //myMULT[RawData->GetCTTrackerFrontEDetectorNbr(i)-1] += 1;  
   }
-
   for (unsigned int i = 0; i < fNumberOfTelescope; i++) {
     for (unsigned int j = 0; j < fNumberOfDetectors; j++) {
       name = "CT"+NPL::itoa(i+1)+"_DSSSD"+NPL::itoa(j+1)+"_FRONT_RAW_MULT";
@@ -335,14 +406,46 @@ void TComptonTelescopeSpectra::FillRawSpectra(TComptonTelescopeData* RawData)
       myMULT[i][j] = 0 ; 
     }
   }
-
   for (unsigned int i = 0 ; i < RawData->GetCTTrackerBackEMult(); i++) {
      myMULT[RawData->GetCTTrackerBackETowerNbr(i)-1][RawData->GetCTTrackerBackEDetectorNbr(i)-1] += 1;  
   }
-
   for (unsigned int i = 0; i < fNumberOfTelescope; i++) {
     for (unsigned int j = 0; j < fNumberOfDetectors; j++) {
       name = "CT"+NPL::itoa(i+1)+"_DSSSD"+NPL::itoa(j+1)+"_BACK_RAW_MULT";
+      family= "COMPTONTELESCOPE/RAW/MULT";
+      FillSpectra(family,name,myMULT[i][j]);
+    }
+  }
+
+  // Time Multiplicity 
+  // Front
+  for (unsigned int i = 0; i < fNumberOfTelescope; i++) {
+    for (unsigned int j = 0; j < fNumberOfDetectors; j++) {
+      myMULT[i][j] = 0 ;
+    }
+  }
+  for (unsigned int i = 0 ; i < RawData->GetCTTrackerFrontTMult(); i++) {
+    myMULT[RawData->GetCTTrackerFrontTTowerNbr(i)-1][RawData->GetCTTrackerFrontTDetectorNbr(i)-1] += 1;
+  }
+  for (unsigned int i = 0; i < fNumberOfTelescope; i++) {
+    for (unsigned int j = 0; j < fNumberOfDetectors; j++) {
+      name = "CT"+NPL::itoa(i+1)+"_DSSSD"+NPL::itoa(j+1)+"_T_FRONT_RAW_MULT";
+      family= "COMPTONTELESCOPE/RAW/MULT";
+      FillSpectra(family,name,myMULT[i][j]);
+    }
+  }
+  // Back
+  for (unsigned int i = 0; i < fNumberOfTelescope; i++) {
+    for (unsigned int j = 0; j < fNumberOfDetectors; j++) {
+      myMULT[i][j] = 0 ;
+    }
+  }
+  for (unsigned int i = 0 ; i < RawData->GetCTTrackerBackTMult(); i++) {
+    myMULT[RawData->GetCTTrackerBackTTowerNbr(i)-1][RawData->GetCTTrackerBackTDetectorNbr(i)-1] += 1;
+  }
+  for (unsigned int i = 0; i < fNumberOfTelescope; i++) {
+    for (unsigned int j = 0; j < fNumberOfDetectors; j++) {
+      name = "CT"+NPL::itoa(i+1)+"_DSSSD"+NPL::itoa(j+1)+"_T_BACK_RAW_MULT";
       family= "COMPTONTELESCOPE/RAW/MULT";
       FillSpectra(family,name,myMULT[i][j]);
     }
@@ -364,26 +467,28 @@ void TComptonTelescopeSpectra::FillPreTreatedSpectra(TComptonTelescopeData* PreT
   
   // FRONT_E
   for (unsigned int i = 0; i < PreTreatedData->GetCTTrackerFrontEMult(); i++) {
+//    if (PreTreatedData->GetCTTrackerFrontTTime(i) > 3e9) {
     name = "CT"+NPL::itoa(PreTreatedData->GetCTTrackerFrontETowerNbr(i))+"_DSSSD"+NPL::itoa(PreTreatedData->GetCTTrackerFrontEDetectorNbr(i))+"_FRONT_E_CAL";
-    family = "COMPTONTELESCOPE/CAL/FRONTE";
-
+    family = "COMPTONTELESCOPE/CAL/ENERGY";
     FillSpectra(family,name
       ,PreTreatedData->GetCTTrackerFrontEStripNbr(i), 
           PreTreatedData->GetCTTrackerFrontEEnergy(i));
+//    }
   }
 
   // BACK_E
   for (unsigned int i = 0; i < PreTreatedData->GetCTTrackerBackEMult(); i++) {
+//    if (PreTreatedData->GetCTTrackerBackTTime(i) > 3e9) {
     name = "CT"+NPL::itoa(PreTreatedData->GetCTTrackerBackETowerNbr(i))+"_DSSSD"+NPL::itoa(PreTreatedData->GetCTTrackerBackEDetectorNbr(i))+"_BACK_E_CAL";
-    family = "COMPTONTELESCOPE/CAL/BACKE";
-
+    family = "COMPTONTELESCOPE/CAL/ENERGY";
     FillSpectra(family,name
       ,PreTreatedData->GetCTTrackerBackEStripNbr(i), 
           PreTreatedData->GetCTTrackerBackEEnergy(i));
+//    }
   }
 
   // E Front Back vs Strip
-  family = "COMPTONTELESCOPE/CAL/FRONT_BACK_E";
+  family = "COMPTONTELESCOPE/CAL/ENERGY";
   for (unsigned int i = 0; i < PreTreatedData->GetCTTrackerFrontEMult(); i++) {
     name = "CT"+NPL::itoa(PreTreatedData->GetCTTrackerFrontETowerNbr(i))+"_DSSSD"+NPL::itoa(PreTreatedData->GetCTTrackerFrontEDetectorNbr(i))+"_FRONT_BACK_E_CAL";
     FillSpectra(family, name,
@@ -400,25 +505,39 @@ void TComptonTelescopeSpectra::FillPreTreatedSpectra(TComptonTelescopeData* PreT
   // E Front Back correlation
   for (unsigned int i = 0; i < PreTreatedData->GetCTTrackerFrontEMult(); i++) {
     for (unsigned int j = 0; j < PreTreatedData->GetCTTrackerBackEMult(); j++) {
-      if(PreTreatedData->GetCTTrackerFrontETowerNbr(i) == PreTreatedData->GetCTTrackerBackETowerNbr(i) &&
-         PreTreatedData->GetCTTrackerFrontEDetectorNbr(i) == PreTreatedData->GetCTTrackerBackEDetectorNbr(j)) {
+      if(PreTreatedData->GetCTTrackerFrontETowerNbr(i) == PreTreatedData->GetCTTrackerBackETowerNbr(j) &&
+          PreTreatedData->GetCTTrackerFrontEDetectorNbr(i) == PreTreatedData->GetCTTrackerBackEDetectorNbr(j)) {
         name = "CT"+NPL::itoa(PreTreatedData->GetCTTrackerFrontETowerNbr(i))+"_DSSSD"+NPL::itoa(PreTreatedData->GetCTTrackerFrontEDetectorNbr(i))+"_FB_COR_CAL";
-        family = "COMPTONTELESCOPE/CAL/FB";
+        family = "COMPTONTELESCOPE/CAL/ENERGYCOR";
         FillSpectra(family,name,PreTreatedData->GetCTTrackerFrontEEnergy(i), PreTreatedData->GetCTTrackerBackEEnergy(j));
       }
     }
   }
 
+  // Energy spectrum
+  // front
+  for (unsigned int i = 0; i < PreTreatedData->GetCTTrackerFrontEMult(); i++) {
+    name = "CT"+NPL::itoa(PreTreatedData->GetCTTrackerFrontETowerNbr(i))+"_DSSSD"+NPL::itoa(PreTreatedData->GetCTTrackerFrontEDetectorNbr(i))+"_FRONTECAL_SPECTRUM";
+    family= "COMPTONTELESCOPE/CAL/ENERGYSPEC";
+    FillSpectra(family, name, PreTreatedData->GetCTTrackerFrontEEnergy(i));
+  }
+  // back
+  for (unsigned int i = 0; i < PreTreatedData->GetCTTrackerBackEMult(); i++) {
+    name = "CT"+NPL::itoa(PreTreatedData->GetCTTrackerBackETowerNbr(i))+"_DSSSD"+NPL::itoa(PreTreatedData->GetCTTrackerBackEDetectorNbr(i))+"_BACKECAL_SPECTRUM";
+    family= "COMPTONTELESCOPE/CAL/ENERGYSPEC";
+    FillSpectra(family, name, PreTreatedData->GetCTTrackerBackEEnergy(i));
+  }
+
   // FRONT_T
   for (unsigned int i = 0; i < PreTreatedData->GetCTTrackerFrontTMult(); i++) {
     name = "CT"+NPL::itoa(PreTreatedData->GetCTTrackerBackETowerNbr(i))+"_DSSSD"+NPL::itoa(PreTreatedData->GetCTTrackerFrontTDetectorNbr(i))+"_FRONT_T_CAL";
-    family = "COMPTONTELESCOPE/CAL/FRONTT";
+    family = "COMPTONTELESCOPE/CAL/TIME";
     FillSpectra(family,name, PreTreatedData->GetCTTrackerFrontTTime(i));
   }
   // BACK_T
   for (unsigned int i = 0; i < PreTreatedData->GetCTTrackerBackTMult(); i++) {
     name = "CT"+NPL::itoa(PreTreatedData->GetCTTrackerBackETowerNbr(i))+"_DSSSD"+NPL::itoa(PreTreatedData->GetCTTrackerBackTDetectorNbr(i))+"_BACK_T_CAL";
-    family = "COMPTONTELESCOPE/CAL/BACKT";
+    family = "COMPTONTELESCOPE/CAL/TIME";
     FillSpectra(family,name, PreTreatedData->GetCTTrackerBackTTime(i));
   }
 
@@ -429,11 +548,9 @@ void TComptonTelescopeSpectra::FillPreTreatedSpectra(TComptonTelescopeData* PreT
       myMULT[i][j] = 0 ; 
     }
   }
-
   for(unsigned int i = 0 ; i < PreTreatedData->GetCTTrackerFrontEMult();i++){
     myMULT[PreTreatedData->GetCTTrackerFrontETowerNbr(i)-1][PreTreatedData->GetCTTrackerFrontEDetectorNbr(i)-1] += 1;  
   }
-
   for( unsigned int i = 0; i < fNumberOfTelescope; i++){
     for (unsigned int j = 0; j < fNumberOfDetectors; j++) {
       name = "CT"+NPL::itoa(i+1)+"_DSSSD"+NPL::itoa(j+1)+"_FRONT_CAL_MULT";
@@ -448,11 +565,9 @@ void TComptonTelescopeSpectra::FillPreTreatedSpectra(TComptonTelescopeData* PreT
       myMULT[i][j] = 0 ; 
     }
   }
-
   for(unsigned int i = 0 ; i < PreTreatedData->GetCTTrackerBackEMult();i++){
-    myMULT[PreTreatedData->GetCTTrackerBackETowerNbr(i)-1][PreTreatedData->GetCTTrackerBackEDetectorNbr(i)-1] += 1;  
+    myMULT[PreTreatedData->GetCTTrackerBackETowerNbr(i)-1][PreTreatedData->GetCTTrackerBackEDetectorNbr(i)-1] += 1; 
   }
-
   for( unsigned int i = 0; i < fNumberOfTelescope; i++){
     for (unsigned int j = 0; j < fNumberOfDetectors; j++) {
       name = "CT"+NPL::itoa(i+1)+"_DSSSD"+NPL::itoa(j+1)+"_BACK_CAL_MULT";
@@ -461,24 +576,163 @@ void TComptonTelescopeSpectra::FillPreTreatedSpectra(TComptonTelescopeData* PreT
     }
   }
 
+  // Event type
+  // type 1 (mult front = mult back)
+  for(unsigned int i = 0; i < fNumberOfTelescope; i++) {
+    for (unsigned int j = 0; j < fNumberOfDetectors; j++) {
+      myMULT[i][j] = 0 ; 
+    }
+  }
+  if (PreTreatedData->GetCTTrackerBackEMult() == PreTreatedData->GetCTTrackerFrontEMult()) {
+    for(unsigned int i = 0 ; i < PreTreatedData->GetCTTrackerBackEMult();i++){
+      myMULT[PreTreatedData->GetCTTrackerBackETowerNbr(i)-1][PreTreatedData->GetCTTrackerBackEDetectorNbr(i)-1] += 1;
+    }
+  }
+  for( unsigned int i = 0; i < fNumberOfTelescope; i++){
+    for (unsigned int j = 0; j < fNumberOfDetectors; j++) {
+      name = "CT"+NPL::itoa(i+1)+"_DSSSD"+NPL::itoa(j+1)+"_EVENTTYPE1_CAL_MULT";
+      family= "COMPTONTELESCOPE/CAL/MULT";
+      FillSpectra(family,name,myMULT[i][j]);
+    }
+  }
+  // type 2 (mult front = mult back +- 1)
+  for(unsigned int i = 0; i < fNumberOfTelescope; i++) {
+    for (unsigned int j = 0; j < fNumberOfDetectors; j++) {
+      myMULT[i][j] = 0 ; 
+    }
+  }
+  if (PreTreatedData->GetCTTrackerBackEMult() == PreTreatedData->GetCTTrackerFrontEMult()+1 || PreTreatedData->GetCTTrackerBackEMult() == PreTreatedData->GetCTTrackerFrontEMult()-1) {
+    if (PreTreatedData->GetCTTrackerBackEMult() > PreTreatedData->GetCTTrackerFrontEMult()) {
+      for(unsigned int i = 0 ; i < PreTreatedData->GetCTTrackerBackEMult();i++){
+        myMULT[PreTreatedData->GetCTTrackerBackETowerNbr(i)-1][PreTreatedData->GetCTTrackerBackEDetectorNbr(i)-1] += 1;
+      }
+    }
+    else if (PreTreatedData->GetCTTrackerFrontEMult() > PreTreatedData->GetCTTrackerBackEMult()) {
+      for(unsigned int i = 0 ; i < PreTreatedData->GetCTTrackerFrontEMult(); i++) {
+        myMULT[PreTreatedData->GetCTTrackerFrontETowerNbr(i)-1][PreTreatedData->GetCTTrackerFrontEDetectorNbr(i)-1] += 1;
+      }
+    }
+  }  
+  for( unsigned int i = 0; i < fNumberOfTelescope; i++){
+    for (unsigned int j = 0; j < fNumberOfDetectors; j++) {
+      name = "CT"+NPL::itoa(i+1)+"_DSSSD"+NPL::itoa(j+1)+"_EVENTTYPE2_CAL_MULT";
+      family= "COMPTONTELESCOPE/CAL/EVENTTYPEMULT";
+      FillSpectra(family,name,myMULT[i][j]);
+    }
+  }
+
+  // Possible interstrip
+  // Front
+  if (PreTreatedData->GetCTTrackerFrontEMult() == 2 && PreTreatedData->GetCTTrackerBackEMult() == 1) {
+    if (PreTreatedData->GetCTTrackerFrontEStripNbr(0) == PreTreatedData->GetCTTrackerFrontEStripNbr(1)+1 || PreTreatedData->GetCTTrackerFrontEStripNbr(0) == PreTreatedData->GetCTTrackerFrontEStripNbr(1)-1) {
+      name = "CT"+NPL::itoa(PreTreatedData->GetCTTrackerFrontETowerNbr(0))+"_DSSSD"+NPL::itoa(PreTreatedData->GetCTTrackerFrontEDetectorNbr(0))+"_FRONT_E_CLOSE_STRIP";
+      family = "COMPTONTELESCOPE/CAL/INTERSTRIP";
+      FillSpectra(family,name, PreTreatedData->GetCTTrackerFrontEEnergy(0),PreTreatedData->GetCTTrackerFrontEEnergy(1));
+
+      // interstrip
+      if (abs((PreTreatedData->GetCTTrackerBackEEnergy(0)-(PreTreatedData->GetCTTrackerFrontEEnergy(0)+PreTreatedData->GetCTTrackerFrontEEnergy(1)))/2.)< fStripEnergyMatchingNumberOfSigma*fStripEnergyMatchingSigma) {
+        // EF(i+-1) vs EF(i)
+        name = "CT"+NPL::itoa(PreTreatedData->GetCTTrackerFrontETowerNbr(0))+"_DSSSD"+NPL::itoa(PreTreatedData->GetCTTrackerFrontEDetectorNbr(0))+"_FRONT_E_INTERSTRIP";
+        family = "COMPTONTELESCOPE/CAL/INTERSTRIP";
+        FillSpectra(family,name, PreTreatedData->GetCTTrackerFrontEEnergy(0), PreTreatedData->GetCTTrackerFrontEEnergy(1));
+      
+        // EB vs EF(i) and EF(i+-1)
+        name = "CT"+NPL::itoa(PreTreatedData->GetCTTrackerFrontETowerNbr(0))+"_DSSSD"+NPL::itoa(PreTreatedData->GetCTTrackerFrontEDetectorNbr(0))+"_FB_COR_INTERSTRIP";
+        family = "COMPTONTELESCOPE/CAL/INTERSTRIP";
+        FillSpectra(family,name, PreTreatedData->GetCTTrackerFrontEEnergy(0),PreTreatedData->GetCTTrackerBackEEnergy(0));
+        FillSpectra(family,name, PreTreatedData->GetCTTrackerFrontEEnergy(1),PreTreatedData->GetCTTrackerBackEEnergy(0));        
+
+        // Spectrum
+        name = "CT"+NPL::itoa(PreTreatedData->GetCTTrackerFrontETowerNbr(0))+"_DSSSD"+NPL::itoa(PreTreatedData->GetCTTrackerFrontEDetectorNbr(0))+"_HALFE_INTERSTRIP";
+        family = "COMPTONTELESCOPE/CAL/INTERSTRIP";
+        FillSpectra(family,name, (PreTreatedData->GetCTTrackerBackEEnergy(0)+PreTreatedData->GetCTTrackerFrontEEnergy(0)+PreTreatedData->GetCTTrackerFrontEEnergy(1))/2.);
+      }
+    }
+  }
+
+  // Back
+  if (PreTreatedData->GetCTTrackerBackEMult() == 2 && PreTreatedData->GetCTTrackerFrontEMult() == 1) {
+    if (PreTreatedData->GetCTTrackerBackEStripNbr(0) == PreTreatedData->GetCTTrackerBackEStripNbr(1)+1 || PreTreatedData->GetCTTrackerBackEStripNbr(0) == PreTreatedData->GetCTTrackerBackEStripNbr(1)-1) {
+      name = "CT"+NPL::itoa(PreTreatedData->GetCTTrackerBackETowerNbr(0))+"_DSSSD"+NPL::itoa(PreTreatedData->GetCTTrackerBackEDetectorNbr(0))+"_BACK_E_CLOSE_STRIP";
+      family = "COMPTONTELESCOPE/CAL/INTERSTRIP";
+      FillSpectra(family,name, PreTreatedData->GetCTTrackerBackEEnergy(0),PreTreatedData->GetCTTrackerBackEEnergy(1));
   
+      // interstrip
+      if (abs((PreTreatedData->GetCTTrackerFrontEEnergy(0)-(PreTreatedData->GetCTTrackerBackEEnergy(0)+PreTreatedData->GetCTTrackerBackEEnergy(1)))/2.)< fStripEnergyMatchingNumberOfSigma*fStripEnergyMatchingSigma) {
+        // EB(i+-1) vs EB(i)
+        name = "CT"+NPL::itoa(PreTreatedData->GetCTTrackerBackETowerNbr(0))+"_DSSSD"+NPL::itoa(PreTreatedData->GetCTTrackerBackEDetectorNbr(0))+"_BACK_E_INTERSTRIP";
+        family = "COMPTONTELESCOPE/CAL/INTERSTRIP";
+        FillSpectra(family,name, PreTreatedData->GetCTTrackerBackEEnergy(0), PreTreatedData->GetCTTrackerBackEEnergy(1));
+      
+        // EF vs EB(i) and EB(i+-1)
+        name = "CT"+NPL::itoa(PreTreatedData->GetCTTrackerFrontETowerNbr(0))+"_DSSSD"+NPL::itoa(PreTreatedData->GetCTTrackerFrontEDetectorNbr(0))+"_FB_COR_INTERSTRIP";
+        family = "COMPTONTELESCOPE/CAL/INTERSTRIP";
+        FillSpectra(family,name, PreTreatedData->GetCTTrackerFrontEEnergy(0),PreTreatedData->GetCTTrackerBackEEnergy(0));
+        FillSpectra(family,name, PreTreatedData->GetCTTrackerFrontEEnergy(0),PreTreatedData->GetCTTrackerBackEEnergy(1));        
+ 
+        // Spectrum
+        name = "CT"+NPL::itoa(PreTreatedData->GetCTTrackerFrontETowerNbr(0))+"_DSSSD"+NPL::itoa(PreTreatedData->GetCTTrackerFrontEDetectorNbr(0))+"_HALFE_INTERSTRIP";
+        family = "COMPTONTELESCOPE/CAL/INTERSTRIP";
+        FillSpectra(family,name, (PreTreatedData->GetCTTrackerFrontEEnergy(0)+PreTreatedData->GetCTTrackerBackEEnergy(0)+PreTreatedData->GetCTTrackerBackEEnergy(1))/2.);
+    }
+    }
+  }
+
+
+  // Time Multiplicity 
+  // Front
+  for (unsigned int i = 0; i < fNumberOfTelescope; i++) {
+    for (unsigned int j = 0; j < fNumberOfDetectors; j++) {
+      myMULT[i][j] = 0 ;
+    }
+  }
+  for (unsigned int i = 0 ; i < PreTreatedData->GetCTTrackerFrontTMult(); i++) {
+    myMULT[PreTreatedData->GetCTTrackerFrontTTowerNbr(i)-1][PreTreatedData->GetCTTrackerFrontTDetectorNbr(i)-1] += 1;
+  }
+  for (unsigned int i = 0; i < fNumberOfTelescope; i++) {
+    for (unsigned int j = 0; j < fNumberOfDetectors; j++) {
+      name = "CT"+NPL::itoa(i+1)+"_DSSSD"+NPL::itoa(j+1)+"_T_FRONT_CAL_MULT";
+      family= "COMPTONTELESCOPE/CAL/MULT";
+      FillSpectra(family,name,myMULT[i][j]);
+    }
+  }
+  // Back
+  for (unsigned int i = 0; i < fNumberOfTelescope; i++) {
+    for (unsigned int j = 0; j < fNumberOfDetectors; j++) {
+      myMULT[i][j] = 0 ;
+    }
+  }
+  for (unsigned int i = 0 ; i < PreTreatedData->GetCTTrackerBackTMult(); i++) {
+    myMULT[PreTreatedData->GetCTTrackerBackTTowerNbr(i)-1][PreTreatedData->GetCTTrackerBackTDetectorNbr(i)-1] += 1;
+  }
+  for (unsigned int i = 0; i < fNumberOfTelescope; i++) {
+    for (unsigned int j = 0; j < fNumberOfDetectors; j++) {
+      name = "CT"+NPL::itoa(i+1)+"_DSSSD"+NPL::itoa(j+1)+"_T_BACK_CAL_MULT";
+      family= "COMPTONTELESCOPE/CAL/MULT";
+      FillSpectra(family,name,myMULT[i][j]);
+    }
+  }
+
+ 
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 void TComptonTelescopeSpectra::FillPhysicsSpectra(TComptonTelescopePhysics* Physics){
   string name;
-  string family = "COMPTONTELESCOPE/PHY";
+  string family;
 
   //// DSSSD
 
   // counters
   // for events
   name = "CT_DSSSD_COUNTERS_EVTS";
+  family= "COMPTONTELESCOPE/PHY/COUNTER";
   for (unsigned int i = 0; i < fNumberOfCounters; i++) {
     FillSpectra(family, name, i, Physics->m_CounterEvt[i]);
   }
-  // for hits
+  // for hits 
   name = "CT_DSSSD_COUNTERS_HITS";
+  family= "COMPTONTELESCOPE/PHY/COUNTER";
   for (unsigned int i = 0; i < fNumberOfCounters; i++) {
     FillSpectra(family, name, i, Physics->m_CounterHit[i]);
   }
@@ -486,6 +740,7 @@ void TComptonTelescopeSpectra::FillPhysicsSpectra(TComptonTelescopePhysics* Phys
   // Front + Back E per strip
   for (unsigned int i = 0; i < Physics->GetEventMultiplicity(); i++) {
     name = "CT"+NPL::itoa(Physics->GetTowerNumber(i))+"_DSSSD"+NPL::itoa(Physics->GetDetectorNumber(i))+"_FRONT_BACK_E_PHY";
+    family= "COMPTONTELESCOPE/PHY/ENERGY";
     FillSpectra(family, name, Physics->GetFrontStrip(i), Physics->GetFrontEnergy(i));
     FillSpectra(family, name, fNumberOfStripsFront+Physics->GetBackStrip(i), Physics->GetBackEnergy(i));
   }
@@ -493,18 +748,27 @@ void TComptonTelescopeSpectra::FillPhysicsSpectra(TComptonTelescopePhysics* Phys
   // front back Energy correlation
   for (unsigned int i = 0; i < Physics->GetEventMultiplicity(); i++) {
     name = "CT"+NPL::itoa(Physics->GetTowerNumber(i))+"_DSSSD"+NPL::itoa(Physics->GetDetectorNumber(i))+"_FB_COR_PHY";
+    family= "COMPTONTELESCOPE/PHY/ENERGYCOR";
     FillSpectra(family, name, Physics->GetFrontEnergy(i), Physics->GetBackEnergy(i)); 
   }
 
   // Energy spectrum
+  // front
   for (unsigned int i = 0; i < Physics->GetEventMultiplicity(); i++) {
     name = "CT"+NPL::itoa(Physics->GetTowerNumber(i))+"_DSSSD"+NPL::itoa(Physics->GetDetectorNumber(i))+"_FRONTE_SPECTRUM";
+    family= "COMPTONTELESCOPE/PHY/ENERGYSPEC";
     FillSpectra(family, name, Physics->GetFrontEnergy(i));
-
+  }
+  // back
+  for (unsigned int i = 0; i < Physics->GetEventMultiplicity(); i++) {
     name = "CT"+NPL::itoa(Physics->GetTowerNumber(i))+"_DSSSD"+NPL::itoa(Physics->GetDetectorNumber(i))+"_BACKE_SPECTRUM";
+    family= "COMPTONTELESCOPE/PHY/ENERGYSPEC";
     FillSpectra(family, name, Physics->GetBackEnergy(i));
-
+  }
+  // half
+  for (unsigned int i = 0; i < Physics->GetEventMultiplicity(); i++) {
     name = "CT"+NPL::itoa(Physics->GetTowerNumber(i))+"_DSSSD"+NPL::itoa(Physics->GetDetectorNumber(i))+"_HALFE_SPECTRUM";
+    family= "COMPTONTELESCOPE/PHY/ENERGYSPEC";
     FillSpectra(family, name, Physics->GetHalfEnergy(i));
   }
 
@@ -521,15 +785,42 @@ void TComptonTelescopeSpectra::FillPhysicsSpectra(TComptonTelescopePhysics* Phys
   for (unsigned int i = 0; i < fNumberOfTelescope; i++) {
     for (unsigned int j = 0; j < fNumberOfDetectors; j++) {
       name = "CT"+NPL::itoa(i+1)+"_DSSSD"+NPL::itoa(j+1)+"_MULT_PHYS";
+      family= "COMPTONTELESCOPE/PHY/MULT";
       FillSpectra(family, name, myMULT[i][j]);
     }
   }
 
+  // Time
+  // Front
+  for (unsigned int i = 0; i < Physics->GetEventMultiplicity(); i++) {
+    name = "CT"+NPL::itoa(Physics->GetTowerNumber(i))+"_DSSSD"+NPL::itoa(Physics->GetDetectorNumber(i))+"_FRONT_T_PHY";
+    family= "COMPTONTELESCOPE/PHY/TIME";
+    FillSpectra(family,name,Physics->GetFrontTime(i));
+  }
+  // Back
+  for (unsigned int i = 0; i < Physics->GetEventMultiplicity(); i++) {
+    name = "CT"+NPL::itoa(Physics->GetTowerNumber(i))+"_DSSSD"+NPL::itoa(Physics->GetDetectorNumber(i))+"_BACK_T_PHY";
+    family= "COMPTONTELESCOPE/PHY/TIME";
+    FillSpectra(family,name,Physics->GetBackTime(i));
+  }
+
+  // Hit pattern
+  for (unsigned int i = 0; i < Physics->GetEventMultiplicity(); i++) {
+    name = "CT"+NPL::itoa(Physics->GetTowerNumber(i))+"_DSSSD_HIT_PHY";
+    family= "COMPTONTELESCOPE/PHY/HITPATTERN";
+    FillSpectra(family,name,Physics->GetFrontStrip(i) + fNumberOfStripsFront*(Physics->GetDetectorNumber(i)-1), Physics->GetBackStrip(i) + fNumberOfStripsBack*(Physics->GetDetectorNumber(i)-1));    
+  }
 
   // X-Y Impact Matrix
-//  name = "CT_IMPACT_MATRIX";
+  /*  for(unsigned int i = 0 ; i < Physics->GetEventMultiplicity(); i++){
+    name = "CT"+NPL::itoa(Physics->GetTowerNumber(i))+"_DSSSD"+NPL::itoa(Physics->GetDetectorNumber(i))+"_IMPACT_MATRIX";
+    family= "COMPTONTELESCOPE/PHY/IMPACTMATRIX";
+    double x = Physics->GetPositionOfInteraction(i).x();
+    double y = Physics->GetPositionOfInteraction(i).y();
+    FillSpectra(family,name,x,y);
+  }
+*/
 
-  // T
 
   //// Calorimeter
 
@@ -570,63 +861,5 @@ void TComptonTelescopeSpectra::FillPhysicsSpectra(TComptonTelescopePhysics* Phys
   }
 
 
-/*  string name;
-  string family= "COMPTONTELESCOPE/PHY";
-  // X-Y Impact Matrix
-
-  for(unsigned int i = 0 ; i < Physics->Si_E.size(); i++){
-    name = "CT_IMPACT_MATRIX";
-    double x = Physics->GetPositionOfInteraction(i).x();
-    double y = Physics->GetPositionOfInteraction(i).y();
-    FillSpectra(family,name),x,y);
-
-    name = "CT_THETA_E";
-    double Theta = Physics->GetPositionOfInteraction(i).Angle(TVector3(0,0,1));
-    Theta = Theta/deg;
-    FillSpectra(family,name),Theta,Physics->Si_E[i]);
-
-    // FRONT_E_CAL
-    name = "CT"+NPL::itoa( Physics->TelescopeNumber[i])+"_XY_COR";
-    FillSpectra(family,name),Physics->Si_EX[i],Physics->Si_EY[i]);
-
-
-    // Fill only for particle stopped in the first stage
-    if(Physics->SiLi_E[i]<0 && Physics->CsI_E[i]<0){
-      // E-TOF:
-      name = "CT_E_TOF";
-      FillSpectra(family,name)->Fill(Physics->Si_E[i],Physics->Si_T[i]);
-
-      name = "CT"+NPL::itoa(Physics->TelescopeNumber[i])+"_E_TOF";
-      FillSpectra(family,name)->Fill(Physics->Si_E[i],Physics->Si_T[i]);
-    }
-
-    double Etot=0;
-    if(Physics->SiLi_E[i]>0){
-      name = "CT_SILIE_E";
-      Etot = Physics->SiLi_E[i];
-      FillSpectra(family,name)->Fill(Physics->SiLi_E[i],Physics->Si_E[i]);
-
-      name = "CT"+NPL::itoa(Physics->TelescopeNumber[i])+"_SILIE_E";
-      FillSpectra(family,name)->Fill(Physics->SiLi_E[i],Physics->Si_E[i]);
-    }
-
-    if(Physics->CsI_E[i]>0){
-      name = "CT_CSIE_E";
-      Etot += Physics->CsI_E[i];
-      FillSpectra(family,name)->Fill(Physics->CsI_E[i],Physics->Si_E[i]);
-      name = "CT"+NPL::itoa(Physics->TelescopeNumber[i])+"_CSIE_E";
-      FillSpectra(family,name)->Fill(Physics->CsI_E[i],Physics->Si_E[i]);
-
-    }
-
-    if(Etot>0){
-      name = "CT_Etot_E";
-      FillSpectra(family,name)->Fill(Etot,Physics->Si_E[i]);
-      name = "CT"+NPL::itoa(Physics->TelescopeNumber[i])+"_Etot_E";
-      FillSpectra(family,name)->Fill(Etot,Physics->Si_E[i]);
-    }
-
-  }
-*/
 }
 

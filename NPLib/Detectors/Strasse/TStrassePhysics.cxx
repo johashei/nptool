@@ -357,7 +357,7 @@ void TStrassePhysics::BuildPhysicalEvent() {
     if(1 /*CheckEvent() == 1*/){
       vector<TVector2> inner = MatchInner();
       vector<TVector2> outer = MatchOuter();
-  
+
       for(unsigned int i=0; i<inner.size(); i++){
         int N = m_PreTreatedData->GetInner_TE_DetectorNbr(inner[i].X());
         int innerT = m_PreTreatedData->GetInner_TE_StripNbr(inner[i].X());

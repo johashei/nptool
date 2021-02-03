@@ -55,7 +55,7 @@ class TComptonTelescopePhysics : public TObject, public NPL::VDetector
 
    public:  // data obtained after BuildPhysicalEvent() and stored in ROOT output file
       //   DSSD
-      Int_t EventMultiplicity;
+      int EventMultiplicity;
       vector<int> EventType;
       vector<int> DetectorNumber;
       vector<int>    Strip_Front;
@@ -64,8 +64,8 @@ class TComptonTelescopePhysics : public TObject, public NPL::VDetector
       vector<double> Strip_T;
       vector<double> Front_Energy;
       vector<double> Back_Energy;
-      vector<double> StripFront_T;
-      vector<double> StripBack_T;
+      vector<double> Front_Time;
+      vector<double> Back_Time;
       // Calorimeter
       vector<double> Calor_E;
       vector<double> Calor_T;
@@ -162,6 +162,8 @@ class TComptonTelescopePhysics : public TObject, public NPL::VDetector
       double GetFrontEnergy(const int i) {return Front_Energy[i];};
       double GetBackEnergy(const int i) {return Back_Energy[i];};
       double GetHalfEnergy(const int i) {return Half_Energy[i];};
+      double GetFrontTime(const int i) {return Front_Time[i];};
+      double GetBackTime(const int i) {return Back_Time[i];};
       
       TVector3 GetPositionOfInteraction(const int i) const;   
       TVector3 GetDetectorNormal(const int i) const;
@@ -177,6 +179,7 @@ class TComptonTelescopePhysics : public TObject, public NPL::VDetector
       // Give the allowance in percent of the difference in energy between X and Y
       double m_StripEnergyMatchingSigma;              //!
       double m_StripEnergyMatchingNumberOfSigma;      //!
+      bool m_MultOneOnly; //!
 
       //  Threshold
       double m_StripFront_E_RAW_Threshold;   //!
@@ -229,7 +232,7 @@ class TComptonTelescopePhysics : public TObject, public NPL::VDetector
       // physical events
       vector<int> TowerNumber;
       vector<double> Half_Energy;
- 
+      vector<bool> Same_FBTime; 
 
 };
 

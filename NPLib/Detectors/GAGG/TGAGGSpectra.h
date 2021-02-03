@@ -1,63 +1,62 @@
-#ifndef TCOMPTONTELESCOPESPECTRA_H
-#define TCOMPTONTELESCOPESPECTRA_H
+#ifndef TGAGGSPECTRA_H
+#define TGAGGSPECTRA_H
 /*****************************************************************************
- * Copyright (C) 2009-2016    this file is part of the NPTool Project        *
+ * Copyright (C) 2009-2020   this file is part of the NPTool Project       *
  *                                                                           *
  * For the licensing terms see $NPTOOL/Licence/NPTool_Licence                *
  * For the list of contributors see $NPTOOL/Licence/Contributors             *
  *****************************************************************************/
 
 /*****************************************************************************
- * Original Author: N. de Sereville  contact address: deserevi@ipno.in2p3.fr *
+ * Original Author: Valerian Alcindor  contact address:                         *
  *                                                                           *
- * Creation Date  : jan. 2015                                                *
+ * Creation Date  : October 2020                                           *
  * Last update    :                                                          *
  *---------------------------------------------------------------------------*
  * Decription:                                                               *
- *  This class holds all the online spectra needed for Compton Telescope     *
+ *  This class hold GAGG Spectra                                     *
  *                                                                           *
  *---------------------------------------------------------------------------*
  * Comment:                                                                  *
- *                                                                           *
+ *                                                                           *   
  *                                                                           *
  *****************************************************************************/
 
 // NPLib headers
 #include "NPVSpectra.h"
-#include "TComptonTelescopeData.h"
-#include "TComptonTelescopePhysics.h"
+#include "TGAGGData.h"
+#include "TGAGGPhysics.h"
 
-// ForwardDeclaration
-class TComptonTelescopePhysics ;
+// Forward Declaration
+class TGAGGPhysics;
 
-class TComptonTelescopeSpectra:public VSpectra {
+
+class TGAGGSpectra : public VSpectra {
+  //////////////////////////////////////////////////////////////
+  // constructor and destructor
   public:
-    // constructor and destructor
-    TComptonTelescopeSpectra();
-    TComptonTelescopeSpectra(unsigned int NumberOfTelescope);
-    ~TComptonTelescopeSpectra();
+    TGAGGSpectra();
+    TGAGGSpectra(unsigned int NumberOfDetectors);
+    ~TGAGGSpectra();
 
+  //////////////////////////////////////////////////////////////
+  // Initialization methods
   private:
-    // Initialization methods
     void InitRawSpectra();
     void InitPreTreatedSpectra();
     void InitPhysicsSpectra();
 
+  //////////////////////////////////////////////////////////////
+  // Filling methods
   public:
-    // Filling methods
-    void FillRawSpectra(TComptonTelescopeData*);
-    void FillPreTreatedSpectra(TComptonTelescopeData*);
-    void FillPhysicsSpectra(TComptonTelescopePhysics*);
+    void FillRawSpectra(TGAGGData*);
+    void FillPreTreatedSpectra(TGAGGData*);
+    void FillPhysicsSpectra(TGAGGPhysics*);
 
-  private: // Information on Compton Telescope 
-    unsigned int fNumberOfTelescope;
+  //////////////////////////////////////////////////////////////
+  // Detector parameters 
+  private:
     unsigned int fNumberOfDetectors;
-    unsigned int fNumberOfStripsFront;
-    unsigned int fNumberOfStripsBack;
-    double fStripEnergyMatchingSigma;
-    double fStripEnergyMatchingNumberOfSigma;
-    unsigned int fNumberOfCounters;
-    unsigned int fCalorimeterNPixels;
 };
 
 #endif

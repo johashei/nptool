@@ -52,12 +52,13 @@ TComptonTelescopePhysics::TComptonTelescopePhysics()
   m_nCounterEvt(50),
   m_nCounterHit(50),
   m_MaximumStripMultiplicityAllowed(32),
-  m_StripEnergyMatchingSigma(0.060),      // MeV
-  m_StripEnergyMatchingNumberOfSigma(3),  // MeV
+  m_MultOneOnly(false),
+  m_StripEnergyMatchingSigma(0.006),      // MeV
+  m_StripEnergyMatchingNumberOfSigma(3),  
   m_StripFront_E_RAW_Threshold(0),
-  m_StripFront_E_Threshold(0),
+  m_StripFront_E_Threshold(0),  // MeV
   m_StripBack_E_RAW_Threshold(0),
-  m_StripBack_E_Threshold(0),
+  m_StripBack_E_Threshold(0),  // MeV
   m_Calorimeter_E_RAW_Threshold(0), // Before pedestal subtraction (ADC)
   m_Calorimeter_E_Threshold(0), // After pedestal subtraction (ADC)
   m_Take_E_Front(true), // p-side
@@ -80,6 +81,7 @@ void TComptonTelescopePhysics::BuildPhysicalEvent()
 ///////////////////////////////////////////////////////////////////////////
 void TComptonTelescopePhysics::BuildSimplePhysicalEvent()
 {
+  //cout << "\nBegin event treatment" << endl;
   m_CounterEvt[0] = 1; // total nb of events
 
   // select active channels and apply threhsolds
@@ -89,24 +91,104 @@ void TComptonTelescopePhysics::BuildSimplePhysicalEvent()
 
   // Check event type
   Int_t evtType = CheckEvent();
-  if (evtType == 1) m_CounterEvt[8] = 1; // nb of pretreated events with mult F = mult B
-  if (evtType == 2) m_CounterEvt[9] = 1; // nb of pretreated events with mult F = mult B +- 1
-  if (evtType == -1) m_CounterEvt[10] = 1; // nb of pretreated events with mult F != mult B or mult B +- 1
+  //cout << "event type = " << evtType << endl;
+ 
+  // check possible interstrip
+  if (evtType == 2) {
+    if (m_PreTreatedData->GetCTTrackerFrontEMult() == 2 && m_PreTreatedData->GetCTTrackerBackEMult() == 1 || m_PreTreatedData->GetCTTrackerFrontEMult() == 1 && m_PreTreatedData->GetCTTrackerBackEMult() == 2) {
+      //cout << "event type 2 possible interstrip" << endl;
+      m_CounterEvt[21] = 1; // possible interstrip mult 2-1
+      if (m_PreTreatedData->GetCTTrackerFrontEMult() == 2) {
+        if (m_PreTreatedData->GetCTTrackerFrontEStripNbr(0) == m_PreTreatedData->GetCTTrackerFrontEStripNbr(1)+1 || m_PreTreatedData->GetCTTrackerFrontEStripNbr(0) == m_PreTreatedData->GetCTTrackerFrontEStripNbr(1)-1) {
+          m_CounterEvt[22] = 1; // possible interstrip close SF         
+          //cout << "SFi = " << m_PreTreatedData->GetCTTrackerFrontEStripNbr(0) << " SFj = " << m_PreTreatedData->GetCTTrackerFrontEStripNbr(1) << endl;
+          //cout << "EB " << m_PreTreatedData->GetCTTrackerBackEEnergy(0) << " EFi " << m_PreTreatedData->GetCTTrackerFrontEEnergy(0) << " EFj " << m_PreTreatedData->GetCTTrackerFrontEEnergy(1) << endl;
+          if (abs((m_PreTreatedData->GetCTTrackerBackEEnergy(0)-(m_PreTreatedData->GetCTTrackerFrontEEnergy(0)+m_PreTreatedData->GetCTTrackerFrontEEnergy(1)))/2.) < m_StripEnergyMatchingNumberOfSigma*m_StripEnergyMatchingSigma) {
+            m_CounterEvt[24] = 1; // interstrip close SF
+            //cout << "interstrip" << endl;
+          }
+        }
+      }
+      else if (m_PreTreatedData->GetCTTrackerBackEMult() == 2) {
+        if (m_PreTreatedData->GetCTTrackerBackEStripNbr(0) == m_PreTreatedData->GetCTTrackerBackEStripNbr(1)+1 || m_PreTreatedData->GetCTTrackerBackEStripNbr(0) == m_PreTreatedData->GetCTTrackerBackEStripNbr(1)-1) {
+          m_CounterEvt[23] = 1; // possible interstrip close SB
+          //cout << "SBi = " << m_PreTreatedData->GetCTTrackerBackEStripNbr(0) << " SBj = " << m_PreTreatedData->GetCTTrackerBackEStripNbr(1) << endl;
+          if (abs((m_PreTreatedData->GetCTTrackerFrontEEnergy(0)-(m_PreTreatedData->GetCTTrackerBackEEnergy(0)+m_PreTreatedData->GetCTTrackerBackEEnergy(1)))/2.) < m_StripEnergyMatchingNumberOfSigma*m_StripEnergyMatchingSigma) {
+            m_CounterEvt[25] = 1; // interstrip close SB
+          }
+        }
+      }
+    }
+  }
 
   // Remove: do general case
-//  if (CheckEvent() == 1) {   // case where multiplicity front = multiplicity back
+  //if (CheckEvent() == 1) {   // case where multiplicity front = multiplicity back
   
   vector<TVector2> couple = Match_Front_Back();
   EventMultiplicity = couple.size();
+  //cout << "event multiplicity = " << couple.size() << endl;
 
+  // keep only mult 1 couples
+  //if (couple.size() ==  1) { // pb if done here, so done in Match_Front_Back()
   for (UShort_t i = 0; i < couple.size(); ++i) { // loop on selected events
-    m_CounterHit[10] += 1; // nb of hits in selected couples
-    Int_t Tower = m_PreTreatedData->GetCTTrackerFrontETowerNbr(couple[i].       X());
+    m_CounterEvt[16] = 1; // nb of physics events
+    m_CounterHit[10] += 1; // nb of physics hits
+
+    // Energy
+    Int_t Tower = m_PreTreatedData->GetCTTrackerFrontETowerNbr(couple[i].X());
     Int_t    N       = m_PreTreatedData->GetCTTrackerFrontEDetectorNbr(couple[i].X());
     Int_t    Front   = m_PreTreatedData->GetCTTrackerFrontEStripNbr(couple[i].X());
     Int_t    Back    = m_PreTreatedData->GetCTTrackerBackEStripNbr(couple[i].Y());
     Double_t Front_E = m_PreTreatedData->GetCTTrackerFrontEEnergy(couple[i].X());
     Double_t Back_E  = m_PreTreatedData->GetCTTrackerBackEEnergy(couple[i].Y());
+
+    //cout << "mult " << couple.size() << " event type " << evtType << endl;
+    // Event type
+    if (evtType == 1) {
+      m_CounterEvt[17] = 1; // nb of physics events with mult F = mult B
+      //cout << "event type 1: couple size " << couple.size() << " couple " <<i << " SF" << Front << " SB" << Back << " EF " << Front_E << " EB " << Back_E << endl;
+    }
+    if (evtType == 2) {
+      if (couple.size() == 1) {
+        m_CounterEvt[18] = 1; // nb of physics events with mult F = mult B +- 1
+        //cout << "event type 2: couple size " << couple.size() << " couple " << i << " SF" << Front << " SB" << Back << " EF " << Front_E << " EB " << Back_E << endl;
+      }
+    }
+    if (evtType == -1) m_CounterEvt[19] = 1; // nb of physics events with mult F != mult B or mult B +- 1
+
+    // Time
+    // Front
+    //cout << "time front multiplicity = " << m_PreTreatedData->GetCTTrackerFrontTMult() << endl;
+    Double_t Front_T = -1000.;
+    for (UShort_t t = 0; t < m_PreTreatedData->GetCTTrackerFrontTMult(); t++) {
+      if (m_PreTreatedData->GetCTTrackerFrontETowerNbr(couple[i].X()) == m_PreTreatedData->GetCTTrackerFrontTTowerNbr(t) && m_PreTreatedData->GetCTTrackerFrontEDetectorNbr(couple[i].X()) == m_PreTreatedData->GetCTTrackerFrontTDetectorNbr(t)) {
+        m_CounterEvt[42] = 1; // nb of physics events with front time
+        m_CounterHit[42] += 1; // nb of physics hits with front time
+        Front_T = m_PreTreatedData->GetCTTrackerFrontTTime(t);
+        //cout << "Time F: Tower" << m_PreTreatedData->GetCTTrackerFrontTTowerNbr(t) << " D" << m_PreTreatedData->GetCTTrackerFrontTDetectorNbr(t) << " T = " << Front_T << endl;
+      }
+    }
+    // Back
+    //cout << "time back  multiplicity = " << m_PreTreatedData->GetCTTrackerBackTMult() << endl;
+    Double_t Back_T = -1000;
+    for (UShort_t t = 0; t < m_PreTreatedData->GetCTTrackerBackTMult(); t++) {
+      if (m_PreTreatedData->GetCTTrackerBackETowerNbr(couple[i].Y()) == m_PreTreatedData->GetCTTrackerBackTTowerNbr(t) && m_PreTreatedData->GetCTTrackerBackEDetectorNbr(couple[i].Y()) == m_PreTreatedData->GetCTTrackerBackTDetectorNbr(t)) {
+        m_CounterEvt[43] = 1; // nb of physics events with back time
+        m_CounterHit[43] += 1; // nb of physics hits with back time
+        Back_T = m_PreTreatedData->GetCTTrackerBackTTime(t);
+        //cout << "Time B: Tower" << m_PreTreatedData->GetCTTrackerBackTTowerNbr(t) << " D" << m_PreTreatedData->GetCTTrackerBackTDetectorNbr(t) << " T = " << Back_T << endl;
+      }
+    }
+    // check time
+    bool Same_T = false;
+    if (Front_T == Back_T) {
+      //cout << "same T" << endl;
+      Same_T = true;
+      m_CounterEvt[44] = 1; // nb of physics events with same FB time
+      m_CounterHit[44] += 1; // nb of physics hits with same FB time
+    }
+
+    //cout << "couple " << i << " CT" << Tower << " D" << N << " SF" << Front << " SB" << Back << " EF " << Front_E << " EB " << Back_E << " TF " << Front_T << " TB " << Back_T << endl;
 
     // Fill TComptonTelescopePhysics members
     EventType.push_back(evtType);
@@ -117,16 +199,18 @@ void TComptonTelescopePhysics::BuildSimplePhysicalEvent()
     Front_Energy.push_back(Front_E);
     Back_Energy.push_back(Back_E);
     Half_Energy.push_back((Front_E+Back_E)/2);
+    Front_Time.push_back(Front_T);
+    Back_Time.push_back(Back_T);
+    Same_FBTime.push_back(Same_T);
 
     if (m_Take_E_Front)
       Strip_E.push_back(Front_E);
     else
       Strip_E.push_back(Back_E);
 
-    //Strip_T = ?
-
-  }
-  //  } // end check event
+    //}
+}
+//  } // end check event
 
 
   //// Calorimeter analysis ////
@@ -174,16 +258,16 @@ void TComptonTelescopePhysics::PreTreat()
   for (UShort_t i = 0; i < m_EventData->GetCTTrackerFrontEMult(); ++i) {
     m_CounterEvt[1] = 1; // nb of events with at least one EF raw recorded
     m_CounterHit[0] += 1; // nb of hits with EF raw
-//    cout << "Det = " << m_EventData->GetCTTrackerFrontEDetectorNbr(i) << " ; strip = " << m_EventData->GetCTTrackerFrontEStripNbr(i) << " ; E raw = " << m_EventData->GetCTTrackerFrontEEnergy(i) << endl;
+    //cout << "Raw: DetF = " << m_EventData->GetCTTrackerFrontEDetectorNbr(i) << " ; stripF = " << m_EventData->GetCTTrackerFrontEStripNbr(i) << " ; EF raw = " << m_EventData->GetCTTrackerFrontEEnergy(i) << endl;
 
     if (m_EventData->GetCTTrackerFrontEEnergy(i) > m_StripFront_E_RAW_Threshold &&
         IsValidChannel("Front", m_EventData->GetCTTrackerFrontEDetectorNbr(i), m_EventData->GetCTTrackerFrontEStripNbr(i))) {     
       m_CounterEvt[2] = 1; // nb of events with at least one EF raw > threshold
       m_CounterHit[1] += 1; // nb of hits with EF raw > threshold
       Double_t E = fStrip_Front_E(m_EventData, i);//Calibration happens here
-//      cout << "Det = " << m_EventData->GetCTTrackerFrontEDetectorNbr(i) << " ; strip = " << m_EventData->GetCTTrackerFrontEStripNbr(i) << " ; E cal = " << E << endl;
       
       if (E > m_StripFront_E_Threshold) {
+        //cout << "CalF: Det = " << m_EventData->GetCTTrackerFrontEDetectorNbr(i) << " ; strip = " << m_EventData->GetCTTrackerFrontEStripNbr(i) << " ; E cal = " << E << endl;
         m_CounterEvt[3] = 1; // nb of events with at least one EF cal > threshold
         m_CounterHit[2] += 1; // nb of hits with EF cal > threshold
         m_PreTreatedData->SetFrontE(
@@ -191,13 +275,7 @@ void TComptonTelescopePhysics::PreTreat()
             m_EventData->GetCTTrackerFrontEDetectorNbr(i),
             m_EventData->GetCTTrackerFrontEStripNbr(i),
             E);
-/*        m_PreTreatedData->SetCTTrackerFrontETowerNbr(m_EventData->GetCTTrackerFrontETowerNbr(i));
-        m_PreTreatedData->SetCTTrackerFrontEDetectorNbr(m_EventData->GetCTTrackerFrontEDetectorNbr(i));
-        m_PreTreatedData->SetCTTrackerFrontEStripNbr(m_EventData->GetCTTrackerFrontEStripNbr(i));
-        m_PreTreatedData->SetCTTrackerFrontEEnergy(E);
-*/
       }
-//      cout << "Det = " << m_PreTreatedData->GetCTTrackerFrontEDetectorNbr(i) << " ; strip = " << m_PreTreatedData->GetCTTrackerFrontEStripNbr(i) << " ; E pretreat = " << m_PreTreatedData->GetCTTrackerFrontEEnergy(i) << endl;
     }
   }
 
@@ -205,6 +283,7 @@ void TComptonTelescopePhysics::PreTreat()
   for (UShort_t i = 0; i < m_EventData->GetCTTrackerBackEMult(); ++i) {
     m_CounterEvt[4] = 1; // nb of events with at least one EB raw recorded
     m_CounterHit[3] += 1; // nb of hits with EB raw
+    //cout << "Raw: DetB = " << m_EventData->GetCTTrackerBackEDetectorNbr(i) << " ; stripB = " << m_EventData->GetCTTrackerBackEStripNbr(i) << " ; EB raw = " << m_EventData->GetCTTrackerFrontEEnergy(i) << endl;
 
     if (m_EventData->GetCTTrackerBackEEnergy(i) > m_StripBack_E_RAW_Threshold && 
         IsValidChannel("Back", m_EventData->GetCTTrackerBackEDetectorNbr(i), m_EventData->GetCTTrackerBackEStripNbr(i))) {
@@ -213,6 +292,7 @@ void TComptonTelescopePhysics::PreTreat()
       Double_t E = fStrip_Back_E(m_EventData, i);//Calibration happens here
 
       if (E > m_StripBack_E_Threshold) {
+        //cout << "CalB: Det = " << m_EventData->GetCTTrackerBackEDetectorNbr(i) << " ; stripB = " << m_EventData->GetCTTrackerBackEStripNbr(i) << " ; EB cal = " << E << endl;
         m_CounterEvt[6] = 1; // nb of events with at least one EB cal > threshold
         m_CounterHit[5] += 1; // nb of hits with EB cal > threshold
         m_PreTreatedData->SetBackE(
@@ -220,11 +300,6 @@ void TComptonTelescopePhysics::PreTreat()
             m_EventData->GetCTTrackerBackEDetectorNbr(i),
             m_EventData->GetCTTrackerBackEStripNbr(i),
             E);
-/*        m_PreTreatedData->SetCTTrackerBackETowerNbr(m_EventData->GetCTTrackerBackETowerNbr(i));
-        m_PreTreatedData->SetCTTrackerBackEDetectorNbr( m_EventData->GetCTTrackerBackEDetectorNbr(i));
-        m_PreTreatedData->SetCTTrackerBackEStripNbr( m_EventData->GetCTTrackerBackEStripNbr(i));
-        m_PreTreatedData->SetCTTrackerBackEEnergy(E);
-*/
       }
     }
   }
@@ -239,12 +314,7 @@ void TComptonTelescopePhysics::PreTreat()
         m_EventData->GetCTTrackerFrontTDetectorNbr(i),
         m_EventData->GetCTTrackerFrontTStripNbr(i),
         m_EventData->GetCTTrackerFrontTTime(i));
-  
-/*    m_PreTreatedData->SetCTTrackerFrontTTowerNbr(m_EventData->GetCTTrackerFrontTTowerNbr(i));
-    m_PreTreatedData->SetCTTrackerFrontTDetectorNbr(m_EventData->GetCTTrackerFrontTDetectorNbr(i));
-    m_PreTreatedData->SetCTTrackerFrontTStripNbr(m_EventData->GetCTTrackerFrontTStripNbr(i));
-    m_PreTreatedData->SetCTTrackerFrontTTime(m_EventData->GetCTTrackerFrontTTime(i));
-*/    
+    //cout << "Pretreat time front : T" << m_EventData->GetCTTrackerFrontTTowerNbr(i) << " D" << m_EventData->GetCTTrackerFrontTDetectorNbr(i) << " Strip " << m_EventData->GetCTTrackerFrontTStripNbr(i) << " time " << m_EventData->GetCTTrackerFrontTTime(i) << endl;
   }
 
   // Back, time
@@ -256,12 +326,7 @@ void TComptonTelescopePhysics::PreTreat()
         m_EventData->GetCTTrackerBackTDetectorNbr(i),
         m_EventData->GetCTTrackerBackTStripNbr(i),
         m_EventData->GetCTTrackerBackTTime(i));
-
-/*    m_PreTreatedData->SetCTTrackerBackTTowerNbr(m_EventData->GetCTTrackerBackTTowerNbr(i));
-    m_PreTreatedData->SetCTTrackerBackTDetectorNbr(m_EventData->GetCTTrackerBackTDetectorNbr(i));
-    m_PreTreatedData->SetCTTrackerBackTStripNbr(m_EventData->GetCTTrackerBackTStripNbr(i));
-    m_PreTreatedData->SetCTTrackerBackTTime(m_EventData->GetCTTrackerBackTTime(i));
-*/    
+    //cout << "Pretreat time back : T" << m_EventData->GetCTTrackerBackTTowerNbr(i) << " D" << m_EventData->GetCTTrackerBackTDetectorNbr(i) << " Strip " << m_EventData->GetCTTrackerBackTStripNbr(i) << " time " << m_EventData->GetCTTrackerBackTTime(i) << endl;
   }
 
 
@@ -294,18 +359,25 @@ void TComptonTelescopePhysics::PreTreat()
 ///////////////////////////////////////////////////////////////////////////
 int TComptonTelescopePhysics::CheckEvent()
 {
+
   // same multiplicity on front and back side 
-  if (m_PreTreatedData->GetCTTrackerBackEMult() == m_PreTreatedData->GetCTTrackerFrontEMult())
+  if (m_PreTreatedData->GetCTTrackerBackEMult() == m_PreTreatedData->GetCTTrackerFrontEMult()) {
+    //cout << "mult event type 1 = " << m_PreTreatedData->GetCTTrackerBackEMult() << endl;
+    m_CounterEvt[8] = 1; // nb of pretreated events with mult F = mult B
     return 1 ; // Regular Event
+  }
 
   // possibly interstrip
   else if (m_PreTreatedData->GetCTTrackerFrontEMult() == m_PreTreatedData->GetCTTrackerBackEMult()+1 || 
-           m_PreTreatedData->GetCTTrackerFrontEMult() == m_PreTreatedData->GetCTTrackerBackEMult()-1) {
+      m_PreTreatedData->GetCTTrackerFrontEMult() == m_PreTreatedData->GetCTTrackerBackEMult()-1) {
+    m_CounterEvt[9] = 1; // nb of pretreated events with mult F = mult B +- 1
     return 2;
   }
 
-  else
+  else {
+    m_CounterEvt[10] = 1; // nb of pretreated events with mult F != mult B or mult B +- 1
     return -1 ; // Rejected Event
+  }
 }
 
 
@@ -315,8 +387,7 @@ vector<TVector2> TComptonTelescopePhysics::Match_Front_Back()
 {
   vector<TVector2> ArrayOfGoodCouple;
 
-  // Select allowed multiplicity events. If multiplicity is too 
-  // high, then return "empty" vector
+  // Select allowed multiplicity events. If multiplicity is too high, then return "empty" vector
 /*  if (m_PreTreatedData->GetCTTrackerFrontEMult() > m_MaximumStripMultiplicityAllowed || 
       m_PreTreatedData->GetCTTrackerBackEMult() > m_MaximumStripMultiplicityAllowed)
     return ArrayOfGoodCouple;
@@ -338,14 +409,38 @@ vector<TVector2> TComptonTelescopePhysics::Match_Front_Back()
           m_CounterHit[8] += 1; // nb of hits with same D and E
           ArrayOfGoodCouple.push_back(TVector2(i,j));
         } // end test energy
+
+        // add interstrip
+        // only for mult 2 - front case
+/*        if (m_PreTreatedData->GetCTTrackerFrontEMult() == 2 && m_PreTreatedData->GetCTTrackerBackEMult() == 1) {
+          // if close strip
+          if (m_PreTreatedData->GetCTTrackerFrontEStripNbr(0) == m_PreTreatedData->GetCTTrackerFrontEStripNbr(1)+1 || m_PreTreatedData->GetCTTrackerFrontEStripNbr(0) == m_PreTreatedData->GetCTTrackerFrontEStripNbr(1)-1) {
+            // if same energy
+            if (abs((m_PreTreatedData->GetCTTrackerBackEEnergy(0)-(m_PreTreatedData->GetCTTrackerFrontEEnergy(0)+m_PreTreatedData->GetCTTrackerFrontEEnergy(1)))/2.) < m_StripEnergyMatchingNumberOfSigma*m_StripEnergyMatchingSigma) {
+              m_CounterEvt[26] = 1; // interstrip close SF
+              ArrayOfGoodCouple.push_back(TVector2(i,j));
+            }
+          }
+        }*/
       } // end test same tower and detector
     } // end loop back multiplicity
   } // end loop front multiplicity
+ 
+  //cout << "ArrayOfGoodCouple initial size = " << ArrayOfGoodCouple.size() << endl;
 
   // prevent treating event with ambiguous matching beetween X and Y
+  // not done
   if (ArrayOfGoodCouple.size() > m_PreTreatedData->GetCTTrackerFrontEMult()) {
     m_CounterEvt[14] = 1; // nb of pretreated events with ambiguous matching
     //ArrayOfGoodCouple.clear();
+  }
+
+  // keep only mult = 1
+  if (m_MultOneOnly) {
+    if (ArrayOfGoodCouple.size() > 1) {
+      m_CounterEvt[15] = 1; // nb of events with couple size > 1
+      ArrayOfGoodCouple.clear();
+    }
   }
 
   return ArrayOfGoodCouple;
@@ -416,6 +511,12 @@ void TComptonTelescopePhysics::ReadAnalysisConfig()
         AnalysisConfigFile >> DataBuffer;
         m_MaximumStripMultiplicityAllowed = atoi(DataBuffer.c_str());
         cout << "\t" << whatToDo << "\t" << m_MaximumStripMultiplicityAllowed << endl;
+      }
+      
+      else if (whatToDo == "ONLY_GOOD_COUPLE_WITH_MULTIPLICITY_ONE") {
+        AnalysisConfigFile >> DataBuffer;
+        if (DataBuffer == "ON") m_MultOneOnly = true;
+        cout << "\t" << whatToDo << "\t" << DataBuffer << endl;
       }
 
       else if (whatToDo == "FRONT_BACK_ENERGY_MATCHING_SIGMA") {
@@ -536,8 +637,9 @@ void TComptonTelescopePhysics::Clear()
   Front_Energy.clear();
   Back_Energy.clear();
   Half_Energy.clear();
-  StripFront_T.clear();
-  StripBack_T.clear();
+  Front_Time.clear();
+  Back_Time.clear();
+  Same_FBTime.clear();
 
   // counters
   for (Int_t i = 0; i < m_nCounterEvt; i++) m_CounterEvt[i] = 0;
@@ -645,8 +747,9 @@ void TComptonTelescopePhysics::InitializeRootInputPhysics()
   inputChain->SetBranchStatus("Front_Energy",      true);
   inputChain->SetBranchStatus("Back_Energy",      true);
   inputChain->SetBranchStatus("Half_Energy",      true);
-  inputChain->SetBranchStatus("StripFront_T",      true);
-  inputChain->SetBranchStatus("StripBack_T",       true);
+  inputChain->SetBranchStatus("Front_Time",      true);
+  inputChain->SetBranchStatus("Back_Time",       true);
+  inputChain->SetBranchStatus("Same_FBTime",     true);
   inputChain->SetBranchStatus("Calor_E",        true);
   inputChain->SetBranchStatus("Calor_T",        true);
   inputChain->SetBranchStatus("CalorPosX",      true);

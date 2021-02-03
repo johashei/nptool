@@ -5,6 +5,7 @@
 #include "TSpectrum.h"
 #include "TF1.h"
 #include "TGraph.h"
+#include "TGraphErrors.h"
 #include "TLine.h"
 #include "TMath.h"
 #include "TVirtualFitter.h"
@@ -26,6 +27,7 @@ Double_t indivFcn(Double_t*, Double_t*);
 Double_t indivFcn_BG(Double_t*, Double_t*);
 Double_t fit_pol1(Double_t*, Double_t*);
 Double_t fit_pol2(Double_t*, Double_t*);
+Double_t fit_pol3(Double_t*, Double_t*);
 void     AddPeak(Double_t, Double_t, Double_t);
 void     RemovePeak(Double_t, Double_t);
 Double_t CalibUncertainty(Double_t, TF1*, TMatrixDSym);
@@ -45,13 +47,22 @@ void FitSpectrumCalib()
   double Energy[dimE] = {481.6935e-3, 553.8372e-3, 565.8473e-3, 975.651e-3, 1047.795e-3, 1059.805e-3}; // MeV
   double error_E[dimE] = {0.0021e-3, 0.0021e-3, 0.0021e-3, 0.003e-3, 0.003e-3, 0.003e-3};
 
+  // run 20200128_10h44_bi207_conv.root
   // range for pedestal
-  pmin = 40;
-  rmin = 70;
+//  pmin = 40;
+//  rmin = 70;
+  // range for spectrum
+//  rmax = 300;
+//  pmax = 980;
+
+  // run bb7_3309-7_bi207_20210126_13h09_run5_conv.root
+  // range for pedestal
+  pmin = 20;
+  rmin = 100;
   // range for spectrum
   rmax = 300;
   pmax = 980;
-
+ 
   // misc.
   peakList.clear();
   peakListP.clear();
@@ -63,7 +74,8 @@ void FitSpectrumCalib()
   TGraphErrors* gr_calib = new TGraphErrors();
 
   // open file and get histo
-  TFile *inFile = new TFile("20200128_10h44_bi207_conv_RawDSSSDHistos.root");
+//  TFile *inFile = new TFile("20200128_10h44_bi207_conv_RawDSSSDHistos.root");
+  TFile *inFile = new TFile("bb7_3309-7_bi207_20210126_13h09_run5_conv_RawDSSSDHistos.root");
 
   // Front strips
   for (int k = 0; k < NBSTRIPS; k++)
@@ -132,7 +144,8 @@ void FitSpectrumCalib()
     gr_calib->Draw();
 
 
-    if (k != 1) // remove strip front 2 with no data
+//    if (k != 1) // remove strip front 2 with no data
+    if (k != 21) // remove strip front 2 with no data
     {
 
       //////// Spectrum fit //////
@@ -303,12 +316,36 @@ void FitSpectrumCalib()
       ////////// calibration //////////
       cout << "\n" << "/////////// calibration //////////////" << endl;
 
+      // clone graph
+      TGraphErrors *gr_calib2 = (TGraphErrors*)gr_calib->Clone();
+      TGraphErrors *gr_calib3 = (TGraphErrors*)gr_calib->Clone();
+
+      // fit TGraph pol1
+      TF1 *fitP1 = new TF1("fitP1", fit_pol1, 0, 1000, 2);
+      fitP1->SetParNames("p0","p1");
+      fitP1->SetParameters(0.08,0.001);
+      TFitResultPtr graphP1 = gr_calib->Fit(fitP1, "RS");
+      graphP1->Print("V");
+
+      // write fit param in txt file
+      ofstream fitParam_fileP1("./calib/DSSSD_calibration_withPed_pol1.txt", ios::app);
+      fitParam_fileP1 << Form("COMPTONTELESCOPE_D1_STRIP_FRONT%d_E",k) << " " << fitP1->GetParameter(0) << " " << fitP1->GetParameter(1) << " " << endl;
+      fitParam_fileP1.close();
+
+      // write graph in root file
+      TFile *calibFileP1 = new TFile("./calib/graph_calib_207Bi_spectrum_withPed_pol1.root", "update");
+      gr_calib->SetNameTitle(Form("grCalib_D1_Front%d", k), Form("D1_Front%d", k));
+      gr_calib->GetXaxis()->SetTitle("position (channel)");
+      gr_calib->GetYaxis()->SetTitle("Energy (MeV)");
+      gr_calib->Write();
+      calibFileP1->Close();
+
       // fit TGraph pol2
       TF1 *fitP2 = new TF1("fitP2", fit_pol2, 0, 1000, 3);
       fitP2->SetParNames("p0","p1","p2");
       //      fitP2->SetParLimits(0,
       fitP2->SetParameters(-0.09,0.001,-5e-11);
-      TFitResultPtr graphP2 = gr_calib->Fit(fitP2, "RS");
+      TFitResultPtr graphP2 = gr_calib2->Fit(fitP2, "RS");
       graphP2->Print("V");
 
       // write fit param in txt file
@@ -318,11 +355,32 @@ void FitSpectrumCalib()
 
       // write graph in root file
       TFile *calibFileP2 = new TFile("./calib/graph_calib_207Bi_spectrum_withPed_pol2.root", "update");
-      gr_calib->SetNameTitle(Form("grCalib_D1_Front%d", k), Form("D1_Front%d", k));
-      gr_calib->GetXaxis()->SetTitle("position (channel)");
-      gr_calib->GetYaxis()->SetTitle("Energy (MeV)");
-      gr_calib->Write();
+      gr_calib2->SetNameTitle(Form("grCalib_D1_Front%d", k), Form("D1_Front%d", k));
+      gr_calib2->GetXaxis()->SetTitle("position (channel)");
+      gr_calib2->GetYaxis()->SetTitle("Energy (MeV)");
+      gr_calib2->Write();
       calibFileP2->Close();
+
+      // fit TGraph pol3
+      TF1 *fitP3 = new TF1("fitP3", fit_pol3, 0, 1000, 4);
+      fitP3->SetParNames("p0","p1","p2", "p3");
+      fitP3->SetParameters(-0.08,0.001,-6e-8,-1.5e-10);
+      TFitResultPtr graphP3 = gr_calib3->Fit(fitP3, "RS");
+      graphP3->Print("V");
+
+      // write fit param in txt file
+      ofstream fitParam_fileP3("./calib/DSSSD_calibration_withPed_pol3.txt", ios::app);
+      fitParam_fileP3 << Form("COMPTONTELESCOPE_D1_STRIP_FRONT%d_E",k) << " " << fitP3->GetParameter(0) << " " << fitP3->GetParameter(1) << " " << fitP3->GetParameter(2) << " " << fitP3->GetParameter(3) << endl;
+      fitParam_fileP3.close();
+
+      // write graph in root file
+      TFile *calibFileP3 = new TFile("./calib/graph_calib_207Bi_spectrum_withPed_pol3.root", "update");
+      gr_calib3->SetNameTitle(Form("grCalib_D1_Front%d", k), Form("D1_Front%d", k));
+      gr_calib3->GetXaxis()->SetTitle("position (channel)");
+      gr_calib3->GetYaxis()->SetTitle("Energy (MeV)");
+      gr_calib3->Write();
+      calibFileP3->Close();
+
 
     }
 
@@ -333,9 +391,19 @@ void FitSpectrumCalib()
   for (int k = 0; k < NBSTRIPS; k++)
   {
 
+
+    if (k != 4 && k != 5 && k != 6) // remove strip front 2 with no data
+    {
+    // run 20200128_10h44_bi207_conv.root
     // change range
-    pmin = 30;
-    rmax = 370; 
+//    pmin = 30;
+//    rmax = 370; 
+
+    // run bb7_3309-7_bi207_20210126_13h09_run5_conv_RawDSSSDHistos.root
+    // change range
+    pmin = 10;
+    rmax = 300;
+    pmax = 1022;
 
     cout << "\n Fitting histo " << Form("h_D1_BACK_E%d", k+1) << endl;
 
@@ -398,7 +466,6 @@ void FitSpectrumCalib()
     gr_calib->SetPoint(0, paramP[0], 0);
     gr_calib->SetPointError(0, paramP[1], 0);
     gr_calib->Draw();
-
 
     //////// Spectrum fit //////
     cout << "\n" << "/////////// Spectrum //////////////" << endl;
@@ -568,12 +635,36 @@ void FitSpectrumCalib()
     ////////// calibration //////////
     cout << "\n" << "/////////// calibration //////////////" << endl;
 
+    // clone graph
+    TGraphErrors *gr_calib2 = (TGraphErrors*)gr_calib->Clone();
+    TGraphErrors *gr_calib3 = (TGraphErrors*)gr_calib->Clone();
+
+    // fit TGraph pol1
+    TF1 *fitP1 = new TF1("fitP1", fit_pol1, 0, 1000, 2);
+    fitP1->SetParNames("p0","p1");
+    fitP1->SetParameters(0.08,0.001);
+    TFitResultPtr graphP1 = gr_calib->Fit(fitP1, "RS");
+    graphP1->Print("V");
+
+    // write fit param in txt file
+    ofstream fitParam_fileP1("./calib/DSSSD_calibration_withPed_pol1.txt", ios::app);
+    fitParam_fileP1 << Form("COMPTONTELESCOPE_D1_STRIP_BACK%d_E",k) << " " << fitP1->GetParameter(0) << " " << fitP1->GetParameter(1) << " " << endl;
+    fitParam_fileP1.close();
+
+    // write graph in root file
+    TFile *calibFileP1 = new TFile("./calib/graph_calib_207Bi_spectrum_withPed_pol1.root", "update");
+    gr_calib->SetNameTitle(Form("grCalib_D1_Back%d", k), Form("D1_Back%d", k));
+    gr_calib->GetXaxis()->SetTitle("position (channel)");
+    gr_calib->GetYaxis()->SetTitle("Energy (MeV)");
+    gr_calib->Write();
+    calibFileP1->Close();
+
     // fit TGraph pol2
     TF1 *fitP2 = new TF1("fitP2", fit_pol2, 0, 1000, 3);
     fitP2->SetParNames("p0","p1","p2");
     //      fitP2->SetParLimits(0,
     fitP2->SetParameters(-0.09,0.001,-5e-11);
-    TFitResultPtr graphP2 = gr_calib->Fit(fitP2, "RS");
+    TFitResultPtr graphP2 = gr_calib2->Fit(fitP2, "RS");
     graphP2->Print("V");
 
     // write fit param in txt file
@@ -583,13 +674,33 @@ void FitSpectrumCalib()
 
     // write graph in root file
     TFile *calibFileP2 = new TFile("./calib/graph_calib_207Bi_spectrum_withPed_pol2.root", "update");
-    gr_calib->SetNameTitle(Form("grCalib_D1_Back%d", k), Form("D1_Back%d", k));
-    gr_calib->GetXaxis()->SetTitle("position (channel)");
-    gr_calib->GetYaxis()->SetTitle("Energy (MeV)");
-    gr_calib->Write();
+    gr_calib2->SetNameTitle(Form("grCalib_D1_Back%d", k), Form("D1_Back%d", k));
+    gr_calib2->GetXaxis()->SetTitle("position (channel)");
+    gr_calib2->GetYaxis()->SetTitle("Energy (MeV)");
+    gr_calib2->Write();
     calibFileP2->Close();
 
+    // fit TGraph pol3
+    TF1 *fitP3 = new TF1("fitP3", fit_pol3, 0, 1000, 4);
+    fitP3->SetParNames("p0","p1","p2", "p3");
+    fitP3->SetParameters(-0.08,0.001,-6e-8,-1.5e-10);
+    TFitResultPtr graphP3 = gr_calib3->Fit(fitP3, "RS");
+    graphP3->Print("V");
 
+    // write fit param in txt file
+    ofstream fitParam_fileP3("./calib/DSSSD_calibration_withPed_pol3.txt", ios::app);
+    fitParam_fileP3 << Form("COMPTONTELESCOPE_D1_STRIP_BACK%d_E",k) << " " << fitP3->GetParameter(0) << " " << fitP3->GetParameter(1) << " " << fitP3->GetParameter(2) << " " << fitP3->GetParameter(3) << endl;
+    fitParam_fileP3.close();
+
+    // write graph in root file
+    TFile *calibFileP3 = new TFile("./calib/graph_calib_207Bi_spectrum_withPed_pol3.root", "update");
+    gr_calib3->SetNameTitle(Form("grCalib_D1_Back%d", k), Form("D1_Back%d", k));
+    gr_calib3->GetXaxis()->SetTitle("position (channel)");
+    gr_calib3->GetYaxis()->SetTitle("Energy (MeV)");
+    gr_calib3->Write();
+    calibFileP3->Close();
+
+    }
   }
 
 }
@@ -730,6 +841,14 @@ Double_t fit_pol2(Double_t *x, Double_t *par)
   Double_t fit_pol2 = par[0] + par[1]*x[0] + par[2]*x[0]*x[0];
   return fit_pol2;
 }
+
+//// fit polynomial degree 3
+Double_t fit_pol3(Double_t *x, Double_t *par)
+{
+  Double_t fit_pol3 = par[0] + par[1]*x[0] + par[2]*x[0]*x[0] + par[3]*pow(x[0],3);
+  return fit_pol3;
+}
+
 
 Double_t CalibUncertainty(Double_t x, TF1* f, TMatrixDSym cov)
 {

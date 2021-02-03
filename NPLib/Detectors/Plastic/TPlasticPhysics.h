@@ -48,10 +48,12 @@ class TPlasticPhysics : public TObject, public NPL::VDetector{
       vector<UShort_t>   DetectorNumber ;
       vector<Double_t>   Energy;
       vector<Double_t>   Time;
+      vector<TVector3>   m_Position;
 
    public:   //   inherrited from VDetector
       //   Read stream at ConfigFile to pick-up parameters of detector (Position,...) using Token
       void ReadConfiguration(NPL::InputParser);
+      TVector3   GetPositionOfInteraction(int& i);
       
 
       //   Add Parameter to the CalibrationManger

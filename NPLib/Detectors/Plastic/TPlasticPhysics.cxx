@@ -53,6 +53,7 @@ TPlasticPhysics::TPlasticPhysics()
   NumberOfDetector = 0 ;
   EventData = new TPlasticData ;
   EventPhysics = this ;
+  m_Position.clear();
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -85,6 +86,8 @@ void TPlasticPhysics::ReadConfiguration(NPL::InputParser parser) {
       double X = blocks[i]->GetDouble("X","mm");
       double Y = blocks[i]->GetDouble("Y","mm");
       double Z = blocks[i]->GetDouble("Z","mm");
+      TVector3 Pos(X,Y,Z); 
+      m_Position.push_back(Pos);
 
       if(blocks[i]->HasTokenList(square)){
         string Shape = blocks[i]->GetString("Shape");
@@ -110,6 +113,10 @@ void TPlasticPhysics::ReadConfiguration(NPL::InputParser parser) {
       double R = blocks[i]->GetDouble("R","mm");
       double Theta = blocks[i]->GetDouble("Theta","deg");
       double Phi = blocks[i]->GetDouble("Phi","deg");
+      TVector3 Pos(R * sin(Theta) * cos(Phi), R * sin(Theta) * sin(Phi),
+          R * cos(Theta));
+      // cout << Pos.X() << " " << Pos.Y() << " " << Pos.Z() << endl;
+      m_Position.push_back(Pos);
 
       if(blocks[i]->HasTokenList(square)){
         string Shape = blocks[i]->GetString("Shape");
@@ -189,6 +196,10 @@ void TPlasticPhysics::BuildSimplePhysicalEvent(){
     str = "Plastic/Detector" + NPL::itoa(EventData->GetPlasticNumber(i)) +"_T";
     Time.push_back(CalibrationManager::getInstance()->ApplyCalibration(str ,EventData->GetTime(i)));
   } 
+}
+
+TVector3 TPlasticPhysics::GetPositionOfInteraction(int& i) {
+  return m_Position[DetectorNumber[i]];
 }
 
 ////////////////////////////////////////////////////////////////////////////////
