@@ -250,7 +250,8 @@ vector<int> CrossTalk::ComputeCrossTalk_HyperSphere(){
       x2 = (*HitX)[m_SortedID[jj]], y2 = (*HitY)[m_SortedID[jj]], z2 = (*HitZ)[m_SortedID[jj]];   
       Dist = sqrt((x2-x1)*(x2-x1) + (y2-y1)*(y2-y1) + (z2-z1)*(z2-z1));
       Beta1 = sqrt(x1*x1 + y1*y1 + z1*z1)/t1/C_light;
-      HyperSphere = ((dx1/Dist)*(dx1/Dist)+(dy1/Dist)*(dy1/Dist)+(dz1/Dist)*(dz1/Dist)+((t2-t1)/(Dist/(Beta1*C_light)))*((t2-t1)/(Dist/(Beta1*C_light))))/4;
+      HyperSphere = sqrt((((x2-x1)/dx1)*((x2-x1)/dx1) + ((y2-y1)/dy1)*((y2-y1)/dy1) + ((z2-z1)/dz1)*((z2-z1)/dz1) + ((t2-t1)/(Dist/(Beta1*C_light)))*((t2-t1)/(Dist/(Beta1*C_light))))/4) ;
+      
       if(HyperSphere < 2){
         if(ID_ClustHit[jj] < ID_ClustHit[j]){
           ID_ClustHit[j] = ID_ClustHit[jj]; 
