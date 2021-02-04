@@ -21,7 +21,8 @@ using namespace std;
 
 void setCTCalorimeter(TComptonTelescopeData* ccamData, DecodeR* D, const int pixelNumber)
 {
-  ccamData -> SetCTCalorimeterTTowerNbr( 1 );
+  ccamData -> SetCTCalorimeter(1, 1, D->getPixelNumber(), D->getTime(), D->getData(), pixelNumber);
+/*  ccamData -> SetCTCalorimeterTTowerNbr( 1 );
   ccamData -> SetCTCalorimeterTDetectorNbr( 1 );//Triggered ASIC number
   ccamData -> SetCTCalorimeterTChannelNbr( D -> getPixelNumber() );//Pixel that triggered
   ccamData -> SetCTCalorimeterTTime( D -> getTime() );
@@ -30,7 +31,7 @@ void setCTCalorimeter(TComptonTelescopeData* ccamData, DecodeR* D, const int pix
     ccamData -> SetCTCalorimeterEDetectorNbr( 1 );
     ccamData -> SetCTCalorimeterEChannelNbr( i );//PMT pixel number
     ccamData -> SetCTCalorimeterEEnergy( D -> getData()[i] );
-  }//End of loop on pixels
+  }//End of loop on pixels*/
 }
 
 //--//--// One-line setter for DSSSD(s) //--//--//
@@ -137,7 +138,7 @@ int main()
   { 
     // Load a root file and setup DecodeD
     //DD -> setTree("../data/20200128_11h58_am241_conv.root");
-    DD -> setTree("../data/20200128_10h44_bi207_conv.root");
+    DD -> setTree("../data/bb7_3309-7_bi207_20210203_16h25_run8_conv.root");
     int dlength = DD -> getLength();
 
     //while (DD -> getCursor() < dlength and (loopForever or i<12))

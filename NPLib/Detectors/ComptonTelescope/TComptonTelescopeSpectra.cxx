@@ -309,25 +309,25 @@ void TComptonTelescopeSpectra::InitPhysicsSpectra()
     }
 
   // X-Y Energy Correlation
-  for (unsigned int i = 0 ; i < fNumberOfTelescope ; i++) { // loop on number of detectors
+//  for (unsigned int i = 0 ; i < fNumberOfTelescope ; i++) { // loop on number of detectors
     name = "CT"+NPL::itoa(i+1)+"_XY_COR";
     AddHisto2D(name, name,500,0,50,500,0,50, "COMPTONTELESCOPE/PHY");
-  }
+//  }
 
   // Calorimeter energy spectrum
-  for (unsigned int i = 0 ; i < fNumberOfTelescope ; i++) { // loop on number of detectors
+//  for (unsigned int i = 0 ; i < fNumberOfTelescope ; i++) { // loop on number of detectors
     name = "CT"+NPL::itoa(i+1)+"_CALOR_SPECTRUM";
     AddHisto1D(name, name, 1000, 1, 2000, "COMPTONTELESCOPE/PHY/CALOR");
-  }
+//  }
 
   // Position on calorimeter
-  for (unsigned int i = 0 ; i < fNumberOfTelescope ; i++) { // loop on number of detectors
+//  for (unsigned int i = 0 ; i < fNumberOfTelescope ; i++) { // loop on number of detectors
     name = "CT"+NPL::itoa(i+1)+"_CALOR_POS";
     AddHisto2D(name, name, 8, -24, 24, 8, -24, 24, "COMPTONTELESCOPE/PHY/CALOR_POS");
-  }
+//  }
 
   // Sum spectrum
-  for (unsigned int i = 0; i < fNumberOfTelescope; i++) { // loop on number of detectors
+//  for (unsigned int i = 0; i < fNumberOfTelescope; i++) { // loop on number of detectors
     name = "CT"+NPL::itoa(i+1)+"_SUM_SPECTRUM";
     AddHisto1D(name, name, 1000, 1, 2000, "COMPTONTELESCOPE/PHY/CALOR");
   }
