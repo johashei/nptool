@@ -27,6 +27,7 @@
 #include "G4SystemOfUnits.hh"
 #include "G4EmCalculator.hh"
 #include "G4VPhysicalVolume.hh"
+#include "G4IonTable.hh"
 #include "NPFunction.h"
 #include "NPInputParser.h"
 #include "NPOptionManager.h"

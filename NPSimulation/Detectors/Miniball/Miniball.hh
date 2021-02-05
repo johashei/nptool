@@ -38,6 +38,8 @@ using namespace std;
 #include "NPSVDetector.hh"
 #include "TMiniballData.h"
 #include "NPInputParser.h"
+#include "TInteractionCoordinates.h"
+
 class Miniball : public NPS::VDetector{
   ////////////////////////////////////////////////////
   /////// Default Constructor and Destructor /////////
@@ -84,6 +86,7 @@ class Miniball : public NPS::VDetector{
   public:   // Scorer
     //   Initialize all Scorer used by the MUST2Array
     void InitializeScorers() ;
+    TInteractionCoordinates* m_Inter;
 
     //   Associated Scorer
     G4MultiFunctionalDetector* m_MiniballScorer ;
@@ -104,7 +107,7 @@ class Miniball : public NPS::VDetector{
     
     //   Shape type
     vector<string> m_Shape ;
-   
+     
   // Needed for dynamic loading of the library
   public:
     static NPS::VDetector* Construct();

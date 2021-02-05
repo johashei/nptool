@@ -41,6 +41,7 @@
 // NPTool header
 #include "Miniball.hh"
 #include "CalorimeterScorers.hh"
+#include "InteractionScorers.hh"
 #include "RootOutput.h"
 #include "MaterialManager.hh"
 #include "NPSDetectorFactory.hh"
@@ -69,6 +70,7 @@ Miniball::Miniball(){
   m_MiniballScorer = 0;
   m_ClusterDetector = 0;
   m_NumberOfPlacedVolume = 0;
+  m_Inter=new TInteractionCoordinates();
 }
 
 Miniball::~Miniball(){
@@ -237,12 +239,13 @@ void Miniball::InitializeRootOutput(){
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 // Read sensitive part and fill the Root tree.
-// Called at in the EventAction::EndOfEventAvtion
+// Called at in the EventAction::EndOfEventAction
 void Miniball::ReadSensitive(const G4Event* ){
   m_Event->Clear();
 
   ///////////
   CalorimeterScorers::PS_Calorimeter* Scorer= (CalorimeterScorers::PS_Calorimeter*) m_MiniballScorer->GetPrimitive(0);
+ // InteractionScorers::PS_Interactions* Inter= (InteractionScorers::PS_Interactions*) m_MiniballScorer->GetPrimitive(1);
 
   unsigned int size = Scorer->GetMult(); 
   for(unsigned int i = 0 ; i < size ; i++){
@@ -255,6 +258,7 @@ void Miniball::ReadSensitive(const G4Event* ){
       m_Event->SetEnergy(DetectorNbr,Energy);
       //m_Event->SetAngle(DetectorNbr,Angle);
       m_Event->SetTime(DetectorNbr,Time); 
+      m_Event->SetAngle(DetectorNbr, m_Inter->GetDetectedAngleTheta(i));
     }
   }
 }
@@ -272,8 +276,10 @@ void Miniball::InitializeScorers() {
   // Otherwise the scorer is initialised
   vector<int> level; level.push_back(1);
   G4VPrimitiveScorer* Calorimeter= new CalorimeterScorers::PS_Calorimeter("Crystal",level, 0) ;
+  G4VPrimitiveScorer* Inter= new InteractionScorers::PS_Interactions("Inter",m_Inter, 1) ;
   //and register it to the multifunctionnal detector
   m_MiniballScorer->RegisterPrimitive(Calorimeter);
+  m_MiniballScorer->RegisterPrimitive(Inter);
   G4SDManager::GetSDMpointer()->AddNewDetector(m_MiniballScorer) ;
 }
 
