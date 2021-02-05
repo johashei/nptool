@@ -123,7 +123,9 @@ G4LogicalVolume* TACTIC::BuildCylindricalDetector(){
 
     G4Material* Cu = MaterialManager::getInstance()->GetMaterialFromLibrary("Cu");
     G4Material* Mylar = MaterialManager::getInstance()->GetMaterialFromLibrary("Mylar");
-    G4Material* Vacuum = MaterialManager::getInstance()->GetMaterialFromLibrary("Vacuum");
+    G4Material* Vacuum = MaterialManager::getInstance()->GetMaterialFromLibrary("G4_Galactic");
+
+    std::cout << "Vacuum: " << Vacuum << std::endl;
     
     unsigned const int NumberOfGasMix = m_GasMaterial.size();
 
@@ -157,34 +159,37 @@ G4LogicalVolume* TACTIC::BuildCylindricalDetector(){
 
     cout << TACTIC_gas << endl;
 
-    G4Tubs* anode = new G4Tubs("anode",0,TACTIC_NS::anode_radius,TACTIC_NS::active_length*0.5,0,360*deg);
-    //G4Tubs* gas_volume = new G4Tubs("gas_volume",0,TACTIC_NS::drift_radius,TACTIC_NS::active_length*0.5,0,360*deg);
+    //G4Tubs* world = new G4Tubs("world",0,TACTIC_NS::drift_radius,TACTIC_NS::active_length*0.5,0,360*deg);
+    // G4Tubs* gas_volume = new G4Tubs("gas_volume",0,TACTIC_NS::drift_radius,TACTIC_NS::active_length*0.5,0,360*deg);
     G4Tubs* window = new G4Tubs("window",0,TACTIC_NS::window_radius,TACTIC_NS::window_width*0.5,0,360*deg);
     G4Tubs* vacuum = new G4Tubs("vacuum",0,TACTIC_NS::window_radius,TACTIC_NS::vacuum_width*0.5,0,360*deg);
 
+       
     G4Tubs* gas_volume_temp = new G4Tubs("gas_volume_temp",0,TACTIC_NS::drift_radius,TACTIC_NS::active_length*0.5,0,360*deg);
     G4VSolid* hole = new G4Tubs("hole",0,TACTIC_NS::window_radius,TACTIC_NS::vacuum_width*0.5,0,360*deg);
     G4VSolid* gas_volume_temp2 = new G4SubtractionSolid("gas_volume_temp2",gas_volume_temp,hole,0,G4ThreeVector(0,0,TACTIC_NS::vacuum_pos));
     G4VSolid* gas_volume = new G4SubtractionSolid("gas_volume",gas_volume_temp2,hole,0,G4ThreeVector(0,0,-TACTIC_NS::vacuum_pos));
-
     
-    m_CylindricalDetector = new G4LogicalVolume(gas_volume, TACTIC_gas, "anode_log",0,0,0);
-    gas_volume_log = new G4LogicalVolume(gas_volume, TACTIC_gas, "gas_volume_log",0,0,0);
-    window_log = new G4LogicalVolume(window, Mylar, "window_log",0,0,0);
-    //window_log = new G4LogicalVolume(window, TACTIC_gas, "window_log",0,0,0); //windows removed (effectively)
+    
+    //    G4Tubs* gas_volume = new G4Tubs("gas_volume_temp",0,TACTIC_NS::drift_radius,TACTIC_NS::active_length*0.5,0,360*deg); 
+    
+    m_CylindricalDetector = new G4LogicalVolume(gas_volume, TACTIC_gas, "world_log",0,0,0);
+    //gas_volume_log = new G4LogicalVolume(gas_volume, TACTIC_gas, "gas_volume_log",0,0,0);
+    //G4LogicalVolume *window_log1 = new G4LogicalVolume(window, Mylar, "window_log1",0,0,0);
+    //    G4LogicalVolume *window_log2 = new G4LogicalVolume(window, Mylar, "window_log2",0,0,0);
+    window_log = new G4LogicalVolume(window, Mylar, "window_log",0,0,0); //windows removed (effectively)
     vacuum_log = new G4LogicalVolume(vacuum, Vacuum, "vacuum_log",0,0,0);
-
-    /*
-    new G4PVPlacement(0,G4ThreeVector(0,0,0),gas_volume_log,"gas_volume_phys",m_CylindricalDetector,false,0);
-    new G4PVPlacement(0,G4ThreeVector(0,0,TACTIC_NS::window_pos),window_log,"window_phys",gas_volume_log,false,0);
-    new G4PVPlacement(0,G4ThreeVector(0,0,-TACTIC_NS::window_pos),window_log,"window_phys",gas_volume_log,false,0);
-    new G4PVPlacement(0,G4ThreeVector(0,0,TACTIC_NS::vacuum_pos),vacuum_log,"vacuum_phys",gas_volume_log,false,0);
-    new G4PVPlacement(0,G4ThreeVector(0,0,-TACTIC_NS::vacuum_pos),vacuum_log,"vacuum_phys",gas_volume_log,false,0);
-    */
+    //G4LogicalVolume *vacuum_log2 = new G4LogicalVolume(vacuum, Vacuum, "vacuum_log2",0,0,0);
     
-    gas_volume_log->SetVisAttributes(m_VisGas);
+    //new G4PVPlacement(0,G4ThreeVector(0,0,0),world_log,"world_phys",m_CylindricalDetector,false,0);
+    new G4PVPlacement(0,G4ThreeVector(0,0,TACTIC_NS::window_pos-0.01*mm),window_log,"window_phys1",m_CylindricalDetector,false,0,true);
+    new G4PVPlacement(0,G4ThreeVector(0,0,-TACTIC_NS::window_pos+0.01*mm),window_log,"window_phys2",m_CylindricalDetector,false,0,true);
+    //    new G4PVPlacement(0,G4ThreeVector(0,0,TACTIC_NS::vacuum_pos),vacuum_log,"vacuum_phys1",m_CylindricalDetector,false,0,true);
+    //new G4PVPlacement(0,G4ThreeVector(0,0,-TACTIC_NS::vacuum_pos),vacuum_log,"vacuum_phys2",m_CylindricalDetector,false,0,true);
+        
+    //    gas_volume_log->SetVisAttributes(m_VisGas);
     window_log->SetVisAttributes(m_VisWindows);
-    vacuum_log->SetVisAttributes(m_VisVacuum);
+    //vacuum_log->SetVisAttributes(m_VisVacuum);
     m_CylindricalDetector->SetVisAttributes(m_VisChamber);
 
     G4UserLimits *gas_volume_step = new G4UserLimits();
@@ -271,6 +276,7 @@ void TACTIC::ConstructDetector(G4LogicalVolume* world){
       m_ReactionRegion->SetProductionCuts(ecut);
       //m_ReactionRegion->AddRootLogicalVolume(gas_volume_log);
       m_ReactionRegion->AddRootLogicalVolume(m_CylindricalDetector);
+      //m_ReactionRegion->AddRootLogicalVolume(window_log);
     }
 
     G4FastSimulationManager* mng = m_ReactionRegion->GetFastSimulationManager();

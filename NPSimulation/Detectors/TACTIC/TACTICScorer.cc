@@ -102,8 +102,7 @@ G4bool Gas_Scorer::ProcessHits(G4Step* aStep, G4TouchableHistory*){
     if(Infos[12] < dummy[12]) Infos[12] = dummy[12]; //Ensures that max risetime is maintained
     PAD = Infos[5];
     */
-    
-    Infos[4]+=dummy[4]; //accumulate ionisation energy deposit to get total accross pad
+    if(Infos[1]==dummy[1]) Infos[4]+=dummy[4]; //accumulate ionisation energy deposit to get total accross pad
     delete dummy;
   }
   
