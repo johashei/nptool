@@ -43,6 +43,11 @@ void DecodeD::setRaw()
   datatype = D_MFM;
 }
 
+void DecodeD::rewind()
+{
+  cursor = 0;
+}
+
 long int DecodeD::getCursor()
 {
   return cursor;
@@ -51,6 +56,11 @@ long int DecodeD::getCursor()
 long int DecodeD::getLength()
 {
   return length;
+}
+
+long int DecodeD::getTime()
+{
+  return event.timestamp;
 }
 
 newframe_t* DecodeD::getEvent()

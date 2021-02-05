@@ -66,9 +66,11 @@ class DecodeD
 
     void setTree(const char* filename);
     void setRaw();
+    void rewind();
 
     long int getCursor();
     long int getLength();
+    long int getTime();
     newframe_t* getEvent();
     // One may add a few getters here and deprecate getEvent to avoid requiring the class user to know the newframe_t struct
     
