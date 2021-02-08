@@ -346,7 +346,9 @@ void TACTIC::ReadSensitive(const G4Event* event ){
     G4double* Info = *(Eject_itr->second);
     //file <<  floor(((Info[3]+TACTIC_NS::active_length*0.5)/(TACTIC_NS::active_length/TACTIC_NS::NumberOfStrips))) << "\t"; // To get PAD number
     file << event->GetEventID() << "\t";
+    //cout << event->GetEventID() << endl;
     for(int s = 0; s<11; s++) {
+      
       //if(s==12) file << Info[s] << endl;
       //else
       file << Info[s] << "\t";
