@@ -207,7 +207,7 @@ void TComptonTelescopePhysics::BuildSimplePhysicalEvent()
       Strip_E.push_back(Back_E);
 
     //}
-}
+  }
 //  } // end check event
 
 

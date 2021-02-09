@@ -6,8 +6,10 @@
 #include "TComptonTelescopePhysics.h"
 
 // root headers
+#include "TCutG.h"
 //#include "TH2.h"
-//#include "TFile.h"
+#include "TFile.h"
+#include "TCanvas.h"
 
 // custom headers
 #include "DecodeR.h"
@@ -15,7 +17,9 @@
 #include "DecodeT.h"
 
 #define __TEST_ZONE__
-//#undef __TEST_ZONE__
+#undef __TEST_ZONE__
+#define __USE_CUTG__
+#undef __USE_CUTG__
 
 // C++ headers
 #include <iostream>
@@ -23,22 +27,22 @@
 #include <string>
 using namespace std;
 
-//--//--// One-line setter for calorimeter //--//--//
-
-void setCTCalorimeter(TComptonTelescopeData* ccamData, DecodeR* D, const int pixelNumber)
-{
-  ccamData -> SetCTCalorimeter(1, 1, D->getPixelNumber(), D->getTime(), D->getData(), pixelNumber);
-/*  ccamData -> SetCTCalorimeterTTowerNbr( 1 );
-  ccamData -> SetCTCalorimeterTDetectorNbr( 1 );//Triggered ASIC number
-  ccamData -> SetCTCalorimeterTChannelNbr( D -> getPixelNumber() );//Pixel that triggered
-  ccamData -> SetCTCalorimeterTTime( D -> getTime() );
-  for (int i = 0; i < pixelNumber; ++i) {//Loop on pixels
-    ccamData -> SetCTCalorimeterETowerNbr(1);
-    ccamData -> SetCTCalorimeterEDetectorNbr( 1 );
-    ccamData -> SetCTCalorimeterEChannelNbr( i );//PMT pixel number
-    ccamData -> SetCTCalorimeterEEnergy( D -> getData()[i] );
-  }//End of loop on pixels*/
-}
+////--//--// One-line setter for calorimeter //--//--//
+//
+//void setCTCalorimeter(TComptonTelescopeData* ccamData, DecodeR* D, const int pixelNumber)
+//{
+//  ccamData -> SetCTCalorimeter(1, 1, D->getPixelNumber(), D->getTime(), D->getData(), pixelNumber);
+///*  ccamData -> SetCTCalorimeterTTowerNbr( 1 );
+//  ccamData -> SetCTCalorimeterTDetectorNbr( 1 );//Triggered ASIC number
+//  ccamData -> SetCTCalorimeterTChannelNbr( D -> getPixelNumber() );//Pixel that triggered
+//  ccamData -> SetCTCalorimeterTTime( D -> getTime() );
+//  for (int i = 0; i < pixelNumber; ++i) {//Loop on pixels
+//    ccamData -> SetCTCalorimeterETowerNbr(1);
+//    ccamData -> SetCTCalorimeterEDetectorNbr( 1 );
+//    ccamData -> SetCTCalorimeterEChannelNbr( i );//PMT pixel number
+//    ccamData -> SetCTCalorimeterEEnergy( D -> getData()[i] );
+//  }//End of loop on pixels*/
+//}
 
 //--//--// One-line setter for DSSSD(s) //--//--//
 
@@ -96,14 +100,37 @@ int main()
 {
 //  auto fout = new TFile("pipo.root", "recreate");
 //  auto bidim = new TH2F("bidim", "bidim", 2001, -1000, 1000, 2001, -1000, 1000);
-
+#ifdef __USE_CUTG__
+/*  TFile* fcut = new TFile("/disk/proto-data/data/coinc-si/CUT_Compton.root");
+  TCutG* mcut = (TCutG*) fcut -> Get("CUT_Compton");
+  fcut -> Close();
+  cout << fcut << endl;
+  cout << mcut << endl;
+  TCanvas* can = new TCanvas();
+  can->cd();
+  mcut->Draw();*/
+  TCutG *mcut = new TCutG("CUT_Compton",7);
+  mcut->SetVarX("Calor_E");
+  mcut->SetVarY("Half_Energy");
+  mcut->SetTitle("Graph");
+  mcut->SetFillStyle(1000);
+  mcut->SetPoint(0,526905.4,0.6145632);
+  mcut->SetPoint(1,526905.4,0.4996379);
+  mcut->SetPoint(2,592808,0.1947341);
+  mcut->SetPoint(3,629341,0.02586437);
+  mcut->SetPoint(4,627908.3,0.211152);
+  mcut->SetPoint(5,540157.6,0.5981453);
+  mcut->SetPoint(6,526905.4,0.6145632);
+#endif
 
   ///////////////////////////////////////////////////////////////////////////
   // configure option manager
 //   NPOptionManager::getInstance()->Destroy();
-
-  string arg = "-D ./ComptonCAM.detector -C calibrations.txt -GH -E ./10He.reaction --circular";
-  //string arg = "-D ./ComptonCAM.detector -C calibrations.txt -GH -E ./10He.reaction";
+#ifdef __TEST_ZONE__
+//  string arg = "-D ./ComptonCAM.detector -C calibrations.txt -GH -E ./10He.reaction --circular";
+#else
+  string arg = "-D ./ComptonCAM.detector -C calibrations.txt -GH -E ./10He.reaction";
+#endif
   NPOptionManager::getInstance(arg);  
 
   // open ROOT output file
@@ -141,6 +168,7 @@ int main()
   
   int i = 0;// ROSMAP files loop counter
   int c = 0;// Event counter
+  int cc = 0;
   // Set some constants
   const int pixelNumber = 64;
   const int stripNumber = 32;
@@ -207,14 +235,18 @@ int main()
   i = 0;
   int tr = DR -> getTime();
   int td = DD -> getTime();
-  int dt = 1000;
+//  int dt = 100;
   while(DR -> getCursor() < rlen and DD -> getCursor() < dlen)
   {
 //    cout << DR -> getTime() << " " << DD -> getTime() << endl; 
     if (cr == cd) {
-      if (abs(td-tr) < dt) {
+      //if (abs(tr-td+55) < dt) {
+//      if (td-tr < 150 and tr-td < 10) { // That one is the real one
+      if (tr-td > 50 and tr-td < 1000) { // Same width, bad position
         c++;
-        cout << " " << c << "(" << cr << ", " << cd << ") : " << tr << " " << td << endl;
+        cout << cc << " " << c << "(" << cr << ", " << cd << ") : " << tr << " " << td << endl;
+        //DR -> Dump();
+        //DD -> Dump();
         //bidim->Fill(reset, td-tr);
 
         // Clear raw and physics data
@@ -222,17 +254,30 @@ int main()
         m_NPDetectorManager->ClearEventData();
 
         // Fill data
-        setCTCalorimeter(ccamData, DR, pixelNumber);
+        ccamData -> SetCTCalorimeter(1, 4, DR->getPixelNumber(), DR->getTime(), DR->getData(), pixelNumber);
         setCTTracker(ccamData, DD -> getEvent(), &nb_asic, &chain, stripNumber);
 
         // Build physical event
         m_NPDetectorManager->BuildPhysicalEvent();
 
         // Fill object in output ROOT file
-        m_OutputTree->Fill();
+        if (ccamPhys->EventMultiplicity > 0) {
+#ifdef __USE_CUTG__
+          if (mcut->IsInside(ccamPhys->Calor_E[0], ccamPhys->Half_Energy[0])) {
+            //cout << "c" << endl;
+            cc++;
+            m_OutputTree->Fill();
+          }
+#else
+          m_OutputTree->Fill();
+          cc++;
+#endif
+        }
+        //cout << "c" << endl;
 
         // check spectra
         m_NPDetectorManager->CheckSpectraServer();
+        //cout << "d" << endl;
       }
       if (td < tr) {
         DD -> decodeEvent();

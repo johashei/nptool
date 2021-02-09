@@ -133,7 +133,7 @@ void TComptonTelescopeSpectra::InitRawSpectra()
       name = "CT"+NPL::itoa(i+1)+"_DSSSD"+NPL::itoa(j+1)+"_T_BACK_RAW_MULT";
       AddHisto1D(name, name, fNumberOfStripsBack+1, 0, fNumberOfStripsBack+1, "COMPTONTELESCOPE/RAW/MULT");
 
-   }
+   } // end loop on number of detectors
 
     // CALORIMETER
     name = "CT"+NPL::itoa(i+1)+"_CALOR_RAW_TRIGGER";
@@ -142,7 +142,11 @@ void TComptonTelescopeSpectra::InitRawSpectra()
       name = "CT"+NPL::itoa(i*4+j+1)+"_CALOR_RAW_TRIGGER";
       AddHisto1D(name, name, fCalorimeterNPixels, 1, fCalorimeterNPixels+1, "COMPTONTELESCOPE/RAW/CALORTRIGGER");
     }*/
-  } // end loop on number of detectors
+
+    // BIDIM SUM
+    name = "CT"+NPL::itoa(i+1)+"_RAW_SUM_BIDIM";
+    AddHisto2D(name, name, 512, 0, 1024, 500, 500000, 1000000, "COMPTONTELESCOPE/RAW/SUM_BIDIM");
+  } // end loop on number of telescopes
 }
 
 
@@ -330,6 +334,9 @@ void TComptonTelescopeSpectra::InitPhysicsSpectra()
 //  for (unsigned int i = 0; i < fNumberOfTelescope; i++) { // loop on number of detectors
     name = "CT"+NPL::itoa(i+1)+"_SUM_SPECTRUM";
     AddHisto1D(name, name, 1000, 1, 2000, "COMPTONTELESCOPE/PHY/CALOR");
+
+    name = "CT"+NPL::itoa(i+1)+"_SUM_BIDIM";
+    AddHisto2D(name, name, 1400, 0, 1.4, 1000, 1, 2000, "COMPTONTELESCOPE/PHY/SUM_BIDIM");
   }
 }
 
@@ -469,6 +476,18 @@ void TComptonTelescopeSpectra::FillRawSpectra(TComptonTelescopeData* RawData)
     name = "CT"+NPL::itoa(RawData->GetCTCalorimeterTDetectorNbr(i))+"_CALOR_RAW_TRIGGER";
     family = "COMPTONTELESCOPE/RAW/CALORTRIGGER";
     FillSpectra(family, name, RawData->GetCTCalorimeterTChannelNbr(i)+1);
+  }
+
+  // SUM BIDIM
+  for (unsigned int i = 0 ; i < RawData->GetCTTrackerFrontEMult(); i++) {
+    name = "CT"+NPL::itoa(RawData->GetCTTrackerFrontETowerNbr(i))+"_RAW_SUM_BIDIM";
+    family = "COMPTONTELESCOPE/RAW/SUM_BIDIM";
+    int sumE = 0;
+    for (int j = 0; j<64; j++) {
+      sumE += RawData->GetCTCalorimeterEEnergy(j);
+    }
+    FillSpectra(family, name,
+        RawData->GetCTTrackerFrontEEnergy(i), sumE);
   }
 }
 
@@ -873,6 +892,19 @@ void TComptonTelescopeSpectra::FillPhysicsSpectra(TComptonTelescopePhysics* Phys
     FillSpectra(family, name, energy);
   }
 
+  // SUM BIDIM
+  for (unsigned int i = 0 ; i < Physics->GetEventMultiplicity(); i++) {
+    for (unsigned int j = 0; j < Physics->Calor_E.size(); j++) {
+      name = "CT"+NPL::itoa(Physics->GetTowerNumber(i))+"_SUM_BIDIM";
+      family = "COMPTONTELESCOPE/PHY/SUM_BIDIM";
+/*      int sumE = 0;
+      for (int j = 0; j<64; j++) {
+        sumE += RawData->GetCTCalorimeterEEnergy(j);
+      }*/
+      FillSpectra(family, name,
+          Physics->GetFrontEnergy(i), Physics->Calor_E[j]);
+    }
+  }
 
 }
 
