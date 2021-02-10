@@ -27,6 +27,7 @@ using namespace ComptonTelescope_LOCAL;
 #include <cmath>
 #include <stdlib.h>
 #include <limits>
+#include <numeric>
 using namespace std;
 
 //   NPL
@@ -214,14 +215,15 @@ void TComptonTelescopePhysics::BuildSimplePhysicalEvent()
   //// Calorimeter analysis ////
   int nCalorTriggered = m_PreTreatedData -> GetCTCalorimeterTMult();
 
-  double charge = 0;
-  unsigned int maxIndex = 0, cursor = 0;
-  int max = 0;
+/*  double charge = 0;
+  unsigned int maxIndex = 0;
+  int max = 0;*/
+  unsigned int cursor = 0;
   UShort_t detectorNumber = 0;
   for (int j = 0; j < nCalorTriggered; j++) {
     cursor = j*m_NPixels;
     // Calculate an approximate position of interaction
-    maxIndex = 0;
+/*    maxIndex = 0;
     max = m_PreTreatedData->GetCTCalorimeterEEnergy(maxIndex);
     for (unsigned int i = 1; i < m_NPixels; i++) {
       if (max < m_PreTreatedData->GetCTCalorimeterEEnergy(cursor+i)) {
@@ -229,7 +231,7 @@ void TComptonTelescopePhysics::BuildSimplePhysicalEvent()
       }
     }//  int maxIndex = max_element(mat.begin(), mat.end()) - mat.begin(); cout << maxIndex << "x, y: " << 6*(maxIndex/8)-21 << ", " << 6*(maxIndex%8)-21 << endl;
     CalorPosX.push_back(6*(maxIndex/8)-21);
-    CalorPosY.push_back(6*(maxIndex%8)-21);
+    CalorPosY.push_back(6*(maxIndex%8)-21);*/
   
     // Export pretreated data for NN analysis
     detectorNumber = m_PreTreatedData->GetCTCalorimeterEDetectorNbr(j*m_NPixels);
@@ -253,13 +255,25 @@ void TComptonTelescopePhysics::BuildSimplePhysicalEvent()
     /*for (UShort_t i = 0; i < m_PreTreatedData->GetCTCalorimeterEMult(); ++i) {
       charge += fCalorimeter_Q(m_PreTreatedData, i);//Apply calibration other than pedestal and sum anodes
     }*/
-    for (UShort_t i = cursor; i < cursor+m_NPixels; ++i) {
+/*    for (UShort_t i = cursor; i < cursor+m_NPixels; ++i) {
       charge += fCalorimeter_Q(m_EventData, i);//Apply full calibration and sum anodes
-    }//*/
-    Calor_E.push_back(fCalorimeter_E(charge, detectorNumber));
+    }
+    Calor_E.push_back(fCalorimeter_E(charge, detectorNumber));*/
+
+    Calor_E.push_back(accumulate(data.begin(), data.end(), 0));// Uncorrected uncalibrated energy
   
     Calor_T.push_back(m_PreTreatedData->GetCTCalorimeterTTime(j));
   }//End of loop on triggered calorimeter detectors
+
+  /// Delta T analysis ///
+  if (EventMultiplicity+nCalorTriggered > 1) {
+    for (int i = 0; i < EventMultiplicity; i++) {
+      for (int j = 0; j < nCalorTriggered; j++) {
+        deltaT.push_back(Front_Time[i]-Calor_T[j]);
+      }
+    }
+  }
+
   //   if (DetectorNumber.size() == 1) return;
 }
 
@@ -644,6 +658,9 @@ void TComptonTelescopePhysics::Clear()
   CalorPosX.clear();
   CalorPosY.clear();
   CalorData.clear();
+
+  // all
+  deltaT.clear();
 }
 
 

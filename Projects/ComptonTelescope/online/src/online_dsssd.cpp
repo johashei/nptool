@@ -17,7 +17,7 @@
 #include "DecodeT.h"
 
 #define __TEST_ZONE__
-#undef __TEST_ZONE__
+//#undef __TEST_ZONE__
 #define __USE_CUTG__
 #undef __USE_CUTG__
 
@@ -127,7 +127,7 @@ int main()
   // configure option manager
 //   NPOptionManager::getInstance()->Destroy();
 #ifdef __TEST_ZONE__
-//  string arg = "-D ./ComptonCAM.detector -C calibrations.txt -GH -E ./10He.reaction --circular";
+  string arg = "-D ./ComptonCAM.detector -C calibrations.txt -GH -E ./10He.reaction --circular";
 #else
   string arg = "-D ./ComptonCAM.detector -C calibrations.txt -GH -E ./10He.reaction";
 #endif
@@ -159,7 +159,7 @@ int main()
   DecodeT* DT = new DecodeT(false); // Instantiates DecodeT object reading trigger data flux
   DecodeD* DD = new DecodeD(false); // Instantiates DecodeD object reading DSSSD(s) data flux
   newframe_t* event;
-  DD -> setTree("/disk/proto-data/data/coinc-si/bb7_3309-7_cs137-20210205_11h41_coinc_run0_conv.root");
+  DD -> setTree("/disk/proto-data/data/20210210_run1/bb7_3309-7_cs137-20210210_11h05_coinc_run1_conv.root");
   int dlen = DD -> getLength();
 
   //Sets where to look for data in DSSSD root frames

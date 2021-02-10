@@ -1,5 +1,5 @@
 CalibrationFilePath
-  ./calibrations/DSSSD_calibration_run8.txt
+  ./calibrations/DSSSD_D1_Calibration.txt
   ./calibrations/CeBr3_PED.txt
   ./calibrations/CeBr3_PED3.txt
   ./calibrations/CeBr3_PED4.txt

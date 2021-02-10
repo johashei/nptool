@@ -72,6 +72,8 @@ class TComptonTelescopePhysics : public TObject, public NPL::VDetector
       vector<int>    CalorPosX;
       vector<int>    CalorPosY;
       multimap<int, vector<int>> CalorData;
+      // Both
+      vector<int> deltaT;
    
 
  

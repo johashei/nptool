@@ -336,7 +336,7 @@ void TComptonTelescopeSpectra::InitPhysicsSpectra()
     AddHisto1D(name, name, 1000, 1, 2000, "COMPTONTELESCOPE/PHY/CALOR");
 
     name = "CT"+NPL::itoa(i+1)+"_SUM_BIDIM";
-    AddHisto2D(name, name, 1400, 0, 1.4, 1000, 1, 2000, "COMPTONTELESCOPE/PHY/SUM_BIDIM");
+    AddHisto2D(name, name, 1400, 0, 1.4, 1000, 0, 500000, "COMPTONTELESCOPE/PHY/SUM_BIDIM");
   }
 }
 
@@ -389,13 +389,13 @@ void TComptonTelescopeSpectra::FillRawSpectra(TComptonTelescopeData* RawData)
 
   // FRONT_T
   for (unsigned int i = 0; i < RawData->GetCTTrackerFrontTMult(); i++) {
-    name = "CT"+NPL::itoa(RawData->GetCTTrackerFrontETowerNbr(i))+"_DSSSD"+NPL::itoa(RawData->GetCTTrackerFrontTDetectorNbr(i))+"_FRONT_T_RAW";
+    name = "CT"+NPL::itoa(RawData->GetCTTrackerFrontTTowerNbr(i))+"_DSSSD"+NPL::itoa(RawData->GetCTTrackerFrontTDetectorNbr(i))+"_FRONT_T_RAW";
     family = "COMPTONTELESCOPE/RAW/TIME";
     FillSpectra(family,name,RawData->GetCTTrackerFrontTTime(i));
   }
   // BACK_T
   for (unsigned int i = 0; i < RawData->GetCTTrackerBackTMult(); i++) {
-    name = "CT"+NPL::itoa(RawData->GetCTTrackerFrontETowerNbr(i))+"_DSSSD"+NPL::itoa(RawData->GetCTTrackerBackTDetectorNbr(i))+"_BACK_T_RAW";
+    name = "CT"+NPL::itoa(RawData->GetCTTrackerBackTTowerNbr(i))+"_DSSSD"+NPL::itoa(RawData->GetCTTrackerBackTDetectorNbr(i))+"_BACK_T_RAW";
     family = "COMPTONTELESCOPE/RAW/TIME";
     FillSpectra(family,name,RawData->GetCTTrackerBackTTime(i));
   }
@@ -479,15 +479,17 @@ void TComptonTelescopeSpectra::FillRawSpectra(TComptonTelescopeData* RawData)
   }
 
   // SUM BIDIM
-  for (unsigned int i = 0 ; i < RawData->GetCTTrackerFrontEMult(); i++) {
-    name = "CT"+NPL::itoa(RawData->GetCTTrackerFrontETowerNbr(i))+"_RAW_SUM_BIDIM";
-    family = "COMPTONTELESCOPE/RAW/SUM_BIDIM";
-    int sumE = 0;
-    for (int j = 0; j<64; j++) {
-      sumE += RawData->GetCTCalorimeterEEnergy(j);
+  if (RawData->GetCTTrackerFrontEMult() > 0 and RawData->GetCTCalorimeterTMult() > 0) {
+    for (unsigned int i = 0 ; i < RawData->GetCTTrackerFrontEMult(); i++) {
+      name = "CT"+NPL::itoa(RawData->GetCTTrackerFrontETowerNbr(i))+"_RAW_SUM_BIDIM";
+      family = "COMPTONTELESCOPE/RAW/SUM_BIDIM";
+      int sumE = 0;
+      for (int j = 0; j<64; j++) {
+        sumE += RawData->GetCTCalorimeterEEnergy(j);
+      }
+      FillSpectra(family, name,
+          RawData->GetCTTrackerFrontEEnergy(i), sumE);
     }
-    FillSpectra(family, name,
-        RawData->GetCTTrackerFrontEEnergy(i), sumE);
   }
 }
 
@@ -562,13 +564,13 @@ void TComptonTelescopeSpectra::FillPreTreatedSpectra(TComptonTelescopeData* PreT
 
   // FRONT_T
   for (unsigned int i = 0; i < PreTreatedData->GetCTTrackerFrontTMult(); i++) {
-    name = "CT"+NPL::itoa(PreTreatedData->GetCTTrackerBackETowerNbr(i))+"_DSSSD"+NPL::itoa(PreTreatedData->GetCTTrackerFrontTDetectorNbr(i))+"_FRONT_T_CAL";
+    name = "CT"+NPL::itoa(PreTreatedData->GetCTTrackerFrontTTowerNbr(i))+"_DSSSD"+NPL::itoa(PreTreatedData->GetCTTrackerFrontTDetectorNbr(i))+"_FRONT_T_CAL";
     family = "COMPTONTELESCOPE/CAL/TIME";
     FillSpectra(family,name, PreTreatedData->GetCTTrackerFrontTTime(i));
   }
   // BACK_T
   for (unsigned int i = 0; i < PreTreatedData->GetCTTrackerBackTMult(); i++) {
-    name = "CT"+NPL::itoa(PreTreatedData->GetCTTrackerBackETowerNbr(i))+"_DSSSD"+NPL::itoa(PreTreatedData->GetCTTrackerBackTDetectorNbr(i))+"_BACK_T_CAL";
+    name = "CT"+NPL::itoa(PreTreatedData->GetCTTrackerBackTTowerNbr(i))+"_DSSSD"+NPL::itoa(PreTreatedData->GetCTTrackerBackTDetectorNbr(i))+"_BACK_T_CAL";
     family = "COMPTONTELESCOPE/CAL/TIME";
     FillSpectra(family,name, PreTreatedData->GetCTTrackerBackTTime(i));
   }

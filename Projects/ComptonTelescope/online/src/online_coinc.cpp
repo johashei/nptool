@@ -17,9 +17,13 @@
 #include "DecodeT.h"
 
 #define __TEST_ZONE__
-#undef __TEST_ZONE__
+//#undef __TEST_ZONE__
+
 #define __USE_CUTG__
 #undef __USE_CUTG__
+
+#define __RESET_SEARCH__
+#undef __RESET_SEARCH__
 
 // C++ headers
 #include <iostream>
@@ -27,22 +31,6 @@
 #include <string>
 using namespace std;
 
-////--//--// One-line setter for calorimeter //--//--//
-//
-//void setCTCalorimeter(TComptonTelescopeData* ccamData, DecodeR* D, const int pixelNumber)
-//{
-//  ccamData -> SetCTCalorimeter(1, 1, D->getPixelNumber(), D->getTime(), D->getData(), pixelNumber);
-///*  ccamData -> SetCTCalorimeterTTowerNbr( 1 );
-//  ccamData -> SetCTCalorimeterTDetectorNbr( 1 );//Triggered ASIC number
-//  ccamData -> SetCTCalorimeterTChannelNbr( D -> getPixelNumber() );//Pixel that triggered
-//  ccamData -> SetCTCalorimeterTTime( D -> getTime() );
-//  for (int i = 0; i < pixelNumber; ++i) {//Loop on pixels
-//    ccamData -> SetCTCalorimeterETowerNbr(1);
-//    ccamData -> SetCTCalorimeterEDetectorNbr( 1 );
-//    ccamData -> SetCTCalorimeterEChannelNbr( i );//PMT pixel number
-//    ccamData -> SetCTCalorimeterEEnergy( D -> getData()[i] );
-//  }//End of loop on pixels*/
-//}
 
 //--//--// One-line setter for DSSSD(s) //--//--//
 
@@ -98,8 +86,15 @@ void setCTTracker(TComptonTelescopeData* ccamData, newframe_t* event, vector<int
 //--//--//--//--//--//--//--//--//--//--//--//--//--//--//--//
 int main()
 {
-//  auto fout = new TFile("pipo.root", "recreate");
-//  auto bidim = new TH2F("bidim", "bidim", 2001, -1000, 1000, 2001, -1000, 1000);
+#ifdef __RESET_SEARCH__
+  int resetCountSearch = 1000;
+  int timestampDiffSearch = 1000;
+  int timestampNBins = 100;
+  auto fout = new TFile("pipo.root", "recreate");
+  auto bidim = new TH2F("bidim", "bidim", 
+      2*resetCountSearch, -resetCountSearch, resetCountSearch, 
+      timestampNBins, -timestampDiffSearch, timestampDiffSearch);
+#endif
 #ifdef __USE_CUTG__
 /*  TFile* fcut = new TFile("/disk/proto-data/data/coinc-si/CUT_Compton.root");
   TCutG* mcut = (TCutG*) fcut -> Get("CUT_Compton");
@@ -127,7 +122,7 @@ int main()
   // configure option manager
 //   NPOptionManager::getInstance()->Destroy();
 #ifdef __TEST_ZONE__
-//  string arg = "-D ./ComptonCAM.detector -C calibrations.txt -GH -E ./10He.reaction --circular";
+  string arg = "-D ./ComptonCAM.detector -C calibrations.txt -GH -E ./10He.reaction --circular";
 #else
   string arg = "-D ./ComptonCAM.detector -C calibrations.txt -GH -E ./10He.reaction";
 #endif
@@ -159,7 +154,7 @@ int main()
   DecodeT* DT = new DecodeT(false); // Instantiates DecodeT object reading trigger data flux
   DecodeD* DD = new DecodeD(false); // Instantiates DecodeD object reading DSSSD(s) data flux
   newframe_t* event;
-  DD -> setTree("/disk/proto-data/data/coinc-si/bb7_3309-7_cs137-20210205_11h41_coinc_run0_conv.root");
+  DD -> setTree("/disk/proto-data/data/20210210_run1/bb7_3309-7_cs137-20210210_11h05_coinc_run1_conv.root");
   int dlen = DD -> getLength();
 
   //Sets where to look for data in DSSSD root frames
@@ -195,13 +190,12 @@ int main()
     // check spectra
     m_NPDetectorManager->CheckSpectraServer();
   }
-
 #else
   // Open data files
   ifstream iros, itrig;
   cout << "Loading data files ";
 
-  itrig.open("/disk/proto-data/data/coinc-si/mfm_trigger_202102051141.raw", ios::binary);
+  itrig.open("/disk/proto-data/data/20210210_run1/mfm_trigger_202102101104.raw", ios::binary);
   itrig.seekg(0, ios::end);
   int tlen = itrig.tellg();
   itrig.seekg(0, ios::beg);
@@ -210,7 +204,7 @@ int main()
   itrig.close();
   cout << "... ";
 
-  iros.open("/disk/proto-data/data/coinc-si/mfm_rdd_rosmap_04_mfm_rosmap_04_2021-02-05_10_41_46.raw.0001", ios::binary);
+  iros.open("/disk/proto-data/data/20210210_run1/mfm_rdd_rosmap_04_mfm_rosmap_04_2021-02-10_10_04_59.raw.0001", ios::binary);
   iros.seekg(0, ios::end);
   int rlen = iros.tellg();
   iros.seekg(0, ios::beg);
@@ -219,36 +213,57 @@ int main()
   iros.close();
   cout << "Done" << endl;
 
-//  for (int reset=-1000; reset<1001; reset++)
-//  {
-//  cout << reset << endl;
+  // Search for reset count in trigger data
+  int resetCount = 0;
   DT -> setRaw(tbuff);
+  DT -> decodeBlobMFM();
+  while (not(DT->hasTrigged(2))) {
+    DT -> decodeBlobMFM();
+  }
+  resetCount = DT->getResetCount();
+  cout << "Found reset count: " << resetCount << endl;
+
+#ifdef __RESET_SEARCH__
+  // Fill control bidim
+  for (int reset=-resetCountSearch; reset<resetCountSearch+1; reset++)
+  {
+  int cr = /*-resetCount+*/reset;
+  cout << "Filling coincidence bidim with reset #" << cr << endl;
+  DD -> rewind();
+#else
+  int cr = resetCount;
+#endif
   DR -> setRaw(rbuff);
-  //DD -> rewind();
 
   DR -> decodeBlobMFM();
   DD -> decodeEvent();
 
-  int cr = -17;
   int cd = 0;
   c = 0;
   i = 0;
   int tr = DR -> getTime();
   int td = DD -> getTime();
 //  int dt = 100;
-  while(DR -> getCursor() < rlen and DD -> getCursor() < dlen)
+#ifdef __RESET_SEARCH__
+  while(c < 1000)
   {
 //    cout << DR -> getTime() << " " << DD -> getTime() << endl; 
     if (cr == cd) {
-      //if (abs(tr-td+55) < dt) {
+      if (abs(td-tr) < timestampDiffSearch) {
+        bidim->Fill(reset, td-tr);
+        c++;
+      }
+#else
+  while(DR -> getCursor() < rlen and DD -> getCursor() < dlen)
+  {
+    if (cr == cd) {
+
 //      if (td-tr < 150 and tr-td < 10) { // That one is the real one
       if (tr-td > 50 and tr-td < 1000) { // Same width, bad position
-        c++;
-        cout << cc << " " << c << "(" << cr << ", " << cd << ") : " << tr << " " << td << endl;
         //DR -> Dump();
         //DD -> Dump();
-        //bidim->Fill(reset, td-tr);
-
+        c++;
+        cout << cc << " " << c << "(" << cr << ", " << cd << ") : " << tr << " " << td << endl;
         // Clear raw and physics data
         m_NPDetectorManager->ClearEventPhysics();
         m_NPDetectorManager->ClearEventData();
@@ -279,6 +294,7 @@ int main()
         m_NPDetectorManager->CheckSpectraServer();
         //cout << "d" << endl;
       }
+#endif
       if (td < tr) {
         DD -> decodeEvent();
       } else {
@@ -301,7 +317,9 @@ int main()
     i++;
   
   } // End of main loop
-//  }
+#ifdef __RESET_SEARCH__
+  }
+#endif
 
   delete DR;
   delete DT;
@@ -313,9 +331,11 @@ int main()
   // fill spectra
   m_NPDetectorManager -> WriteSpectra();
 
-//  fout->cd();
-//  bidim->Write();
-//  fout->Close();
+#ifdef __RESET_SEARCH__
+  fout->cd();
+  bidim->Write();
+  fout->Close();
+#endif
 
   // Essential
 #if __cplusplus > 199711L && NPMULTITHREADING
