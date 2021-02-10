@@ -114,6 +114,7 @@ private: // Geometry
   double m_Temperature;
   //   Shape type
   vector<string> m_Shape ;
+  string m_Active;
   
   // Visualisation Attribute
   G4VisAttributes* m_VisChamber;

@@ -10,3 +10,4 @@ TACTIC
  Temperature = 293.15 kelvin
  Pressure = 0.5 bar
 % Pressure = 1.0 bar
+ Active = gas

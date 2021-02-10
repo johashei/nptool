@@ -27,6 +27,8 @@
 #include "G4Tubs.hh"
 #include "G4Box.hh"
 #include "G4SubtractionSolid.hh"
+#include "G4UnionSolid.hh"
+#include "G4LogicalVolumeStore.hh"
 
 //G4 sensitive
 #include "G4SDManager.hh"
@@ -53,6 +55,10 @@
 // CLHEP header
 #include "CLHEP/Random/RandGauss.h"
 
+// For reaction file
+#include "BeamReaction.hh"
+#include "NPFunction.h"
+
 using namespace std;
 using namespace CLHEP;
 
@@ -64,15 +70,15 @@ namespace TACTIC_NS{
   //const double EnergyThreshold = 0.01*MeV;
   //const double ResoTime = 17.*ns ;
   //const double ResoEnergy = 1.0*MeV ;
-  const double cathode_radius = 12.*mm;
+  //  const double cathode_radius = 12.*mm;
   const double drift_radius = 50.*mm;
-  const double anode_radius = 51.*mm;
+  //const double anode_radius = 51.*mm;
   const double active_length = 251.9*mm;
   const double window_pos = 104.*mm; //from centre of TACTIC from https://elog.triumf.ca/Tactic/Documentation/18                                     
   const double window_radius = 12.*mm; //guess
   const double window_width = 1.5e-03*mm;
-  const double vacuum_pos = (active_length/2. + window_pos + window_width/2.)/2.*mm;
-  const double vacuum_width = active_length/2. - window_pos - window_width/2.*mm;
+  //const double vacuum_pos = (active_length/2. + window_pos + window_width/2.)/2.*mm;
+  //const double vacuum_width = active_length/2. - window_pos - window_width/2.*mm;
   const G4int  NumberOfStrips = 60;
   
 }
@@ -87,7 +93,7 @@ TACTIC::TACTIC(){
   m_ReactionRegion = NULL; 
   // RGB Color + Transparency
 
-  m_VisChamber        = new G4VisAttributes(G4Colour(1., 1., 1., 1.0));
+  m_VisChamber        = new G4VisAttributes(G4Colour(1., 0.0, 0.0, 0.0));
   m_VisWindows        = new G4VisAttributes(G4Colour(1, 1, 1, 1.0));
   m_VisGas            = new G4VisAttributes(G4Colour(1, 1, 1, 0.1));
   m_VisVacuum         = new G4VisAttributes(G4Colour(1,1,1,1.));
@@ -121,11 +127,11 @@ void TACTIC::AddDetector(double  R, double  Theta, double  Phi, string  Shape){
 G4LogicalVolume* TACTIC::BuildCylindricalDetector(){
   if(!m_CylindricalDetector){
 
-    G4Material* Cu = MaterialManager::getInstance()->GetMaterialFromLibrary("Cu");
+    //G4Material* Cu = MaterialManager::getInstance()->GetMaterialFromLibrary("Cu");
     G4Material* Mylar = MaterialManager::getInstance()->GetMaterialFromLibrary("Mylar");
     G4Material* Vacuum = MaterialManager::getInstance()->GetMaterialFromLibrary("G4_Galactic");
 
-    std::cout << "Vacuum: " << Vacuum << std::endl;
+    //    std::cout << "Vacuum: " << Vacuum << std::endl;
     
     unsigned const int NumberOfGasMix = m_GasMaterial.size();
 
@@ -159,47 +165,32 @@ G4LogicalVolume* TACTIC::BuildCylindricalDetector(){
 
     cout << TACTIC_gas << endl;
 
-    //G4Tubs* world = new G4Tubs("world",0,TACTIC_NS::drift_radius,TACTIC_NS::active_length*0.5,0,360*deg);
-    // G4Tubs* gas_volume = new G4Tubs("gas_volume",0,TACTIC_NS::drift_radius,TACTIC_NS::active_length*0.5,0,360*deg);
+    G4Tubs* world_volume = new G4Tubs("world_volume",0,TACTIC_NS::drift_radius+1*mm,TACTIC_NS::active_length*0.5+1*mm,0,360*deg);
     G4Tubs* window = new G4Tubs("window",0,TACTIC_NS::window_radius,TACTIC_NS::window_width*0.5,0,360*deg);
-    G4Tubs* vacuum = new G4Tubs("vacuum",0,TACTIC_NS::window_radius,TACTIC_NS::vacuum_width*0.5,0,360*deg);
 
-       
-    G4Tubs* gas_volume_temp = new G4Tubs("gas_volume_temp",0,TACTIC_NS::drift_radius,TACTIC_NS::active_length*0.5,0,360*deg);
-    G4VSolid* hole = new G4Tubs("hole",0,TACTIC_NS::window_radius,TACTIC_NS::vacuum_width*0.5,0,360*deg);
-    G4VSolid* gas_volume_temp2 = new G4SubtractionSolid("gas_volume_temp2",gas_volume_temp,hole,0,G4ThreeVector(0,0,TACTIC_NS::vacuum_pos));
-    G4VSolid* gas_volume = new G4SubtractionSolid("gas_volume",gas_volume_temp2,hole,0,G4ThreeVector(0,0,-TACTIC_NS::vacuum_pos));
+    G4Tubs* gas_cathode = new G4Tubs("gas_cathode",0,TACTIC_NS::window_radius,TACTIC_NS::window_pos-TACTIC_NS::window_width*0.5,0,360*deg); //window pos doesn't need halving
+    G4Tubs* gas_drift = new G4Tubs("gas_drift",TACTIC_NS::window_radius,TACTIC_NS::drift_radius,TACTIC_NS::active_length*0.5,0,360*deg);
+    G4UnionSolid* gas_volume = new G4UnionSolid("gas_volume",gas_cathode,gas_drift);
     
+    //G4Tubs* gas_volume = new G4Tubs("gas_volume",0,TACTIC_NS::drift_radius,TACTIC_NS::active_length*0.5,0,360*deg); 
+
+    m_CylindricalDetector = new G4LogicalVolume(world_volume, Vacuum, "m_CylindricalDetector_log",0,0,0);
+    gas_volume_log = new G4LogicalVolume(gas_volume, TACTIC_gas, "gas_volume_log",0,0,0);
+    window_log = new G4LogicalVolume(window, Mylar, "window_log",0,0,0);
     
-    //    G4Tubs* gas_volume = new G4Tubs("gas_volume_temp",0,TACTIC_NS::drift_radius,TACTIC_NS::active_length*0.5,0,360*deg); 
-    
-    m_CylindricalDetector = new G4LogicalVolume(gas_volume, TACTIC_gas, "world_log",0,0,0);
-    //gas_volume_log = new G4LogicalVolume(gas_volume, TACTIC_gas, "gas_volume_log",0,0,0);
-    //G4LogicalVolume *window_log1 = new G4LogicalVolume(window, Mylar, "window_log1",0,0,0);
-    //    G4LogicalVolume *window_log2 = new G4LogicalVolume(window, Mylar, "window_log2",0,0,0);
-    window_log = new G4LogicalVolume(window, Mylar, "window_log",0,0,0); //windows removed (effectively)
-    vacuum_log = new G4LogicalVolume(vacuum, Vacuum, "vacuum_log",0,0,0);
-    //G4LogicalVolume *vacuum_log2 = new G4LogicalVolume(vacuum, Vacuum, "vacuum_log2",0,0,0);
-    
-    //new G4PVPlacement(0,G4ThreeVector(0,0,0),world_log,"world_phys",m_CylindricalDetector,false,0);
-    new G4PVPlacement(0,G4ThreeVector(0,0,TACTIC_NS::window_pos-0.01*mm),window_log,"window_phys1",m_CylindricalDetector,false,0,true);
-    new G4PVPlacement(0,G4ThreeVector(0,0,-TACTIC_NS::window_pos+0.01*mm),window_log,"window_phys2",m_CylindricalDetector,false,0,true);
-    //    new G4PVPlacement(0,G4ThreeVector(0,0,TACTIC_NS::vacuum_pos),vacuum_log,"vacuum_phys1",m_CylindricalDetector,false,0,true);
-    //new G4PVPlacement(0,G4ThreeVector(0,0,-TACTIC_NS::vacuum_pos),vacuum_log,"vacuum_phys2",m_CylindricalDetector,false,0,true);
+    new G4PVPlacement(0,G4ThreeVector(0,0,0),gas_volume_log,"gas_volume_phys",m_CylindricalDetector,false,0);
+    new G4PVPlacement(0,G4ThreeVector(0,0,TACTIC_NS::window_pos),window_log,"window_phys1",m_CylindricalDetector,false,0,true);
+    new G4PVPlacement(0,G4ThreeVector(0,0,-TACTIC_NS::window_pos),window_log,"window_phys2",m_CylindricalDetector,false,0,true);
         
-    //    gas_volume_log->SetVisAttributes(m_VisGas);
-    window_log->SetVisAttributes(m_VisWindows);
-    //vacuum_log->SetVisAttributes(m_VisVacuum);
-    m_CylindricalDetector->SetVisAttributes(m_VisChamber);
+    gas_volume_log->SetVisAttributes(m_VisGas);
+    m_CylindricalDetector->SetVisAttributes(m_VisGas);
 
     G4UserLimits *gas_volume_step = new G4UserLimits();
     G4double maxStep = 0.1*mm;
     gas_volume_step->SetMaxAllowedStep(maxStep);
-    //gas_volume_log->SetUserLimits(gas_volume_step);
-    m_CylindricalDetector->SetUserLimits(gas_volume_step);
+    gas_volume_log->SetUserLimits(gas_volume_step);    
+    gas_volume_log->SetSensitiveDetector(m_Scorer);
     
-    //gas_volume_log->SetSensitiveDetector(m_Scorer);
-    m_CylindricalDetector->SetSensitiveDetector(m_Scorer);
   }
   return m_CylindricalDetector;
 }
@@ -216,7 +207,7 @@ void TACTIC::ReadConfiguration(NPL::InputParser parser){
   if(NPOptionManager::getInstance()->GetVerboseLevel())
     cout << "//// " << blocks.size() << " detectors found " << endl; 
   
-  vector<string> cart = {"POS","Shape","GasMaterial_1","GasMaterial_2","GasFraction_1","GasFraction_2","Temperature","Pressure"};
+  vector<string> cart = {"POS","Shape","GasMaterial_1","GasMaterial_2","GasFraction_1","GasFraction_2","Temperature","Pressure","Active"};
 
   for(unsigned int i = 0 ; i < blocks.size() ; i++){
     if(blocks[i]->HasTokenList(cart)){
@@ -231,6 +222,8 @@ void TACTIC::ReadConfiguration(NPL::InputParser parser){
       m_GasFraction.push_back(blocks[i]->GetInt("GasFraction_2"));
       m_Temperature = blocks[i]->GetDouble("Temperature","kelvin");
       m_Pressure = blocks[i]->GetDouble("Pressure","bar");
+      m_Active = blocks[i]->GetString("Active");
+      //cout << "ACTIVE: " << m_Active << endl;
       AddDetector(Pos,Shape);
     }
 
@@ -239,7 +232,7 @@ void TACTIC::ReadConfiguration(NPL::InputParser parser){
       exit(1);
     }
   }
-  
+
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -275,8 +268,9 @@ void TACTIC::ConstructDetector(G4LogicalVolume* world){
       m_ReactionRegion= new G4Region("NPSimulationProcess");
       m_ReactionRegion->SetProductionCuts(ecut);
       //m_ReactionRegion->AddRootLogicalVolume(gas_volume_log);
-      m_ReactionRegion->AddRootLogicalVolume(m_CylindricalDetector);
-      //m_ReactionRegion->AddRootLogicalVolume(window_log);
+      //m_ReactionRegion->AddRootLogicalVolume(m_CylindricalDetector);
+      if(m_Active == "windows") m_ReactionRegion->AddRootLogicalVolume(window_log);
+      if(m_Active == "gas") m_ReactionRegion->AddRootLogicalVolume(gas_volume_log);
     }
 
     G4FastSimulationManager* mng = m_ReactionRegion->GetFastSimulationManager();
@@ -311,53 +305,61 @@ void TACTIC::ReadSensitive(const G4Event* event ){
   m_Event->Clear();
 
   ofstream file;
-  /*
-  G4THitsMap<G4double*>* BeamHitMap;
-  std::map<G4int, G4double**>::iterator Beam_itr;
-  G4int BeamCollectionID = G4SDManager::GetSDMpointer()->GetCollectionID("TACTICScorer/BeamScorer");
-  BeamHitMap = (G4THitsMap<G4double*>*)(event->GetHCofThisEvent()->GetHC(BeamCollectionID));
-  */
+  
   file.open("signal.dat", std::ios::app);
   file << "Event" << endl;
   file.close();
   
   file.open("out.dat",std::ios::app);
-  /*
-  for (Beam_itr = BeamHitMap->GetMap()->begin(); Beam_itr != BeamHitMap->GetMap()->end(); Beam_itr++) {
-    G4double* Info = *(Beam_itr->second);
-    //file <<  floor(((Info[3]+TACTIC_NS::active_length*0.5)/(TACTIC_NS::active_length/TACTIC_NS::NumberOfStrips))) << "\t"; // To get PAD number
+  
+  G4THitsMap<G4double*>* LightHitMap;
+  std::map<G4int, G4double**>::iterator Light_itr;
+  G4int LightCollectionID = G4SDManager::GetSDMpointer()->GetCollectionID("TACTICScorer/LightScorer");
+  LightHitMap = (G4THitsMap<G4double*>*)(event->GetHCofThisEvent()->GetHC(LightCollectionID));
+
+  for (Light_itr = LightHitMap->GetMap()->begin(); Light_itr != LightHitMap->GetMap()->end(); Light_itr++) {
+    G4double* Info = *(Light_itr->second);
     file << event->GetEventID() << "\t";
     for(int s = 0; s<11; s++) {
-      //if(s==12) file << Info[s] << endl;
-      //else
+      file << Info[s] << "\t";
+    }
+    file << Info[11] << endl;
+  }
+
+  LightHitMap->clear();
+
+  G4THitsMap<G4double*>* HeavyHitMap;
+  std::map<G4int, G4double**>::iterator Heavy_itr;
+  G4int HeavyCollectionID = G4SDManager::GetSDMpointer()->GetCollectionID("TACTICScorer/HeavyScorer");
+  HeavyHitMap = (G4THitsMap<G4double*>*)(event->GetHCofThisEvent()->GetHC(HeavyCollectionID));
+
+  for (Heavy_itr = HeavyHitMap->GetMap()->begin(); Heavy_itr != HeavyHitMap->GetMap()->end(); Heavy_itr++) {
+    G4double* Info = *(Heavy_itr->second);
+    file << event->GetEventID() << "\t";
+    for(int s = 0; s<11; s++) {
+      file << Info[s] << "\t";
+    }
+    file << Info[11] << endl;
+  }
+
+  HeavyHitMap->clear();
+  
+  G4THitsMap<G4double*>* BeamHitMap;
+  std::map<G4int, G4double**>::iterator Beam_itr;
+  G4int BeamCollectionID = G4SDManager::GetSDMpointer()->GetCollectionID("TACTICScorer/BeamScorer");
+  BeamHitMap = (G4THitsMap<G4double*>*)(event->GetHCofThisEvent()->GetHC(BeamCollectionID));
+  
+  for (Beam_itr = BeamHitMap->GetMap()->begin(); Beam_itr != BeamHitMap->GetMap()->end(); Beam_itr++) {
+    G4double* Info = *(Beam_itr->second);
+    file << event->GetEventID() << "\t";
+    for(int s = 0; s<11; s++) {
       file << Info[s] << "\t";
     }
     file << Info[11] << endl;
   }
 
   BeamHitMap->clear();
-  */
-  G4THitsMap<G4double*>* EjectHitMap;
-  std::map<G4int, G4double**>::iterator Eject_itr;
-  G4int EjectCollectionID = G4SDManager::GetSDMpointer()->GetCollectionID("TACTICScorer/EjectScorer");
-  EjectHitMap = (G4THitsMap<G4double*>*)(event->GetHCofThisEvent()->GetHC(EjectCollectionID));
-
-  for (Eject_itr = EjectHitMap->GetMap()->begin(); Eject_itr != EjectHitMap->GetMap()->end(); Eject_itr++) {
-    G4double* Info = *(Eject_itr->second);
-    //file <<  floor(((Info[3]+TACTIC_NS::active_length*0.5)/(TACTIC_NS::active_length/TACTIC_NS::NumberOfStrips))) << "\t"; // To get PAD number
-    file << event->GetEventID() << "\t";
-    //cout << event->GetEventID() << endl;
-    for(int s = 0; s<11; s++) {
-      
-      //if(s==12) file << Info[s] << endl;
-      //else
-      file << Info[s] << "\t";
-    }
-    file << Info[11] << endl;
-  }
-
-  EjectHitMap->clear();
-
+ 
   file.close();
     
 }
@@ -372,18 +374,33 @@ void TACTIC::InitializeScorers() {
     return ;
 
   // Otherwise the scorer is initialised
-  G4VPrimitiveScorer* EjectScorer = new TACTICScorer::Gas_Scorer("EjectScorer",1,TACTIC_NS::active_length,(int)TACTIC_NS::NumberOfStrips);
-  //G4VPrimitiveScorer* BeamScorer = new TACTICScorer::Gas_Scorer("BeamScorer",1,TACTIC_NS::active_length,(int)TACTIC_NS::NumberOfStrips);
-  /////G4SDParticleFilter* EjectFilter = new G4SDParticleFilter("EjectFilter","proton");
-  //G4SDParticleFilter* EjectFilter = new G4SDParticleFilter("EjectFilter","alpha"); //For studying alpha source data
-  //G4SDParticleFilter* BeamFilter = new G4SDParticleFilter("BeamFilter");
-  //BeamFilter->addIon(11,21);
-  //BeamFilter->addIon(10,18);
-  //EjectScorer->SetFilter(EjectFilter);
-  //BeamScorer->SetFilter(BeamFilter);
+  // NEED SEPERATE SCORERS FOR EACH PARTICLE! OTHERWISE SCORER JUST RETURNS OUTPUT FOR ONE PARTICLE WHEN THERE IS OVERLAP
+  G4VPrimitiveScorer* LightScorer = new TACTICScorer::Gas_Scorer("LightScorer",1,TACTIC_NS::active_length,(int)TACTIC_NS::NumberOfStrips);
+  G4VPrimitiveScorer* HeavyScorer = new TACTICScorer::Gas_Scorer("HeavyScorer",1,TACTIC_NS::active_length,(int)TACTIC_NS::NumberOfStrips);
+  G4VPrimitiveScorer* BeamScorer = new TACTICScorer::Gas_Scorer("BeamScorer",1,TACTIC_NS::active_length,(int)TACTIC_NS::NumberOfStrips);
+  G4SDParticleFilter* LightFilter = new G4SDParticleFilter("LightFilter");
+  G4SDParticleFilter* HeavyFilter = new G4SDParticleFilter("HeavyFilter"); //For studying alpha source data
+  G4SDParticleFilter* BeamFilter = new G4SDParticleFilter("BeamFilter");
 
-  //m_Scorer->RegisterPrimitive(BeamScorer);
-  m_Scorer->RegisterPrimitive(EjectScorer);
+  NPL::InputParser input(NPOptionManager::getInstance()->GetReactionFile());
+  NPL::Reaction m_Reaction;
+  m_Reaction.ReadConfigurationFile(input);
+  /*
+  cout << m_Reaction.GetParticle1()->GetName() << "\t" << m_Reaction.GetParticle1()->GetA() << "\t" << m_Reaction.GetParticle1()->GetZ() << endl;
+  cout << m_Reaction.GetParticle2()->GetName() << "\t" << m_Reaction.GetParticle2()->GetA() << "\t" << m_Reaction.GetParticle2()->GetZ() << endl;
+  cout << m_Reaction.GetParticle3()->GetName() << "\t" << m_Reaction.GetParticle3()->GetA() << "\t" << m_Reaction.GetParticle3()->GetZ() << endl;
+  cout << m_Reaction.GetParticle4()->GetName() << "\t" << m_Reaction.GetParticle4()->GetA() << "\t" << m_Reaction.GetParticle4()->GetZ() << endl;
+  */
+  LightFilter->addIon(m_Reaction.GetParticle3()->GetZ(),m_Reaction.GetParticle3()->GetA());
+  HeavyFilter->addIon(m_Reaction.GetParticle4()->GetZ(),m_Reaction.GetParticle4()->GetA());
+  BeamFilter->addIon(m_Reaction.GetParticle1()->GetZ(),m_Reaction.GetParticle1()->GetA());
+  LightScorer->SetFilter(LightFilter);
+  HeavyScorer->SetFilter(HeavyFilter);
+  BeamScorer->SetFilter(BeamFilter);
+
+  m_Scorer->RegisterPrimitive(LightScorer);
+  m_Scorer->RegisterPrimitive(HeavyScorer);
+  m_Scorer->RegisterPrimitive(BeamScorer);
 
   G4SDManager::GetSDMpointer()->AddNewDetector(m_Scorer);
   
