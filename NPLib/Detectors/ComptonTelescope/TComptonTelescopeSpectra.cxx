@@ -337,6 +337,10 @@ void TComptonTelescopeSpectra::InitPhysicsSpectra()
 
     name = "CT"+NPL::itoa(i+1)+"_SUM_BIDIM";
     AddHisto2D(name, name, 1400, 0, 1.4, 1000, 0, 500000, "COMPTONTELESCOPE/PHY/SUM_BIDIM");
+
+    // DELTA T
+    name = "CT"+NPL::itoa(i+1)+"_DELTA_T";
+    AddHisto1D(name, name, 2000, -1000, 1000, "COMPTONTELESCOPE/PHY/DELTA_T");
   }
 }
 
@@ -905,6 +909,15 @@ void TComptonTelescopeSpectra::FillPhysicsSpectra(TComptonTelescopePhysics* Phys
       }*/
       FillSpectra(family, name,
           Physics->GetFrontEnergy(i), Physics->Calor_E[j]);
+    }
+  }
+
+  // DELTA T
+  for (unsigned int i = 0; i < fNumberOfTelescope; i++) {
+    name = "CT"+NPL::itoa(i+1)+"_DELTA_T";
+    family = "COMPTONTELESCOPE/PHY/DELTA_T";
+    for (vector<int>::iterator it = Physics->deltaT.begin(); it != Physics->deltaT.end(); ++it) {
+      FillSpectra(family, name, *it);
     }
   }
 

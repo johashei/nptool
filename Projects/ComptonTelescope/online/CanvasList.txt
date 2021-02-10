@@ -28,5 +28,5 @@ Canvas
 
 Canvas
  Path= ComptonTelescope
- Divide= 1 1
- Histo= CT1_SUM_SPECTRUM
+ Divide= 2 2
+ Histo= CT1_SUM_SPECTRUM CT1_DELTA_T CT1_RAW_SUM_BIDIM CT1_SUM_BIDIM

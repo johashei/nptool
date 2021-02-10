@@ -17,10 +17,10 @@
 #include "DecodeT.h"
 
 #define __TEST_ZONE__
-//#undef __TEST_ZONE__
+#undef __TEST_ZONE__
 
 #define __USE_CUTG__
-#undef __USE_CUTG__
+//#undef __USE_CUTG__
 
 #define __RESET_SEARCH__
 #undef __RESET_SEARCH__
@@ -87,7 +87,7 @@ void setCTTracker(TComptonTelescopeData* ccamData, newframe_t* event, vector<int
 int main()
 {
 #ifdef __RESET_SEARCH__
-  int resetCountSearch = 1000;
+  int resetCountSearch = 3;
   int timestampDiffSearch = 1000;
   int timestampNBins = 100;
   auto fout = new TFile("pipo.root", "recreate");
@@ -96,15 +96,12 @@ int main()
       timestampNBins, -timestampDiffSearch, timestampDiffSearch);
 #endif
 #ifdef __USE_CUTG__
-/*  TFile* fcut = new TFile("/disk/proto-data/data/coinc-si/CUT_Compton.root");
+  TFile* fcut = new TFile("/disk/proto-data/data/CUT_Compton.root");
   TCutG* mcut = (TCutG*) fcut -> Get("CUT_Compton");
   fcut -> Close();
   cout << fcut << endl;
   cout << mcut << endl;
-  TCanvas* can = new TCanvas();
-  can->cd();
-  mcut->Draw();*/
-  TCutG *mcut = new TCutG("CUT_Compton",7);
+/*  TCutG *mcut = new TCutG("CUT_Compton",7);
   mcut->SetVarX("Calor_E");
   mcut->SetVarY("Half_Energy");
   mcut->SetTitle("Graph");
@@ -115,7 +112,7 @@ int main()
   mcut->SetPoint(3,629341,0.02586437);
   mcut->SetPoint(4,627908.3,0.211152);
   mcut->SetPoint(5,540157.6,0.5981453);
-  mcut->SetPoint(6,526905.4,0.6145632);
+  mcut->SetPoint(6,526905.4,0.6145632);*/
 #endif
 
   ///////////////////////////////////////////////////////////////////////////
@@ -214,27 +211,27 @@ int main()
   cout << "Done" << endl;
 
   // Search for reset count in trigger data
-  int resetCount = 0;
   DT -> setRaw(tbuff);
   DT -> decodeBlobMFM();
+  int resetCount = DT -> getResetCount();
   while (not(DT->hasTrigged(2))) {
     DT -> decodeBlobMFM();
   }
-  resetCount = DT->getResetCount();
+  resetCount = DT->getResetCount() - resetCount;
   cout << "Found reset count: " << resetCount << endl;
 
 #ifdef __RESET_SEARCH__
   // Fill control bidim
   for (int reset=-resetCountSearch; reset<resetCountSearch+1; reset++)
   {
-  int cr = /*-resetCount+*/reset;
+  int cr = resetCount+reset;
   cout << "Filling coincidence bidim with reset #" << cr << endl;
   DD -> rewind();
 #else
   int cr = resetCount;
 #endif
-  DR -> setRaw(rbuff);
 
+  DR -> setRaw(rbuff);
   DR -> decodeBlobMFM();
   DD -> decodeEvent();
 
@@ -245,7 +242,8 @@ int main()
   int td = DD -> getTime();
 //  int dt = 100;
 #ifdef __RESET_SEARCH__
-  while(c < 1000)
+  while(DR -> getCursor() < rlen and DD -> getCursor() < dlen)
+  //while(c < 1000)
   {
 //    cout << DR -> getTime() << " " << DD -> getTime() << endl; 
     if (cr == cd) {
@@ -258,8 +256,8 @@ int main()
   {
     if (cr == cd) {
 
-//      if (td-tr < 150 and tr-td < 10) { // That one is the real one
-      if (tr-td > 50 and tr-td < 1000) { // Same width, bad position
+      if (td-tr < 110 and td-tr > 0) { // That one is the real one
+//      if (tr-td > 50 and tr-td < 1000) {
         //DR -> Dump();
         //DD -> Dump();
         c++;
@@ -278,7 +276,7 @@ int main()
         // Fill object in output ROOT file
         if (ccamPhys->EventMultiplicity > 0) {
 #ifdef __USE_CUTG__
-          if (mcut->IsInside(ccamPhys->Calor_E[0], ccamPhys->Half_Energy[0])) {
+          if (mcut->IsInside(ccamPhys->Half_Energy[0], ccamPhys->Calor_E[0])) {
             //cout << "c" << endl;
             cc++;
             m_OutputTree->Fill();
