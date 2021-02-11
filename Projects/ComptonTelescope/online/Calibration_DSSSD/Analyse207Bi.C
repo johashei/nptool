@@ -2,9 +2,9 @@
 // This macro calibrates DSSSDs with a 207Bi source.                         //
 //                                                                           //
 // It treats either all ASIC channels (channel = -1) or a single one         //
-// (specify channel number). A boolean (isPside) should indicate whether the //
-// file corresponds to p-side (1) or n-side (0). A pdf file is generated     //
-// the relevant information.                                                 //
+// (specify channel number). A boolean (isPside) should indicate whether     //
+// the input file corresponds to p-side (1) or n-side (0). A pdf file is     //
+// generated with the relevant information.                                  //
 //                                                                           //
 // Use: .L Analyse207Bi.C+                                                   //
 //      Analyse207Bi(name, isPside, channel)                                 //
@@ -51,6 +51,7 @@ using namespace std;
 
 // variables
 static std::vector<Double_t> peakListForFit;
+static const double branchingLM = 4; //L/M branching ratios
 
 // functions
 void AddPeak(Double_t, Double_t, Double_t);
@@ -98,7 +99,8 @@ void Analyse207Bi(const char* name = "bb7_3309-7_bi207_20210126_13h09_run5_conv_
 
    ///////////////////////////////////////////////////////////////////////////
    // open output calib file
-   string fname = (isPside) ? Form("DSSSD_D%d_Calibration_Front_E.txt",DETECTOR_ID) : Form("DSSSD_D%d_Calibration_Back_E.txt",DETECTOR_ID);
+   string fname = (isPside) ? Form("DSSSD_D%d_Calibration_Front_E.txt",DETECTOR_ID) 
+                            : Form("DSSSD_D%d_Calibration_Back_E.txt",DETECTOR_ID);
    ofstream calibFile(fname.c_str(), std::ios::out);
    
    ///////////////////////////////////////////////////////////////////////////
@@ -149,7 +151,8 @@ void Analyse207Bi(const char* name = "bb7_3309-7_bi207_20210126_13h09_run5_conv_
 
          ///////////////////////////////////////////////////////////////////////////
          // get histogram
-         string hname = (isPside) ? Form("h_D%d_FRONT_E%d",DETECTOR_ID,n+1) : Form("h_D%d_BACK_E%d",DETECTOR_ID,n+1);
+         string hname = (isPside) ? Form("h_D%d_FRONT_E%d",DETECTOR_ID,n+1) 
+                                  : Form("h_D%d_BACK_E%d",DETECTOR_ID,n+1);
          auto h = (TH1F*) f->Get(hname.c_str());
          h->Sumw2();
          // draw histogram
@@ -339,7 +342,7 @@ void Analyse207Bi(const char* name = "bb7_3309-7_bi207_20210126_13h09_run5_conv_
 //               param[0] = fit->GetParameter(2 + 2*i);
                param[1] = fit->GetParameter(1 + 2*i);
                if (i == 2) { // M component
-                  param[0] = fit->GetParameter(2*i) / 4.;
+                  param[0] = fit->GetParameter(2*i) / branchingLM;
                }
                else {
                   param[0] = fit->GetParameter(2 + 2*i);
@@ -395,7 +398,8 @@ void Analyse207Bi(const char* name = "bb7_3309-7_bi207_20210126_13h09_run5_conv_
 
          ///////////////////////////////////////////////////////////////////////////
          // write calibration coefficients
-         string token = (isPside) ? Form("COMPTONTELESCOPE_D%d_STRIP_FRONT%d_E",DETECTOR_ID,n) : Form("COMPTONTELESCOPE_D%d_STRIP_BACK%d_E",DETECTOR_ID,n);
+         string token = (isPside) ? Form("COMPTONTELESCOPE_D%d_STRIP_FRONT%d_E",DETECTOR_ID,n) 
+                                  : Form("COMPTONTELESCOPE_D%d_STRIP_BACK%d_E",DETECTOR_ID,n);
          calibFile << token;
          for (int p = 0; p < fitFullCalib->GetNpar(); ++p) {
             calibFile << "\t" << fitFullCalib->GetParameter(p);
@@ -475,7 +479,7 @@ void AddPeak(Double_t channel, Double_t cmin, Double_t cmax)
 {
    if (channel>cmin && channel<cmax) {
       peakListForFit.push_back(channel);
-      std::cout << "\t. Added 1 peak at ch " << channel << "\n";
+      std::cout << "\t. Adding 1 peak at ch " << channel << "\n";
    }
 }
 
@@ -507,24 +511,14 @@ Double_t fpeaks2(Double_t *x, Double_t *par)
    Double_t sigma = par[0];
 
    // K component
-   result = par[2]*TMath::Gaus(x[0],par[1],sigma);
+   result += par[2]*TMath::Gaus(x[0],par[1],sigma);
 
    // L component
    result += par[4]*TMath::Gaus(x[0],par[3],sigma);
 
    // M component
-   result += par[4]/4*TMath::Gaus(x[0],par[5],sigma);
+   result += par[4]/branchingLM*TMath::Gaus(x[0],par[5],sigma);
 
-/*
-   for (UInt_t p = 0; p < peakListForFit.size(); p++) {
-      // case where brho is allowed to vary in fit
-      Double_t mean  = par[2*p+1];
-      Double_t norm  = par[2*p+2];
-      result += norm*TMath::Gaus(x[0],mean,sigma);
-   }            
-
-   par[4] = 3.98*par[6];
-*/
    return result;
 }                                  
 
