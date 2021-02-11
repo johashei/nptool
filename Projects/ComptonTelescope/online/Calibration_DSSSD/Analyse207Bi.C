@@ -369,10 +369,10 @@ void Analyse207Bi(const char* name = "bb7_3309-7_bi207_20210126_13h09_run5_conv_
             ///////////////////////////////////////////////////////////////////////////
             // fill fwhm data
             if (p) {
-               grFWHMhigh->SetPoint(n, n, fcalibFull->GetParameter(1)*2.35*fit->GetParameter(0));
+               grFWHMhigh->SetPoint(n, n, fcalibLocal->GetParameter(1)*2.35*fit->GetParameter(0));
             }
             else {
-               grFWHMlow ->SetPoint(n, n, fcalibFull->GetParameter(1)*2.35*fit->GetParameter(0));
+               grFWHMlow ->SetPoint(n, n, fcalibLocal->GetParameter(1)*2.35*fit->GetParameter(0));
             }
          }
 
