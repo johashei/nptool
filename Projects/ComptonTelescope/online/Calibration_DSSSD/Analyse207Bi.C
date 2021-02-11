@@ -41,7 +41,6 @@
 
 // STL headers
 #include <vector>
-#include <algorithm>
 using namespace std;
 
 #define DETECTOR_ID       1
