@@ -114,19 +114,25 @@ void Analyse207Bi(const char* name = "bb7_3309-7_bi207_20210126_13h09_run5_conv_
    ///////////////////////////////////////////////////////////////////////////
    // prepare summary information
    // FWHM in keV
-   auto grFWHMlow   = new TGraph();
+   auto grFWHMlow  = new TGraph();
    grFWHMlow->SetMarkerStyle(kFullSquare);
    grFWHMlow->SetMarkerColor(kRed);
    auto grFWHMhigh = new TGraph();
    grFWHMhigh->SetMarkerStyle(kFullCircle);
    grFWHMhigh->SetMarkerColor(kBlue);
    // energy calibration parameters
-   auto grOffset = new TGraph();
-   grOffset->SetMarkerStyle(kFullSquare);
-   grOffset->SetMarkerColor(kRed);
-   auto grGain   = new TGraph();
-   grGain->SetMarkerStyle(kFullCircle);
-   grGain->SetMarkerColor(kBlue);
+   auto grCalP0 = new TGraph();
+   grCalP0->SetMarkerStyle(kFullSquare);
+   grCalP0->SetMarkerColor(kRed);
+   auto grCalP1 = new TGraph();
+   grCalP1->SetMarkerStyle(kFullCircle);
+   grCalP1->SetMarkerColor(kBlue);
+   auto grCalP2 = new TGraph();
+   grCalP2->SetMarkerStyle(kOpenSquare);
+   grCalP2->SetMarkerColor(kMagenta);
+   auto grCalP3 = new TGraph();
+   grCalP3->SetMarkerStyle(kOpenCircle);
+   grCalP3->SetMarkerColor(kMagenta);
 
    ///////////////////////////////////////////////////////////////////////////
    // declare some display histograms
@@ -137,9 +143,11 @@ void Analyse207Bi(const char* name = "bb7_3309-7_bi207_20210126_13h09_run5_conv_
    hframe1->GetXaxis()->CenterTitle();
    hframe1->GetYaxis()->CenterTitle();
    // calibration histogram
-   auto hframe2 = new TH2F("hframe2", "hframe2", 32, 0, 32, 100, 0, 70);
+   auto hframe2 = new TH2F("hframe2", "hframe2", 32, 0, 32, 100, -10, 10);
    hframe2->GetXaxis()->SetTitle("strip number");
+   hframe2->GetYaxis()->SetTitle("fit parameters");
    hframe2->GetXaxis()->CenterTitle();
+   hframe2->GetYaxis()->CenterTitle();
 
    ///////////////////////////////////////////////////////////////////////////
 	// treat all channels 
@@ -236,8 +244,8 @@ void Analyse207Bi(const char* name = "bb7_3309-7_bi207_20210126_13h09_run5_conv_
          // rough energy calibration
          auto grcalib = new TGraph(peakList.size(), &peakList[0], &mainLineEnergy[0]);
          grcalib->Fit("fcalibFull", "Q0");
-         grOffset->SetPoint(n, n, fcalibFull->GetParameter(0));
-         grGain  ->SetPoint(n, n, fcalibFull->GetParameter(1)*10);
+//         grCalP0->SetPoint(n, n, fcalibFull->GetParameter(0));
+//         grCalP1->SetPoint(n, n, fcalibFull->GetParameter(1)*10);
          
          // loop on "480"- and "975"-keV features
          // p = 0 -> 480 keV
@@ -395,6 +403,11 @@ void Analyse207Bi(const char* name = "bb7_3309-7_bi207_20210126_13h09_run5_conv_
          grFullCalib->Fit("fitFullCalib", "QR");
          canC->Update();
 
+         grCalP0->SetPoint(n, n, fitFullCalib->GetParameter(0));
+         grCalP1->SetPoint(n, n, fitFullCalib->GetParameter(1)*1e3);
+         grCalP2->SetPoint(n, n, fitFullCalib->GetParameter(2)*1e6);
+         grCalP3->SetPoint(n, n, fitFullCalib->GetParameter(3)*1e10);
+
          ///////////////////////////////////////////////////////////////////////////
          // write calibration coefficients
          string token = (isPside) ? Form("COMPTONTELESCOPE_D%d_STRIP_FRONT%d_E",DETECTOR_ID,n) 
@@ -462,8 +475,17 @@ void Analyse207Bi(const char* name = "bb7_3309-7_bi207_20210126_13h09_run5_conv_
    // calibration parameters
    canS->cd(2);
    hframe2->Draw();
-   grOffset->Draw("p");
-   grGain  ->Draw("p");
+   grCalP0->Draw("p");
+   grCalP1->Draw("p");
+   grCalP2->Draw("p");
+   grCalP3->Draw("p");
+	leg = new TLegend(0.73, 0.14, 0.87, 0.36);                        
+	leg->AddEntry(grCalP0,  "p0", "P");                                 
+	leg->AddEntry(grCalP1,  "p1 * 10^{3}", "P");                                 
+	leg->AddEntry(grCalP2,  "p2 * 10^{6}", "P");                                 
+	leg->AddEntry(grCalP3,  "p3 * 10^{10}", "P");                                 
+	leg->SetBorderSize(1);                                                 
+   leg->Draw();
 
    // fill pdf file
    canS->Print(pdfname.Data());
