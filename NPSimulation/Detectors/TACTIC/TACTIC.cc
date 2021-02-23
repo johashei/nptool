@@ -324,7 +324,7 @@ void TACTIC::ReadSensitive(const G4Event* event ){
   for (Light_itr = LightHitMap->GetMap()->begin(); Light_itr != LightHitMap->GetMap()->end(); Light_itr++) {
     G4double* Info = *(Light_itr->second);
     //file << event->GetEventID() << "\t";
-    for(int s = 0; s<11; s++) {
+    for(int s = 0; s<12; s++) {
       file << Info[s] << "\t";
     }
     file << Info[12] << endl;
@@ -340,7 +340,7 @@ void TACTIC::ReadSensitive(const G4Event* event ){
   for (Heavy_itr = HeavyHitMap->GetMap()->begin(); Heavy_itr != HeavyHitMap->GetMap()->end(); Heavy_itr++) {
     G4double* Info = *(Heavy_itr->second);
     //file << event->GetEventID() << "\t";
-    for(int s = 0; s<11; s++) {
+    for(int s = 0; s<12; s++) {
       file << Info[s] << "\t";
     }
     file << Info[12] << endl;
@@ -356,7 +356,7 @@ void TACTIC::ReadSensitive(const G4Event* event ){
   for (Beam_itr = BeamHitMap->GetMap()->begin(); Beam_itr != BeamHitMap->GetMap()->end(); Beam_itr++) {
     G4double* Info = *(Beam_itr->second);
     //file << event->GetEventID() << "\t";
-    for(int s = 0; s<11; s++) {
+    for(int s = 0; s<12; s++) {
       file << Info[s] << "\t";
     }
     file << Info[12] << endl;
