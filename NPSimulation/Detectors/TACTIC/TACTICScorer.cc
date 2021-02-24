@@ -10,7 +10,7 @@
 
 using namespace TACTICScorer;
 
-Gas_Scorer::Gas_Scorer(G4String name,G4int Level,G4double ScorerLength,G4int NumberOfSegments, G4int depth) //what do level and depth do?       
+Gas_Scorer::Gas_Scorer(G4String name,G4int Level,G4double ScorerLength,G4int NumberOfSegments, G4int depth, G4double p0, G4double p1, G4double p2, G4double p3) //what do level and depth do?       
 :G4VPrimitiveScorer(name, depth),HCID(-1){
   m_ScorerLength = ScorerLength;
   m_NumberOfSegments = NumberOfSegments;
@@ -19,13 +19,17 @@ Gas_Scorer::Gas_Scorer(G4String name,G4int Level,G4double ScorerLength,G4int Num
   m_Position = G4ThreeVector(-1000,-1000,-1000);
   m_SegmentNumber = -1;
   m_Index = -1;
+  m_p0 = p0;
+  m_p1 = p1;
+  m_p2 = p2;
+  m_p3 = p3;
 }
 
 Gas_Scorer::~Gas_Scorer(){}
 
 G4bool Gas_Scorer::ProcessHits(G4Step* aStep, G4TouchableHistory*){
 
-  G4double* Infos = new G4double[13];
+  G4double* Infos = new G4double[14];
   m_Position  = aStep->GetPreStepPoint()->GetPosition();
 
   Infos[0] = G4RunManager::GetRunManager()->GetCurrentEvent()->GetEventID();
@@ -47,6 +51,7 @@ G4bool Gas_Scorer::ProcessHits(G4Step* aStep, G4TouchableHistory*){
   G4ThreeVector p_vec = aStep->GetTrack()->GetVertexMomentumDirection();
   Infos[11] = acos(p_vec[2]/pow(pow(p_vec[0],2)+pow(p_vec[1],2)+pow(p_vec[2],2),0.5))/deg; //angle relative to z axis (theta);   
   Infos[12] = aStep->GetTrack()->GetTrackLength();
+  Infos[13] = m_p0 + m_p1*Infos[8] + m_p2*Infos[8]*Infos[8] + m_p3*Infos[8]*Infos[8]*Infos[8];
   
   m_DetectorNumber = aStep->GetPreStepPoint()->GetTouchableHandle()->GetCopyNumber(m_Level);
   m_Index = m_DetectorNumber * 1e3 + m_SegmentNumber * 1e6;

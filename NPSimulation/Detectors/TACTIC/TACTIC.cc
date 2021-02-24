@@ -227,6 +227,10 @@ void TACTIC::ReadConfiguration(NPL::InputParser parser){
       m_Temperature = blocks[i]->GetDouble("Temperature","kelvin");
       m_Pressure = blocks[i]->GetDouble("Pressure","bar");
       m_Active = blocks[i]->GetString("Active");
+      m_p0 = blocks[i]->GetDouble("p0","0");
+      m_p1 = blocks[i]->GetDouble("p1","0");
+      m_p2 = blocks[i]->GetDouble("p2","0");
+      m_p3 = blocks[i]->GetDouble("p3","0");
       //cout << "ACTIVE: " << m_Active << endl;
       AddDetector(Pos,Shape);
     }
@@ -324,10 +328,10 @@ void TACTIC::ReadSensitive(const G4Event* event ){
   for (Light_itr = LightHitMap->GetMap()->begin(); Light_itr != LightHitMap->GetMap()->end(); Light_itr++) {
     G4double* Info = *(Light_itr->second);
     //file << event->GetEventID() << "\t";
-    for(int s = 0; s<12; s++) {
+    for(int s = 0; s<13; s++) {
       file << Info[s] << "\t";
     }
-    file << Info[12] << endl;
+    file << Info[13] << endl;
   }
 
   LightHitMap->clear();
@@ -340,10 +344,10 @@ void TACTIC::ReadSensitive(const G4Event* event ){
   for (Heavy_itr = HeavyHitMap->GetMap()->begin(); Heavy_itr != HeavyHitMap->GetMap()->end(); Heavy_itr++) {
     G4double* Info = *(Heavy_itr->second);
     //file << event->GetEventID() << "\t";
-    for(int s = 0; s<12; s++) {
+    for(int s = 0; s<13; s++) {
       file << Info[s] << "\t";
     }
-    file << Info[12] << endl;
+    file << Info[13] << endl;
   }
 
   HeavyHitMap->clear();
@@ -356,10 +360,10 @@ void TACTIC::ReadSensitive(const G4Event* event ){
   for (Beam_itr = BeamHitMap->GetMap()->begin(); Beam_itr != BeamHitMap->GetMap()->end(); Beam_itr++) {
     G4double* Info = *(Beam_itr->second);
     //file << event->GetEventID() << "\t";
-    for(int s = 0; s<12; s++) {
+    for(int s = 0; s<13; s++) {
       file << Info[s] << "\t";
     }
-    file << Info[12] << endl;
+    file << Info[13] << endl;
   }
 
   BeamHitMap->clear();
@@ -385,9 +389,9 @@ void TACTIC::InitializeScorers() {
   
   if(input.GetAllBlocksWithToken("TwoBodyReaction").size()>0) {
     // NEED SEPERATE SCORERS FOR EACH PARTICLE! OTHERWISE SCORER JUST RETURNS OUTPUT FOR ONE PARTICLE WHEN THERE IS OVERLAP
-    G4VPrimitiveScorer* LightScorer = new TACTICScorer::Gas_Scorer("LightScorer",1,TACTIC_NS::active_length,(int)TACTIC_NS::NumberOfStrips);
-    G4VPrimitiveScorer* HeavyScorer = new TACTICScorer::Gas_Scorer("HeavyScorer",1,TACTIC_NS::active_length,(int)TACTIC_NS::NumberOfStrips);
-    G4VPrimitiveScorer* BeamScorer = new TACTICScorer::Gas_Scorer("BeamScorer",1,TACTIC_NS::active_length,(int)TACTIC_NS::NumberOfStrips);
+    G4VPrimitiveScorer* LightScorer = new TACTICScorer::Gas_Scorer("LightScorer",1,TACTIC_NS::active_length,(int)TACTIC_NS::NumberOfStrips,0,m_p0,m_p1,m_p2,m_p3);
+    G4VPrimitiveScorer* HeavyScorer = new TACTICScorer::Gas_Scorer("HeavyScorer",1,TACTIC_NS::active_length,(int)TACTIC_NS::NumberOfStrips,0,m_p0,m_p1,m_p2,m_p3);
+    G4VPrimitiveScorer* BeamScorer = new TACTICScorer::Gas_Scorer("BeamScorer",1,TACTIC_NS::active_length,(int)TACTIC_NS::NumberOfStrips,0,m_p0,m_p1,m_p2,m_p3);
     G4SDParticleFilter* LightFilter = new G4SDParticleFilter("LightFilter");
     G4SDParticleFilter* HeavyFilter = new G4SDParticleFilter("HeavyFilter");
     G4SDParticleFilter* BeamFilter = new G4SDParticleFilter("BeamFilter");
@@ -413,9 +417,9 @@ void TACTIC::InitializeScorers() {
 
   if(input.GetAllBlocksWithToken("Isotropic").size()>0) { //For alpha, proton or neutron source (obviously neutron wont do anything so this is spare).
 
-    G4VPrimitiveScorer* LightScorer = new TACTICScorer::Gas_Scorer("LightScorer",1,TACTIC_NS::active_length,(int)TACTIC_NS::NumberOfStrips);
-    G4VPrimitiveScorer* HeavyScorer = new TACTICScorer::Gas_Scorer("HeavyScorer",1,TACTIC_NS::active_length,(int)TACTIC_NS::NumberOfStrips);
-    G4VPrimitiveScorer* BeamScorer = new TACTICScorer::Gas_Scorer("BeamScorer",1,TACTIC_NS::active_length,(int)TACTIC_NS::NumberOfStrips);
+    G4VPrimitiveScorer* LightScorer = new TACTICScorer::Gas_Scorer("LightScorer",1,TACTIC_NS::active_length,(int)TACTIC_NS::NumberOfStrips,0,m_p0,m_p1,m_p2,m_p3);
+    G4VPrimitiveScorer* HeavyScorer = new TACTICScorer::Gas_Scorer("HeavyScorer",1,TACTIC_NS::active_length,(int)TACTIC_NS::NumberOfStrips,0,m_p0,m_p1,m_p2,m_p3);
+    G4VPrimitiveScorer* BeamScorer = new TACTICScorer::Gas_Scorer("BeamScorer",1,TACTIC_NS::active_length,(int)TACTIC_NS::NumberOfStrips,0,m_p0,m_p1,m_p2,m_p3);
     G4SDParticleFilter* LightFilter = new G4SDParticleFilter("LightFilter","alpha");
     G4SDParticleFilter* HeavyFilter = new G4SDParticleFilter("HeavyFilter","proton");
     G4SDParticleFilter* BeamFilter = new G4SDParticleFilter("BeamFilter","neutron");
