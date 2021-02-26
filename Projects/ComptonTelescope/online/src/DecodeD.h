@@ -5,11 +5,15 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <vector>
 using namespace std;
 
 // Root headers
 #include "TFile.h"
 #include "TTree.h"
+
+#define NBDETECTORS 1
+#define NBSTRIPS  32
 
 enum Datatype {D_NONE = 0, D_ROOT, D_MFM};
 
@@ -59,6 +63,10 @@ class DecodeD
     uint32_t* timestamp;
 
     // For online data
+    vector<int> FaceType;
+    vector<int> DetNbr;
+    vector<int> StripNbr;
+    vector<double> Energy;
 
   public:
     DecodeD(bool v);
@@ -70,12 +78,19 @@ class DecodeD
 
     long int getCursor();
     long int getLength();
+    int getEventSize();
+    int getFaceType(const int i);
+    int getDetNbr(const int i);
+    int getStripNbr(const int i);
+    double getEnergy(const int i);
     long int getTime();
     newframe_t* getEvent();
     // One may add a few getters here and deprecate getEvent to avoid requiring the class user to know the newframe_t struct
     
     void decodeEvent();
+    void decodeEventFinal();
 
+    void Clear();
     void Dump();
 };
 

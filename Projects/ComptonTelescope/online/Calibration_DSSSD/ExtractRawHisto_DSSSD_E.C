@@ -23,7 +23,8 @@ using namespace std;
 
 // custom headers
 #include "../src/DecodeD.h"
-#include "../src/DecodeD.cpp"
+
+R__LOAD_LIBRARY(../build/lib/libDecodeD.so)
 
 #define NBDETECTORS	1	
 #define	NBSTRIPS	32

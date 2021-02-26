@@ -314,7 +314,7 @@ void TComptonTelescopePhysics::PreTreat()
   for (UShort_t i = 0; i < m_EventData->GetCTTrackerBackEMult(); ++i) {
     m_CounterEvt[4] = 1; // nb of events with at least one EB raw recorded
     m_CounterHit[3] += 1; // nb of hits with EB raw
-    //cout << "Raw: DetB = " << m_EventData->GetCTTrackerBackEDetectorNbr(i) << " ; stripB = " << m_EventData->GetCTTrackerBackEStripNbr(i) << " ; EB raw = " << m_EventData->GetCTTrackerFrontEEnergy(i) << endl;
+    //cout << "Raw: DetB = " << m_EventData->GetCTTrackerBackEDetectorNbr(i) << " ; stripB = " << m_EventData->GetCTTrackerBackEStripNbr(i) << " ; EB raw = " << m_EventData->GetCTTrackerBackEEnergy(i) << endl;
 
     if (m_EventData->GetCTTrackerBackEEnergy(i) > m_StripBack_E_RAW_Threshold && 
         IsValidChannel("Back", m_EventData->GetCTTrackerBackEDetectorNbr(i), m_EventData->GetCTTrackerBackEStripNbr(i))) {

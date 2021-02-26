@@ -95,28 +95,28 @@ class TComptonTelescopeData : public TObject {
       void SetCTTrackerBackTStripNbr(const UShort_t StripNbr)     {fCT_Tracker_BackT_StripNbr.push_back(StripNbr);}
       void SetCTTrackerBackTTime(const Double_t Time)             {fCT_Tracker_BackT_Time.push_back(Time);}
       // set all Front E
-      void SetFrontE(const UShort_t& TowNbr, const UShort_t DetNbr, const UShort_t StripNbr, const Double_t Energy) {
+      void SetFrontE(const UShort_t TowNbr, const UShort_t DetNbr, const UShort_t StripNbr, const Double_t Energy) {
         SetCTTrackerFrontETowerNbr(TowNbr);
         SetCTTrackerFrontEDetectorNbr(DetNbr);
         SetCTTrackerFrontEStripNbr(StripNbr);
         SetCTTrackerFrontEEnergy(Energy);
       };
       // set all Back E
-      void SetBackE(const UShort_t& TowNbr, const UShort_t DetNbr, const UShort_t StripNbr, const Double_t Energy) {
+      void SetBackE(const UShort_t TowNbr, const UShort_t DetNbr, const UShort_t StripNbr, const Double_t Energy) {
         SetCTTrackerBackETowerNbr(TowNbr);
         SetCTTrackerBackEDetectorNbr(DetNbr);
         SetCTTrackerBackEStripNbr(StripNbr);
         SetCTTrackerBackEEnergy(Energy);
       };
       // set all Front T
-      void SetFrontT(const UShort_t& TowNbr, const UShort_t DetNbr, const UShort_t StripNbr, const Double_t Time) {
+      void SetFrontT(const UShort_t TowNbr, const UShort_t DetNbr, const UShort_t StripNbr, const Double_t Time) {
         SetCTTrackerFrontTTowerNbr(TowNbr);
         SetCTTrackerFrontTDetectorNbr(DetNbr);
         SetCTTrackerFrontTStripNbr(StripNbr);
         SetCTTrackerFrontTTime(Time);
       };
       // set all Back T
-      void SetBackT(const UShort_t& TowNbr, const UShort_t DetNbr, const UShort_t StripNbr, const Double_t Time) {
+      void SetBackT(const UShort_t TowNbr, const UShort_t DetNbr, const UShort_t StripNbr, const Double_t Time) {
         SetCTTrackerBackTTowerNbr(TowNbr);
         SetCTTrackerBackTDetectorNbr(DetNbr);
         SetCTTrackerBackTStripNbr(StripNbr);
