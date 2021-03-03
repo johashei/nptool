@@ -17,13 +17,16 @@
 #include "DecodeT.h"
 
 #define __TEST_ZONE__
-#undef __TEST_ZONE__
+//#undef __TEST_ZONE__
+
+#define __CIRCULAR_TREE__
+#undef __CIRCULAR_TREE__
 
 #define __USE_CUTG__
-//#undef __USE_CUTG__
+#undef __USE_CUTG__
 
 #define __RESET_SEARCH__
-#undef __RESET_SEARCH__
+//#undef __RESET_SEARCH__
 
 // C++ headers
 #include <iostream>
@@ -86,13 +89,17 @@ void setCTTracker(TComptonTelescopeData* ccamData, newframe_t* event, vector<int
 //--//--//--//--//--//--//--//--//--//--//--//--//--//--//--//
 int main()
 {
-#ifdef __RESET_SEARCH__
+#if defined __RESET_SEARCH__
   int resetCountSearch = 3;
-  int timestampDiffSearch = 1000;
+  int timestampDiffSearch = 500;
   int timestampNBins = 100;
   auto fout = new TFile("pipo.root", "recreate");
   auto bidim = new TH2F("bidim", "bidim", 
-      2*resetCountSearch, -resetCountSearch, resetCountSearch, 
+#ifdef __TEST_ZONE__
+      150, 0, 150000,
+#else
+      2*resetCountSearch+1, -resetCountSearch-.5, resetCountSearch+.5, 
+#endif
       timestampNBins, -timestampDiffSearch, timestampDiffSearch);
 #endif
 #ifdef __USE_CUTG__
@@ -118,7 +125,7 @@ int main()
   ///////////////////////////////////////////////////////////////////////////
   // configure option manager
 //   NPOptionManager::getInstance()->Destroy();
-#ifdef __TEST_ZONE__
+#ifdef __CIRCULAR_TREE__
   string arg = "-D ./ComptonCAM.detector -C calibrations.txt -GH -E ./10He.reaction --circular";
 #else
   string arg = "-D ./ComptonCAM.detector -C calibrations.txt -GH -E ./10He.reaction";
@@ -165,7 +172,7 @@ int main()
   const int pixelNumber = 64;
   const int stripNumber = 32;
 
-#ifdef __TEST_ZONE__
+#ifdef __CIRCULAR_TREE__
 
   while (DD -> getCursor() < dlen)
   {
@@ -220,7 +227,7 @@ int main()
   resetCount = DT->getResetCount() - resetCount;
   cout << "Found reset count: " << resetCount << endl;
 
-#ifdef __RESET_SEARCH__
+#if defined __RESET_SEARCH__ && !defined __TEST_ZONE__
   // Fill control bidim
   for (int reset=-resetCountSearch; reset<resetCountSearch+1; reset++)
   {
@@ -241,23 +248,29 @@ int main()
   int tr = DR -> getTime();
   int td = DD -> getTime();
 //  int dt = 100;
-#ifdef __RESET_SEARCH__
+#if defined __RESET_SEARCH__
   while(DR -> getCursor() < rlen and DD -> getCursor() < dlen)
-  //while(c < 1000)
+//  while(c < 1000)
   {
 //    cout << DR -> getTime() << " " << DD -> getTime() << endl; 
     if (cr == cd) {
       if (abs(td-tr) < timestampDiffSearch) {
+#ifdef __TEST_ZONE__
+        bidim->Fill(c, td-tr);
+#else
         bidim->Fill(reset, td-tr);
+#endif
         c++;
       }
 #else
   while(DR -> getCursor() < rlen and DD -> getCursor() < dlen)
   {
     if (cr == cd) {
-
-      if (td-tr < 110 and td-tr > 0) { // That one is the real one
-//      if (tr-td > 50 and tr-td < 1000) {
+#ifndef __TEST_ZONE__
+      if (td-tr > 0 and td-tr < 110) { // That one is the real one
+#else
+      if (td-tr > -1000  and td-tr < 1000) {
+#endif
         //DR -> Dump();
         //DD -> Dump();
         c++;
@@ -269,6 +282,7 @@ int main()
         // Fill data
         ccamData -> SetCTCalorimeter(1, 4, DR->getPixelNumber(), DR->getTime(), DR->getData(), pixelNumber);
         setCTTracker(ccamData, DD -> getEvent(), &nb_asic, &chain, stripNumber);
+        ccamData -> SetResetCount(cr);
 
         // Build physical event
         m_NPDetectorManager->BuildPhysicalEvent();
@@ -315,7 +329,7 @@ int main()
     i++;
   
   } // End of main loop
-#ifdef __RESET_SEARCH__
+#if defined __RESET_SEARCH__ && !defined __TEST_ZONE__
   }
 #endif
 
@@ -329,7 +343,7 @@ int main()
   // fill spectra
   m_NPDetectorManager -> WriteSpectra();
 
-#ifdef __RESET_SEARCH__
+#if defined __RESET_SEARCH__ || defined __
   fout->cd();
   bidim->Write();
   fout->Close();

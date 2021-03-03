@@ -273,6 +273,7 @@ void TComptonTelescopePhysics::BuildSimplePhysicalEvent()
       }
     }
   }
+  resetCount = m_EventData -> GetResetCount();
 
   //   if (DetectorNumber.size() == 1) return;
 }
@@ -369,6 +370,8 @@ void TComptonTelescopePhysics::PreTreat()
     }
     m_PreTreatedData -> SetCTCalorimeter(m_EventData->GetCTCalorimeterTTowerNbr(i), m_EventData->GetCTCalorimeterEDetectorNbr(i*m_NPixels), m_EventData->GetCTCalorimeterTChannelNbr(i), m_EventData->GetCTCalorimeterTTime(i), data, m_NPixels);
   }
+
+  m_PreTreatedData -> SetResetCount(m_EventData -> GetResetCount());
 
 }
 

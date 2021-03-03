@@ -64,6 +64,8 @@ class TComptonTelescopeData : public TObject {
       vector<UShort_t>   fCT_Calorimeter_T_ChannelNbr;
       vector<Double_t>   fCT_Calorimeter_T_Time;
 
+      long int fCTResetCount;
+
    public:
       TComptonTelescopeData();
       virtual ~TComptonTelescopeData();
@@ -136,6 +138,8 @@ class TComptonTelescopeData : public TObject {
       void SetCTCalorimeterTChannelNbr(const UShort_t ChannelNbr) {fCT_Calorimeter_T_ChannelNbr.push_back(ChannelNbr);}
       void SetCTCalorimeterTTime(const Double_t Time)             {fCT_Calorimeter_T_Time.push_back(Time);}*/
 
+      void SetResetCount(long int reset) {fCTResetCount = reset;}
+
 
       /////////////////////           GETTERS           ////////////////////////
       // DSSD
@@ -178,6 +182,8 @@ class TComptonTelescopeData : public TObject {
       UShort_t   GetCTCalorimeterTDetectorNbr(const Int_t i)   const {return fCT_Calorimeter_T_DetectorNbr[i];}
       UShort_t   GetCTCalorimeterTChannelNbr(const Int_t i)    const {return fCT_Calorimeter_T_ChannelNbr[i];}
       Double_t   GetCTCalorimeterTTime(const Int_t i)          const {return fCT_Calorimeter_T_Time[i];}
+
+      long int GetResetCount() const {return fCTResetCount;}
 
       ClassDef(TComptonTelescopeData,1)  // ComptonTelescopeData structure
 };
