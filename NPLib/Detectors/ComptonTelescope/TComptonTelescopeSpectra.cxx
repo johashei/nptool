@@ -300,38 +300,30 @@ void TComptonTelescopeSpectra::InitPhysicsSpectra()
       AddHisto1D(name, name, 5000, -2000, 5e9, "COMPTONTELESCOPE/PHY/TIME");
 
       // Hit pattern
-      name = "CT"+NPL::itoa(i+1)+"_DSSSD_HIT_PHY";
+      name = "CT"+NPL::itoa(i+1)+"_DSSSD"+NPL::itoa(j+1)+"_HIT_PHY";
       int ntotF = fNumberOfStripsFront * fNumberOfDetectors;
       int ntotB = fNumberOfStripsBack  * fNumberOfDetectors;
       AddHisto2D(name, name, ntotF, 0, ntotF, ntotB, 0, ntotB, "COMPTONTELESCOPE/PHY/HITPATTERN");
-
-/* 
+ 
       // X-Y Impact Matrix
       name = "CT"+NPL::itoa(i+1)+"_DSSSD"+NPL::itoa(j+1)+"_IMPACT_MATRIX";
-      AddHisto2D(name, name,500,-150,150,500,-150,150, "COMPTONTELESCOPE/PHY/IMPACTMATRIX");
-*/
+      AddHisto2D(name, name, 80, -40, 40, 80, -40, 40, "COMPTONTELESCOPE/PHY/IMPACTMATRIX");
+
     }
 
-  // X-Y Energy Correlation
-//  for (unsigned int i = 0 ; i < fNumberOfTelescope ; i++) { // loop on number of detectors
+    // X-Y Energy Correlation
     name = "CT"+NPL::itoa(i+1)+"_XY_COR";
     AddHisto2D(name, name,500,0,50,500,0,50, "COMPTONTELESCOPE/PHY");
-//  }
 
-  // Calorimeter energy spectrum
-//  for (unsigned int i = 0 ; i < fNumberOfTelescope ; i++) { // loop on number of detectors
+    // Calorimeter energy spectrum
     name = "CT"+NPL::itoa(i+1)+"_CALOR_SPECTRUM";
     AddHisto1D(name, name, 1000, 1, 2000, "COMPTONTELESCOPE/PHY/CALOR");
-//  }
 
-  // Position on calorimeter
-//  for (unsigned int i = 0 ; i < fNumberOfTelescope ; i++) { // loop on number of detectors
+    // Position on calorimeter
     name = "CT"+NPL::itoa(i+1)+"_CALOR_POS";
     AddHisto2D(name, name, 8, -24, 24, 8, -24, 24, "COMPTONTELESCOPE/PHY/CALOR_POS");
-//  }
 
-  // Sum spectrum
-//  for (unsigned int i = 0; i < fNumberOfTelescope; i++) { // loop on number of detectors
+    // Sum spectrum
     name = "CT"+NPL::itoa(i+1)+"_SUM_SPECTRUM";
     AddHisto1D(name, name, 1000, 1, 2000, "COMPTONTELESCOPE/PHY/CALOR");
 
@@ -844,20 +836,19 @@ void TComptonTelescopeSpectra::FillPhysicsSpectra(TComptonTelescopePhysics* Phys
 
   // Hit pattern
   for (unsigned int i = 0; i < Physics->GetEventMultiplicity(); i++) {
-    name = "CT"+NPL::itoa(Physics->GetTowerNumber(i))+"_DSSSD_HIT_PHY";
+    name = "CT"+NPL::itoa(Physics->GetTowerNumber(i))+"_DSSSD"+NPL::itoa(Physics->GetDetectorNumber(i))+"_HIT_PHY";
     family= "COMPTONTELESCOPE/PHY/HITPATTERN";
     FillSpectra(family,name,Physics->GetFrontStrip(i) + fNumberOfStripsFront*(Physics->GetDetectorNumber(i)-1), Physics->GetBackStrip(i) + fNumberOfStripsBack*(Physics->GetDetectorNumber(i)-1));    
   }
 
   // X-Y Impact Matrix
-  /*  for(unsigned int i = 0 ; i < Physics->GetEventMultiplicity(); i++){
+  for(unsigned int i = 0 ; i < Physics->GetEventMultiplicity(); i++){
     name = "CT"+NPL::itoa(Physics->GetTowerNumber(i))+"_DSSSD"+NPL::itoa(Physics->GetDetectorNumber(i))+"_IMPACT_MATRIX";
     family= "COMPTONTELESCOPE/PHY/IMPACTMATRIX";
-    double x = Physics->GetPositionOfInteraction(i).x();
-    double y = Physics->GetPositionOfInteraction(i).y();
+    double x = Physics->GetPositionOfInteractionDSSSD(i).x();
+    double y = Physics->GetPositionOfInteractionDSSSD(i).y();
     FillSpectra(family,name,x,y);
   }
-*/
 
 
   //// Calorimeter

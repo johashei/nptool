@@ -141,6 +141,7 @@ class TComptonTelescopePhysics : public TObject, public NPL::VDetector
       void ReadAnalysisConfig();
          
       // Add a Detector
+      void AddDetectorDSSSD(TVector3 C_X0_Y0, TVector3 C_X31_Y0, TVector3 C_X0_Y31, TVector3 C_X31_Y31, double size_dsssd, int nb_strip);
       void AddComptonTelescope(double Z);
       
       // Give and external TComptonTelescopeData object to TComptonTelescopePhysics
@@ -152,9 +153,9 @@ class TComptonTelescopePhysics : public TObject, public NPL::VDetector
       TComptonTelescopeData* GetPreTreatedData() const {return m_PreTreatedData;}
 
       // Use to access the strip position
-      double GetStripPositionX(const int N, const int Front, const int Back)  const {return m_StripPositionX[N-1][Front-1][Back-1];};
-      double GetStripPositionY(const int N, const int Front, const int Back)  const {return m_StripPositionY[N-1][Front-1][Back-1];};
-      double GetStripPositionZ(const int N, const int Front, const int Back)  const {return m_StripPositionZ[N-1][Front-1][Back-1];};
+      double GetStripPositionX(const int N, const int Front, const int Back)  const {return m_StripPositionX[N-1][Front][Back];};
+      double GetStripPositionY(const int N, const int Front, const int Back)  const {return m_StripPositionY[N-1][Front][Back];};
+      double GetStripPositionZ(const int N, const int Front, const int Back)  const {return m_StripPositionZ[N-1][Front][Back];};
 
       double GetNumberOfDetectors() const {return m_NumberOfDetectors;};
 
@@ -170,7 +171,7 @@ class TComptonTelescopePhysics : public TObject, public NPL::VDetector
       double GetFrontTime(const int i) {return Front_Time[i];};
       double GetBackTime(const int i) {return Back_Time[i];};
       
-      TVector3 GetPositionOfInteraction(const int i) const;   
+      TVector3 GetPositionOfInteractionDSSSD(const int i) const;   
       TVector3 GetDetectorNormal(const int i) const;
 
    private:   // Parameter used in the analysis

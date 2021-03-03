@@ -315,7 +315,7 @@ void TComptonTelescopePhysics::PreTreat()
   for (UShort_t i = 0; i < m_EventData->GetCTTrackerBackEMult(); ++i) {
     m_CounterEvt[4] = 1; // nb of events with at least one EB raw recorded
     m_CounterHit[3] += 1; // nb of hits with EB raw
-    //cout << "Raw: DetB = " << m_EventData->GetCTTrackerBackEDetectorNbr(i) << " ; stripB = " << m_EventData->GetCTTrackerBackEStripNbr(i) << " ; EB raw = " << m_EventData->GetCTTrackerFrontEEnergy(i) << endl;
+    //cout << "Raw: DetB = " << m_EventData->GetCTTrackerBackEDetectorNbr(i) << " ; stripB = " << m_EventData->GetCTTrackerBackEStripNbr(i) << " ; EB raw = " << m_EventData->GetCTTrackerBackEEnergy(i) << endl;
 
     if (m_EventData->GetCTTrackerBackEEnergy(i) > m_StripBack_E_RAW_Threshold && 
         IsValidChannel("Back", m_EventData->GetCTTrackerBackEDetectorNbr(i), m_EventData->GetCTTrackerBackEStripNbr(i))) {
@@ -674,7 +674,62 @@ void TComptonTelescopePhysics::Clear()
 ///////////////////////////////////////////////////////////////////////////
 void TComptonTelescopePhysics::ReadConfiguration(NPL::InputParser parser){
 
-  vector<NPL::InputBlock*> blocks = parser.GetAllBlocksWithToken("ComptonTelescope");
+  // DSSSD blocks
+  vector<NPL::InputBlock*> blocksDSSSD = parser.GetAllBlocksWithToken("DSSSD");
+  if(NPOptionManager::getInstance()->GetVerboseLevel())
+    cout << "//// " << blocksDSSSD.size() << " DSSSD detectors found " << endl; 
+
+  for(unsigned int i = 0 ; i < blocksDSSSD.size() ; i++){
+
+    vector<string> cartDSSSD = {"X0_Y0", "X31_Y0", "X0_Y31", "X31_Y31"};
+
+    if(blocksDSSSD[i]->HasTokenList(cartDSSSD)){
+      cout << endl << "//// DSSSD " << i+1 << endl;
+      TVector3 A = blocksDSSSD[i]->GetTVector3("X0_Y0", "mm");
+      TVector3 B = blocksDSSSD[i]->GetTVector3("X31_Y0", "mm");
+      TVector3 C = blocksDSSSD[i]->GetTVector3("X0_Y31", "mm");
+      TVector3 D = blocksDSSSD[i]->GetTVector3("X31_Y31", "mm");
+
+      int nbr_detDSSSD = blocksDSSSD[i]->GetInt("NUMBER_DSSSD");
+      double sizeDSSSD = blocksDSSSD[i]->GetDouble("SIZE_DSSSD","mm");
+      double thicknessDSSSD = blocksDSSSD[i]->GetDouble("THICKNESS_DSSSD","mm");
+      int nbr_stripDSSSD = blocksDSSSD[i]->GetInt("NUMBER_STRIPS");
+
+      AddDetectorDSSSD(A,B,C,D,sizeDSSSD,nbr_stripDSSSD);
+    }
+    else {
+      cout << "ERROR: Missing token for DSSSD blocks, check your input file" << endl;
+      exit(1);
+    }
+  } // end DSSSD blocks
+  
+  // Calorimeter blocks
+  vector<NPL::InputBlock*> blocksCalo = parser.GetAllBlocksWithToken("CALORIMETER");
+  if(NPOptionManager::getInstance()->GetVerboseLevel())
+  cout <<  "//// " << blocksCalo.size() << " calorimeter detectors found " << endl;
+
+  for (unsigned int i  = 0 ; i < blocksCalo.size() ; i++){
+    int nbr_detCalorimeter = blocksCalo[i]->GetInt("NUMBER_CALORIMETER");
+    double thickness_cal = blocksCalo[i]->GetDouble("THICKNESS_CALORIMETER","mm");
+    int npixels_cal = blocksCalo[i]->GetInt("NPIXELS_CALORIMETER");
+  } // end calorimeter blocks
+
+  // ComptonTelescope blocks
+  vector<NPL::InputBlock*> blocksCompton = parser.GetAllBlocksWithToken("ComptonTelescope");
+  if(NPOptionManager::getInstance()->GetVerboseLevel())
+    cout <<  "//// " << blocksCompton.size() << " ComptonTelescope found " << endl;
+
+  for (unsigned int i  = 0 ; i < blocksCompton.size() ; i++){
+    int nb_tracker = blocksCompton[i]->GetInt("TRACKER");
+    double inter = blocksCompton[i]->GetDouble("DISTANCE_INTER_DSSSD","mm");
+    double distance_cal = blocksCompton[i]->GetDouble("DISTANCE_TRACKER_CALORIMETER","mm");
+    int vis= blocksCompton[i]->GetInt("VIS");
+  }
+
+  InitializeStandardParameter();
+  ReadAnalysisConfig();
+}
+/*  vector<NPL::InputBlock*> blocks = parser.GetAllBlocksWithToken("ComptonTelescope");
   if(NPOptionManager::getInstance()->GetVerboseLevel())
     cout << "//// " << blocks.size() << " detectors found " << endl; 
 
@@ -699,17 +754,7 @@ void TComptonTelescopePhysics::ReadConfiguration(NPL::InputParser parser){
       int    vis= blocks[i]->GetInt("VIS");
       AddComptonTelescope(R);
     }
-
-    else{
-      cout << "ERROR: check your input file formatting " << endl;
-      exit(1);
-    }
-  }
-
-  InitializeStandardParameter();
-  ReadAnalysisConfig();
-}
-
+*/
 
 ///////////////////////////////////////////////////////////////////////////
 void TComptonTelescopePhysics::AddParameterToCalibrationManager()
@@ -783,14 +828,70 @@ void TComptonTelescopePhysics::InitializeRootOutput()
 
 /////   Specific to ComptonTelescopeArray   ////
 
+void TComptonTelescopePhysics::AddDetectorDSSSD(TVector3 C_X0_Y0, TVector3 C_X31_Y0, TVector3 C_X0_Y31, TVector3 C_X31_Y31, double size_dsssd, int nb_strip)
+{
+  m_NumberOfDetectors++;
+
+  // remove warning using C_X31_Y31
+  C_X31_Y31.Unit();
+
+  // Vector U on Module Face (parallele to Y/Back Strip)
+  // NB: Y strips are allong X axis
+  TVector3 U = C_X31_Y0 - C_X0_Y0;
+  U = U.Unit();
+
+  // Vector V on Module Face (parallele to X Strip)
+  TVector3 V = C_X0_Y31 - C_X0_Y0;
+  V = V.Unit();
+
+  // Position Vector of Strip Center
+  TVector3 StripCenter = TVector3(0,0,0);
+
+  // Position Vector of X=0 Y=0 strip
+  TVector3 Strip_0_0;
+
+  // Buffer object to fill Position Array
+  vector<double> lineX;
+  vector<double> lineY;
+  vector<double> lineZ;
+
+  vector< vector< double > >   OneModuleStripPositionX;
+  vector< vector< double > >   OneModuleStripPositionY;
+  vector< vector< double > >   OneModuleStripPositionZ;
+
+  // strip pitch
+  double stripPitch = size_dsssd/(double)nb_strip;
+  // Moving StripCenter to strip center of 0.0 corner
+  Strip_0_0 = C_X0_Y0 + (U+V) * (stripPitch/2.);
+
+  for (int i = 0; i < nb_strip; i++) {
+    lineX.clear();
+    lineY.clear();
+    lineZ.clear();
+
+    for (int j = 0; j < nb_strip; j++) {
+      StripCenter = Strip_0_0 + stripPitch*(i*U + j*V);
+      lineX.push_back( StripCenter.X() );
+      lineY.push_back( StripCenter.Y() );
+      lineZ.push_back( StripCenter.Z() );
+    }
+
+    OneModuleStripPositionX.push_back(lineX);
+    OneModuleStripPositionY.push_back(lineY);
+    OneModuleStripPositionZ.push_back(lineZ);
+  }
+
+  m_StripPositionX.push_back(OneModuleStripPositionX);
+  m_StripPositionY.push_back(OneModuleStripPositionY);
+  m_StripPositionZ.push_back(OneModuleStripPositionZ);
+}
+
 void TComptonTelescopePhysics::AddComptonTelescope(double Z)
 {
   m_NumberOfDetectors++;
   // empty at the moment
   // needed if solid angle analysis are needed
 }
-
-
 
 TVector3 TComptonTelescopePhysics::GetDetectorNormal( const int i) const{
   /*  TVector3 U =    TVector3 ( GetStripPositionX( DetectorNumber[i] , 24 , 1 ) ,
@@ -817,10 +918,11 @@ TVector3 TComptonTelescopePhysics::GetDetectorNormal( const int i) const{
 
 }
 
-TVector3 TComptonTelescopePhysics::GetPositionOfInteraction(const int i) const{
+TVector3 TComptonTelescopePhysics::GetPositionOfInteractionDSSSD(const int i) const{
   TVector3    Position = TVector3 (  GetStripPositionX( DetectorNumber[i] , Strip_Front[i] , Strip_Back[i] )    ,
       GetStripPositionY( DetectorNumber[i] , Strip_Front[i] , Strip_Back[i] )    ,
       GetStripPositionZ( DetectorNumber[i] , Strip_Front[i] , Strip_Back[i] )    ) ;
+
   return(Position) ;
 
 }

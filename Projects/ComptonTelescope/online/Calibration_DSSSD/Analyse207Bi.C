@@ -2,9 +2,9 @@
 // This macro calibrates DSSSDs with a 207Bi source.                         //
 //                                                                           //
 // It treats either all ASIC channels (channel = -1) or a single one         //
-// (specify channel number). A boolean (isPside) should indicate whether the //
-// file corresponds to p-side (1) or n-side (0). A pdf file is generated     //
-// the relevant information.                                                 //
+// (specify channel number). A boolean (isPside) should indicate whether     //
+// the input file corresponds to p-side (1) or n-side (0). A pdf file is     //
+// generated with the relevant information.                                  //
 //                                                                           //
 // Use: .L Analyse207Bi.C+                                                   //
 //      Analyse207Bi(name, isPside, channel)                                 //
@@ -31,6 +31,7 @@
 #include "TLine.h"
 #include "TError.h"
 #include "TROOT.h"
+#include "TMath.h"
 
 // C++ headers
 #include <iostream>
@@ -40,7 +41,6 @@
 
 // STL headers
 #include <vector>
-#include <algorithm>
 using namespace std;
 
 #define DETECTOR_ID       1
@@ -50,10 +50,12 @@ using namespace std;
 
 // variables
 static std::vector<Double_t> peakListForFit;
+static const double branchingLM = 4; //L/M branching ratios
 
 // functions
 void AddPeak(Double_t, Double_t, Double_t);
 Double_t fpeaks(Double_t*, Double_t*);
+Double_t fpeaks2(Double_t*, Double_t*);
 Double_t gaussianPeak(Double_t*, Double_t*);
 
 
@@ -89,19 +91,21 @@ void Analyse207Bi(const char* name = "bb7_3309-7_bi207_20210126_13h09_run5_conv_
    ///////////////////////////////////////////////////////////////////////////
    // open output pdf file
    string label = sname.substr(4, 6);
-   label += sname.substr(16, 20);
+   label += sname.substr(16, 21);
    label += (isPside) ? "_pside" : "_nside";
    TString pdfname = Form("Analyse207Bi_%s.pdf", label.c_str());
    can->Print(Form("%s[", pdfname.Data()));
 
    ///////////////////////////////////////////////////////////////////////////
    // open output calib file
-   string fname = (isPside) ? Form("DSSSD_D%d_Calibration_Front_E.txt",DETECTOR_ID) : Form("DSSSD_D%d_Calibration_Back_E.txt",DETECTOR_ID);
+   string fname = (isPside) ? Form("DSSSD_D%d_Calibration_Front_E.txt",DETECTOR_ID) 
+                            : Form("DSSSD_D%d_Calibration_Back_E.txt",DETECTOR_ID);
    ofstream calibFile(fname.c_str(), std::ios::out);
    
    ///////////////////////////////////////////////////////////////////////////
    // define some functions
-   auto fcalib  = new TF1("fcalib", "pol1", 1024);
+   auto fcalibFull  = new TF1("fcalibFull",  "pol1", 1024);
+   auto fcalibLocal = new TF1("fcalibLocal", "pol1", 1024);
 
    ///////////////////////////////////////////////////////////////////////////
    // define vectors for calibration
@@ -110,19 +114,25 @@ void Analyse207Bi(const char* name = "bb7_3309-7_bi207_20210126_13h09_run5_conv_
    ///////////////////////////////////////////////////////////////////////////
    // prepare summary information
    // FWHM in keV
-   auto grFWHMlow   = new TGraph();
+   auto grFWHMlow  = new TGraph();
    grFWHMlow->SetMarkerStyle(kFullSquare);
    grFWHMlow->SetMarkerColor(kRed);
    auto grFWHMhigh = new TGraph();
    grFWHMhigh->SetMarkerStyle(kFullCircle);
    grFWHMhigh->SetMarkerColor(kBlue);
    // energy calibration parameters
-   auto grOffset = new TGraph();
-   grOffset->SetMarkerStyle(kFullSquare);
-   grOffset->SetMarkerColor(kRed);
-   auto grGain   = new TGraph();
-   grGain->SetMarkerStyle(kFullCircle);
-   grGain->SetMarkerColor(kBlue);
+   auto grCalP0 = new TGraph();
+   grCalP0->SetMarkerStyle(kFullSquare);
+   grCalP0->SetMarkerColor(kRed);
+   auto grCalP1 = new TGraph();
+   grCalP1->SetMarkerStyle(kFullCircle);
+   grCalP1->SetMarkerColor(kBlue);
+   auto grCalP2 = new TGraph();
+   grCalP2->SetMarkerStyle(kOpenSquare);
+   grCalP2->SetMarkerColor(kMagenta);
+   auto grCalP3 = new TGraph();
+   grCalP3->SetMarkerStyle(kOpenCircle);
+   grCalP3->SetMarkerColor(kMagenta);
 
    ///////////////////////////////////////////////////////////////////////////
    // declare some display histograms
@@ -133,20 +143,23 @@ void Analyse207Bi(const char* name = "bb7_3309-7_bi207_20210126_13h09_run5_conv_
    hframe1->GetXaxis()->CenterTitle();
    hframe1->GetYaxis()->CenterTitle();
    // calibration histogram
-   auto hframe2 = new TH2F("hframe2", "hframe2", 32, 0, 32, 100, 0, 70);
+   auto hframe2 = new TH2F("hframe2", "hframe2", 32, 0, 32, 100, -10, 10);
    hframe2->GetXaxis()->SetTitle("strip number");
+   hframe2->GetYaxis()->SetTitle("fit parameters");
    hframe2->GetXaxis()->CenterTitle();
+   hframe2->GetYaxis()->CenterTitle();
 
    ///////////////////////////////////////////////////////////////////////////
 	// treat all channels 
    for (Int_t n = 0; n < NCHANNELS; ++n) {   // loop on channels
       // treat all channels or specified one
       if (channel < 0 || channel == n) {
-         cout << "Analysing channel " << n << "\n";
+         cout << "\n--------------- Analysing channel " << n << " ---------------\n";
 
          ///////////////////////////////////////////////////////////////////////////
          // get histogram
-         string hname = (isPside) ? Form("h_D%d_FRONT_E%d",DETECTOR_ID,n+1) : Form("h_D%d_BACK_E%d",DETECTOR_ID,n+1);
+         string hname = (isPside) ? Form("h_D%d_FRONT_E%d",DETECTOR_ID,n+1) 
+                                  : Form("h_D%d_BACK_E%d",DETECTOR_ID,n+1);
          auto h = (TH1F*) f->Get(hname.c_str());
          h->Sumw2();
          // draw histogram
@@ -168,8 +181,8 @@ void Analyse207Bi(const char* name = "bb7_3309-7_bi207_20210126_13h09_run5_conv_
          auto s = new TSpectrum();
          Int_t npeaks = s->Search(h, 6, "", 0.6);
          h->DrawCopy();
-         if (npeaks == 1) cout << "pedestal found!\n";
-         else cout << "PROBLEM with pedestal!\n";
+         if (npeaks == 1) cout << ". Pedestal found -> OK\n";
+         else cout << ". Pedestal PROBLEM\n";
          Double_t *xpeaks = s->GetPositionX();
          // fit
          h->Fit("gaus", "RQ", "", xpeaks[0]-20, xpeaks[0]+20);
@@ -200,7 +213,7 @@ void Analyse207Bi(const char* name = "bb7_3309-7_bi207_20210126_13h09_run5_conv_
          // search peaks after background subtraction
          npeaks = s->Search(h, 6, "", 0.3);
          h->DrawCopy();
-         cout << "\t-> found " << npeaks << " peaks";
+         cout << ". " << npeaks << " main transitions found ";
          if (npeaks == 2) cout << "\t-> OK!\n";
          else cout << "\t-> PROBLEM!\n";
          // get peak position
@@ -214,13 +227,13 @@ void Analyse207Bi(const char* name = "bb7_3309-7_bi207_20210126_13h09_run5_conv_
          // try to guess which peak is detected and add other one
          // uses calibration parameters from previous strip calibration
          if (npeaks == 1) {
-            Double_t energy = fcalib->GetParameter(0) + fcalib->GetParameter(1)*xpeaks[0];
+            Double_t energy = fcalibFull->GetParameter(0) + fcalibFull->GetParameter(1)*xpeaks[0];
             Double_t energyGuess = 0;
             if (energy > mainLineEnergy[0]+200) {
-               energyGuess = (mainLineEnergy[0]-fcalib->GetParameter(0))/fcalib->GetParameter(1);;
+               energyGuess = (mainLineEnergy[0]-fcalibFull->GetParameter(0))/fcalibFull->GetParameter(1);;
             }
             else {
-               energyGuess = (mainLineEnergy[1]-fcalib->GetParameter(0))/fcalib->GetParameter(1);;
+               energyGuess = (mainLineEnergy[1]-fcalibFull->GetParameter(0))/fcalibFull->GetParameter(1);;
             }
             AddPeak(energyGuess, BACKGROUND_MIN, BACKGROUND_MAX);
          }
@@ -230,9 +243,9 @@ void Analyse207Bi(const char* name = "bb7_3309-7_bi207_20210126_13h09_run5_conv_
          ///////////////////////////////////////////////////////////////////////////
          // rough energy calibration
          auto grcalib = new TGraph(peakList.size(), &peakList[0], &mainLineEnergy[0]);
-         grcalib->Fit("fcalib", "Q0");
-         grOffset->SetPoint(n, n, fcalib->GetParameter(0));
-         grGain  ->SetPoint(n, n, fcalib->GetParameter(1)*10);
+         grcalib->Fit("fcalibFull", "Q0");
+//         grCalP0->SetPoint(n, n, fcalibFull->GetParameter(0));
+//         grCalP1->SetPoint(n, n, fcalibFull->GetParameter(1)*10);
          
          // loop on "480"- and "975"-keV features
          // p = 0 -> 480 keV
@@ -242,15 +255,22 @@ void Analyse207Bi(const char* name = "bb7_3309-7_bi207_20210126_13h09_run5_conv_
             can->cd(3+p);
             pad = (TPad*) can->FindObject(Form("can_%d", 3+p));                                  
             // determine range for fitting based on rough calibration
-            Double_t cmin = (mainLineEnergy[p]-40 -fcalib->GetParameter(0)) / fcalib->GetParameter(1);
-            Double_t cmax = (mainLineEnergy[p]+120-fcalib->GetParameter(0)) / fcalib->GetParameter(1);
-            std::cout << cmin << "\t" << cmax << "\n";
+            Double_t cmin = (mainLineEnergy[p]-40 -fcalibFull->GetParameter(0)) / fcalibFull->GetParameter(1);
+            Double_t cmax = (mainLineEnergy[p]+130-fcalibFull->GetParameter(0)) / fcalibFull->GetParameter(1);
+            if (cmax > 1023) cmax = 1023; // prevents detection of spurious peak at channel 1024
+//            std::cout << cmin << "\t" << cmax << "\n";
             h->GetXaxis()->SetRangeUser(cmin, cmax);
             h->DrawCopy();
 
             // search satellite peaks
             npeaks = s->Search(h, 4, "", 0.1);
-            cout << "\t-> found " << npeaks << " peaks";
+            if (p == 0) {
+               cout << ". Low  energy transitions\n";
+            }
+            else {
+               cout << ". High energy transitions\n";
+            }
+            cout << "\t. found " << npeaks << " peaks";
             if (npeaks == 2) cout << "\t-> OK!\n";
             else cout << "\t-> PROBLEM!\n";
             // get peak position
@@ -266,14 +286,18 @@ void Analyse207Bi(const char* name = "bb7_3309-7_bi207_20210126_13h09_run5_conv_
             // where a "replica" peak close to the main peak is observed, and
             // should be removed
             if (npeaks == 3) peakListForFit.erase(peakListForFit.begin()+1);
-            // add CE-M component
-            Double_t channel = (MLineEnergy[p] -fcalib->GetParameter(0)) / fcalib->GetParameter(1);
+            // add CE-M component based on local linear fit
+            vector<double> energyLocal = {mainLineEnergy[p], LLineEnergy[p]};
+            auto grcalibLocal = new TGraph(peakListForFit.size(), &peakListForFit[0], &energyLocal[0]);
+            grcalibLocal->Fit("fcalibLocal", "Q0");
+            Double_t channel = (MLineEnergy[p] -fcalibLocal->GetParameter(0)) / fcalibLocal->GetParameter(1);
+//            Double_t channel = (MLineEnergy[p] -fcalibFull->GetParameter(0)) / fcalibFull->GetParameter(1);
             AddPeak(channel, cmin, cmax);
 
             // define parameter list for fit
             std::vector<Double_t> paramList;
             // width (sigma); common for all states
-            paramList.push_back(4);
+            paramList.push_back(6);
             // position and amplitude
             for (UInt_t i = 0; i < peakListForFit.size(); ++i) {
                paramList.push_back(peakListForFit[i]);
@@ -284,20 +308,26 @@ void Analyse207Bi(const char* name = "bb7_3309-7_bi207_20210126_13h09_run5_conv_
             }
 
             // define fit function 
-            auto fit = new TF1("fit", fpeaks, cmin, cmax, paramList.size());
+            auto fit = new TF1("fit", fpeaks2, cmin, cmax, paramList.size());
             fit->SetParameters(&paramList[0]);
 
             // positive amplitudes and position in range
+            int dChannel = 5;
             for (UInt_t i = 0; i < peakListForFit.size(); ++i) {
                // +/- 10 channels prevents L and M inversion
-               fit->SetParLimits(1 + 2*i, fit->GetParameter(1+2*i)-10,
-                                          fit->GetParameter(1+2*i)+10);
+               fit->SetParLimits(1 + 2*i, fit->GetParameter(1+2*i)-dChannel,
+                                          fit->GetParameter(1+2*i)+dChannel);
                fit->SetParLimits(2 + 2*i, 0, 1e5);
             }
 
-            // width of 975 keV line within 20% of 480 keV line
+            // fix arbitrary amplitude for M component 
+            // parameter is not used in the fit
+            fit->FixParameter(6, 50);
+
+            // width of 975 keV line constrainted wrt 480 keV line
+            double factor = 1.2; // 20%
             if (p == 1) {
-               fit->SetParLimits(0, sigma480/1.1, sigma480*1.1);
+               fit->SetParLimits(0, sigma480/factor, sigma480*factor);
             }
 
             // fit spectrum
@@ -316,8 +346,14 @@ void Analyse207Bi(const char* name = "bb7_3309-7_bi207_20210126_13h09_run5_conv_
             Double_t param[3];
             param[2] = fit->GetParameter(0);
             for (UInt_t i = 0; i < peakListForFit.size(); ++i) {
-               param[0] = fit->GetParameter(2 + 2*i);
+//               param[0] = fit->GetParameter(2 + 2*i);
                param[1] = fit->GetParameter(1 + 2*i);
+               if (i == 2) { // M component
+                  param[0] = fit->GetParameter(2*i) / branchingLM;
+               }
+               else {
+                  param[0] = fit->GetParameter(2 + 2*i);
+               }
                signalFcn->SetParameters(param);
                signalFcn->DrawCopy("same");
             }
@@ -341,10 +377,10 @@ void Analyse207Bi(const char* name = "bb7_3309-7_bi207_20210126_13h09_run5_conv_
             ///////////////////////////////////////////////////////////////////////////
             // fill fwhm data
             if (p) {
-               grFWHMhigh->SetPoint(n, n, fcalib->GetParameter(1)*2.35*fit->GetParameter(0));
+               grFWHMhigh->SetPoint(n, n, fcalibLocal->GetParameter(1)*2.35*fit->GetParameter(0));
             }
             else {
-               grFWHMlow ->SetPoint(n, n, fcalib->GetParameter(1)*2.35*fit->GetParameter(0));
+               grFWHMlow ->SetPoint(n, n, fcalibLocal->GetParameter(1)*2.35*fit->GetParameter(0));
             }
          }
 
@@ -367,9 +403,15 @@ void Analyse207Bi(const char* name = "bb7_3309-7_bi207_20210126_13h09_run5_conv_
          grFullCalib->Fit("fitFullCalib", "QR");
          canC->Update();
 
+         grCalP0->SetPoint(n, n, fitFullCalib->GetParameter(0));
+         grCalP1->SetPoint(n, n, fitFullCalib->GetParameter(1)*1e3);
+         grCalP2->SetPoint(n, n, fitFullCalib->GetParameter(2)*1e6);
+         grCalP3->SetPoint(n, n, fitFullCalib->GetParameter(3)*1e10);
+
          ///////////////////////////////////////////////////////////////////////////
          // write calibration coefficients
-         string token = (isPside) ? Form("COMPTONTELESCOPE_D%d_STRIP_FRONT%d_E",DETECTOR_ID,n) : Form("COMPTONTELESCOPE_D%d_STRIP_BACK%d_E",DETECTOR_ID,n);
+         string token = (isPside) ? Form("COMPTONTELESCOPE_D%d_STRIP_FRONT%d_E",DETECTOR_ID,n) 
+                                  : Form("COMPTONTELESCOPE_D%d_STRIP_BACK%d_E",DETECTOR_ID,n);
          calibFile << token;
          for (int p = 0; p < fitFullCalib->GetNpar(); ++p) {
             calibFile << "\t" << fitFullCalib->GetParameter(p);
@@ -433,8 +475,17 @@ void Analyse207Bi(const char* name = "bb7_3309-7_bi207_20210126_13h09_run5_conv_
    // calibration parameters
    canS->cd(2);
    hframe2->Draw();
-   grOffset->Draw("p");
-   grGain  ->Draw("p");
+   grCalP0->Draw("p");
+   grCalP1->Draw("p");
+   grCalP2->Draw("p");
+   grCalP3->Draw("p");
+	leg = new TLegend(0.73, 0.14, 0.87, 0.36);                        
+	leg->AddEntry(grCalP0,  "p0", "P");                                 
+	leg->AddEntry(grCalP1,  "p1 * 10^{3}", "P");                                 
+	leg->AddEntry(grCalP2,  "p2 * 10^{6}", "P");                                 
+	leg->AddEntry(grCalP3,  "p3 * 10^{10}", "P");                                 
+	leg->SetBorderSize(1);                                                 
+   leg->Draw();
 
    // fill pdf file
    canS->Print(pdfname.Data());
@@ -449,7 +500,7 @@ void AddPeak(Double_t channel, Double_t cmin, Double_t cmax)
 {
    if (channel>cmin && channel<cmax) {
       peakListForFit.push_back(channel);
-      std::cout << "\t\t-> Added 1 peak to fit list at ch " << channel << "\n";
+      std::cout << "\t. Adding 1 peak at ch " << channel << "\n";
    }
 }
 
@@ -459,9 +510,6 @@ Double_t fpeaks(Double_t *x, Double_t *par)
 {                                         
    Double_t result = 0;                     
 
-   // linear background                              
-   //   Double_t result = par[0] + par[1]*x[0];
-
    // gaussian width                              
    Double_t sigma = par[0];
    for (UInt_t p = 0; p < peakListForFit.size(); p++) {
@@ -470,6 +518,27 @@ Double_t fpeaks(Double_t *x, Double_t *par)
       Double_t norm  = par[2*p+2];
       result += norm*TMath::Gaus(x[0],mean,sigma);
    }                          
+
+   return result;
+}                                  
+
+
+
+Double_t fpeaks2(Double_t *x, Double_t *par)         
+{                                         
+   Double_t result = 0;                     
+
+   // gaussian width                              
+   Double_t sigma = par[0];
+
+   // K component
+   result += par[2]*TMath::Gaus(x[0],par[1],sigma);
+
+   // L component
+   result += par[4]*TMath::Gaus(x[0],par[3],sigma);
+
+   // M component
+   result += par[4]/branchingLM*TMath::Gaus(x[0],par[5],sigma);
 
    return result;
 }                                  

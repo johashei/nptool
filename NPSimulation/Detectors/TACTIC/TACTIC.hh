@@ -115,6 +115,7 @@ private: // Geometry
   //   Shape type
   vector<string> m_Shape ;
   string m_Active;
+  double m_p0, m_p1, m_p2, m_p3;
   
   // Visualisation Attribute
   G4VisAttributes* m_VisChamber;

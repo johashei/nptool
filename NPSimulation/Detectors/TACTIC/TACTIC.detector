@@ -5,9 +5,13 @@ TACTIC
 % GasMaterial_1 = P10_gas
  GasMaterial_1 = He_gas
  GasMaterial_2 = G4_CARBON_DIOXIDE
- GasFraction_1 = 100
- GasFraction_2 = 0
+ GasFraction_1 = 90
+ GasFraction_2 = 10
  Temperature = 293.15 kelvin
- Pressure = 0.5 bar
+ Pressure = 0.1 bar
 % Pressure = 1.0 bar
- Active = gas
+  Active = gas
+  p0 = 0
+  p1 = 0
+  p2 = 0
+  p3 = 0

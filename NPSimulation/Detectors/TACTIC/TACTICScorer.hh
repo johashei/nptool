@@ -17,7 +17,13 @@ namespace TACTICScorer {
 	       G4int Level,
 	       G4double ScorerLength,
 	       G4int NumberOfSegments,
-	       G4int depth=0);
+	       G4int depth=0,
+	       G4double p0 = 0,
+	       G4double p1 = 0,
+	       G4double p2 = 0,
+	       G4double p3 = 0
+	       );
+    
     ~Gas_Scorer();
     
   protected: // with description                                                                                                                            
@@ -36,10 +42,10 @@ namespace TACTICScorer {
     G4double m_SegmentLength;
     // Level at which to find the copy number linked to the detector number                                                                                 
     G4int    m_Level;
-
-    //bool first_step = 1;
-    //vector<double> TOA_PAD;
-    //int PAD = 1000;
+    G4double m_p0;
+    G4double m_p1;
+    G4double m_p2;
+    G4double m_p3;
     
   private: // inherited from G4VPrimitiveScorer                                                                                                             
     G4int HCID;
