@@ -17,7 +17,7 @@
 #include "DecodeT.h"
 
 #define __TEST_ZONE__
-//#undef __TEST_ZONE__
+#undef __TEST_ZONE__
 
 #define __CIRCULAR_TREE__
 #undef __CIRCULAR_TREE__
@@ -38,7 +38,7 @@ using namespace std;
 //--//--// One-line setter for DSSSD(s) //--//--//
 
 // One-line setter for the Front of one DSSD
-void setCTTrackerFront(TComptonTelescopeData* ccamData, newframe_t* event, int detNbr, int faceNbr, const int stripNumber)
+/*void setCTTrackerFront(TComptonTelescopeData* ccamData, newframe_t* event, int detNbr, int faceNbr, const int stripNumber)
 {
   //detNbr and faceNbr are > 0
   ccamData -> SetCTTrackerFrontTTowerNbr(1);
@@ -51,10 +51,10 @@ void setCTTrackerFront(TComptonTelescopeData* ccamData, newframe_t* event, int d
     ccamData -> SetCTTrackerFrontEStripNbr(k);
     ccamData -> SetCTTrackerFrontEEnergy(event->sample[faceNbr-1][detNbr-1][k]);
   }//End of loop on strips
-}
+}*/
 
 // One-line setter for the Back of one DSSD
-void setCTTrackerBack(TComptonTelescopeData* ccamData, newframe_t* event, int detNbr, int faceNbr, const int stripNumber)
+/*void setCTTrackerBack(TComptonTelescopeData* ccamData, newframe_t* event, int detNbr, int faceNbr, const int stripNumber)
 {
   ccamData -> SetCTTrackerBackTTowerNbr(1);
   ccamData -> SetCTTrackerBackTDetectorNbr(detNbr);
@@ -66,10 +66,23 @@ void setCTTrackerBack(TComptonTelescopeData* ccamData, newframe_t* event, int de
     ccamData -> SetCTTrackerBackEStripNbr(k);
     ccamData -> SetCTTrackerBackEEnergy(event->sample[faceNbr-1][detNbr-1][k]);
   }//End of loop on strips
-}
+}*/
 
 // One-line setter for DSSSD(s)
-void setCTTracker(TComptonTelescopeData* ccamData, newframe_t* event, vector<int>* nb_asic, vector<int>* chain, const int stripNumber)
+void setCTTracker(TComptonTelescopeData* ccamData, DecodeD* DD)
+{
+  for (int i = 0; i < DD->getEventSize(); i++) {
+    if (DD -> getFaceType(i) == 0) { // front
+      ccamData->SetFrontE(1, DD->getDetNbr(i)+1, DD->getStripNbr(i), DD->getEnergy(i));
+      ccamData->SetFrontT(1, DD->getDetNbr(i)+1, 33, DD->getTime());
+    }
+    else if (DD -> getFaceType(i) == 1) { // back
+      ccamData->SetBackE(1, DD->getDetNbr(i)+1, DD->getStripNbr(i), DD->getEnergy(i));
+      ccamData->SetBackT(1, DD->getDetNbr(i)+1, 33, DD->getTime());
+    }
+  }
+}
+/*void setCTTracker(TComptonTelescopeData* ccamData, newframe_t* event, vector<int>* nb_asic, vector<int>* chain, const int stripNumber)
 {
   for (vector<int>::iterator itchain = chain->begin(); itchain != chain->end(); ++itchain) {//Iterates on 2 faces
     for (vector<int>::iterator itasic = nb_asic->begin(); itasic != nb_asic->end(); ++itasic) {//Iterates on 1 DSSSD
@@ -84,7 +97,7 @@ void setCTTracker(TComptonTelescopeData* ccamData, newframe_t* event, vector<int
       }//End if
     }//End for
   }//End for
-}
+}*/
 
 //--//--//--//--//--//--//--//--//--//--//--//--//--//--//--//
 int main()
@@ -183,7 +196,7 @@ int main()
     m_NPDetectorManager->ClearEventData();
 
     // Fill data
-    setCTTracker(ccamData, DD -> getEvent(), &nb_asic, &chain, stripNumber);
+    setCTTracker(ccamData, DD);// -> getEvent(), &nb_asic, &chain, stripNumber);
 
     // Build physical event
     m_NPDetectorManager->BuildPhysicalEvent();
@@ -281,7 +294,7 @@ int main()
 
         // Fill data
         ccamData -> SetCTCalorimeter(1, 4, DR->getPixelNumber(), DR->getTime(), DR->getData(), pixelNumber);
-        setCTTracker(ccamData, DD -> getEvent(), &nb_asic, &chain, stripNumber);
+        setCTTracker(ccamData, DD);// -> getEvent(), &nb_asic, &chain, stripNumber);
         ccamData -> SetResetCount(cr);
 
         // Build physical event
