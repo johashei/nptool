@@ -36,39 +36,6 @@ using namespace std;
 
 
 //--//--// One-line setter for DSSSD(s) //--//--//
-
-// One-line setter for the Front of one DSSD
-/*void setCTTrackerFront(TComptonTelescopeData* ccamData, newframe_t* event, int detNbr, int faceNbr, const int stripNumber)
-{
-  //detNbr and faceNbr are > 0
-  ccamData -> SetCTTrackerFrontTTowerNbr(1);
-  ccamData -> SetCTTrackerFrontTDetectorNbr(detNbr);
-  ccamData -> SetCTTrackerFrontTStripNbr(33);
-  ccamData -> SetCTTrackerFrontTTime(event->timestamp);
-  for (int k = 0; k < stripNumber; k++) {//Loop on strips
-    ccamData -> SetCTTrackerFrontETowerNbr(1);
-    ccamData -> SetCTTrackerFrontEDetectorNbr(detNbr);
-    ccamData -> SetCTTrackerFrontEStripNbr(k);
-    ccamData -> SetCTTrackerFrontEEnergy(event->sample[faceNbr-1][detNbr-1][k]);
-  }//End of loop on strips
-}*/
-
-// One-line setter for the Back of one DSSD
-/*void setCTTrackerBack(TComptonTelescopeData* ccamData, newframe_t* event, int detNbr, int faceNbr, const int stripNumber)
-{
-  ccamData -> SetCTTrackerBackTTowerNbr(1);
-  ccamData -> SetCTTrackerBackTDetectorNbr(detNbr);
-  ccamData -> SetCTTrackerBackTStripNbr(33);
-  ccamData -> SetCTTrackerBackTTime(event->timestamp);
-  for (int k = 0; k < stripNumber; k++) {//Loop on strips
-    ccamData -> SetCTTrackerBackETowerNbr(1);
-    ccamData -> SetCTTrackerBackEDetectorNbr(detNbr);
-    ccamData -> SetCTTrackerBackEStripNbr(k);
-    ccamData -> SetCTTrackerBackEEnergy(event->sample[faceNbr-1][detNbr-1][k]);
-  }//End of loop on strips
-}*/
-
-// One-line setter for DSSSD(s)
 void setCTTracker(TComptonTelescopeData* ccamData, DecodeD* DD)
 {
   for (int i = 0; i < DD->getEventSize(); i++) {
@@ -82,22 +49,6 @@ void setCTTracker(TComptonTelescopeData* ccamData, DecodeD* DD)
     }
   }
 }
-/*void setCTTracker(TComptonTelescopeData* ccamData, newframe_t* event, vector<int>* nb_asic, vector<int>* chain, const int stripNumber)
-{
-  for (vector<int>::iterator itchain = chain->begin(); itchain != chain->end(); ++itchain) {//Iterates on 2 faces
-    for (vector<int>::iterator itasic = nb_asic->begin(); itasic != nb_asic->end(); ++itasic) {//Iterates on 1 DSSSD
-      if (event->chip_data[*itchain][*itasic]) { // Test if data is present
-        switch (*itchain) {
-          case 0://Assuming 0 is front - to be checked
-            setCTTrackerFront(ccamData, event, *itasic+1, *itchain+1, stripNumber);
-            break;
-          case 1://Assuming 1 is back - to be checked
-            setCTTrackerBack(ccamData, event, *itasic+1, *itchain+1, stripNumber);
-        }//End switch
-      }//End if
-    }//End for
-  }//End for
-}*/
 
 //--//--//--//--//--//--//--//--//--//--//--//--//--//--//--//
 int main()
@@ -121,18 +72,6 @@ int main()
   fcut -> Close();
   cout << fcut << endl;
   cout << mcut << endl;
-/*  TCutG *mcut = new TCutG("CUT_Compton",7);
-  mcut->SetVarX("Calor_E");
-  mcut->SetVarY("Half_Energy");
-  mcut->SetTitle("Graph");
-  mcut->SetFillStyle(1000);
-  mcut->SetPoint(0,526905.4,0.6145632);
-  mcut->SetPoint(1,526905.4,0.4996379);
-  mcut->SetPoint(2,592808,0.1947341);
-  mcut->SetPoint(3,629341,0.02586437);
-  mcut->SetPoint(4,627908.3,0.211152);
-  mcut->SetPoint(5,540157.6,0.5981453);
-  mcut->SetPoint(6,526905.4,0.6145632);*/
 #endif
 
   ///////////////////////////////////////////////////////////////////////////
@@ -174,21 +113,18 @@ int main()
   DD -> setTree("/disk/proto-data/data/20210210_run1/bb7_3309-7_cs137-20210210_11h05_coinc_run1_conv.root");
   int dlen = DD -> getLength();
 
-  //Sets where to look for data in DSSSD root frames
-  vector <int> chain ({0, 1});//Two faces
-  vector <int> nb_asic ({0});//First DSSSD
-  
   int i = 0;// ROSMAP files loop counter
   int c = 0;// Event counter
   int cc = 0;
   // Set some constants
   const int pixelNumber = 64;
-  const int stripNumber = 32;
+  //const int stripNumber = 32;
 
 #ifdef __CIRCULAR_TREE__
 
   while (DD -> getCursor() < dlen)
   {
+    DD -> Clear();
     DD -> decodeEvent();
 
     // Clear raw and physics data
@@ -262,8 +198,8 @@ int main()
   int td = DD -> getTime();
 //  int dt = 100;
 #if defined __RESET_SEARCH__
-  while(DR -> getCursor() < rlen and DD -> getCursor() < dlen)
-//  while(c < 1000)
+//  while(DR -> getCursor() < rlen and DD -> getCursor() < dlen)
+  while(c < 1000)
   {
 //    cout << DR -> getTime() << " " << DD -> getTime() << endl; 
     if (cr == cd) {

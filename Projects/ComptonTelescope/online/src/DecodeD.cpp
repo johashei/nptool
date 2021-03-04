@@ -93,8 +93,9 @@ newframe_t* DecodeD::getEvent()
   return &event;
 }
 
-void DecodeD::decodeEventFinal()
+void DecodeD::decodeEvent()
 {
+  this -> Clear();
   switch (datatype) {
     case D_ROOT:
       if (cursor < length) {
@@ -113,38 +114,6 @@ void DecodeD::decodeEventFinal()
           } // end loop on detectors
         } // end loop on faces 
 
-        cursor++;
-      }
-      break;
-    case D_MFM:
-      break;
-    case D_NONE:
-      cout << "No data has been set to decode" << endl;
-  }
-}
-
-// should be deleted and replaced by decodeEventFinal after validation
-void DecodeD::decodeEvent()
-{
-  switch (datatype) {
-    case D_ROOT:
-      if (cursor < length) {
-        t1->GetEntry(cursor);
-//        for (int i = 0; i < 3; i++) {
-  //        for (int j = 0; i < 8; j++) {
-/*  int i = 0; int j = 0;
-            event.chip_data[i][j] = chip_data[i][j];
-            event.analog_trigger[i][j] = analog_trigger[i][j];
-            event.seu[i][j] = seu[i][j];
-            event.ch_status[i][j] = ch_status[i][j];
-            event.ref_channel[i][j] = ref_channel[i][j];
-            event.cm_data[i][j] = cm_data[i][j];
-            for (int k = 0; k<32; k++) {
-              event.sample[i][j][k] = sample[i][j][k];
-            }
-//          }
-  //      }
-        event.timestamp = *timestamp;*/
         cursor++;
       }
       break;

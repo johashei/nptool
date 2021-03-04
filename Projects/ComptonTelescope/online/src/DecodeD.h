@@ -53,14 +53,6 @@ class DecodeD
     // For root data
     TTree* t1;
     long int length;
-    uint8_t** chip_data;
-    uint8_t** analog_trigger;
-    uint8_t** seu;
-    uint32_t** ch_status;
-    uint16_t** ref_channel;
-    uint16_t*** sample;
-    uint16_t** cm_data;
-    uint32_t* timestamp;
 
     // For online data
     vector<int> FaceType;
@@ -88,7 +80,6 @@ class DecodeD
     // One may add a few getters here and deprecate getEvent to avoid requiring the class user to know the newframe_t struct
     
     void decodeEvent();
-    void decodeEventFinal();
 
     void Clear();
     void Dump();

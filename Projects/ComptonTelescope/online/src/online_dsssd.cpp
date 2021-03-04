@@ -68,7 +68,7 @@ int main()
 
     // Decode event
     DD->Clear();
-    DD->decodeEventFinal();
+    DD->decodeEvent();
 
     // Clear raw and physics data
     m_NPDetectorManager->ClearEventPhysics();
