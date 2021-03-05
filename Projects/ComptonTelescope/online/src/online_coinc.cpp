@@ -26,7 +26,7 @@
 #undef __USE_CUTG__
 
 #define __RESET_SEARCH__
-//#undef __RESET_SEARCH__
+#undef __RESET_SEARCH__
 
 // C++ headers
 #include <iostream>
@@ -110,7 +110,7 @@ int main()
   DecodeT* DT = new DecodeT(false); // Instantiates DecodeT object reading trigger data flux
   DecodeD* DD = new DecodeD(false); // Instantiates DecodeD object reading DSSSD(s) data flux
   newframe_t* event;
-  DD -> setTree("/disk/proto-data/data/20210210_run1/bb7_3309-7_cs137-20210210_11h05_coinc_run1_conv.root");
+  DD -> setTree("/disk/proto-data/data/20210304_run2/bb7_3309-7_cs137_20210304_14h35_conv.root");
   int dlen = DD -> getLength();
 
   int i = 0;// ROSMAP files loop counter
@@ -148,7 +148,7 @@ int main()
   ifstream iros, itrig;
   cout << "Loading data files ";
 
-  itrig.open("/disk/proto-data/data/20210210_run1/mfm_trigger_202102101104.raw", ios::binary);
+  itrig.open("/disk/proto-data/data/20210304_run2/mfm_trigger_20210304_run2.raw", ios::binary);
   itrig.seekg(0, ios::end);
   int tlen = itrig.tellg();
   itrig.seekg(0, ios::beg);
@@ -157,7 +157,7 @@ int main()
   itrig.close();
   cout << "... ";
 
-  iros.open("/disk/proto-data/data/20210210_run1/mfm_rdd_rosmap_04_mfm_rosmap_04_2021-02-10_10_04_59.raw.0001", ios::binary);
+  iros.open("/disk/proto-data/data/20210304_run2/mfm_rdd_rosmap_04_mfm_rosmap_04_2021-03-04_13_34_30.raw.0001", ios::binary);
   iros.seekg(0, ios::end);
   int rlen = iros.tellg();
   iros.seekg(0, ios::beg);
@@ -170,10 +170,12 @@ int main()
   DT -> setRaw(tbuff);
   DT -> decodeBlobMFM();
   int resetCount = DT -> getResetCount();
-  while (not(DT->hasTrigged(2))) {
+  //while (not(DT->hasTrigged(2))) {
+  while (not(DT->hasTrigged(0))) {
     DT -> decodeBlobMFM();
   }
   resetCount = DT->getResetCount() - resetCount;
+  resetCount = -resetCount; // T B C !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   cout << "Found reset count: " << resetCount << endl;
 
 #if defined __RESET_SEARCH__ && !defined __TEST_ZONE__
@@ -198,8 +200,8 @@ int main()
   int td = DD -> getTime();
 //  int dt = 100;
 #if defined __RESET_SEARCH__
-//  while(DR -> getCursor() < rlen and DD -> getCursor() < dlen)
-  while(c < 1000)
+  while(DR -> getCursor() < rlen and DD -> getCursor() < dlen)
+//  while(c < 1000)
   {
 //    cout << DR -> getTime() << " " << DD -> getTime() << endl; 
     if (cr == cd) {
@@ -216,7 +218,7 @@ int main()
   {
     if (cr == cd) {
 #ifndef __TEST_ZONE__
-      if (td-tr > 0 and td-tr < 110) { // That one is the real one
+      if (td-tr > 20 and td-tr < 120) { // That one is the real one
 #else
       if (td-tr > -1000  and td-tr < 1000) {
 #endif
