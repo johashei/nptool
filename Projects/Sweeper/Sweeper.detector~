@@ -1,0 +1,38 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Target
+ THICKNESS= 10 micrometer
+ RADIUS=	20 mm
+ MATERIAL= CD2
+ ANGLE= 0 deg
+ X= 0 mm
+ Y= 0 mm
+ Z= 0 mm
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Sweeper
+ POS= 0 0 1500 mm
+ Theta = 43.3 deg
+ Brho = 3.445  
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%CRDC
+% POS= 0 0 100 mm
+% Shape= Square
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%CRDC
+% POS= 0 0 1640 mm
+% Shape= Square 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%IonChamber
+% POS = 0 0 2105 mm
+% Shape = Square
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%Plastic
+% X = 0 mm
+% Y = 0 mm
+% Z= 2550.25 mm 
+% Shape = Square
+% Height = 55 cm
+% Width = 55 cm
+% Thickness = 5 cm
+% Scintillator = BC400
+% LeadThickness = 0 mm 
+ 
