@@ -17,13 +17,13 @@
 #include "DecodeT.h"
 
 #define __TEST_ZONE__
-//#undef __TEST_ZONE__
+#undef __TEST_ZONE__
 
 #define __CIRCULAR_TREE__
 #undef __CIRCULAR_TREE__
 
 #define __USE_CUTG__
-//#undef __USE_CUTG__
+#undef __USE_CUTG__
 
 // C++ headers
 #include <iostream>
