@@ -67,7 +67,8 @@ int main(int argc, char** argv)
   auto deltaT = new TH1F("deltaT", "deltaT", timestampNBins, -timestampDiffSearch, timestampDiffSearch);
 
 #ifdef __USE_CUTG__
-  TFile* fcut = new TFile("/disk/proto-data/data/CUT_Compton.root");
+  //TFile* fcut = new TFile("/disk/proto-data/data/CUT_Compton.root");
+  TFile* fcut = new TFile("../data/CUT_Compton.root");
   TCutG* mcut = (TCutG*) fcut -> Get("CUT_Compton");
   fcut -> Close();
   cout << fcut << endl;
@@ -111,7 +112,8 @@ int main(int argc, char** argv)
   DecodeD* DD = new DecodeD(false); // Instantiates DecodeD object reading DSSSD(s) data flux
 //  newframe_t* event;
   //DD -> setTree("/disk/proto-data/data/20210304_run2/bb7_3309-7_cs137_20210304_14h35_conv.root");
-  DD -> setTree("/disk/proto-data/data/20210305_run3/bb7_3309-7_cs137_20210305_14h53_conv.root");
+  //DD -> setTree("/disk/proto-data/data/20210305_run3/bb7_3309-7_cs137_20210305_14h53_conv.root");
+  DD -> setTree("../data/20210210_run1/bb7_3309-7_cs137-20210210_11h05_coinc_run1_conv.root");
   int dlen = DD -> getLength();
 
   int i = 0;// ROSMAP files loop counter
@@ -124,7 +126,8 @@ int main(int argc, char** argv)
   ifstream iros, itrig;
   cout << "Loading data files " << std::flush;
 
-  itrig.open("/disk/proto-data/data/20210305_run3/mfm_trigger_20210305_run3.raw", ios::binary);
+  //itrig.open("/disk/proto-data/data/20210305_run3/mfm_trigger_20210305_run3.raw", ios::binary);
+  itrig.open("../data/20210210_run1/mfm_trigger_202102101104.raw", ios::binary);
   itrig.seekg(0, ios::end);
   int tlen = itrig.tellg();
   itrig.seekg(0, ios::beg);
@@ -133,7 +136,8 @@ int main(int argc, char** argv)
   itrig.close();
   cout << "... " << std::flush;
 
-  iros.open("/disk/proto-data/data/20210305_run3/mfm_rosmap_20210305_run3.raw", ios::binary);
+  //iros.open("/disk/proto-data/data/20210305_run3/mfm_rosmap_20210305_run3.raw", ios::binary);
+  iros.open("../data/20210210_run1/mfm_rdd_rosmap_04_mfm_rosmap_04_2021-02-10_10_04_59.raw.0001", ios::binary);
   iros.seekg(0, ios::end);
   int rlen = iros.tellg();
   iros.seekg(0, ios::beg);
