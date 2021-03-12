@@ -17,13 +17,13 @@
 #include "DecodeT.h"
 
 #define __TEST_ZONE__
-#undef __TEST_ZONE__
+//#undef __TEST_ZONE__
 
 #define __CIRCULAR_TREE__
 #undef __CIRCULAR_TREE__
 
 #define __USE_CUTG__
-#undef __USE_CUTG__
+//#undef __USE_CUTG__
 
 // C++ headers
 #include <iostream>
@@ -109,7 +109,7 @@ int main(int argc, char** argv)
   DecodeR* DR = new DecodeR(false); // Instantiates DecodeR object reading calorimeter data flux
   DecodeT* DT = new DecodeT(false); // Instantiates DecodeT object reading trigger data flux
   DecodeD* DD = new DecodeD(false); // Instantiates DecodeD object reading DSSSD(s) data flux
-  newframe_t* event;
+//  newframe_t* event;
   //DD -> setTree("/disk/proto-data/data/20210304_run2/bb7_3309-7_cs137_20210304_14h35_conv.root");
   DD -> setTree("/disk/proto-data/data/20210305_run3/bb7_3309-7_cs137_20210305_14h53_conv.root");
   int dlen = DD -> getLength();
@@ -122,7 +122,7 @@ int main(int argc, char** argv)
 
   // Open data files
   ifstream iros, itrig;
-  cout << "Loading data files ";
+  cout << "Loading data files " << std::flush;
 
   itrig.open("/disk/proto-data/data/20210305_run3/mfm_trigger_20210305_run3.raw", ios::binary);
   itrig.seekg(0, ios::end);
@@ -131,7 +131,7 @@ int main(int argc, char** argv)
   char* tbuff = new char[tlen];
   itrig.read(tbuff, tlen);
   itrig.close();
-  cout << "... ";
+  cout << "... " << std::flush;
 
   iros.open("/disk/proto-data/data/20210305_run3/mfm_rosmap_20210305_run3.raw", ios::binary);
   iros.seekg(0, ios::end);
@@ -252,9 +252,55 @@ int main(int argc, char** argv)
   } else {// non reset search mode
 
     c = 0;
-
+    
     DR -> setRaw(rbuff);
     DR -> decodeBlobMFM();
+
+#ifdef __TEST_ZONE__
+  cout << "Entering test zone." << endl;
+  DD -> setTree("/disk/proto-data/data/20210305_run3/bb7_3309-7_cs137_20210305_14h53.root");
+  #if 0
+    int lblength = 50;
+    char* lb = new char[lblength];
+    for (int j = 0; j<lblength; j++) {lb[j] = ' ';}
+    while (DR -> getCursor() < rlen) {
+      if (i%10000==0) {
+        for (int j = 0; j<lblength; j++) {
+          if ((int) lblength * DR -> getCursor() / rlen > j)
+            {lb[j] = '#';} }
+        cout << "\r[" << lb << "] " << i << ": " << DR -> getCursor() << "/" << rlen << "\r" << std::flush;
+      }
+      m_NPDetectorManager->ClearEventPhysics();
+      m_NPDetectorManager->ClearEventData();
+      ccamData -> SetCTCalorimeter(1, 4, DR->getPixelNumber(), DR->getTime(), DR->getData(), pixelNumber);
+      ccamData -> SetResetCount(cr);
+      m_NPDetectorManager->BuildPhysicalEvent();
+      m_OutputTree->Fill();
+      m_NPDetectorManager->CheckSpectraServer();
+      i++;
+      DR -> decodeBlobMFM();
+    }
+  #endif
+    DD -> decodeEvent();
+    int td = DD -> getTime();
+    int hist[10] = {0};
+    int c = 0;
+    while (DD->getCursor() < dlen) {
+      DD -> decodeEvent();
+      if (td == DD -> getTime()) {
+        c++;
+      } else {
+        hist[c]++; c = 0;
+        td = DD -> getTime();
+      }
+//      cout << DD -> getTime() - td << ",";
+//      cout << DD -> getTime() << " " << td << " : " << DD -> getTime() - td << endl;
+    }
+    for (int i = 0; i<10; i++) {
+      cout << hist[i] << ", ";
+    }
+    cout << endl;
+#else
     DD -> rewind();
     DD -> decodeEvent();
 
@@ -268,12 +314,12 @@ int main(int argc, char** argv)
   #ifndef __TEST_ZONE__
         if (td-tr > 20 and td-tr < 120) { // That one is the real one
   #else
-        if (td-tr > -1000  and td-tr < 1000) {
+        if (td-tr > -1000  and td-tr < 0) {
   #endif
           //DR -> Dump();
           //DD -> Dump();
           c++;
-          cout << cc << " " << c << "(" << cr << ", " << cd << ") : " << tr << " " << td << "\n";
+          cout << cc << " " << c /*<< "(" << cr << ", " << cd << ") : " << tr << " " << td*/ << "\n";
           // Clear raw and physics data
           m_NPDetectorManager->ClearEventPhysics();
           m_NPDetectorManager->ClearEventData();
@@ -290,7 +336,6 @@ int main(int argc, char** argv)
           if (ccamPhys->EventMultiplicity > 0) {
   #ifdef __USE_CUTG__
             if (mcut->IsInside(ccamPhys->Half_Energy[0], ccamPhys->Calor_E[0])) {
-              //cout << "c" << endl;
               cc++;
               m_OutputTree->Fill();
             }
@@ -299,13 +344,11 @@ int main(int argc, char** argv)
             cc++;
   #endif
           }
-          //cout << "c" << endl;
   
           // check spectra
           m_NPDetectorManager->CheckSpectraServer();
           //cout << "d" << endl;
         }
-  //#endif
         if (td < tr) {
           DD -> decodeEvent();
         } else {
@@ -328,6 +371,7 @@ int main(int argc, char** argv)
       i++;
     
     } // End of main loop
+#endif
   } // End of mode if
 
   delete DR;
