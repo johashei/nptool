@@ -126,7 +126,7 @@ void TComptonTelescopePhysics::BuildSimplePhysicalEvent()
   
   vector<TVector2> couple = Match_Front_Back();
   EventMultiplicity = couple.size();
-  //cout << "event multiplicity = " << couple.size() << endl;
+ //cout << "event multiplicity = " << couple.size() << endl;
 
   // keep only mult 1 couples
   //if (couple.size() ==  1) { // pb if done here, so done in Match_Front_Back()
@@ -307,6 +307,8 @@ void TComptonTelescopePhysics::PreTreat()
   ClearPreTreatedData();
 
   // Front, energy
+  //cout << m_EventData->GetCTTrackerFrontEMult() << endl;
+  //m_EventData->Dump();
   for (UShort_t i = 0; i < m_EventData->GetCTTrackerFrontEMult(); ++i) {
     //m_CounterEvt[1] = 1; // nb of events with at least one EF raw recorded
     //m_CounterHit[0] += 1; // nb of hits with EF raw

@@ -1,9 +1,12 @@
 #ifndef DECODED_H
 #define DECODED_H
 
-//#define __EVENTTYPE__ frame_t // To read data before conversion
-#define __EVENTTYPE__ newframe_t // To read data after conversion
-
+#define __OLDFRAME__ 0 // To read data before conversion
+#if __OLDFRAME__
+  #define __EVENTTYPE__ frame_t // To read data before conversion
+#else
+  #define __EVENTTYPE__ newframe_t // To read data after conversion
+#endif
 
 // General C++ librairies
 #include <iostream>
@@ -63,6 +66,7 @@ class DecodeD
     vector<int> FaceType;
     vector<int> DetNbr;
     vector<int> StripNbr;
+    //vector<int> Energy;
     vector<double> Energy;
 
   public:

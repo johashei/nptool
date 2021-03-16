@@ -36,7 +36,7 @@ void DecodeD::setTree(const char* filename)
   t1->SetBranchAddress("sample", &event.sample);
   t1->SetBranchAddress("cm_data", &event.cm_data);
   t1->SetBranchAddress("timestamp", &event.timestamp);
-  #if __EVENTTYPE__ == frame_t && __EVENTTYPE__ != newframe_t
+  #if __OLDFRAME__
   t1->SetBranchAddress("chain", &event.chain);
   t1->SetBranchAddress("nb_asic", &event.nb_asic);
   #endif
@@ -105,7 +105,7 @@ void DecodeD::decodeEvent()
     case D_ROOT:
       if (cursor < length) {
         t1->GetEntry(cursor);
-        //#if __EVENTTYPE__ == newframe_t && __EVENTTYPE__ != frame_t
+        #if !__OLDFRAME__
         for (int i = 0; i < 2; i++) { // 2 faces
           for (int j = 0; j < NBDETECTORS; j++) {
             if (event.chip_data[i][j]) { // Test if data is present
@@ -119,7 +119,7 @@ void DecodeD::decodeEvent()
             } // end Test
           } // end loop on detectors
         } // end loop on faces 
-        //#endif
+        #endif
         cursor++;
       }
       break;
@@ -153,7 +153,7 @@ void DecodeD::Dump()
       return;
   }
   cout << "Timestamp: " << event.timestamp << endl;
-  #if __EVENTTYPE__ == frame_t && __EVENTTYPE__ != newframe_t
+  #if __OLDFRAME__
   cout << "Chain: " << event.chain << " - Asic: " << event.nb_asic << endl;
   cout << "Chip data: " << event.chip_data << " Analog trigger: " << event.analog_trigger << " seu: " << event.seu << " Channel status: " << event.ch_status << " cm data: " << event.cm_data << endl;
   cout << "Samples: ";
@@ -161,8 +161,7 @@ void DecodeD::Dump()
     cout << event.sample[k] << " ";
   }
   cout << endl;
-  #endif
-  #if __EVENTTYPE__ != frame_t && __EVENTTYPE__ == newframe_t
+  #else
   cout << "Chip data\tanalog trigger\tseu\tchannel status\tref channel\tcm data" << endl;
   for (int i = 0; i < 2; i++) {
     for (int j = 0; j < NBDETECTORS; j++) {
@@ -173,6 +172,10 @@ void DecodeD::Dump()
       }
       cout << endl;
     }
+  }
+  cout << FaceType.size() << " " << DetNbr.size() << " " << StripNbr.size() << " " << Energy.size() << endl;
+  for (int n = 0; n < Energy.size(); n++) {
+    cout << FaceType[n] << " " << DetNbr[n] << " " << StripNbr[n] << " " << Energy[n] << endl;
   }
   #endif
 }

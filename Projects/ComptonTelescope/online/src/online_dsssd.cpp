@@ -93,7 +93,8 @@ int main(int argc, char *argv[])
     m_NPDetectorManager->ClearEventData();
 
     // Fill data
-    //cout << "event size " << DD->getEventSize() << endl;      
+    //cout << "event size " << DD->getEventSize() << endl;
+    //ccamData -> Dump();
     for (int i = 0; i < DD->getEventSize(); i++) {
       //cout << i << endl;
       if (DD -> getFaceType(i) == 0) { // front

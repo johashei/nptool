@@ -83,7 +83,7 @@ int main(int argc, char** argv)
 #else
   string arg = "-D ./ComptonCAM.detector -C calibrations.txt -GH -E ./10He.reaction";
 #endif
-  NPOptionManager::getInstance(arg);  
+  NPOptionManager::getInstance(arg);
 
   // open ROOT output file
   RootOutput::getInstance("OnlineTree.root", "OnlineTree");
@@ -112,8 +112,8 @@ int main(int argc, char** argv)
   DecodeD* DD = new DecodeD(false); // Instantiates DecodeD object reading DSSSD(s) data flux
 //  newframe_t* event;
   //DD -> setTree("/disk/proto-data/data/20210304_run2/bb7_3309-7_cs137_20210304_14h35_conv.root");
-  //DD -> setTree("/disk/proto-data/data/20210305_run3/bb7_3309-7_cs137_20210305_14h53_conv.root");
-  DD -> setTree("../data/20210305_run3/bb7_3309-7_cs137_20210305_14h53_conv.root");
+  DD -> setTree("/disk/proto-data/data/20210305_run3/bb7_3309-7_cs137_20210305_14h53_conv.root");
+  //DD -> setTree("../data/20210210_run1/bb7_3309-7_cs137-20210210_11h05_coinc_run1_conv.root");
   int dlen = DD -> getLength();
 
   int i = 0;// ROSMAP files loop counter
@@ -126,8 +126,8 @@ int main(int argc, char** argv)
   ifstream iros, itrig;
   cout << "Loading data files " << std::flush;
 
-  //itrig.open("/disk/proto-data/data/20210305_run3/mfm_trigger_20210305_run3.raw", ios::binary);
-  itrig.open("../data/20210305_run3/mfm_trigger_20210305_run3.raw", ios::binary);
+  itrig.open("/disk/proto-data/data/20210305_run3/mfm_trigger_20210305_run3.raw", ios::binary);
+  //itrig.open("../data/20210210_run1/mfm_trigger_202102101104.raw", ios::binary);
   itrig.seekg(0, ios::end);
   int tlen = itrig.tellg();
   itrig.seekg(0, ios::beg);
@@ -136,8 +136,8 @@ int main(int argc, char** argv)
   itrig.close();
   cout << "... " << std::flush;
 
-  //iros.open("/disk/proto-data/data/20210305_run3/mfm_rosmap_20210305_run3.raw", ios::binary);
-  iros.open("../data/20210305_run3/mfm_rosmap_20210305_run3.raw", ios::binary);
+  iros.open("/disk/proto-data/data/20210305_run3/mfm_rosmap_20210305_run3.raw", ios::binary);
+  //iros.open("../data/20210210_run1/mfm_rdd_rosmap_04_mfm_rosmap_04_2021-02-10_10_04_59.raw.0001", ios::binary);
   iros.seekg(0, ios::end);
   int rlen = iros.tellg();
   iros.seekg(0, ios::beg);
@@ -260,52 +260,10 @@ int main(int argc, char** argv)
     DR -> setRaw(rbuff);
     DR -> decodeBlobMFM();
 
-#ifdef __TEST_ZONE__
+//#ifdef __TEST_ZONE__
   cout << "Entering test zone." << endl;
-  //DD -> setTree("/disk/proto-data/data/20210305_run3/bb7_3309-7_cs137_20210305_14h53.root");
-  DD -> setTree("../data/20210305_run3/bb7_3309-7_cs137_20210305_14h53.root");
-  #if 0
-    int lblength = 50;
-    char* lb = new char[lblength];
-    for (int j = 0; j<lblength; j++) {lb[j] = ' ';}
-    while (DR -> getCursor() < rlen) {
-      if (i%10000==0) {
-        for (int j = 0; j<lblength; j++) {
-          if ((int) lblength * DR -> getCursor() / rlen > j)
-            {lb[j] = '#';} }
-        cout << "\r[" << lb << "] " << i << ": " << DR -> getCursor() << "/" << rlen << "\r" << std::flush;
-      }
-      m_NPDetectorManager->ClearEventPhysics();
-      m_NPDetectorManager->ClearEventData();
-      ccamData -> SetCTCalorimeter(1, 4, DR->getPixelNumber(), DR->getTime(), DR->getData(), pixelNumber);
-      ccamData -> SetResetCount(cr);
-      m_NPDetectorManager->BuildPhysicalEvent();
-      m_OutputTree->Fill();
-      m_NPDetectorManager->CheckSpectraServer();
-      i++;
-      DR -> decodeBlobMFM();
-    }
-  #endif
-    DD -> decodeEvent();
-    int td = DD -> getTime();
-    int hist[10] = {0};
-    int c = 0;
-    while (DD->getCursor() < dlen) {
-      DD -> decodeEvent();
-      if (td == DD -> getTime()) {
-        c++;
-      } else {
-        hist[c]++; c = 0;
-        td = DD -> getTime();
-      }
-//      cout << DD -> getTime() - td << ",";
-//      cout << DD -> getTime() << " " << td << " : " << DD -> getTime() - td << endl;
-    }
-    for (int i = 0; i<10; i++) {
-      cout << hist[i] << ", ";
-    }
-    cout << endl;
-#else
+
+//#else
     DD -> rewind();
     DD -> decodeEvent();
 
@@ -377,7 +335,7 @@ int main(int argc, char** argv)
       i++;
     
     } // End of main loop
-#endif
+//#endif
   } // End of mode if
 
   delete DR;
@@ -406,194 +364,3 @@ int main(int argc, char** argv)
 }
 
 
-/*
-  const bool loopForever = false;
-  //while (loopForever or i<12) // for Am data
-  while (loopForever or i<3) // for Bi data quick analysis
-  //while (loopForever or i<489) // for Bi data all events
-  { 
-    // Load a root file and setup DecodeD
-    //DD -> setTree("../data/20200128_11h58_am241_conv.root");
-    DD -> setTree("../data/bb7_3309-7_bi207_20210203_16h25_run8_conv.root");
-    int dlength = DD -> getLength();
-
-    //while (DD -> getCursor() < dlength and (loopForever or i<12))
-    while (DD -> getCursor() < dlength and (loopForever or i<3))
-    {
-      // Load a ROSMAP file
-      std::ifstream is;
-//      i = 1;
-      switch (i % 3) {
-        case 3: is.open("./mfm.bin", std::ios::binary); break;
-        case 4: is.open("./133Ba.bin", std::ios::binary); break;
-        case 5: is.open("./241Am.bin", std::ios::binary); break;
-        case 0: is.open("./207Bi.bin", std::ios::binary); break;
-        case 1: is.open("./241Am-1.bin", std::ios::binary); break;
-        case 2: is.open("./241Am-2.bin", std::ios::binary); break;
-      }
-      is.seekg (0, std::ios::end);
-      int length = is.tellg();
-      is.seekg (0, ios::beg);
-      char* buffer = new char [length];
-      is.read(buffer, length);
-      is.close();
-      i++;
-
-      // Setup DecodeR
-      DR -> setRaw(buffer);
-      DR -> decodeRawMFM(); // get rid of the first two (empty) events
-      DR -> decodeRawMFM();
-
-      // Loop on some events
-      while (DD -> getCursor() < dlength and DR -> getCursor() < length)
-      {
-        // Clear raw and physics data
-        m_NPDetectorManager->ClearEventPhysics();
-        m_NPDetectorManager->ClearEventData();
-
-        // Fill calorimeter data
-        DR -> decodeRawMFM();
-        setCTCalorimeter(ccamData, DR, pixelNumber);
-
-        // Fill DSSD data
-        DD -> decodeEvent();
-        event = DD -> getEvent();
-        setCTTracker(ccamData, event, &nb_asic, &chain, stripNumber);
-
-        // Build physical event
-        m_NPDetectorManager->BuildPhysicalEvent();
-
-        // Fill object in output ROOT file
-        m_OutputTree->Fill();
-
-        // check spectra
-        m_NPDetectorManager->CheckSpectraServer();
-
-        c++;
-        //usleep(100);//Simulated 10kHz count rate
-
-      }// End of loop on ROSMAP events
-
-    delete [] buffer;
-  
-    }// End of loop on DSSSD data
-
-  }// End of main loop
-
-  // fill spectra
-  m_NPDetectorManager->WriteSpectra();
-
-  // delete Decoders
-  delete DR;
-  delete DD;
-
-  // Essential
-  #if __cplusplus > 199711L && NPMULTITHREADING
-   m_NPDetectorManager->StopThread();
-  #endif
-  RootOutput::Destroy();
-
-  return 0;
-}
-
-*/
-
-
-
-
-/*
-    while (DD -> getCursor() < dlength)
-    {
-      // Clear raw and physics data
-      m_NPDetectorManager->ClearEventPhysics();
-      m_NPDetectorManager->ClearEventData();
-
-      //Read some data
-      DD -> decodeEvent();
-      event = DD -> getEvent();
-      //Fill TComptonTelescopeData here (if possible)
-      for (vector<int>::iterator itchain = chain.begin(); itchain != chain.end(); ++itchain) {//Iterates on 2 faces
-        for (vector<int>::iterator itasic = nb_asic.begin(); itasic != nb_asic.end(); ++itasic) {//Iterates on 1 DSSSD
-          if (event->chip_data[*itchain][*itasic]) { // Test if data is present
-            switch (*itchain) {
-              case 0://Assuming 0 is front - to be checked
-                ccamData -> SetCTTrackerFrontTTowerNbr(1);
-                ccamData -> SetCTTrackerFrontTDetectorNbr(*itasic+1);
-                ccamData -> SetCTTrackerFrontTStripNbr(33);
-                ccamData -> SetCTTrackerFrontTTime(event->timestamp);
-                for (int k = 0; k < stripNumber; k++) {//Loop on strips
-                  ccamData -> SetCTTrackerFrontETowerNbr(1);
-                  ccamData -> SetCTTrackerFrontEDetectorNbr(*itasic+1);
-                  ccamData -> SetCTTrackerFrontEStripNbr(k+1);
-                  ccamData -> SetCTTrackerFrontEEnergy(event->sample[*itchain][*itasic][k]);
-                }//End of loop on strips
-                break;
-              case 1://Assuming 1 is back - to be checked
-                ccamData -> SetCTTrackerBackTTowerNbr(1);
-                ccamData -> SetCTTrackerBackTDetectorNbr(*itasic+1);
-                ccamData -> SetCTTrackerBackTStripNbr(33);
-                ccamData -> SetCTTrackerBackTTime(event->timestamp);
-                for (int k = 0; k < stripNumber; k++) {//Loop on strips
-                  ccamData -> SetCTTrackerBackETowerNbr(1);
-                  ccamData -> SetCTTrackerBackEDetectorNbr(*itasic+1);
-                  ccamData -> SetCTTrackerBackEStripNbr(k+1);
-                  ccamData -> SetCTTrackerBackEEnergy(event->sample[*itchain][*itasic][k]);
-                }//End of loop on strips
-            }//End switch
-          }//End if
-        }//End for
-      }//End for
-
-      // Build physical event
-      m_NPDetectorManager->BuildPhysicalEvent();
-      //Fill output tree
-      m_OutputTree->Fill();
-      //check spectra
-      m_NPDetectorManager->CheckSpectraServer();
-
-      c++;
-
-    }//End while
-    cout << "Read " << c << " DSSSD events from file" << endl;
-
-    // Read from file
-    D -> setRaw(buffer);
-
-    D -> decodeRawMFM(); // get rid of the first two (empty) events
-    D -> decodeRawMFM();
-  
-    while (D -> getCursor() < length)
-    {
-       // Clear raw data and physics objects
-       m_NPDetectorManager->ClearEventPhysics();
-       m_NPDetectorManager->ClearEventData();
-  
-       // Read the actual data
-       D -> decodeRawMFM();
-       //D -> Dump();//Optionnal print
-  
-       // Set ccamData (a better way is envisionned)
-       for (int i = 0; i < pixelNumber; ++i) {
-         ccamData -> SetCTCalorimeterETowerNbr(1);
-         ccamData -> SetCTCalorimeterEDetectorNbr( 1 );
-         ccamData -> SetCTCalorimeterEChannelNbr( i );//PMT pixel number
-         ccamData -> SetCTCalorimeterEEnergy( D -> getData()[i] );
-       }
-       ccamData -> SetCTCalorimeterTTowerNbr( 1 );
-       ccamData -> SetCTCalorimeterTDetectorNbr( 1 );//Triggered ASIC number
-       ccamData -> SetCTCalorimeterTChannelNbr( D -> getPixelNumber() );//Pixel that triggered
-       ccamData -> SetCTCalorimeterTTime( D -> getTime() );
-  //     ccamData -> Dump();
-  
-       // Build physical event
-       m_NPDetectorManager->BuildPhysicalEvent();
-  
-       // Fill object in output ROOT file
-       m_OutputTree->Fill();
-  
-       // check spectra
-       m_NPDetectorManager->CheckSpectraServer();
-
-       c++;
-       usleep(100);//Simulated 10kHz count rate
-    }*/
