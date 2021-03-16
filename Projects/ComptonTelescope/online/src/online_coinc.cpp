@@ -113,7 +113,7 @@ int main(int argc, char** argv)
 //  newframe_t* event;
   //DD -> setTree("/disk/proto-data/data/20210304_run2/bb7_3309-7_cs137_20210304_14h35_conv.root");
   //DD -> setTree("/disk/proto-data/data/20210305_run3/bb7_3309-7_cs137_20210305_14h53_conv.root");
-  DD -> setTree("../data/20210210_run1/bb7_3309-7_cs137-20210210_11h05_coinc_run1_conv.root");
+  DD -> setTree("../data/20210305_run3/bb7_3309-7_cs137_20210305_14h53_conv.root");
   int dlen = DD -> getLength();
 
   int i = 0;// ROSMAP files loop counter
@@ -127,7 +127,7 @@ int main(int argc, char** argv)
   cout << "Loading data files " << std::flush;
 
   //itrig.open("/disk/proto-data/data/20210305_run3/mfm_trigger_20210305_run3.raw", ios::binary);
-  itrig.open("../data/20210210_run1/mfm_trigger_202102101104.raw", ios::binary);
+  itrig.open("../data/20210305_run3/mfm_trigger_20210305_run3.raw", ios::binary);
   itrig.seekg(0, ios::end);
   int tlen = itrig.tellg();
   itrig.seekg(0, ios::beg);
@@ -137,7 +137,7 @@ int main(int argc, char** argv)
   cout << "... " << std::flush;
 
   //iros.open("/disk/proto-data/data/20210305_run3/mfm_rosmap_20210305_run3.raw", ios::binary);
-  iros.open("../data/20210210_run1/mfm_rdd_rosmap_04_mfm_rosmap_04_2021-02-10_10_04_59.raw.0001", ios::binary);
+  iros.open("../data/20210305_run3/mfm_rosmap_20210305_run3.raw", ios::binary);
   iros.seekg(0, ios::end);
   int rlen = iros.tellg();
   iros.seekg(0, ios::beg);
@@ -262,7 +262,8 @@ int main(int argc, char** argv)
 
 #ifdef __TEST_ZONE__
   cout << "Entering test zone." << endl;
-  DD -> setTree("/disk/proto-data/data/20210305_run3/bb7_3309-7_cs137_20210305_14h53.root");
+  //DD -> setTree("/disk/proto-data/data/20210305_run3/bb7_3309-7_cs137_20210305_14h53.root");
+  DD -> setTree("../data/20210305_run3/bb7_3309-7_cs137_20210305_14h53.root");
   #if 0
     int lblength = 50;
     char* lb = new char[lblength];
@@ -317,6 +318,7 @@ int main(int argc, char** argv)
       if (cr == cd) {
   #ifndef __TEST_ZONE__
         if (td-tr > 20 and td-tr < 120) { // That one is the real one
+        //if (td-tr > -1000 and td-tr < 1000) { // That one is the real one
   #else
         if (td-tr > -1000  and td-tr < 0) {
   #endif

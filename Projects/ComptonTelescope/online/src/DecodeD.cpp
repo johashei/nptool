@@ -105,7 +105,7 @@ void DecodeD::decodeEvent()
     case D_ROOT:
       if (cursor < length) {
         t1->GetEntry(cursor);
-        #if __EVENTTYPE__ == newframe_t && __EVENTTYPE__ != frame_t
+        //#if __EVENTTYPE__ == newframe_t && __EVENTTYPE__ != frame_t
         for (int i = 0; i < 2; i++) { // 2 faces
           for (int j = 0; j < NBDETECTORS; j++) {
             if (event.chip_data[i][j]) { // Test if data is present
@@ -119,7 +119,7 @@ void DecodeD::decodeEvent()
             } // end Test
           } // end loop on detectors
         } // end loop on faces 
-        #endif
+        //#endif
         cursor++;
       }
       break;

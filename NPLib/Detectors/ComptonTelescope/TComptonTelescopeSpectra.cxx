@@ -326,7 +326,7 @@ void TComptonTelescopeSpectra::InitPhysicsSpectra()
 
     // Sum spectrum
     name = "CT"+NPL::itoa(i+1)+"_SUM_SPECTRUM";
-    AddHisto1D(name, name, 1000, 0, 2000, "COMPTONTELESCOPE/PHY/CALOR_SUM");
+    AddHisto1D(name, name, 1400, 0, 1400, "COMPTONTELESCOPE/PHY/CALOR_SUM");
 
     // Bidim sum
     name = "CT"+NPL::itoa(i+1)+"_SUM_BIDIM";
@@ -885,7 +885,7 @@ void TComptonTelescopeSpectra::FillPhysicsSpectra(TComptonTelescopePhysics* Phys
 //    FillSpectra(family, name, energy);
   }
 
-/*  // Sum spectrum
+  // Sum spectrum
   double energy = 0;
   for (unsigned int i = 0; i < fNumberOfTelescope; i++) {
     name = "CT"+NPL::itoa(i+1)+"_SUM_SPECTRUM";
@@ -902,7 +902,7 @@ void TComptonTelescopeSpectra::FillPhysicsSpectra(TComptonTelescopePhysics* Phys
     }
     FillSpectra(family, name, energy);
   }
-*/
+
   // SUM BIDIM not calibrated
   for (unsigned int i = 0 ; i < Physics->GetEventMultiplicity(); i++) {
     for (unsigned int j = 0; j < Physics->Calor_E.size(); j++) {
