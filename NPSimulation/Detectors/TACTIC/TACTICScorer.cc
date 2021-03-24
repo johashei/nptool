@@ -29,7 +29,7 @@ Gas_Scorer::~Gas_Scorer(){}
 
 G4bool Gas_Scorer::ProcessHits(G4Step* aStep, G4TouchableHistory*){
 
-  G4double* Infos = new G4double[14];
+  G4double* Infos = new G4double[15];
   m_Position  = aStep->GetPreStepPoint()->GetPosition();
 
   Infos[0] = G4RunManager::GetRunManager()->GetCurrentEvent()->GetEventID();
@@ -60,18 +60,30 @@ G4bool Gas_Scorer::ProcessHits(G4Step* aStep, G4TouchableHistory*){
     aStep->GetTrack()->SetTrackStatus(fStopAndKill);
     return 0;
   }
-            
-#ifdef USE_Garfield
-  G4ThreeVector delta_Position = aStep->GetDeltaPosition();
-
-  GARFDRIFT(Infos[5]/eV, Infos[3], m_Position/cm, delta_Position/cm, Infos[8]/cm, Infos[6], Infos[2], m_ScorerLength/cm, m_SegmentLength/cm, Infos[0], Infos[2], Infos[11]);
-#endif
-  
+    
   map<G4int, G4double**>::iterator it;
   it= EvtMap->GetMap()->find(m_Index);
   if(it!=EvtMap->GetMap()->end()){
     G4double* dummy = *(it->second);
     if(Infos[1]==dummy[1]) Infos[5]+=dummy[5]; //accumulate ionisation energy deposit to get total accross pad
+
+          
+#ifdef USE_Garfield
+    G4ThreeVector delta_Position = aStep->GetDeltaPosition();
+    G4double excess;
+
+    if(aStep->IsFirstStepInVolume() == 1) excess = 0.;
+    if(aStep->IsFirstStepInVolume() == 0) excess = dummy[14]/eV;
+    
+    if(excess > 1.e06) excess = 0.; //If dummy[12] is not defined returns random value > 1.e06 ? 
+  
+    if(Infos[8] > 12.) Infos[14] = GARFDRIFT((Infos[5]/eV+excess), Infos[3], m_Position/cm, delta_Position/cm, Infos[8]/cm, Infos[6], Infos[2], m_ScorerLength/cm, m_SegmentLength/cm, Infos[0])*eV;
+#endif
+    if(Infos[8] < 12.) Infos[14] = 0;
+    
+    
+    if(Infos[14]>0.) cout << "Infos[14] " << Infos[14]/eV << endl;
+    
     delete dummy;
   }
   

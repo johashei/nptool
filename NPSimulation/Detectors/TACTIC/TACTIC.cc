@@ -404,12 +404,13 @@ void TACTIC::InitializeScorers() {
   */
     LightFilter->addIon(m_Reaction.GetParticle3()->GetZ(),m_Reaction.GetParticle3()->GetA());
     HeavyFilter->addIon(m_Reaction.GetParticle4()->GetZ(),m_Reaction.GetParticle4()->GetA());
-    LightScorer->SetFilter(LightFilter);
-    HeavyScorer->SetFilter(HeavyFilter);
     if(m_Reaction.GetParticle1()->GetZ() == m_Reaction.GetParticle4()->GetZ()) BeamFilter->add("geantino");
     else BeamFilter->addIon(m_Reaction.GetParticle1()->GetZ(),m_Reaction.GetParticle1()->GetA());
-    BeamScorer->SetFilter(BeamFilter);
     
+    LightScorer->SetFilter(LightFilter);
+    HeavyScorer->SetFilter(HeavyFilter);
+    BeamScorer->SetFilter(BeamFilter);
+
     m_Scorer->RegisterPrimitive(LightScorer);
     m_Scorer->RegisterPrimitive(HeavyScorer);
     m_Scorer->RegisterPrimitive(BeamScorer);
