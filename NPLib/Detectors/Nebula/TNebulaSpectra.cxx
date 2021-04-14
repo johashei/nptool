@@ -1,18 +1,18 @@
 /*****************************************************************************
- * Copyright (C) 2009-2019   this file is part of the NPTool Project       *
+ * Copyright (C) 2009-2019   this file is part of the NPTool Project         *
  *                                                                           *
  * For the licensing terms see $NPTOOL/Licence/NPTool_Licence                *
  * For the list of contributors see $NPTOOL/Licence/Contributors             *
  *****************************************************************************/
 
 /*****************************************************************************
- * Original Author: Adrien Matta  contact address: matta@lpccaen.in2p3.fr                        *
+ * Original Author: Adrien Matta  contact address: matta@lpccaen.in2p3.fr    *
  *                                                                           *
- * Creation Date  : December 2019                                           *
+ * Creation Date  : December 2019                                            *
  * Last update    :                                                          *
  *---------------------------------------------------------------------------*
  * Decription:                                                               *
- *  This class hold Nebula Spectra                                     *
+ *  This class hold Nebula Spectra                                           *
  *                                                                           *
  *---------------------------------------------------------------------------*
  * Comment:                                                                  *
@@ -108,7 +108,7 @@ void TNebulaSpectra::InitPhysicsSpectra() {
 
 ////////////////////////////////////////////////////////////////////////////////
 void TNebulaSpectra::FillRawSpectra(TNebulaData* RawData) {
-  static string name;
+/*  static string name;
   static string family;
 
   // Energy 
@@ -127,14 +127,14 @@ void TNebulaSpectra::FillRawSpectra(TNebulaData* RawData) {
     family = "Nebula/RAW";
 
     FillSpectra(family,name,RawData->Get_Time(i));
-  }
+  }*/
 }
 
 
 
 ////////////////////////////////////////////////////////////////////////////////
 void TNebulaSpectra::FillPreTreatedSpectra(TNebulaData* PreTreatedData) {
-  static string name;
+/*  static string name;
   static string family;
   
   // Energy 
@@ -153,14 +153,14 @@ void TNebulaSpectra::FillPreTreatedSpectra(TNebulaData* PreTreatedData) {
     family = "Nebula/CAL";
 
     FillSpectra(family,name,PreTreatedData->Get_Time(i));
-  }
+  }*/
 }
 
 
 
 ////////////////////////////////////////////////////////////////////////////////
 void TNebulaSpectra::FillPhysicsSpectra(TNebulaPhysics* Physics) {
-  static string name;
+/*  static string name;
   static string family;
   family= "Nebula/PHY";
 
@@ -169,6 +169,6 @@ void TNebulaSpectra::FillPhysicsSpectra(TNebulaPhysics* Physics) {
   for(unsigned int i = 0 ; i < sizeE ; i++){
     name = "Nebula_ENERGY_TIME";
     FillSpectra(family,name,Physics->Energy[i],Physics->Time[i]);
-  }
+  }*/
 }
 

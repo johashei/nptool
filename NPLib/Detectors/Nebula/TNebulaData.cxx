@@ -45,19 +45,30 @@ TNebulaData::~TNebulaData() {
 
 //////////////////////////////////////////////////////////////////////
 void TNebulaData::Clear() {
-  // Energy
-  fNebula_E_DetectorNbr.clear();
-  fNebula_Energy.clear();
-  // Time
-  fNebula_T_DetectorNbr.clear();
-  fNebula_Time.clear();
+    // UP // 
+    // Charge 
+    fNebula_Qu_ID.clear();
+    fNebula_Qu_Charge.clear();
+    
+    // Time
+    fNebula_Tu_ID.clear();
+    fNebula_Tu_Time.clear();
+    
+    // DOWN // 
+    // Charge 
+    fNebula_Qd_ID.clear();
+    fNebula_Qd_Charge.clear();
+    
+    // Time
+    fNebula_Td_ID.clear();
+    fNebula_Td_Time.clear();
 }
 
 
 
 //////////////////////////////////////////////////////////////////////
 void TNebulaData::Dump() const {
-  // This method is very useful for debuging and worth the dev.
+/*  // This method is very useful for debuging and worth the dev.
   cout << "XXXXXXXXXXXXXXXXXXXXXXXX New Event [TNebulaData::Dump()] XXXXXXXXXXXXXXXXX" << endl;
 
   // Energy
@@ -77,4 +88,5 @@ void TNebulaData::Dump() const {
     cout << "DetNbr: " << fNebula_T_DetectorNbr[i]
          << " Time: " << fNebula_Time[i];
   }
+  */
 }

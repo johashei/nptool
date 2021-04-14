@@ -81,7 +81,7 @@ void TNebulaPhysics::BuildSimplePhysicalEvent() {
 void TNebulaPhysics::BuildPhysicalEvent() {
   // apply thresholds and calibration
   PreTreat();
-
+/*
   // match energy and time together
   unsigned int mysizeE = m_PreTreatedData->GetMultEnergy();
   unsigned int mysizeT = m_PreTreatedData->GetMultTime();
@@ -93,7 +93,7 @@ void TNebulaPhysics::BuildPhysicalEvent() {
         Time.push_back(m_PreTreatedData->Get_Time(t));
       }
     }
-  }
+  }*/
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -106,7 +106,7 @@ void TNebulaPhysics::PreTreat() {
 
   // instantiate CalibrationManager
   static CalibrationManager* Cal = CalibrationManager::getInstance();
-
+/*
   // Energy
   unsigned int mysize = m_EventData->GetMultEnergy();
   for (UShort_t i = 0; i < mysize ; ++i) {
@@ -124,6 +124,7 @@ void TNebulaPhysics::PreTreat() {
     Double_t Time= Cal->ApplyCalibration("Nebula/TIME"+NPL::itoa(m_EventData->GetT_DetectorNbr(i)),m_EventData->Get_Time(i));
     m_PreTreatedData->SetTime(m_EventData->GetT_DetectorNbr(i), Time);
   }
+  */
 }
 
 
@@ -334,8 +335,8 @@ extern "C"{
 class proxy_Nebula{
   public:
     proxy_Nebula(){
-      NPL::DetectorFactory::getInstance()->AddToken("Nebula","Nebula");
-      NPL::DetectorFactory::getInstance()->AddDetector("Nebula",TNebulaPhysics::Construct);
+      NPL::DetectorFactory::getInstance()->AddToken("NEBULA","Nebula");
+      NPL::DetectorFactory::getInstance()->AddDetector("NEBULA",TNebulaPhysics::Construct);
     }
 };
 

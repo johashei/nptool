@@ -51,8 +51,8 @@ void NPToolLogon(){
 
   // Create the NPTool Stype
   std::string NPLPath = gSystem->Getenv("NPTOOL");  
-  gROOT->ProcessLine(Form(".x %s/NPLib/scripts/Style_nptool.C+",NPLPath.c_str()));
-  gROOT->ProcessLine(Form(".x %s/NPLib/scripts/Style_nponline.C+",NPLPath.c_str()));
+  gROOT->ProcessLine(Form(".x %s/NPLib/scripts/Style_nptool.C",NPLPath.c_str()));
+  gROOT->ProcessLine(Form(".x %s/NPLib/scripts/Style_nponline.C",NPLPath.c_str()));
 
   // Change the standard random generator to TRandom2
   //gRandom = new TRandom2();

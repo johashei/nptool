@@ -126,6 +126,11 @@ namespace NPL{
       Particle*  GetParticle2()               {return &fParticle2;}
       Particle*  GetParticle3()               {return &fParticle3;}
       Particle*  GetParticle4()               {return &fParticle4;}
+      Particle*  GetNucleus1()               {return GetParticle1();}
+      Particle*  GetNucleus2()               {return GetParticle2();}
+      Particle*  GetNucleus3()               {return GetParticle3();}
+      Particle*  GetNucleus4()               {return GetParticle4();}
+
       TH1F*    GetCrossSectionHist() const      {return fCrossSectionHist;}
       int      GetVerboseLevel()         const  {return fVerboseLevel;}
       bool     GetShoot3()         const        {return fshoot3;}
