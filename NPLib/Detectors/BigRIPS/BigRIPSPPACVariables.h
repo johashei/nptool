@@ -29,7 +29,7 @@ using namespace std;
 
 class BigRIPSPPACVariables{
   public:
-   BigRIPSPPACVariables(){};  
+   BigRIPSPPACVariables(){Clear();};  
    ~BigRIPSPPACVariables(){};  
 
   public:
@@ -38,6 +38,7 @@ class BigRIPSPPACVariables{
     std::vector<double> FTY1;
     std::vector<double> FTY2;
     std::vector<double> FTA;
+    int FmultiHit[5];
 
     void Clear(){
         FTX1.clear();
@@ -45,7 +46,9 @@ class BigRIPSPPACVariables{
         FTY1.clear();
         FTY2.clear();
         FTA.clear();
-    }
+        for(int i=0; i<5; i++) FmultiHit[i]=0;
+    };
+
     void Print(){
         //cout << "XXXXXXXXXXXXXXXXXXXXXXXX PPAC Event XXXXXXXXXXXXXXXXX" << endl;
         cout << "FTX1_Mult = " << FTX1.size();
@@ -58,6 +61,8 @@ class BigRIPSPPACVariables{
         for (UShort_t i = 0; i < FTY2.size(); i++){cout << "\tFTY2: " << FTY2[i] << endl;}
         cout << "FTA_Mult = " << FTA.size();
         for (UShort_t i = 0; i < FTA.size(); i++){cout << "\tFTA: " << FTA[i] << endl;}
+        cout << "MultHit = " <<endl;
+        for (UShort_t i = 0; i <5; i++){cout << FmultiHit[i] << endl;}
     }
 
     bool HasTXs(){
