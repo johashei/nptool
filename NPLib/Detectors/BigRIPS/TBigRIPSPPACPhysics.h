@@ -54,6 +54,8 @@ class TBigRIPSPPACPhysics : public TObject, public NPL::VDetector{
     void Print();   
 
   public:
+    std::vector<int> ID;
+    std::vector<int> FP;
     std::vector<double> TX1;
     std::vector<double> TX2;
     std::vector<double> TY1;
@@ -61,10 +63,11 @@ class TBigRIPSPPACPhysics : public TObject, public NPL::VDetector{
     std::vector<double> TA;
     std::vector<double> TSumX;
     std::vector<double> TDiffX;
+    std::vector<double> X;
     std::vector<double> TSumY;
     std::vector<double> TDiffY;
-    std::vector<int> ID;
-    std::vector<int> FP;
+    std::vector<double> Y;
+    std::vector<int> multiHit;
     //map<int,vector<double>> Data ;
 
     int PileUp;
@@ -77,12 +80,20 @@ class TBigRIPSPPACPhysics : public TObject, public NPL::VDetector{
     void AddPPACs(string name, NPL::XmlParser&);//! take the XML file and fill in parameters of each PPAC
     map<int,double> RawUpperLimit;//! Upper Value of TDC range considered for a PPAC
     map<int,double> RawLowerLimit;//! Lower Value of TDC range considered for a PPAC 
-    map<int,double> FPL;//! Focal plane where the PPAC is located
+    map<int,int>  IDtoFP;//! Focal plane where the PPAC is located
     map<int,double> ch2ns_TX1; 
     map<int,double> ch2ns_TX2; 
     map<int,double> ch2ns_TY1; 
     map<int,double> ch2ns_TY2; 
     map<int,double> ch2ns_TA;
+    map<int,double> xns_off;
+    map<int,double> yns_off;
+    map<int,double> x_offset;
+    map<int,double> xpos_offset;
+    map<int,double> x_ns2mm;
+    map<int,double> y_offset;
+    map<int,double> ypos_offset;
+    map<int,double> y_ns2mm;
   
   public: //   Innherited from VDetector Class
 

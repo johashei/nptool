@@ -62,170 +62,154 @@ void TBigRIPSPPACPhysics::PreTreat(){
 
   ClearPreTreatedData();
 
-  //static map<std::pair<int,int>, std::vector<int> > data ; 
+  //Intermediate map associating a PPAC ID with its variables stored in an object
+  // Condition for filling: Raw TDC value within [LowerLimit,UpperLimit]
+  // Only first TDC hit for each variable is stored
   static map<int, BigRIPSPPACVariables > Fdata ; 
-  //static map<std::pair<int,int>, bool > multiHit ; 
+  static map<int, BigRIPSPPACVariables >::iterator found;
+  Fdata.clear() ; 
 
   //pair of detector ID and variable type (TX1,TX2,TY1,TY2,TA)=(0,1,2,3,4)
   std::pair<unsigned int, double> pair_id_type; 
   int id, TimeRaw;
 
-  //pair_id_type.second = 0; //TX1
+
+  //TX1
   unsigned int sizeTX1 = m_EventData->GetTX1Mult();
   for(unsigned int i = 0 ; i < sizeTX1 ; i++){
         id = m_EventData->GetTX1ID(i);
         TimeRaw = m_EventData->GetTX1(i);
         if(TimeRaw>RawLowerLimit[id] && TimeRaw<RawUpperLimit[id]){
-/*
-            pair_id_type.first = id;
-            if(data[pair_id_type].size()==0){
-                data[pair_id_type].push_back(TimeRaw); 
-            }else {
-                multiHit[pair_id_type]=true; //multiple value for same TDC ch.
-            }
-*/
             if(Fdata[id].FTX1.size()==0){
                 Fdata[id].FTX1.push_back(TimeRaw*ch2ns_TX1[id]); 
             }else {
-               // multiHit[pair_id_type]=true; //multiple value for same TDC ch.
+                Fdata[id].FmultiHit[0]=1; //multiple value for same TDC ch.
             }
         }
   }
 
-//  pair_id_type.second = 1; //TX2
+  //TX2
   unsigned int sizeTX2 = m_EventData->GetTX2Mult();
   for(unsigned int i = 0 ; i < sizeTX2 ; i++){
         id = m_EventData->GetTX2ID(i);
         TimeRaw = m_EventData->GetTX2(i);
         if(TimeRaw>RawLowerLimit[id] && TimeRaw<RawUpperLimit[id]){
-/*
-            pair_id_type.first = id;
-            if(data[pair_id_type].size()==0){
-                data[pair_id_type].push_back(TimeRaw); 
-            }else {
-                multiHit[pair_id_type]=true; //multiple value for same TDC ch.
-            }
-*/
             if(Fdata[id].FTX2.size()==0){
                 Fdata[id].FTX2.push_back(TimeRaw*ch2ns_TX2[id]); 
             }else {
-               // multiHit[pair_id_type]=true; //multiple value for same TDC ch.
+                Fdata[id].FmultiHit[1]=1; //multiple value for same TDC ch.
             }
         }
   }
 
-//  pair_id_type.second = 2; //TY1
+  //TY1
   unsigned int sizeTY1 = m_EventData->GetTY1Mult();
   for(unsigned int i = 0 ; i < sizeTY1 ; i++){
         id = m_EventData->GetTY1ID(i);
         TimeRaw = m_EventData->GetTY1(i);
         if(TimeRaw>RawLowerLimit[id] && TimeRaw<RawUpperLimit[id]){
-/*
-            pair_id_type.first = id;
-            if(data[pair_id_type].size()==0){
-                data[pair_id_type].push_back(TimeRaw); 
-            }else {
-                multiHit[pair_id_type]=true; //multiple value for same TDC ch.
-            }
-*/
             if(Fdata[id].FTY1.size()==0){
                 Fdata[id].FTY1.push_back(TimeRaw*ch2ns_TY1[id]); 
             }else {
-               // multiHit[pair_id_type]=true; //multiple value for same TDC ch.
+                Fdata[id].FmultiHit[2]=1; //multiple value for same TDC ch.
             }
         }
   }
 
-// pair_id_type.second = 3; //TY2
+  //TY2
   unsigned int sizeTY2 = m_EventData->GetTY2Mult();
   for(unsigned int i = 0 ; i < sizeTY2 ; i++){
         id = m_EventData->GetTY2ID(i);
         TimeRaw = m_EventData->GetTY2(i);
         if(TimeRaw>RawLowerLimit[id] && TimeRaw<RawUpperLimit[id]){
-/*
-            pair_id_type.first = id;
-            if(data[pair_id_type].size()==0){
-                data[pair_id_type].push_back(TimeRaw); 
-            }else {
-                multiHit[pair_id_type]=true; //multiple value for same TDC ch.
-            }
-*/
             if(Fdata[id].FTY2.size()==0){
                 Fdata[id].FTY2.push_back(TimeRaw*ch2ns_TY2[id]); 
             }else {
-               // multiHit[pair_id_type]=true; //multiple value for same TDC ch.
+                Fdata[id].FmultiHit[3]=1; //multiple value for same TDC ch.
             }
         }
   }
 
-// pair_id_type.second = 4; //TA
+  //TA
   unsigned int sizeTA = m_EventData->GetTAMult();
   for(unsigned int i = 0 ; i < sizeTA ; i++){
         id = m_EventData->GetTAID(i);
         TimeRaw = m_EventData->GetTA(i);
         if(TimeRaw>RawLowerLimit[id] && TimeRaw<RawUpperLimit[id]){
-/*
-            pair_id_type.first = id;
-            if(data[pair_id_type].size()==0){
-                data[pair_id_type].push_back(TimeRaw); 
-            }else {
-                multiHit[pair_id_type]=true; //multiple value for same TDC ch.
-            }
-*/
             if(Fdata[id].FTA.size()==0){
                 Fdata[id].FTA.push_back(TimeRaw*ch2ns_TA[id]); 
             }else {
-               // multiHit[pair_id_type]=true; //multiple value for same TDC ch.
+                Fdata[id].FmultiHit[4]=1; //multiple value for same TDC ch.
             }
 
         }
   }
 
-/*  
-  for(auto it = data.begin();it!=data.end();++it){
-    pair_id_type = it->first;
-    cout<< "ID:"<<pair_id_type.first<<"\tType:"<<pair_id_type.second<<" \tT:"<<data[pair_id_type][0]<<endl; 
-  }
-*/
-  int j=0;
-    BigRIPSPPACVariables toto;
+  int Nmulti;
+  BigRIPSPPACVariables tmp;
+
   for(auto it = Fdata.begin();it!=Fdata.end();++it){
     id = it->first;
     ID.push_back(id);
-    FP.push_back(FPL[id]);
-    toto.Clear();
-    toto = it->second;
-    //cout<< "ID:"<<id<<endl;
-    //cout<< "ch2nsX1:"<<ch2ns_TX1[id]<<endl;
-    //cout<< "ch2nsX2:"<<ch2ns_TX2[id]<<endl;
-    //cout<< "ch2nsY1:"<<ch2ns_TY1[id]<<endl;
-    //cout<< "ch2nsY2:"<<ch2ns_TY2[id]<<endl;
-    //cout<< "ch2nsA:"<<ch2ns_TA[id]<<endl;
-    //toto.Print(); 
-    for (int i=0; i<toto.FTX1.size(); i++) TX1.push_back(toto.FTX1[i]);
-    for (int i=0; i<toto.FTX2.size(); i++) TX2.push_back(toto.FTX2[i]);
-    for (int i=0; i<toto.FTY1.size(); i++) TY1.push_back(toto.FTY1[i]);
-    for (int i=0; i<toto.FTY2.size(); i++) TY2.push_back(toto.FTY2[i]);
-    for (int i=0; i<toto.FTA.size(); i++) TA.push_back(toto.FTA[i]);
-    //TX1=toto.FTX1;
-    //TX2=toto.FTX2;
-    //TY1=toto.FTY1;
-    //TY2=toto.FTY2;
-    //TA=toto.FTA;
+    FP.push_back(IDtoFP[id]);
+    tmp.Clear();
+    tmp = it->second;
+    //tmp.Print(); 
+    TX1=tmp.FTX1;
+    TX2=tmp.FTX2;
+    TY1=tmp.FTY1;
+    TY2=tmp.FTY2;
+    TA=tmp.FTA;
+    
+    //Calculate how many TDC variables got a multi hit
+    Nmulti=0;
+    for (int i=0; i<5; i++) if(tmp.FmultiHit[i]==1) Nmulti++;
+    multiHit.push_back(Nmulti);
 
-    //if(toto.HasTXs()) {TDiffX.push_back(TX1[j]-TX2[j]);}
-    if(toto.HasTXs()) {TDiffX.push_back(toto.FTX1[0]-toto.FTX2[0]);}
-    else {TDiffX.push_back(-99999);}
-    //if(toto.HasTXs() && toto.HasTA()) {TSumX.push_back(TX1[j]+TX2[j]-2*TA[j]);}
-    if(toto.HasTXs() && toto.HasTA()) {TSumX.push_back(toto.FTX1[0]+toto.FTX2[0]-2*toto.FTA[0]);}
+    //Calculate TSum, TDiff and X/Y
+     double TDiffX_tmp, TDiffY_tmp;
+     double X_tmp, Y_tmp;
+    
+    if(tmp.HasTXs() && tmp.HasTA()){TSumX.push_back(TX1[0]+TX2[0]-2*TA[0]);}
     else {TSumX.push_back(-99999);}
-    //if(toto.HasTYs()) {TDiffY.push_back(TY1[j]-TY2[j]);}
-    if(toto.HasTYs()) {TDiffY.push_back(toto.FTY1[0]-toto.FTY2[0]);}
-    else {TDiffY.push_back(-99999);}
-    //if(toto.HasTYs() && toto.HasTA()) {TSumY.push_back(TY1[j]+TY2[j]-2*TA[j]);}
-    if(toto.HasTYs() && toto.HasTA()) {TSumY.push_back(toto.FTY1[0]+toto.FTY2[0]-2*toto.FTA[0]);}
+
+    if(tmp.HasTXs()){
+        TDiffX_tmp = (TX1[0] - TX2[0] - xns_off[id]);
+        TDiffX.push_back(TDiffX_tmp);
+        X_tmp = -1*((TDiffX_tmp * x_ns2mm[id])/2. - x_offset[id] - xpos_offset[id]);
+        X.push_back(X_tmp);
+    }else{
+        TDiffX.push_back(-99999);
+        X.push_back(-99999);
+    }
+
+    if(tmp.HasTYs() && tmp.HasTA()) {TSumY.push_back(TY1[0]+TY2[0]-2*TA[0]);}
     else {TSumY.push_back(-99999);}
-    j++;
+
+    if(tmp.HasTYs()) {
+        TDiffY_tmp = (TY1[0] - TY2[0] - yns_off[id]);
+        TDiffY.push_back(TDiffY_tmp);
+        Y_tmp = ((TDiffY_tmp * y_ns2mm[id])/2. - y_offset[id] - ypos_offset[id]);
+        Y.push_back(Y_tmp);
+/*
+        if(id==19){
+            std::cout << "_____________"<< std::endl;
+            std::cout << "TY1:\t\t" << TY1[0] << std::endl;
+            std::cout << "TY2:\t\t" << TY2[0] << std::endl;
+            std::cout << "yns_off:\t" <<  yns_off[id]<< std::endl;
+            std::cout << "TDiffY:\t\t" << TDiffY_tmp << std::endl;
+            std::cout << "y_ns2mm:\t" <<  y_ns2mm[id]<< std::endl;
+            std::cout << "y_off:\t\t" <<  y_offset[id]<< std::endl;
+            std::cout << "ypos_off:\t" <<  ypos_offset[id]<< std::endl;
+            std::cout << "Y:\t\t" <<  Y_tmp<< std::endl;
+        }
+*/
+    }else {
+        TDiffY.push_back(-99999);
+        Y.push_back(-99999);
+    }
+    
+
   }
   //Print(); 
   Fdata.clear();
@@ -241,10 +225,13 @@ void TBigRIPSPPACPhysics::Clear(){
     TA.clear();
     TSumX.clear();
     TDiffX.clear();
+    X.clear();
     TSumY.clear();
     TDiffY.clear();
+    Y.clear();
     ID.clear();
     FP.clear();
+    multiHit.clear();
     //Data.clear();
 }
 ///////////////////////////////////////////////////////////////////////////
@@ -301,12 +288,20 @@ void TBigRIPSPPACPhysics::AddPPACs(string name, NPL::XmlParser& xml){
       //string sDir = b[i]->AsString("anodedir");
       RawLowerLimit[ID] = b[i]->AsInt("tdc_underflow"); 
       RawUpperLimit[ID] = b[i]->AsInt("tdc_overflow"); 
-      FPL[ID] = b[i]->AsInt("FPL"); 
+      IDtoFP[ID] = b[i]->AsInt("FPL"); 
       ch2ns_TX1[ID] = b[i]->AsDouble("x1_ch2ns"); 
       ch2ns_TX2[ID] = b[i]->AsDouble("x2_ch2ns"); 
       ch2ns_TY1[ID] = b[i]->AsDouble("y1_ch2ns"); 
       ch2ns_TY2[ID] = b[i]->AsDouble("y2_ch2ns"); 
       ch2ns_TA[ID] = b[i]->AsDouble("a_ch2ns"); 
+      xns_off[ID] = b[i]->AsDouble("xns_off"); 
+      yns_off[ID] = b[i]->AsDouble("yns_off"); 
+      x_ns2mm[ID] = b[i]->AsDouble("xfactor"); //prop. speed along delay line 
+      y_ns2mm[ID] = b[i]->AsDouble("yfactor"); //prop. speed along delay line 
+      x_offset[ID] = b[i]->AsDouble("xoffset"); 
+      y_offset[ID] = b[i]->AsDouble("yoffset"); 
+      xpos_offset[ID] = b[i]->AsDouble("xpos_off"); 
+      ypos_offset[ID] = b[i]->AsDouble("ypos_off"); 
     }
   }
 }
