@@ -220,7 +220,7 @@ void DCReconstructionMT::StartThread(unsigned int id){
   mini->SetPrintLevel(0);
 
   // Let the main thread start
-  std::this_thread::sleep_for(std::chrono::milliseconds(100));
+  std::this_thread::sleep_for(std::chrono::milliseconds(500));
   while(true){
     // Do the job if possible
     if(m_Ready[id]){
