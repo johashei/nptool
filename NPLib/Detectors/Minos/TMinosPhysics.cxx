@@ -158,10 +158,11 @@ void TMinosPhysics::PreTreat() {
   else{ // Experiment data
     MINOSthresh = 100;
     UperFitLim = 100000.; 
-    coef_Vdrift = 1.125; 
+    /* coef_Vdrift = 1.125; */ 
+    coef_Vdrift = 1.073; 
     ZRot_Minos = 35; // Rotation of Minos along Z axis s034
     //to fixe VDrift
-    Z_Shift = -18.95 + 4;
+    Z_Shift = -18.95 + 4 - 10;
   }
   
   ///////////////////////////////////////////////////////

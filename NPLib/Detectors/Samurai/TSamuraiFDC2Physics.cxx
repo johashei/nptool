@@ -47,9 +47,9 @@ ClassImp(TSamuraiFDC2Physics)
     //m_Spectra           = NULL;
     ToTThreshold_L = 180;
     ToTThreshold_H = 1000;
-    DriftLowThreshold=0.4 ;
+    DriftLowThreshold=0.4;
     DriftUpThreshold=9.3;
-    PowerThreshold=5;
+    PowerThreshold=14;
   }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -103,7 +103,7 @@ void TSamuraiFDC2Physics::BuildPhysicalEvent(){
   m_reconstruction.BuildTrack2D();
   uid=0;
 #endif
-
+  
   for(auto it = X.begin();it!=X.end();++it){
 #if __cplusplus > 199711L && NPMULTITHREADING
  
@@ -141,7 +141,6 @@ void TSamuraiFDC2Physics::BuildPhysicalEvent(){
     for(auto it2 = it1;it2!=VX0.end();++it2){
       if(it1!=it2 && it1->first.first==it2->first.first){// different plane, same detector
         m_reconstruction.ResolvePlane(it1->second,it1->first.second,it2->second,it2->first.second,P);
-        
         if(P.X()!=-10000 && D[it1->first]<PowerThreshold&& D[it2->first]<PowerThreshold){
           C[it1->first.first].push_back(P);
           // Mean pos are weighted based on the the sum of distance from track
@@ -170,6 +169,7 @@ void TSamuraiFDC2Physics::BuildPhysicalEvent(){
   size = C[2].size();
   static double PosX100,PosY100,norm;
   if(size){
+    
     PosX=0;
     PosY=0;
     PosX100=0;
@@ -191,7 +191,7 @@ void TSamuraiFDC2Physics::BuildPhysicalEvent(){
     // Mean position at Z=100
     PosX100=PosX100/norm; 
     PosY100=PosY100/norm; 
-
+    
     devX=0;
     devY=0;
     for(unsigned int i = 0 ; i < size ; i++){
@@ -224,7 +224,6 @@ void TSamuraiFDC2Physics::PreTreat(){
   map<unsigned int, vector<double> > X ; 
   map<unsigned int, vector<double> > Z ; 
   map<unsigned int, vector<double> > R ; 
-
   unsigned int size = m_EventData->Mult();
   for(unsigned int i = 0 ; i < size ; i++){
     // EDGE=1 is the leading edge, IE, the real time.
