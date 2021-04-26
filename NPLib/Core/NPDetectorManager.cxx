@@ -50,6 +50,7 @@ using namespace NPUNITS;
 
 //   Default Constructor
 NPL::DetectorManager::DetectorManager(){
+  ROOT::EnableThreadSafety();
   m_BuildPhysicalPtr = &NPL::VDetector::BuildPhysicalEvent;
   m_ClearEventPhysicsPtr =  &NPL::VDetector::ClearEventPhysics;
   m_ClearEventDataPtr = &NPL::VDetector::ClearEventData ;
