@@ -149,11 +149,15 @@ double DCReconstructionMT::SumD(const double* parameter ){
   double a2=a*a;
   unsigned int id = parameter[2];
   unsigned int size =  sizeX[id];
+  const std::vector<double>* X=fitX[id];
+  const std::vector<double>* Z=fitZ[id];
+  const std::vector<double>* R=fitR[id];
+
   double c,d,r,x,z,p;
   for(unsigned int i = 0 ; i < size ; i++){
-    c = (*fitX[id])[i];
-    d = (*fitZ[id])[i];
-    r = (*fitR[id])[i];
+    c = (*X)[i];
+    d = (*Z)[i];
+    r = (*R)[i];
     x = (a*d-ab+c)/(1+a2);
     z = a*x+b;
     p= (x-c)*(x-c)+(z-d)*(z-d)-r*r;
