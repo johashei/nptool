@@ -223,6 +223,7 @@ void DCReconstructionMT::StartThread(unsigned int id){
   ROOT::Math::Functor* func= new ROOT::Math::Functor(this,&NPL::DCReconstructionMT::SumD,3); 
   //Create the minimiser (deleted by the thread)
   ROOT::Math::Minimizer* mini=ROOT::Math::Factory::CreateMinimizer("Minuit2", "Migrad"); 
+
   mini->SetFunction(*func);
   mini->SetPrintLevel(0);
 

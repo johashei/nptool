@@ -2,6 +2,8 @@ include(CheckLanguage)
 
 add_custom_command(OUTPUT TMinosPhysicsDict.cxx COMMAND ../../scripts/build_dict.sh TMinosPhysics.h TMinosPhysicsDict.cxx TMinosPhysics.rootmap libNPMinos.dylib DEPENDS TMinosPhysics.h)
 add_custom_command(OUTPUT TMinosDataDict.cxx COMMAND ../../scripts/build_dict.sh TMinosData.h TMinosDataDict.cxx TMinosData.rootmap libNPMinos.dylib DEPENDS TMinosData.h)
+
+add_custom_command(OUTPUT oldTMinosDataDict.cxx COMMAND ../../scripts/build_dict.sh oldTMinosData.h oldTMinosDataDict.cxx oldTMinosData.rootmap libNPMinos.dylib DEPENDS oldTMinosData.h)
 add_custom_command(OUTPUT TMinosClustDict.cxx COMMAND ../../scripts/build_dict.sh TMinosClust.h TMinosClustDict.cxx TMinosClust.rootmap libNPMinos.dylib DEPENDS TMinosClust.h)
 add_custom_command(OUTPUT TMinosResultDict.cxx COMMAND ../../scripts/build_dict.sh TMinosResult.h TMinosResultDict.cxx TMinosResult.rootmap libNPMinos.dylib DEPENDS TMinosResult.h)
 
@@ -17,7 +19,7 @@ endif()
 
 if(libMinuit_FOUND)
 ## Link to Minuit library
-  add_library(NPMinos SHARED TMinosClust.cxx TMinosData.cxx TMinosPhysics.cxx TMinosResult TMinosDataDict.cxx TMinosPhysicsDict.cxx TMinosClustDict.cxx TMinosResultDict.cxx MinosUtility.cxx) 
+  add_library(NPMinos SHARED TMinosClust.cxx TMinosData.cxx TMinosPhysics.cxx TMinosResult oldTMinosDataDict.cxx TMinosDataDict.cxx TMinosPhysicsDict.cxx TMinosClustDict.cxx TMinosResultDict.cxx MinosUtility.cxx) 
   target_link_libraries(NPMinos ${ROOT_LIBRARIES} Minuit NPCore NPTrackReconstruction )
   install(FILES TMinosClust.h TMinosData.h TMinosPhysics.h TMinosResult.h DESTINATION ${CMAKE_INCLUDE_OUTPUT_DIRECTORY})
 else()
