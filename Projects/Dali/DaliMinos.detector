@@ -4,6 +4,7 @@ Minos
  TargetMaterial= LH2
  CellMaterial= Mylar 
  TPCOnly= 0 
+ XML= /Users/matta/mrdc/xml/s034/MINOS.xml
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 Dali
  R = 212.4 mm 

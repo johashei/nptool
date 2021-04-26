@@ -134,7 +134,7 @@ class Minos : public NPS::VDetector{
      TH1F* Raw_Signal ;      
      TH1F* Elec_Signal;
      TF1* fa1;   
-     vector<double> Charge2, Time;
+     vector<int> Q, T;
      
     ////////////////////////////////////////////////////
     //////  Inherite from NPS::VDetector class /////////
@@ -159,8 +159,16 @@ class Minos : public NPS::VDetector{
   public:   // Scorer
     //   Initialize all Scorer used by the MUST2Array
     void InitializeScorers() ;
-    void SimulateGainAndDigitizer(vector<double> Q, vector<double> T);
-    
+    void SimulateGainAndDigitizer(vector<double>* rawT, vector<double>* rawQ,vector<int>& Q,vector<int>& T);
+
+  private: // parameter for the digitization  
+    double m_TimeBin;
+    double m_ShapingTime;
+    double m_Baseline;
+    unsigned int m_Sampling;
+    double m_ZOffset;
+
+
     //   Associated Scorer
     G4MultiFunctionalDetector* m_MinosPadScorer ;
   

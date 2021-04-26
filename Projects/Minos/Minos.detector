@@ -9,8 +9,14 @@
 % Z= 75 mm
 
 Minos
- POS= 0 0 0 mm
+ Position= 0 0 0 mm
  TargetLength= 152.76 mm
  TargetMaterial= LH2 
  CellMaterial= Mylar 
  TPCOnly= 0 
+ TimeBin= 30 ns
+ ShapingTime= 333.9 ns
+ BaseLine= 250
+ Sampling= 10
+ ZOffset= 0 mm
+ XML= /Users/matta/mrdc/xml/s034/MINOS.xml

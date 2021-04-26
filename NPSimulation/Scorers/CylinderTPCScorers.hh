@@ -62,8 +62,8 @@ namespace CylinderTPCScorers{
      inline double GetY() const {return m_Y;};
      inline unsigned int GetPad() const {return m_Pad;};
 
-     inline vector<double> GetQ() const {return m_Q;};
-     inline vector<double> GetT() const {return m_T;};
+     inline vector<double>* GetQ() {return &m_Q;};
+     inline vector<double>* GetT() {return &m_T;};
 
      void Add(const double& Charge){m_Charge+=Charge;};
      
@@ -139,8 +139,8 @@ namespace CylinderTPCScorers{
       double GetY(const double& i) {return m_Data[i]->GetY();};
       unsigned int GetPad(const unsigned int& i) {return m_Data[i]->GetPad();};
       
-      vector<double> GetQ(const double& i) {return m_Data[i]->GetQ();}
-      vector<double> GetT(const double& i) {return m_Data[i]->GetT();}
+      vector<double>* GetQ(const double& i) {return m_Data[i]->GetQ();}
+      vector<double>* GetT(const double& i) {return m_Data[i]->GetT();}
 
   };
 
