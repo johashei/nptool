@@ -169,7 +169,7 @@ class TMinosPhysics : public TObject, public NPL::VDetector {
   public:
     static NPL::VDetector* Construct();
 
-    ClassDef(TMinosPhysics,1)  // MinosPhysics structure
+    ClassDef(TMinosPhysics,2)  // MinosPhysics structure
 };
 
 #endif
