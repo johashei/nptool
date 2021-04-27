@@ -243,7 +243,7 @@ G4LogicalVolume* Minos::BuildOuterRohacell(){
 G4LogicalVolume* Minos::BuildKapton(){
   if(!logicKapton){
     solidKapton = new G4Tubs("Kapton",			//its name
-        ChamberInnerRadius+RohacellThickness ,ChamberInnerRadius +RohacellThickness+KaptonThickness,ChamberLength/2.,0,360.); //size
+        ChamberInnerRadius+RohacellThickness ,ChamberInnerRadius+RohacellThickness+KaptonThickness,ChamberLength/2.,0,360.); //size
     logicKapton = new G4LogicalVolume(solidKapton,	//its solid
         KaptonMaterial,	//its material
         "Kapton");	//its name
@@ -296,15 +296,13 @@ void Minos::ReadConfiguration(NPL::InputParser parser){
   if(NPOptionManager::getInstance()->GetVerboseLevel())
     cout << "//// " << blocks.size() << " detectors found " << endl; 
 
-  vector<string> optional = {"TPCOnly"};
-
-  vector<string> token= {"Position","TargetMaterial","TargetLength","CellMaterial","TimeBin","ShapingTime","Baseline","Sampling","ZOffset"};
+  vector<string> simu = {"TPCOnly"};
+  vector<string> token= {"XML","Position","TargetMaterial","TargetLength","CellMaterial","TimeBin","ShapingTime","Baseline","Sampling","ZOffset"};
 
   for(unsigned int i = 0 ; i < blocks.size() ; i++){
     if(blocks[i]->HasTokenList(token)){
       if(NPOptionManager::getInstance()->GetVerboseLevel())
         cout << endl << "////  Minos " << i+1 <<  endl;
-
       G4ThreeVector Pos = NPS::ConvertVector(blocks[i]->GetTVector3("Position","mm"));
       TargetLength = blocks[i]->GetDouble("TargetLength","mm");
       G4String TargetMaterialname = blocks[i]->GetString("TargetMaterial");
@@ -314,11 +312,16 @@ void Minos::ReadConfiguration(NPL::InputParser parser){
       m_Sampling= blocks[i]->GetInt("Sampling");   
       m_Baseline= blocks[i]->GetInt("BaseLine");   
       m_ZOffset = blocks[i]->GetDouble("ZOffset","mm");   
+      string xmlpath = blocks[i]->GetString("XML");
+      NPL::XmlParser xml;
+      xml.LoadFile(xmlpath);
+      ReadXML(xml);
+
       TPCOnly=1;
-      if(blocks[i]->HasTokenList(optional))
+      if(blocks[i]->HasTokenList(simu))
         TPCOnly = blocks[i]->GetInt("TPCOnly");
       AddDetector(Pos,TargetLength,TargetMaterialname, CellMaterial, TPCOnly);
-      /* AddDetector(Pos,TargetLength, TPCOnly); */
+      
     }
     else{
       cout << "ERROR: check your input file formatting " << endl;
@@ -356,8 +359,8 @@ void Minos::ConstructDetector(G4LogicalVolume* world){
     MPT->AddConstProperty("DE_PAIRENERGY",30*eV);
     MPT->AddConstProperty("DE_ABSLENGTH",10*pc); 
     MPT->AddConstProperty("DE_DRIFTSPEED",3.475*cm/microsecond);
-    MPT->AddConstProperty("DE_TRANSVERSALSPREAD",14e-5*mm2/ns);
-    MPT->AddConstProperty("DE_LONGITUDINALSPREAD",14e-5*mm2/ns);
+    MPT->AddConstProperty("DE_TRANSVERSALSPREAD",7e-5*mm2/ns);
+    MPT->AddConstProperty("DE_LONGITUDINALSPREAD",7e-5*mm2/ns);
 
     /* MPT->AddConstProperty("DE_TRANSVERSALSPREAD",0*mm2/ns); */
     /* MPT->AddConstProperty("DE_LONGITUDINALSPREAD",0*mm2/ns); */
@@ -543,8 +546,9 @@ void Minos::ReadSensitive(const G4Event* ){
   CylinderTPCScorers::PS_TPCAnode* Scorer2= (CylinderTPCScorers::PS_TPCAnode*) m_MinosPadScorer->GetPrimitive(0);
   unsigned int size2 = Scorer2->GetMult();
   for(unsigned int i = 0 ; i < size2 ; i++){
-    int Pad = Scorer2->GetPad(i);
+    int Pad = FindPadID(Scorer2->GetPad(i),Scorer2->GetX(i),Scorer2->GetY(i));
     SimulateGainAndDigitizer(Scorer2->GetT(i), Scorer2->GetQ(i),T,Q);
+
     m_Event->SetPad(Pad, Scorer2->GetQ(i)->size(),&T,&Q);
   }
 
@@ -632,6 +636,43 @@ void Minos::InitializeScorers() {
   m_MinosPadScorer->RegisterPrimitive(PadScorer);
 
   G4SDManager::GetSDMpointer()->AddNewDetector(m_MinosPadScorer) ;
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+void Minos::ReadXML(NPL::XmlParser& xml){
+  std::vector<NPL::XML::block*> b = xml.GetAllBlocksWithName("MINOS");  
+  unsigned int size = b.size();
+  for(unsigned int i = 0 ; i < size ; i++){
+    unsigned short ID = b[i]->AsInt("ID"); 
+    m_XY[ID] = std::make_pair(b[i]->AsDouble("X"),b[i]->AsDouble("Y"));  
+  }
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+unsigned int Minos::FindPadID(unsigned int G4ID, double X,double Y){
+ // if no XML is provided, do nothing
+ if(m_XY.size()==0)
+   return G4ID;
+ // The pad is already identified
+ if(m_ID.find(G4ID)!=m_ID.end())
+   return m_ID[G4ID];
+
+ // look for the closest pad
+ else{
+  double d = 1e6;
+  double id=0;
+  for(auto it = m_XY.begin();it!=m_XY.end();it++){
+    double dd = sqrt((it->second.first-X)*(it->second.first-X)+(it->second.second-Y)*(it->second.second-Y));
+    if(dd<d){
+      d=dd;
+      id=it->first;
+    } 
+  } 
+  //cout << G4ID << " " << id << endl;
+  m_ID[G4ID]=id;
+  return id;
+ }
+
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
