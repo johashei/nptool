@@ -249,7 +249,9 @@ void NPL::DetectorManager::ReadConfigurationFile(std::string Path)   {
 void NPL::DetectorManager::BuildPhysicalEvent(){
 #if __cplusplus > 199711L && NPMULTITHREADING
     // add new job
+    m_mtx.lock();
     m_Ready.flip();
+    m_mtx.unlock();
     std::this_thread::yield();
 
   while(!IsDone()){
@@ -411,7 +413,7 @@ void NPL::DetectorManager::InitThreadPool(){
 ////////////////////////////////////////////////////////////////////////////////
 void NPL::DetectorManager::StartThread(NPL::VDetector* det,unsigned int id){ 
   // Let the main thread start 
-  std::this_thread::sleep_for(std::chrono::milliseconds(100));
+  //std::this_thread::sleep_for(std::chrono::milliseconds(100));
   while(true){
     // Do the job if possible
     if(m_Ready[id]){
@@ -425,7 +427,9 @@ void NPL::DetectorManager::StartThread(NPL::VDetector* det,unsigned int id){
        if(m_CheckSpectra)
           (det->*m_CheckSpectra)();
       }
+     m_mtx.lock();
      m_Ready[id].flip();
+     m_mtx.unlock();
      std::this_thread::yield();
    }
    else{

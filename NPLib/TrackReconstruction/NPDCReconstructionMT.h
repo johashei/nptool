@@ -40,6 +40,7 @@
 #include <map>
 #include <vector>
 #include <thread>
+#include <mutex>
 class TVector3;
 class TGraph;
 namespace NPL{
@@ -98,6 +99,7 @@ namespace NPL{
       std::vector<std::thread> m_ThreadPool;
       std::vector<bool> m_Ready;
       bool m_stop;
+      std::mutex m_mtx;
 
     public: // Init the Thread Pool
 

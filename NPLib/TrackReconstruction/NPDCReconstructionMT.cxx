@@ -27,7 +27,6 @@
 #include "TGraph.h"
 #include "TVector3.h"
 #include "TROOT.h"
-
 using namespace std;
 using namespace NPL;
 
@@ -222,13 +221,15 @@ void DCReconstructionMT::StartThread(unsigned int id){
   // each threads needs its own or the minisation is not thread safe 
   ROOT::Math::Functor* func= new ROOT::Math::Functor(this,&NPL::DCReconstructionMT::SumD,3); 
   //Create the minimiser (deleted by the thread)
+  m_mtx.lock();
   ROOT::Math::Minimizer* mini=ROOT::Math::Factory::CreateMinimizer("Minuit2", "Migrad"); 
+  m_mtx.unlock();
 
   mini->SetFunction(*func);
   mini->SetPrintLevel(0);
 
   // Let the main thread start
-  std::this_thread::sleep_for(std::chrono::milliseconds(500));
+  //std::this_thread::sleep_for(std::chrono::milliseconds(500));
   while(true){
     // Do the job if possible
     if(m_Ready[id]){
@@ -254,7 +255,9 @@ void DCReconstructionMT::StartThread(unsigned int id){
       m_X100[uid]=(100-m_b[uid])/m_a[uid];
       m_minimum[uid] = mini->MinValue();
       // notify main thread job is done
+      m_mtx.lock();// make sure no other thread is reading/writing to the map
       m_Ready[id].flip();
+      m_mtx.unlock();
       // Let other thread move up in the queu
       std::this_thread::yield();
     }
