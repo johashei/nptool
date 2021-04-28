@@ -30,6 +30,7 @@
 #include <string>
 #include <map>
 #include <vector>
+#include <mutex>
 #include <iostream>
 #if __cplusplus > 199711L 
 #include <thread>
@@ -82,6 +83,7 @@ namespace NPL{
     private: // Thread Pool defined if C++11 is available
       std::vector<std::thread> m_ThreadPool;
       std::vector<bool> m_Ready;
+      std::mutex m_mtx;
       bool m_stop;
 
     public: // Init the Thread Pool
