@@ -1,0 +1,52 @@
+%%%%%%%%%%%%%%%%%%%%%% S1107 at Triumf %%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Beam
+  Particle= 79Zn
+  ExcitationEnergy= 0 MeV
+  Energy= 435 MeV
+  SigmaEnergy= 0.448 MeV
+  SigmaThetaX= 0.01  deg
+  SigmaPhiY= 0.01    deg
+  SigmaX= 0.5 mm
+  SigmaY= 0.5 mm
+  MeanThetaX= 0 deg
+  MeanPhiY= 0 deg
+  MeanX= 0 mm
+  MeanY= 0 mm
+  %EnergyProfilePath=
+  %XThetaXProfilePath=
+  %YPhiYProfilePath=
+ 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+TwoBodyReaction
+ Beam= 79Zn
+ Target= 2H
+ Light= 1H
+ Heavy= 80Zn
+ ExcitationEnergyLight= 0.0 MeV
+ ExcitationEnergyHeavy= 3.7 MeV
+  CrossSectionPath= 79Zndp_d5half_3.7MeV.dat CSR
+ ShootLight= 1
+ ShootHeavy= 1
+  
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+Decay 80Zn
+ Threshold= 3.7
+ Daughter= 80Zn gamma gamma gamma gamma
+ BranchingRatio= 0.5
+ ExcitationEnergy= 0 0.879 0.842 0.482 1.497
+ Shoot= 1 1 1 1 1   
+ LifeTime= 0 ns
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+Decay 80Zn
+ Threshold= 3.7
+ Daughter= 80Zn gamma gamma gamma 
+ BranchingRatio= 0.5
+ ExcitationEnergy= 0 1.497 0.482 1.721
+ Shoot= 1 1 1 1    
+ LifeTime= 0 ns
+                   
+                   
+                   
+                   
+                   
