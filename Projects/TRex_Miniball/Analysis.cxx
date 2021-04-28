@@ -47,7 +47,7 @@ void Analysis::Init(){
   else
     ligth = "deuteron";
 
-  heavy = "Mg29";
+  heavy = "Zn79";
 
 
   Sharc = (TSharcPhysics*)  m_DetectorManager -> GetDetector("Sharc");
@@ -145,8 +145,8 @@ void Analysis::TreatEvent(){
     X_Trifoil = P.X();
     Y_Trifoil = P.Y();
 
-    myReaction->SetThetaCM(0);
-    myReaction->SetExcitationHeavy(0);
+   // myReaction->SetThetaCM(0);
+   // myReaction->SetExcitationHeavy(0);
 
 
     /************************************************/
@@ -200,8 +200,8 @@ void Analysis::TreatEvent(){
     X_Trifoil = P.X();
     Y_Trifoil = P.Y();
 
-    myReaction->SetThetaCM(0);
-    myReaction->SetExcitationHeavy(0);
+//    myReaction->SetThetaCM(0);
+//    myReaction->SetExcitationHeavy(0);
 
 
     /************************************************/

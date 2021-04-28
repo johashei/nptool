@@ -82,4 +82,5 @@ void PS_Interactions::EndOfEvent(G4HCofThisEvent*){
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 void PS_Interactions::clear(){
   m_DataVector.clear();
+  m_InterractionCoordinates->Clear();
 }
