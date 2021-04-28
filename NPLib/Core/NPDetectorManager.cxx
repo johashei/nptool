@@ -413,7 +413,7 @@ void NPL::DetectorManager::InitThreadPool(){
 ////////////////////////////////////////////////////////////////////////////////
 void NPL::DetectorManager::StartThread(NPL::VDetector* det,unsigned int id){ 
   // Let the main thread start 
-  //std::this_thread::sleep_for(std::chrono::milliseconds(100));
+  std::this_thread::sleep_for(std::chrono::milliseconds(100));
   while(true){
     // Do the job if possible
     if(m_Ready[id]){
