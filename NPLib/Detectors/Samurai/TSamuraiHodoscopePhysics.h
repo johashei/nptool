@@ -77,18 +77,10 @@ class TSamuraiHodoscopePhysics : public TObject, public NPL::VDetector {
     // calibration parameter original ID vs coeff
     map<unsigned int , double > qup_gain;
     map<unsigned int , double > qup_offset;
-    map<unsigned int , double > qup_gain;
-    map<unsigned int , double > qup_offset;
-    map<unsigned int , double > tup_gain;
-    map<unsigned int , double > tup_offset;
     map<unsigned int , double > tup_gain;
     map<unsigned int , double > tup_offset;
     map<unsigned int , double > qdw_gain;
     map<unsigned int , double > qdw_offset;
-    map<unsigned int , double > qdw_gain;
-    map<unsigned int , double > qdw_offset;
-    map<unsigned int , double > tdw_gain;
-    map<unsigned int , double > tdw_offset;
     map<unsigned int , double > tdw_gain;
     map<unsigned int , double > tdw_offset;
 

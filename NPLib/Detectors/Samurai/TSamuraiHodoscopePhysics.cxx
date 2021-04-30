@@ -215,8 +215,9 @@ void TSamuraiHodoscopePhysics::ReadConfiguration(NPL::InputParser parser) {
       if(NPOptionManager::getInstance()->GetVerboseLevel())
         cout << endl << "////  SamuraiHodoscope " << i+1 <<  endl;
     
-      string XML= blocks[i]->GetString("XML");
-      NPL::XmlParser xml(XML);
+      string xmlpath= blocks[i]->GetString("XML");
+      NPL::XmlParser xml;
+      xml.LoadFile(xmlpath);
       ReadXML(xml);
     }
     else{
@@ -227,7 +228,10 @@ void TSamuraiHodoscopePhysics::ReadConfiguration(NPL::InputParser parser) {
 }
 
 ///////////////////////////////////////////////////////////////////////////
-void ReadXML()
+void TSamuraiHodoscopePhysics::ReadXML(NPL::XmlParser& xml){
+
+}
+
 ///////////////////////////////////////////////////////////////////////////
 void TSamuraiHodoscopePhysics::InitSpectra() {
   //m_Spectra = new TSamuraiHodoscopeSpectra(m_NumberOfDetectors);
