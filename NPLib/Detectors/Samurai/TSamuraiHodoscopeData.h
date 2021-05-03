@@ -77,47 +77,61 @@ class TSamuraiHodoscopeData : public TObject {
     //////////////////////    SETTERS    ////////////////////////
     // UP // 
     // Charge
-    inline void SetChargeUp(const Double_t& ID, const Double_t& Charge){
+    inline void SetChargeUp(const UShort_t& ID, const Double_t& Charge){
     fSamuraiHodoscope_Qu_ID.push_back(ID);
     fSamuraiHodoscope_Qu_Charge.push_back(Charge);
     };//!
 
     // Time
-    inline void SetTimeUp(const Double_t& ID, const Double_t& Time){
+    inline void SetTimeUp(const UShort_t& ID, const Double_t& Time){
     fSamuraiHodoscope_Tu_ID.push_back(ID);
     fSamuraiHodoscope_Tu_Time.push_back(Time);
     };//!
 
     // DOWN // 
     // Charge
-    inline void SetChargeDown(const Double_t& ID, const Double_t& Charge){
+    inline void SetChargeDown(const UShort_t& ID, const Double_t& Charge){
     fSamuraiHodoscope_Qd_ID.push_back(ID);
     fSamuraiHodoscope_Qd_Charge.push_back(Charge);
     };//!
 
     // Time
-    inline void SetTimeDown(const Double_t& ID, const Double_t& Time){
+    inline void SetTimeDown(const UShort_t& ID, const Double_t& Time){
     fSamuraiHodoscope_Td_ID.push_back(ID);
     fSamuraiHodoscope_Td_Time.push_back(Time);
     };//!
-/*
+
     //////////////////////    GETTERS    ////////////////////////
     // Energy
-    inline UShort_t GetMultEnergy() const
-      {return fSamuraiHodoscope_E_DetectorNbr.size();}
-    inline UShort_t GetE_DetectorNbr(const unsigned int &i) const 
-      {return fSamuraiHodoscope_E_DetectorNbr[i];}//!
-    inline Double_t Get_Energy(const unsigned int &i) const 
-      {return fSamuraiHodoscope_Energy[i];}//!
+    inline UShort_t GetMultQUp() const
+      {return fSamuraiHodoscope_Qu_ID.size();}
+    inline UShort_t GetQUp_ID(const unsigned int &i) const 
+      {return fSamuraiHodoscope_Qu_ID[i];}//!
+    inline UShort_t GetQUp_Charge(const unsigned int &i) const 
+      {return fSamuraiHodoscope_Qu_Charge[i];}//!
 
     // Time
-    inline UShort_t GetMultTime() const
-      {return fSamuraiHodoscope_T_DetectorNbr.size();}
-    inline UShort_t GetT_DetectorNbr(const unsigned int &i) const 
-      {return fSamuraiHodoscope_T_DetectorNbr[i];}//!
-    inline Double_t Get_Time(const unsigned int &i) const 
-      {return fSamuraiHodoscope_Time[i];}//!
-*/
+    inline UShort_t GetMultTUp() const
+      {return fSamuraiHodoscope_Tu_ID.size();}
+    inline UShort_t GetTUp_ID(const unsigned int &i) const 
+      {return fSamuraiHodoscope_Tu_ID[i];}//!
+    inline Double_t GetTUp_Time(const unsigned int &i) const 
+      {return fSamuraiHodoscope_Tu_Time[i];}//!
+    // Energy
+    inline UShort_t GetMultQDown() const
+      {return fSamuraiHodoscope_Qd_ID.size();}
+    inline UShort_t GetQDown_ID(const unsigned int &i) const 
+      {return fSamuraiHodoscope_Qd_ID[i];}//!
+    inline Double_t GetQDown_Charge(const unsigned int &i) const 
+      {return fSamuraiHodoscope_Qd_Charge[i];}//!
+
+    // Time
+    inline UShort_t GetMultTDown() const
+      {return fSamuraiHodoscope_Td_ID.size();}
+    inline UShort_t GetTDown_ID(const unsigned int &i) const 
+      {return fSamuraiHodoscope_Td_ID[i];}//!
+    inline Double_t GetTDown_Time(const unsigned int &i) const 
+      {return fSamuraiHodoscope_Td_Time[i];}//!
 
   //////////////////////////////////////////////////////////////
   // Required for ROOT dictionnary

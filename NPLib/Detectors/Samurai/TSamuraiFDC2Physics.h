@@ -83,7 +83,8 @@ class TSamuraiFDC2Physics : public TObject, public NPL::VDetector{
   public:
     // Projected position at given Z plan
     TVector3 ProjectedPosition(double Z);
-
+    double   ProjectedPositionX(double Z);
+    double   ProjectedPositionY(double Z);
   private: // Charateristic of the DC 
     void AddDC(std::string name, NPL::XmlParser&);//! take the XML file and fill in Wire_X and Layer_Angle
     std::map<SamuraiDCIndex,double> Wire_X;//! X position of the wires

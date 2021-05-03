@@ -248,15 +248,17 @@ void TSamuraiFDC2Physics::PreTreat(){
       }
       // a valid wire must have an edge
       if(etime && time && etime-time>ToTThreshold_L && etime-time<ToTThreshold_H){
-        Detector.push_back(det);
-        Layer.push_back(layer);       
-        Wire.push_back(wire);
-        Time.push_back(time);
-        ToT.push_back(etime-time);
-        channel="SamuraiFDC2/L" + NPL::itoa(layer);
-        // rescalling is needed because calib are bad.
-        // to be fixed
-        DriftLength.push_back(10-Cal->ApplySigmoid(channel,etime));
+        if(!(wire==93 && layer ==7)){// remove noisy wire
+         Detector.push_back(det);
+          Layer.push_back(layer);       
+          Wire.push_back(wire);
+          Time.push_back(time);
+          ToT.push_back(etime-time);
+          channel="SamuraiFDC2/L" + NPL::itoa(layer);
+          // rescalling is needed because calib are bad.
+          // to be fixed
+          DriftLength.push_back(10-Cal->ApplySigmoid(channel,etime));
+        }
       }
     }
   }
@@ -302,6 +304,24 @@ void TSamuraiFDC2Physics::RemoveNoise(){
   }
   return;
 }
+////////////////////////////////////////////////////////////////////////////////
+TVector3 TSamuraiFDC2Physics::ProjectedPosition(double Z){
+  TVector3 pos(-10000,-10000,-10000);
+  if(PosX!=-10000){
+  pos = TVector3(PosX,PosY,0)+(Z/Dir.Z())*Dir;
+  //cout << pos.X() << " " << pos.Y() << " " << pos.Z() << endl;
+  }
+  return pos;
+}
+////////////////////////////////////////////////////////////////////////////////
+double TSamuraiFDC2Physics::ProjectedPositionX(double Z){
+  return ProjectedPosition(Z).X();
+}
+////////////////////////////////////////////////////////////////////////////////
+double TSamuraiFDC2Physics::ProjectedPositionY(double Z){
+  return ProjectedPosition(Z).Y();
+}
+   
 ///////////////////////////////////////////////////////////////////////////
 void TSamuraiFDC2Physics::Clear(){
   MultMean=0;

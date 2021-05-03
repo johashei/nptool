@@ -32,6 +32,7 @@ using namespace std;
 #include "TObject.h"
 #include "TH1.h"
 #include "TVector3.h"
+#include "TRandom3.h"
 // NPTool headers
 #include "TSamuraiHodoscopeData.h"
 //#include "TSamuraiHodoscopeSpectra.h"
@@ -43,15 +44,12 @@ using namespace std;
 // forward declaration
 //class TSamuraiHodoscopeSpectra;
 
-
-
 class TSamuraiHodoscopePhysics : public TObject, public NPL::VDetector {
-  //////////////////////////////////////////////////////////////
+ //////////////////////////////////////////////////////////////
   // constructor and destructor
   public:
     TSamuraiHodoscopePhysics();
     ~TSamuraiHodoscopePhysics() {};
-
 
   //////////////////////////////////////////////////////////////
   // Inherited from TObject and overriden to avoid warnings
@@ -59,32 +57,39 @@ class TSamuraiHodoscopePhysics : public TObject, public NPL::VDetector {
     void Clear();   
     void Clear(const Option_t*) {};
 
-
   //////////////////////////////////////////////////////////////
   // data obtained after BuildPhysicalEvent() and stored in
   // output ROOT file
   public:
-    vector<int>      DetectorNumber;
-    vector<double>   Energy;
+    vector<int>      ID;
+    vector<double>   Charge;
     vector<double>   Time;
-
-  /// A usefull method to bundle all operation to add a detector
-  void AddDetector(TVector3 POS, string shape); 
-  void AddDetector(double R, double Theta, double Phi, string shape); 
  
   private: // XML reading of calibration and position
     void ReadXML(NPL::XmlParser&);
     // calibration parameter original ID vs coeff
-    map<unsigned int , double > qup_gain;
-    map<unsigned int , double > qup_offset;
-    map<unsigned int , double > tup_gain;
-    map<unsigned int , double > tup_offset;
-    map<unsigned int , double > qdw_gain;
-    map<unsigned int , double > qdw_offset;
-    map<unsigned int , double > tdw_gain;
-    map<unsigned int , double > tdw_offset;
+    map<unsigned int , double > m_qup_gain;//!
+    map<unsigned int , double > m_qup_offset;//!
+    map<unsigned int , double > m_tup_gain;//!
+    map<unsigned int , double > m_tup_offset;//!
+    map<unsigned int , double > m_qdw_gain;//!
+    map<unsigned int , double > m_qdw_offset;//!
+    map<unsigned int , double > m_tdw_gain;//!
+    map<unsigned int , double > m_tdw_offset;//!
 
+    // old ID to new ID map
+    map<unsigned int , unsigned int > m_ID;//!
 
+  private: // analysis parameter
+    double rawQ_low_threshold;//!
+    double rawQ_high_threshold;//!
+    double Q_low_threshold;//!
+    double Q_high_threshold;//! 
+    double rawT_low_threshold;//!
+    double rawT_high_threshold;//!
+    double T_low_threshold;//!
+    double T_high_threshold;//! 
+    TRandom3 rand;
 
 
   //////////////////////////////////////////////////////////////
@@ -152,9 +157,6 @@ class TSamuraiHodoscopePhysics : public TObject, public NPL::VDetector {
     // clear the pre-treated object
     void ClearPreTreatedData()   {m_PreTreatedData->Clear();}
 
-    // read the user configuration file. If no file is found, load standard one
-    void ReadAnalysisConfig();
-
     // give and external TSamuraiHodoscopeData object to TSamuraiHodoscopePhysics. 
     // needed for online analysis for example
     void SetRawDataPointer(TSamuraiHodoscopeData* rawDataPointer) {m_EventData = rawDataPointer;}
@@ -169,16 +171,6 @@ class TSamuraiHodoscopePhysics : public TObject, public NPL::VDetector {
   public:
     TSamuraiHodoscopeData* GetRawData()        const {return m_EventData;}
     TSamuraiHodoscopeData* GetPreTreatedData() const {return m_PreTreatedData;}
-
-  // parameters used in the analysis
-  private:
-    // thresholds
-    double m_E_RAW_Threshold; //!
-    double m_E_Threshold;     //!
-
-  // number of detectors
-  private:
-    int m_NumberOfDetectors;  //!
 
   // spectra class
   private:
