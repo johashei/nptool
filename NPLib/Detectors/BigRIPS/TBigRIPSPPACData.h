@@ -1,5 +1,5 @@
-#ifndef TDCDATA_H
-#define TDCDATA_H
+#ifndef TBigRIPSPPACData_H
+#define TBigRIPSPPACData_H
 #include "TObject.h"
 #include <vector>
 class TBigRIPSPPACData: public TObject{
