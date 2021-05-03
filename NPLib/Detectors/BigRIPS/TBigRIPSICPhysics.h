@@ -1,5 +1,5 @@
-#ifndef TBIGRIPSPLASTICPHYSICS_H
-#define TBIGRIPSPLASTICPHYSICS_H
+#ifndef TBIGRIPSICPHYSICS_H
+#define TBIGRIPSICPHYSICS_H
 /*****************************************************************************
  * Copyright (C) 2009-2016    this file is part of the NPTool Project        *
  *                                                                           *
@@ -14,7 +14,7 @@
  * Last update    :                                                          *
  *---------------------------------------------------------------------------*
  * Decription:                                                               *
- *  This class hold RIBF Plastic treated data                                *
+ *  This class hold RIBF IC treated data                                *
  *                                                                           *
  *---------------------------------------------------------------------------*
  * Comment:                                                                  *
@@ -28,9 +28,9 @@
 #include <iostream>
 
 // NPL
-#include "TBigRIPSPlasticData.h"
-//#include "BigRIPSPlasticVariables.h"
-//#include "TBigRIPSPlasticSpectra.h"
+#include "TBigRIPSICData.h"
+//#include "BigRIPSICVariables.h"
+//#include "TBigRIPSICSpectra.h"
 #include "NPCalibrationManager.h"
 #include "NPVDetector.h"
 #include "NPInputParser.h"
@@ -39,15 +39,16 @@
 // ROOT 
 #include "TVector3.h" 
 // Forward declaration
-//class TBigRIPSPlasticSpectra;
+//class TBigRIPSICSpectra;
+
 
 
 using namespace std ;
 
-class TBigRIPSPlasticPhysics : public TObject, public NPL::VDetector{
+class TBigRIPSICPhysics : public TObject, public NPL::VDetector{
   public:
-    TBigRIPSPlasticPhysics();
-    ~TBigRIPSPlasticPhysics() {};
+    TBigRIPSICPhysics();
+    ~TBigRIPSICPhysics() {};
 
   public: 
     void Clear();   
@@ -55,35 +56,32 @@ class TBigRIPSPlasticPhysics : public TObject, public NPL::VDetector{
     void Print();   
 
   public:
+    //vectors with a size equals to the number of IC in dataset
     std::vector<int> ID;
     std::vector<int> FP;
-    std::vector<double> T;
-    std::vector<double> TL;
-    std::vector<double> TR;
-    std::vector<double> TSlew;
-    std::vector<double> TLSlew;
-    std::vector<double> TRSlew;
-    std::vector<double> QL;
-    std::vector<double> QR;
-    std::vector<int> multiHit;
-    std::vector<bool> fired;
+    std::vector<double> RawAvSum;
+    std::vector<double> RawSqSum;
+    std::vector<double> CalAvSum;
+    std::vector<double> CalSqSum;
+    std::vector<int> NLayerFired;
+
+    //vectors size = number of IC in dataset * number of layers
+    std::vector<double> E;
+    std::vector<int> E_Layer;
+    std::vector<int> E_ID;
+
 
   public:
 
     // Projected position at given Z plan
     TVector3 ProjectedPosition(double Z);
 
-  private: // Xml file read to add Plastics and their parameters 
-    void AddPlastics(string name, NPL::XmlParser&);//! take the XML file and fill in parameters of each Plastic
-    map<int,double> RawUpperLimit;//! Upper Value of TDC range considered for a Plastic
-    map<int,double> RawLowerLimit;//! Lower Value of TDC range considered for a Plastic 
-    map<int,int>  IDtoFP;//! Focal plane where the Plastic is located
-    map<int,double> tcal_left; 
-    map<int,double> tcal_right; 
-    map<int,double> tslew_left_a; 
-    map<int,double> tslew_left_b; 
-    map<int,double> tslew_right_a; 
-    map<int,double> tslew_right_b; 
+  private: // Xml file read to add ICs and their parameters 
+    void AddICs(string name, NPL::XmlParser&);//! take the XML file and fill in parameters of each IC
+    map<int,int>  IDtoFP;//! Focal plane where the IC is located
+    map<int,double> ch2mev_0; 
+    map<int,double> ch2mev_1; 
+    map<int,map<int,int>> pedestal; 
   
   public: //   Innherited from VDetector Class
 
@@ -140,88 +138,64 @@ class TBigRIPSPlasticPhysics : public TObject, public NPL::VDetector{
     void PreTreat();
 
     // Retrieve raw and pre-treated data
-    TBigRIPSPlasticData* GetRawData()        const {return m_EventData;}
-    TBigRIPSPlasticData* GetPreTreatedData() const {return m_PreTreatedData;}
+    TBigRIPSICData* GetRawData()        const {return m_EventData;}
+    TBigRIPSICData* GetPreTreatedData() const {return m_PreTreatedData;}
 
   private:   //   Root Input and Output tree classes
-    TBigRIPSPlasticData*         m_EventData;//!
-    TBigRIPSPlasticData*         m_PreTreatedData;//!
-    TBigRIPSPlasticPhysics*      m_EventPhysics;//!
+    TBigRIPSICData*         m_EventData;//!
+    TBigRIPSICData*         m_PreTreatedData;//!
+    TBigRIPSICPhysics*      m_EventPhysics;//!
 
 
   private: // Spectra Class
-   // TBigRIPSPlasticSpectra* m_Spectra; // !
+   // TBigRIPSICSpectra* m_Spectra; // !
 
   public: // Spectra Getter
     map< string , TH1*> GetSpectra(); 
 
   public: // Static constructor to be passed to the Detector Factory
     static NPL::VDetector* Construct();
-    ClassDef(TBigRIPSPlasticPhysics,1)  // BigRIPSPlasticPhysics structure
+    ClassDef(TBigRIPSICPhysics,1)  // BigRIPSICPhysics structure
 };
 
 
-/*---------------------------------------------------------------------------*
+/*****************************************************************************
 * Comment:                                                                  *
 *                                                                           *  
-*  Intermediate class necessary to hold all variables per detector per event*
-*  Different from TPlasticData whose variable (vectors) are independent     *
+*  Intermediate class useful to hold all variables per detector per event  *
+*  Different from TICData whose variable (vectors) are independent          *
 *                                                                           *
 *****************************************************************************/
 
-class BigRIPSPlasticVariables{
+class BigRIPSICVariables{
   public:
-   BigRIPSPlasticVariables(){Clear();};  
-   ~BigRIPSPlasticVariables(){};  
+   BigRIPSICVariables(){Clear();};  
+   ~BigRIPSICVariables(){};  
 
   public:
-    std::vector<double> FTL;
-    std::vector<double> FTR;
-    std::vector<double> FQL;
-    std::vector<double> FQR;
-    int FmultiHit[4];
+    std::vector<double> FT;
+    std::vector<double> FE;
+    std::vector<double> FE_Layer;
+    int FmultiHit[2];
 
     void Clear(){
-        FTL.clear();
-        FTR.clear();
-        FQL.clear();
-        FQR.clear();
-        for(int i=0; i<4; i++) FmultiHit[i]=0;
+        FE.clear();
+        FT.clear();
+        for(int i=0; i<2; i++) FmultiHit[i]=0;
     };
 
     void Print(){
-        //cout << "XXXXXXXXXXXXXXXXXXXXXXXX Plastic Event XXXXXXXXXXXXXXXXX" << endl;
-        cout << "FTL_Mult = " << FTL.size();
-        for (UShort_t i = 0; i < FTL.size(); i++){cout << "\tFTL: " << FTL[i] << endl;}
-        cout << "FTR_Mult = " << FTR.size();
-        for (UShort_t i = 0; i < FTR.size(); i++){cout << "\tFTR: " << FTR[i] << endl;}
-        cout << "FQL_Mult = " << FQL.size();
-        for (UShort_t i = 0; i < FQL.size(); i++){cout << "\tFQL: " << FQL[i] << endl;}
-        cout << "FQR_Mult = " << FQR.size();
-        for (UShort_t i = 0; i < FQR.size(); i++){cout << "\tFQR: " << FQR[i] << endl;}
+        //cout << "XXXXXXXXXXXXXXXXXXXXXXXX IC Event XXXXXXXXXXXXXXXXX" << endl;
+        cout << "FE_Mult = " << FE.size();
+        for (UShort_t i = 0; i < FE.size(); i++){cout << "\tFE: " << FE[i] << endl;}
+        cout << "FT_Mult = " << FT.size();
+        for (UShort_t i = 0; i < FT.size(); i++){cout << "\tFT: " << FT[i] << endl;}
         cout << "MultHit = " <<endl;
-        for (UShort_t i = 0; i <4; i++){cout << FmultiHit[i] << endl;}
+        for (UShort_t i = 0; i <2; i++){cout << FmultiHit[i] << endl;}
     }
 
-    bool HasTLandQL(){
-        if(FTL.size()==1 && FQL.size()==1){return true;}
-        else{return false;}
-    }
-    bool HasTRandQR(){
-        if(FTR.size()==1 && FQR.size()==1){return true;}
-        else{return false;}
-    }
-    bool HasTLandTR(){
-        if(FTL.size()==1 && FTR.size()==1){return true;}
-        else{return false;}
-    }
-    bool HasQLandQR(){
-        if(FQL.size()==1 && FQR.size()==1){return true;}
-        else{return false;}
-    }
     bool HasEverything(){
-        if(FTL.size()==1 && FTR.size()==1 &&
-           FQL.size()==1 && FQR.size()==1){
+        if(FE.size()==1 && FT.size()==1){
             return true;
         }else{return false;}
     }

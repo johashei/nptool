@@ -25,10 +25,11 @@
 // STL
 #include <vector>
 #include <map>
+#include <iostream>
 
 // NPL
 #include "TBigRIPSPPACData.h"
-#include "BigRIPSPPACVariables.h"
+//#include "BigRIPSPPACVariables.h"
 //#include "TBigRIPSPPACSpectra.h"
 #include "NPCalibrationManager.h"
 #include "NPVDetector.h"
@@ -39,7 +40,6 @@
 #include "TVector3.h" 
 // Forward declaration
 //class TBigRIPSPPACSpectra;
-
 
 using namespace std ;
 
@@ -168,6 +168,73 @@ class TBigRIPSPPACPhysics : public TObject, public NPL::VDetector{
   public: // Static constructor to be passed to the Detector Factory
     static NPL::VDetector* Construct();
     ClassDef(TBigRIPSPPACPhysics,1)  // BigRIPSPPACPhysics structure
+};
+
+/*---------------------------------------------------------------------------*
+* Comment:                                                                  *
+*                                                                           *  
+*  Intermediate class necessary to hold all variables per detector per event*
+*  Different from TPPACData whose variable (vectors) are independent     *
+*                                                                           *
+*****************************************************************************/
+
+class BigRIPSPPACVariables{
+  public:
+   BigRIPSPPACVariables(){Clear();};  
+   ~BigRIPSPPACVariables(){};  
+
+  public:
+    std::vector<double> FTX1;
+    std::vector<double> FTX2;
+    std::vector<double> FTY1;
+    std::vector<double> FTY2;
+    std::vector<double> FTA;
+    int FmultiHit[5];
+
+    void Clear(){
+        FTX1.clear();
+        FTX2.clear();
+        FTY1.clear();
+        FTY2.clear();
+        FTA.clear();
+        for(int i=0; i<5; i++) FmultiHit[i]=0;
+    };
+
+    void Print(){
+        //cout << "XXXXXXXXXXXXXXXXXXXXXXXX PPAC Event XXXXXXXXXXXXXXXXX" << endl;
+        cout << "FTX1_Mult = " << FTX1.size();
+        for (UShort_t i = 0; i < FTX1.size(); i++){cout << "\tFTX1: " << FTX1[i] << endl;}
+        cout << "FTX2_Mult = " << FTX2.size();
+        for (UShort_t i = 0; i < FTX2.size(); i++){cout << "\tFTX2: " << FTX2[i] << endl;}
+        cout << "FTY1_Mult = " << FTY1.size();
+        for (UShort_t i = 0; i < FTY1.size(); i++){cout << "\tFTY1: " << FTY1[i] << endl;}
+        cout << "FTY2_Mult = " << FTY2.size();
+        for (UShort_t i = 0; i < FTY2.size(); i++){cout << "\tFTY2: " << FTY2[i] << endl;}
+        cout << "FTA_Mult = " << FTA.size();
+        for (UShort_t i = 0; i < FTA.size(); i++){cout << "\tFTA: " << FTA[i] << endl;}
+        cout << "MultHit = " <<endl;
+        for (UShort_t i = 0; i <5; i++){cout << FmultiHit[i] << endl;}
+    }
+
+    bool HasTXs(){
+        if(FTX1.size()==1 && FTX2.size()==1){return true;}
+        else{return false;}
+    }
+    bool HasTYs(){
+        if(FTY1.size()==1 && FTY2.size()==1){return true;}
+        else{return false;}
+    }
+    bool HasTA(){
+        if(FTA.size()==1){return true;}
+        else{return false;}
+    }
+    bool HasEverything(){
+        if(FTX1.size()==1 && FTX2.size()==1 &&
+           FTY1.size()==1 && FTY2.size()==1 &&
+           FTA.size()==1){
+            return true;
+        }else{return false;}
+    }
 };
 
 #endif
