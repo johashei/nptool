@@ -49,7 +49,7 @@ Channel::~Channel(){};
 
 ////////////////////////////////////////////////////////////////////////////////
 void XmlParser::LoadFile(std::string file){
-     // First create engine
+   // First create engine
    TXMLEngine* xml = new TXMLEngine;
    // Now try to parse xml file
    // Only file with restricted xml syntax are supported

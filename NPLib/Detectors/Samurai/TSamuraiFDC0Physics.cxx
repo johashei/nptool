@@ -63,10 +63,10 @@ void TSamuraiFDC0Physics::BuildPhysicalEvent(){
   PreTreat();
 //  RemoveNoise();
 
-  // Map[detector & plane angle, vector of spatial information]
-  static map<std::pair<unsigned int,double>, vector<double> > X ; 
-  static map<std::pair<unsigned int,double>, vector<double> > Z ; 
-  static map<std::pair<unsigned int,double>, vector<double> > R ; 
+  // Map[plane angle, vector of spatial information]
+  static map<double, vector<double> > X ; 
+  static map<double, vector<double> > Z ; 
+  static map<double, vector<double> > R ; 
   static int det,layer,wire;
   X.clear();Z.clear();R.clear();
   unsigned int size = Detector.size();
@@ -76,23 +76,21 @@ void TSamuraiFDC0Physics::BuildPhysicalEvent(){
       layer = Layer[i];
       wire = Wire[i]; 
       SamuraiDCIndex idx(det,layer,wire);
-      std::pair<unsigned int, double> p(det,Wire_Angle[idx]);
-      //cout << det << " " << layer << " " << wire << endl;
-      X[p].push_back(Wire_X[idx]); 
-      Z[p].push_back(Wire_Z[idx]); 
-      R[p].push_back(DriftLength[i]); 
+      X[Wire_Angle[idx]].push_back(Wire_X[idx]); 
+      Z[Wire_Angle[idx]].push_back(Wire_Z[idx]); 
+      R[Wire_Angle[idx]].push_back(DriftLength[i]); 
     }
   }
-
+  
   // Reconstruct the vector for each of the plane of each of the detector
   static double X0,X100,a,b; // store the BuildTrack2D results
-  static map<std::pair<unsigned int,double>, TVector3 > VX0 ;  
-  static map<std::pair<unsigned int,double>, TVector3 > VX100 ;  
-  static map<std::pair<unsigned int,double>, double > D ;// the minimum distance  
-  static unsigned int uid=0;
+  static map<double, TVector3 > VX0 ;  
+  static map<double, TVector3 > VX100 ;  
+  static map<double, double > D ;// the minimum distance  
+  static unsigned int uid; uid=0;
   VX0.clear();VX100.clear(),D.clear();
-  for(auto it = X.begin();it!=X.end();++it){
 
+  for(auto it = X.begin();it!=X.end();++it){
 #if __cplusplus > 199711L && NPMULTITHREADING 
     m_reconstruction.AddPlan(uid++,X[it->first],Z[it->first],R[it->first]); 
 #else
@@ -104,7 +102,7 @@ void TSamuraiFDC0Physics::BuildPhysicalEvent(){
   m_reconstruction.BuildTrack2D();
   uid=0;
 #endif
-
+  
   for(auto it = X.begin();it!=X.end();++it){
 #if __cplusplus > 199711L && NPMULTITHREADING 
   D[it->first]=m_reconstruction.GetResults(uid++,X0,X100,a,b); 
@@ -123,53 +121,51 @@ void TSamuraiFDC0Physics::BuildPhysicalEvent(){
     Mult+=X[it->first].size();
     // Position at z=0
     TVector3 P(X0,0,0);
-    P.RotateZ(it->first.second);
+    P.RotateZ(it->first);
     VX0[it->first]=P;
     // Position at z=100
     TVector3 P100= TVector3(X100,0,0);
-    P100.RotateZ(it->first.second);
+    P100.RotateZ(it->first);
     VX100[it->first]=P100;
 
   }
   
   // Reconstruct the central position (z=0) for each detector
-  static map<unsigned int,vector<TVector3> > C ;  
-  static map<unsigned int,vector<double> > W ; // weight based on D  
+  static vector<TVector3> C ;  
+  static vector<double  > W ; // weight based on D  
   C.clear(),W.clear();
   TVector3 P;
-
   for(auto it1 = VX0.begin();it1!=VX0.end();++it1){
     for(auto it2 = it1;it2!=VX0.end();++it2){
-      if(it1!=it2 && it1->first.first==it2->first.first){// different plane, same detector
+      if(it1!=it2){// different plane
         //cout << "FDC0" << endl;
-        m_reconstruction.ResolvePlane(it1->second,it1->first.second,it2->second,it2->first.second,P);
+        m_reconstruction.ResolvePlane(it1->second,it1->first,it2->second,it2->first,P);
         // cout << "done " << D[it1->first] << " " << D[it2->first] << endl;
         if(P.X()!=-10000 && D[it1->first]<PowerThreshold&& D[it2->first]<PowerThreshold){
-          C[it1->first.first].push_back(P);
+          C.push_back(P);
           // Mean pos are weighted based on the the sum of distance from track
           // to hit obtained during the minimisation
-          W[it1->first.first].push_back(1./sqrt(D[it1->first]*D[it2->first]));
+          W.push_back(1./sqrt(D[it1->first]*D[it2->first]));
           }
       }
     }
   }
-
   // Reconstruct the position at z=100 for each detector
-  static map<unsigned int,vector<TVector3> > C100 ;  
+  static vector<TVector3> C100 ;  
   C100.clear();
   for(auto it1 = VX100.begin();it1!=VX100.end();++it1){
     for(auto it2 = it1;it2!=VX100.end();++it2){
-      if(it1!=it2 && it1->first.first==it2->first.first){// different plane, same detector
-        m_reconstruction.ResolvePlane(it1->second,it1->first.second,it2->second,it2->first.second,P);
+      if(it1!=it2 ){// different plane, same detector
+        m_reconstruction.ResolvePlane(it1->second,it1->first,it2->second,it2->first,P);
 
         if(P.X()!=-10000&& D[it1->first]<PowerThreshold && D[it2->first]<PowerThreshold)
-          C100[it1->first.first].push_back(P);
+          C100.push_back(P);
       }
     }
   }
-
+  
   // Build the Reference position by averaging all possible pair 
-  size = C[0].size();
+  size = C.size();
   static double PosX100,PosY100,norm;
   if(size){
     PosX=0;
@@ -178,13 +174,12 @@ void TSamuraiFDC0Physics::BuildPhysicalEvent(){
     PosY100=0;
     norm=0;
     for(unsigned int i = 0 ; i < size ; i++){
-      PosX+= C[0][i].X()*W[0][i]; 
-      PosY+= C[0][i].Y()*W[0][i]; 
-      PosX100+= C100[0][i].X()*W[0][i]; 
-      PosY100+= C100[0][i].Y()*W[0][i]; 
-      norm+=W[0][i];
+      PosX+= C[i].X()*W[i]; 
+      PosY+= C[i].Y()*W[i]; 
+      PosX100+= C100[i].X()*W[i]; 
+      PosY100+= C100[i].Y()*W[i]; 
+      norm+=W[i];
     } 
-    
     MultMean=size;
     // Mean position at Z=0
     PosX=PosX/norm; 
@@ -196,13 +191,11 @@ void TSamuraiFDC0Physics::BuildPhysicalEvent(){
     devX=0;
     devY=0;
     for(unsigned int i = 0 ; i < size ; i++){
-      devX+=W[0][i]*(C[0][i].X()-PosX)*(C[0][i].X()-PosX);
-      devY+=W[0][i]*(C[0][i].Y()-PosY)*(C[0][i].Y()-PosY);
+      devX+=W[i]*(C[i].X()-PosX)*(C[i].X()-PosX);
+      devY+=W[i]*(C[i].Y()-PosY)*(C[i].Y()-PosY);
     }
-
     devX=sqrt(devX/((size-1)*norm));
     devY=sqrt(devY/((size-1)*norm));
-
     // Compute ThetaX, angle between the Direction vector projection in XZ with
     // the Z axis
     //ThetaX=atan((PosX100-PosX)/100.);

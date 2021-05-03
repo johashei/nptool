@@ -50,6 +50,7 @@ using namespace NPUNITS;
 
 //   Default Constructor
 NPL::DetectorManager::DetectorManager(){
+  ROOT::EnableThreadSafety();
   m_BuildPhysicalPtr = &NPL::VDetector::BuildPhysicalEvent;
   m_ClearEventPhysicsPtr =  &NPL::VDetector::ClearEventPhysics;
   m_ClearEventDataPtr = &NPL::VDetector::ClearEventData ;
@@ -248,7 +249,9 @@ void NPL::DetectorManager::ReadConfigurationFile(std::string Path)   {
 void NPL::DetectorManager::BuildPhysicalEvent(){
 #if __cplusplus > 199711L && NPMULTITHREADING
     // add new job
+    m_mtx.lock();
     m_Ready.flip();
+    m_mtx.unlock();
     std::this_thread::yield();
 
   while(!IsDone()){
@@ -424,7 +427,9 @@ void NPL::DetectorManager::StartThread(NPL::VDetector* det,unsigned int id){
        if(m_CheckSpectra)
           (det->*m_CheckSpectra)();
       }
+     m_mtx.lock();
      m_Ready[id].flip();
+     m_mtx.unlock();
      std::this_thread::yield();
    }
    else{

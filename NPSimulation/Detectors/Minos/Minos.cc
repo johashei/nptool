@@ -7,6 +7,7 @@
 
 /*****************************************************************************
  * Original Author: E. Tronchin  contact address: tronchin@lpccaen.in2p3.fr  *
+ * Updated by C. Lenain          contact address: lenain@lpccaen.in2p3.fr    *
  *                                                                           *
  * Creation Date  : October 2018                                             *
  * Last update    :                                                          *
@@ -80,19 +81,19 @@ using namespace CLHEP;
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 namespace Minos_NS{
 
-// TPC
-const G4double  ChamberInnerRadius      = 37.*mm; 
-/* const G4double  ChamberInnerRadius      = 29*mm; */ //big TPC
-//const G4double  ChamberThickness        = 2.*mm; 
-const G4double  ChamberLength           = 300.*mm;
-const G4double  KaptonThickness         = 0.125*mm; 
-const G4double  RohacellThickness  = 2.*mm;
-const G4double  TPCRadiusExt            = 91.525*mm;
-/* const G4double  TPCRadiusExt            = 150*mm; //big TPC */
+  // TPC
+  const G4double  ChamberInnerRadius      = 37.*mm; 
+  /* const G4double  ChamberInnerRadius      = 29*mm; */ //big TPC
+  //const G4double  ChamberThickness        = 2.*mm; 
+  const G4double  ChamberLength           = 300.*mm;
+  const G4double  KaptonThickness         = 0.125*mm; 
+  const G4double  RohacellThickness  = 2.*mm;
+  const G4double  TPCRadiusExt            = 91.525*mm;
+  /* const G4double  TPCRadiusExt            = 150*mm; //big TPC */
 
-// MINOS
-const G4double  TargetRadius            =  28.*mm; 
-const G4double  WindowThickness         = 0.150*mm;
+  // MINOS
+  const G4double  TargetRadius            =  28.*mm; 
+  const G4double  WindowThickness         = 0.150*mm;
 
 }
 
@@ -102,41 +103,42 @@ using namespace Minos_NS;
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 // Minos Specific Method
 Minos::Minos(){
-m_Event = new TMinosData() ;
-m_MinosPadScorer = 0;
-m_ReactionRegion=NULL;
+  m_Event = new TMinosData() ;
+  m_MinosPadScorer = 0;
+  m_ReactionRegion=NULL;
 
-// RGB Color + Transparency
-m_VisTarget= new G4VisAttributes(G4Colour(0.6,1.,1., .4));
-m_VissimpleBox= new G4VisAttributes(G4Colour(0,1,0,.6));
-m_VisTPC= new G4VisAttributes(G4Colour(1.,0.5,0.6,0.3));
-m_VisRohacell= new G4VisAttributes(G4Colour(1.,1.,1., .8));
-m_VisKapton = new G4VisAttributes(G4Colour(1.,1.,0.6,0.4));
-m_VisTargetCell = new G4VisAttributes(G4Colour(0,0,1, .4));
-m_VisTargetCell->SetForceSolid(true);
-m_VisOuterKapton = new G4VisAttributes(G4Colour(1.,1.,0.6,0.8));
+  // RGB Color + Transparency
+  m_VisTarget= new G4VisAttributes(G4Colour(0.6,1.,1., .4));
+  m_VissimpleBox= new G4VisAttributes(G4Colour(0,1,0,.6));
+  m_VisTPC= new G4VisAttributes(G4Colour(1.,0.5,0.6,0.3));
+  m_VisRohacell= new G4VisAttributes(G4Colour(1.,1.,1., .8));
+  m_VisKapton = new G4VisAttributes(G4Colour(1.,1.,0.6,0.4));
+  m_VisTargetCell = new G4VisAttributes(G4Colour(0,0,1, .4));
+  m_VisTargetCell->SetForceSolid(true);
+  m_VisOuterKapton = new G4VisAttributes(G4Colour(1.,1.,0.6,0.8));
 
-Raw_Signal = new TH1F("raw_Signal","raw_Signal",350,0,350);  // 30ns per bin
-Elec_Signal = new TH1F("Elec_Signal","Elec_Signal",350,0,350);
+  Raw_Signal = new TH1F("raw_Signal","raw_Signal",512,0,512); 
+  Elec_Signal = new TH1F("Elec_Signal","Elec_Signal",512,0,512);
 
-/*  Raw_Signal = new TH1F;*/
-/*  Elec_Signal = new TH1F;*/
+  /*  Raw_Signal = new TH1F;*/
+  /*  Elec_Signal = new TH1F;*/
 
 
-fa1 = new TF1("fa1","[0]*exp(-3.*(x-[1])/[2]) * sin((x-[1])/[2]) * pow((x-[1])/[2], 3)",0,1000);
+  fa1 = new TF1("fa1","abs((x>[1]&&x<512)*([0]*exp(-3.*(x-[1])/[2]) * sin((x-[1])/[2]) * pow((x-[1])/[2],3))+[3])",0,1000);
+  fa1->SetNpx(512);
 
-solidTarget=0;   
-logicTarget=0;   
-solidChamber=0;  
-logicChamber=0;  
-solidTPC=0; 
-logicTPC=0; 
-solidWindow0=0; 
-logicWindow0=0; 
-solidRohacell=0;   
-logicRohacell=0;   
-solidKapton=0;   
-logicKapton=0;   
+  solidTarget=0;   
+  logicTarget=0;   
+  solidChamber=0;  
+  logicChamber=0;  
+  solidTPC=0; 
+  logicTPC=0; 
+  solidWindow0=0; 
+  logicWindow0=0; 
+  solidRohacell=0;   
+  logicRohacell=0;   
+  solidKapton=0;   
+  logicKapton=0;   
 }
 
 Minos::~Minos(){
@@ -147,11 +149,11 @@ Minos::~Minos(){
 
 /* void Minos::AddDetector(G4ThreeVector POS, double LengthOfTarget, int PresenceOfMinos){ */
 void Minos::AddDetector(G4ThreeVector POS, double LengthOfTarget, G4String MaterialOfTarget,G4String MaterialOfCell, int PresenceOfMinos){
-m_POS.push_back(POS);
-m_TargetLength.push_back(LengthOfTarget);
-m_TargetMaterial.push_back(MaterialOfTarget);
-m_CellMaterial.push_back(MaterialOfCell);
-m_TPCOnly.push_back(PresenceOfMinos);
+  m_POS.push_back(POS);
+  m_TargetLength.push_back(LengthOfTarget);
+  m_TargetMaterial.push_back(MaterialOfTarget);
+  m_CellMaterial.push_back(MaterialOfCell);
+  m_TPCOnly.push_back(PresenceOfMinos);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -241,7 +243,7 @@ G4LogicalVolume* Minos::BuildOuterRohacell(){
 G4LogicalVolume* Minos::BuildKapton(){
   if(!logicKapton){
     solidKapton = new G4Tubs("Kapton",			//its name
-        ChamberInnerRadius+RohacellThickness ,ChamberInnerRadius +RohacellThickness+KaptonThickness,ChamberLength/2.,0,360.); //size
+        ChamberInnerRadius+RohacellThickness ,ChamberInnerRadius+RohacellThickness+KaptonThickness,ChamberLength/2.,0,360.); //size
     logicKapton = new G4LogicalVolume(solidKapton,	//its solid
         KaptonMaterial,	//its material
         "Kapton");	//its name
@@ -294,21 +296,32 @@ void Minos::ReadConfiguration(NPL::InputParser parser){
   if(NPOptionManager::getInstance()->GetVerboseLevel())
     cout << "//// " << blocks.size() << " detectors found " << endl; 
 
-  vector<string> cart = {"POS","TargetLength"};
+  vector<string> simu = {"TPCOnly"};
+  vector<string> token= {"XML","Position","TargetMaterial","TargetLength","CellMaterial","TimeBin","ShapingTime","Baseline","Sampling","ZOffset"};
 
   for(unsigned int i = 0 ; i < blocks.size() ; i++){
-    if(blocks[i]->HasTokenList(cart)){
+    if(blocks[i]->HasTokenList(token)){
       if(NPOptionManager::getInstance()->GetVerboseLevel())
         cout << endl << "////  Minos " << i+1 <<  endl;
-
-      G4ThreeVector Pos = NPS::ConvertVector(blocks[i]->GetTVector3("POS","mm"));
+      G4ThreeVector Pos = NPS::ConvertVector(blocks[i]->GetTVector3("Position","mm"));
       TargetLength = blocks[i]->GetDouble("TargetLength","mm");
       G4String TargetMaterialname = blocks[i]->GetString("TargetMaterial");
       G4String CellMaterial = blocks[i]->GetString("CellMaterial");
-      TPCOnly = blocks[i]->GetInt("TPCOnly");
-      AddDetector(Pos,TargetLength,TargetMaterialname, CellMaterial, TPCOnly);
-      /* AddDetector(Pos,TargetLength, TPCOnly); */
+      m_ShapingTime = blocks[i]->GetDouble("ShapingTime","ns")/ns;   
+      m_TimeBin = blocks[i]->GetDouble("TimeBin","ns")/ns;   
+      m_Sampling= blocks[i]->GetInt("Sampling");   
+      m_Baseline= blocks[i]->GetInt("BaseLine");   
+      m_ZOffset = blocks[i]->GetDouble("ZOffset","mm");   
+      string xmlpath = blocks[i]->GetString("XML");
+      NPL::XmlParser xml;
+      xml.LoadFile(xmlpath);
+      ReadXML(xml);
 
+      TPCOnly=1;
+      if(blocks[i]->HasTokenList(simu))
+        TPCOnly = blocks[i]->GetInt("TPCOnly");
+      AddDetector(Pos,TargetLength,TargetMaterialname, CellMaterial, TPCOnly);
+      
     }
     else{
       cout << "ERROR: check your input file formatting " << endl;
@@ -346,8 +359,8 @@ void Minos::ConstructDetector(G4LogicalVolume* world){
     MPT->AddConstProperty("DE_PAIRENERGY",30*eV);
     MPT->AddConstProperty("DE_ABSLENGTH",10*pc); 
     MPT->AddConstProperty("DE_DRIFTSPEED",3.475*cm/microsecond);
-    MPT->AddConstProperty("DE_TRANSVERSALSPREAD",14e-5*mm2/ns);
-    MPT->AddConstProperty("DE_LONGITUDINALSPREAD",14e-5*mm2/ns);
+    MPT->AddConstProperty("DE_TRANSVERSALSPREAD",7e-5*mm2/ns);
+    MPT->AddConstProperty("DE_LONGITUDINALSPREAD",7e-5*mm2/ns);
 
     /* MPT->AddConstProperty("DE_TRANSVERSALSPREAD",0*mm2/ns); */
     /* MPT->AddConstProperty("DE_LONGITUDINALSPREAD",0*mm2/ns); */
@@ -426,7 +439,7 @@ void Minos::ConstructDetector(G4LogicalVolume* world){
           Cu,"div_ringL",0,0,0);
 
       {G4VisAttributes* atb= new G4VisAttributes(G4Colour(0.8, 0.4, 0.,0.4));
-        Pad_log->SetVisAttributes(atb);}
+      Pad_log->SetVisAttributes(atb);}
       Pad_log->SetSensitiveDetector(m_MinosPadScorer);
 
       new G4PVReplica("div_ring_phys", Pad_log, 
@@ -531,28 +544,19 @@ void Minos::ReadSensitive(const G4Event* ){
   ///////////
   // DriftElectron scorer
   CylinderTPCScorers::PS_TPCAnode* Scorer2= (CylinderTPCScorers::PS_TPCAnode*) m_MinosPadScorer->GetPrimitive(0);
-
   unsigned int size2 = Scorer2->GetMult();
   for(unsigned int i = 0 ; i < size2 ; i++){
+    int Pad = FindPadID(Scorer2->GetPad(i),Scorer2->GetX(i),Scorer2->GetY(i));
+    SimulateGainAndDigitizer(Scorer2->GetT(i), Scorer2->GetQ(i),T,Q);
 
-    int Pad = Scorer2->GetPad(i);
-    double X = Scorer2->GetX(i);
-    double Y = Scorer2->GetY(i);
-
-    m_Event->SetCharge(Pad,X,Y);
-    //m_Event->AddChargePoint(Scorer2->GetQ(i), Scorer2->GetT(i));
-
-    SimulateGainAndDigitizer(Scorer2->GetQ(i), Scorer2->GetT(i));
-
-    /* m_Event->AddChargePoint(Scorer2->GetQ(i),Scorer2->GetT(i)); */
+    m_Event->SetPad(Pad, Scorer2->GetQ(i)->size(),&T,&Q);
   }
 
 }
 
-void Minos::SimulateGainAndDigitizer(vector<double> rawQ, vector<double> rawT){
-
-  Charge2.clear();
-  Time.clear();
+void Minos::SimulateGainAndDigitizer(vector<double>* rawT, vector<double>* rawQ,vector<int>& T, vector<int>& Q){
+  T.clear();
+  Q.clear();
 
   Raw_Signal->Reset();
   Elec_Signal->Reset();
@@ -576,38 +580,35 @@ void Minos::SimulateGainAndDigitizer(vector<double> rawQ, vector<double> rawT){
   /*   } */
   /* } */
 
-  for ( unsigned int j = 0; j < rawQ.size(); j++){
-    for ( int i = 0 ; i < rawQ[j]; i++ ){ 
-      Raw_Signal->Fill((rawT[j])/30.);
+  for ( unsigned int j = 0; j < rawQ->size(); j++){
+    for ( int i = 0 ; i < (*rawQ)[j]; i++ ){ 
+      Raw_Signal->Fill(((*rawT)[j])/m_TimeBin);
     }
   }
 
   // Application of the electronic reponse function
   for ( int x=0; x <  Raw_Signal->GetNbinsX(); x++){
-
-    if(Raw_Signal->GetBinContent(x) < 0.5)
-      continue;
-    else{
+    if(Raw_Signal->GetBinContent(x) > 0.5){
       start = Raw_Signal->GetBinCenter(x);
-      end = Raw_Signal->GetBinCenter(x)+1200/30.;  
+      end = Raw_Signal->GetBinCenter(x)+512;  
       // DriftTime = Raw_Signal->GetBinCenter(x);
       fa1->SetRange(start, end);
       fa1->SetParameter(0,1500);
       fa1->SetParameter(1,start);
-      fa1->SetParameter(2,450/30.);
-      // Elec_Signal->SetBinContent(bin,20+(10-gRandom->Uniform(20)*20))
-      // for (int p=0; p< 0; p++)
-      for (int p=0; p< Raw_Signal->GetBinContent(x)*1500; p++)
-        Elec_Signal->Fill(fa1->GetRandom());
-    }  
-  }  
+      fa1->SetParameter(2,m_ShapingTime/(log(2)*m_TimeBin));
+      fa1->SetParameter(3,0);
 
-  for ( int bin=0; bin < Elec_Signal->GetNbinsX(); bin++){
-    Charge2.push_back(Elec_Signal->GetBinContent(bin));
-    Time.push_back(Elec_Signal->GetBinCenter(bin));
+      for (int p=0; p < Raw_Signal->GetBinContent(x)*1500; p++)
+        Elec_Signal->Fill(fa1->GetRandom(start,end));
+    }  
   }
 
-  m_Event->AddChargePoint(Charge2,Time);
+  for ( int bin=0; bin < Elec_Signal->GetNbinsX(); bin++){
+      if(Elec_Signal->GetBinContent(bin)){
+        Q.push_back(Elec_Signal->GetBinContent(bin)+m_Baseline);
+        T.push_back(Elec_Signal->GetBinCenter(bin));
+      }
+     }
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -635,6 +636,43 @@ void Minos::InitializeScorers() {
   m_MinosPadScorer->RegisterPrimitive(PadScorer);
 
   G4SDManager::GetSDMpointer()->AddNewDetector(m_MinosPadScorer) ;
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+void Minos::ReadXML(NPL::XmlParser& xml){
+  std::vector<NPL::XML::block*> b = xml.GetAllBlocksWithName("MINOS");  
+  unsigned int size = b.size();
+  for(unsigned int i = 0 ; i < size ; i++){
+    unsigned short ID = b[i]->AsInt("ID"); 
+    m_XY[ID] = std::make_pair(b[i]->AsDouble("X"),b[i]->AsDouble("Y"));  
+  }
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+unsigned int Minos::FindPadID(unsigned int G4ID, double X,double Y){
+ // if no XML is provided, do nothing
+ if(m_XY.size()==0)
+   return G4ID;
+ // The pad is already identified
+ if(m_ID.find(G4ID)!=m_ID.end())
+   return m_ID[G4ID];
+
+ // look for the closest pad
+ else{
+  double d = 1e6;
+  double id=0;
+  for(auto it = m_XY.begin();it!=m_XY.end();it++){
+    double dd = sqrt((it->second.first-X)*(it->second.first-X)+(it->second.second-Y)*(it->second.second-Y));
+    if(dd<d){
+      d=dd;
+      id=it->first;
+    } 
+  } 
+  //cout << G4ID << " " << id << endl;
+  m_ID[G4ID]=id;
+  return id;
+ }
+
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

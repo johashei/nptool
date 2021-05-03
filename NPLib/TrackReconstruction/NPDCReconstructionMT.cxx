@@ -26,12 +26,13 @@
 #include "TError.h"
 #include "TGraph.h"
 #include "TVector3.h"
-
+#include "TROOT.h"
 using namespace std;
 using namespace NPL;
 
 ////////////////////////////////////////////////////////////////////////////////
 DCReconstructionMT::DCReconstructionMT(unsigned int number_thread){
+  ROOT::EnableThreadSafety();
   m_nbr_thread= number_thread;
   // force loading of the minimizer plugin ahead
   ROOT::Math::Minimizer* mini=ROOT::Math::Factory::CreateMinimizer("Minuit2", "Migrad"); 
@@ -146,11 +147,16 @@ double DCReconstructionMT::SumD(const double* parameter ){
   double ab= a*b;
   double a2=a*a;
   unsigned int id = parameter[2];
+  unsigned int size =  sizeX[id];
+  const std::vector<double>* X=fitX[id];
+  const std::vector<double>* Z=fitZ[id];
+  const std::vector<double>* R=fitR[id];
+
   double c,d,r,x,z,p;
-  for(unsigned int i = 0 ; i < sizeX[id] ; i++){
-    c = (*fitX[id])[i];
-    d = (*fitZ[id])[i];
-    r = (*fitR[id])[i];
+  for(unsigned int i = 0 ; i < size ; i++){
+    c = (*X)[i];
+    d = (*Z)[i];
+    r = (*R)[i];
     x = (a*d-ab+c)/(1+a2);
     z = a*x+b;
     p= (x-c)*(x-c)+(z-d)*(z-d)-r*r;
@@ -159,7 +165,7 @@ double DCReconstructionMT::SumD(const double* parameter ){
   }
 
   // return normalized power
-  return P/sizeX[id];
+  return P/size;
 }
 
 
@@ -215,12 +221,15 @@ void DCReconstructionMT::StartThread(unsigned int id){
   // each threads needs its own or the minisation is not thread safe 
   ROOT::Math::Functor* func= new ROOT::Math::Functor(this,&NPL::DCReconstructionMT::SumD,3); 
   //Create the minimiser (deleted by the thread)
+  m_mtx.lock();
   ROOT::Math::Minimizer* mini=ROOT::Math::Factory::CreateMinimizer("Minuit2", "Migrad"); 
+  m_mtx.unlock();
+
   mini->SetFunction(*func);
   mini->SetPrintLevel(0);
 
   // Let the main thread start
-  std::this_thread::sleep_for(std::chrono::milliseconds(500));
+  std::this_thread::sleep_for(std::chrono::milliseconds(100));
   while(true){
     // Do the job if possible
     if(m_Ready[id]){
@@ -246,7 +255,9 @@ void DCReconstructionMT::StartThread(unsigned int id){
       m_X100[uid]=(100-m_b[uid])/m_a[uid];
       m_minimum[uid] = mini->MinValue();
       // notify main thread job is done
+      m_mtx.lock();// make sure no other thread is reading/writing to the map
       m_Ready[id].flip();
+      m_mtx.unlock();
       // Let other thread move up in the queu
       std::this_thread::yield();
     }
