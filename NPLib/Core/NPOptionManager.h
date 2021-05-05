@@ -60,7 +60,9 @@ class NPOptionManager{
   private:
     // Read the input argument
     void ReadTheInputArgument(int argc = 0, char** argv = NULL);
-      
+    // Look for and Read the project config file if existing
+    void ReadProjectConfigFile();
+
    private:
       // The static instance of the NPOptionManager class:
       static NPOptionManager* instance;
@@ -111,13 +113,16 @@ class NPOptionManager{
       int    GetRandomSeed()               {return fRandomSeed;}
       std::string GetSharedLibExtension()       {return fSharedLibExtension;}     
       std::string GetLastFile();                 
-      
+      std::string GetAnalysisOutputPath(){return m_AnalysisOutputPath;};
+      std::string GetSimulationOutputPath(){return m_SimulationOutputPath;};
+      std::string GetEnergyLossPath(){return m_EnergyLossPath;};
       // Setters
       void SetReactionFile(const std::string& name)  {fReactionFileName = name;CheckEventGenerator();}
       void SetDetectorFile(const std::string& name)  {fDetectorFileName = name;CheckDetectorConfiguration();}
       void SetRunToReadFile(const std::string& name) {fRunToReadFileName = name;}
       void SetVerboseLevel(int VerboseLevel)         {fVerboseLevel = VerboseLevel;}
  
+
    public: // user definition
       bool HasDefinition(std::string def) {return(fDefinition.find(def)!=fDefinition.end());}
 
@@ -158,6 +163,10 @@ class NPOptionManager{
       std::string fG4MacroPath; // Path to a geant4 macro to execute at start of nps
       bool fG4BatchMode; // Execute geant4 in batch mode, running the given macro
       std::set<std::string> fDefinition; // a set of user defined definition 
+      std::string m_AnalysisOutputPath;// output path of analysed tree
+      std::string m_SimulationOutputPath;// output path of simulated tree
+      std::string m_EnergyLossPath;// input/output path of energy loss table
+
 };
 
 #endif

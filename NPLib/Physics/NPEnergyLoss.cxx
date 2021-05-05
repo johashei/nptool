@@ -39,6 +39,7 @@
 using namespace std;
 
 #include "NPEnergyLoss.h"
+#include "NPOptionManager.h"
 #include "TAxis.h"
 
 //   NPL
@@ -66,8 +67,7 @@ EnergyLoss::EnergyLoss(string Path , string Source, int NumberOfSlice=100 ,  int
   fNumberOfSlice = NumberOfSlice ; 
   fNumberOfMass  = NumberOfMass  ;
 
-  string globalPath = getenv("NPTOOL");
-  string StandardPath = globalPath + "/Inputs/EnergyLoss/" + Path;
+  string StandardPath = NPOptionManager::getInstance()->GetEnergyLossPath()+"/"+Path;
 
   cout << endl;
   cout << "/////////// Energy loss ///////////" << endl ;

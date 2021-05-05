@@ -20,6 +20,8 @@
  * Comment:                                                                  *
  *                                                                           *
  *****************************************************************************/
+//NPL
+#include "NPOptionManager.h"
 
 // NPS
 #include "MaterialManager.hh"
@@ -1209,12 +1211,12 @@ void MaterialManager::WriteDEDXTable(G4ParticleDefinition* Particle,
     return;
   for (it = m_Material.begin(); it != m_Material.end(); it++) {
     //   Opening hte output file
-    G4String GlobalPath = getenv("NPTOOL");
+    G4String GlobalPath =NPOptionManager::getInstance()->GetEnergyLossPath();
     G4String Name       = it->second->GetName();
+
     // Remove NPS name
     Name.erase(0, 4);
-    G4String Path = GlobalPath + "/Inputs/EnergyLoss/"
-                    + Particle->GetParticleName() + "_" + Name + ".G4table";
+    G4String Path = GlobalPath +"/"+ Particle->GetParticleName() + "_" + Name + ".G4table";
 
     ofstream File;
     File.open(Path);

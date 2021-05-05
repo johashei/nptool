@@ -53,12 +53,27 @@ void RootOutput::Destroy(){
 RootOutput::RootOutput(std::string fileNameBase, std::string treeNameBase){
   TDirectory* currentPath= gDirectory;
 
-  // The file extension is added to the file name:
-  std::string GlobalPath = getenv("NPTOOL");
+  bool analysis=false;
+  bool simulation=false;
+  if(fileNameBase.find("Analysis/")!=std::string::npos){
+    analysis = true;
+    fileNameBase.erase(0,8);
+  }
+  else if(fileNameBase.find("Simulation/")!=std::string::npos){
+    simulation= true;
+    fileNameBase.erase(0,10);
+  }
 
   // The ROOT file is created
   if(!NPOptionManager::getInstance()->GetPROOF()){
-    std::string fileName = GlobalPath + "/Outputs/";
+    std::string fileName;
+    if(analysis)
+      fileName = NPOptionManager::getInstance()->GetAnalysisOutputPath();
+    else if(simulation)
+      fileName = NPOptionManager::getInstance()->GetSimulationOutputPath();
+    else
+      fileName="./";
+
     if (fileNameBase.find("root")!=std::string::npos) fileName += fileNameBase;
     else fileName += fileNameBase + ".root";
 

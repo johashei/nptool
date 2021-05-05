@@ -22,6 +22,7 @@
 
 #include "NPOptionManager.h"
 #include "NPLibVersion.h"
+#include "NPInputParser.h"
 #include <fstream>
 #include <sstream>
 #include <cstdlib>
@@ -44,15 +45,51 @@ NPOptionManager* NPOptionManager::getInstance(std::string arg){
   return instance ;
 
 }
+
+////////////////////////////////////////////////////////////////////////////////
+void NPOptionManager::ReadProjectConfigFile(){
+ // check if the file exist
+ std::ifstream ProjectFile;
+ ProjectFile.open("./project.config");
+
+ if(ProjectFile.is_open()){
+    std::cout << "///// Loading Project Configuration: " << std::endl;
+    ProjectFile.close();
+    NPL::InputParser parser("./project.config");
+    std::vector<NPL::InputBlock*> blocks = parser.GetAllBlocksWithToken("Project");
+    unsigned int size = blocks.size();
+    for(unsigned int i = 0 ; i < size ; i++){
+
+      if(blocks[i]->HasToken("AnalysisOutput"))
+        m_AnalysisOutputPath = blocks[i]->GetString("AnalysisOutput"); 
+
+      if(blocks[i]->HasToken("SimulationOutput"))
+        m_SimulationOutputPath = blocks[i]->GetString("SimulationOutput"); 
+      
+      if(blocks[i]->HasToken("EnergyLoss"))
+        m_EnergyLossPath = blocks[i]->GetString("EnergyLoss"); 
+    }
+ } 
+
+
+ // else use the standard config
+ else{
+  std::string Path = getenv("NPTOOL");
+  m_AnalysisOutputPath=Path+"/Outputs/Analysis/";
+  m_SimulationOutputPath=Path+"/Outputs/Simulation/";
+  m_EnergyLossPath=Path+"/Inputs/EnergyLoss/";
+ }
+}
+
+////////////////////////////////////////////////////////////////////////////////
 void NPOptionManager::ReadTheInputArgument(int argc, char** argv){
   if(argc==1)
     DisplayHelp();
 
-
   // Default Setting
   fDefaultReactionFileName    = "defaultReaction.reaction";
   fDefaultDetectorFileName    = "defaultDetector.detector";
-  fDefaultOutputFileName      = "myResult.root";
+  fDefaultOutputFileName      = "SimulatedTree.root";
   fDefaultOutputTreeName      = "NPTool_Tree";
   fDefaultRunToReadFileName   = "defaultRunToTreat.txt";
   fDefaultCalibrationFileName = "defaultCalibration.txt";
@@ -211,6 +248,8 @@ void NPOptionManager::DisplayVersion(){
 }
 ////////////////////////////////////////////////////////////////////////////////
 NPOptionManager::NPOptionManager(int argc, char** argv){
+  // Start by reading the project configuration
+  ReadProjectConfigFile();
   ReadTheInputArgument(argc,argv);
 }
 ////////////////////////////////////////////////////////////////////////////////
