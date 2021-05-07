@@ -25,12 +25,14 @@
 
 // C++ header
 #include <string>
-
+#include <map>
+#include <vector>
 // ROOT headers
 #include "TFile.h"
 #include "TChain.h"
 
-
+// NPL
+#include "NPInputParser.h"
 
 class RootInput
 {
@@ -74,9 +76,16 @@ public:
    // Add a Friend chain to the input chain
    void     AddFriendChain(std::string RunToAdd);
 
+   void     ReadOldStyleInputFile(NPL::InputParser& parser);
+   void     ReadInputFile(NPL::InputParser& parser);
+   void     ReadTreeFile(std::string path);
+
 private:
    TChain   *pRootChain;
    TFile    *pRootFile;
+   std::string pTreeName;// the main tree name
+   std::vector<std::string> pTreePath;// the main tree path
+   std::multimap<std::string,std::vector<std::string>> pFriends;// list of Friends tree indexed by their tree name
    int NumberOfFriend;
   
 };

@@ -86,7 +86,7 @@ std::string NPL::InputBlock::ExtractValue(std::string line,std::string separator
 void NPL::InputBlock::AddLine(std::string line){
   m_Token.push_back(ToLower(StripSpaces(ExtractToken(line))));
   m_Value.push_back(StripSpaces(ExtractValue(line)));
-  m_Lines.push_back(line); 
+  m_Lines.push_back(StripSpaces(line)); 
 }
 ////////////////////////////////////////////////////////////////////////////////
 void NPL::InputBlock::Dump(){

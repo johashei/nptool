@@ -30,7 +30,7 @@
 #include "RootInput.h"
 #include "TAsciiFile.h"
 #include "NPOptionManager.h"
-#include "NPInputParser.h"
+using namespace std;
 
 RootInput* RootInput::instance = 0;
 ////////////////////////////////////////////////////////////////////////////////
@@ -53,104 +53,134 @@ void RootInput::Destroy(){
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+void RootInput::ReadOldStyleInputFile(NPL::InputParser& parser){
+    vector<NPL::InputBlock*> blocks = parser.GetAllBlocksWithToken("TTreeName");
+    pTreeName = blocks[0]->GetLines()[0];
+    vector<NPL::InputBlock*> files = parser.GetAllBlocksWithToken("RootFileName");
+    if(files.size()>0){
+      vector<string> lines=files[0]->GetLines();
+      unsigned int size = lines.size();
+      for(unsigned int i = 0 ; i < size ; i++){
+       pTreePath.push_back(lines[i]); 
+      }
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+void RootInput::ReadInputFile(NPL::InputParser& parser){
+    vector<NPL::InputBlock*> blocks = parser.GetAllBlocksWithToken("Tree");
+    pTreeName = blocks[0]->GetMainValue();
+    std::vector<std::string> lines=blocks[0]->GetLines();
+    unsigned int size = lines.size();
+    for(unsigned int i = 0 ; i < size ; i++){
+        if(lines[i].find(".root")!=string::npos)
+          pTreePath.push_back(lines[i]); 
+        else if(lines[i].find(".tree")!=string::npos)
+          ReadTreeFile(lines[i]);
+    }
+
+    vector<NPL::InputBlock*> friends = parser.GetAllBlocksWithToken("Friend");
+    unsigned int sizeF = friends.size();
+    for(unsigned int i = 0 ; i < sizeF ; i++){
+      pFriends.insert(pair< string,vector<string> > (friends[i]->GetMainValue(),friends[i]->GetLines()));
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+void  RootInput::ReadTreeFile(std::string path){
+  ifstream tree(path.c_str());
+  path=path.substr(0,path.rfind("/")+1);
+  path+="/";
+  std::string buffer;
+  bool first=true;
+  while(tree>>buffer){
+    if(first){
+      pTreePath.push_back(path+buffer);
+      first=false;
+    }
+    else{
+      vector<string> friends={path+buffer};
+      pFriends.insert(pair<string,vector<string>>(pTreeName, friends));
+    }
+  }
+}
+////////////////////////////////////////////////////////////////////////////////
 RootInput::RootInput(std::string configFileName){
+
+  NumberOfFriend = 0;
+  pRootFile  = NULL;
   std::string lastfile= NPOptionManager::getInstance()->GetLastFile();
   if(lastfile!="VOID"){
     configFileName = lastfile;
   }
 
-  NumberOfFriend = 0;
-  bool CheckTreeName     = false;
-  bool CheckRootFileName = false;
-
-  // Read configuration file Buffer
-  std::string lineBuffer, dataBuffer;
-
-  // Open file
-  std::cout << std::endl;
   std::cout << "/////////// ROOT Input files ///////////" << std::endl;
-  std::cout << "Initializing input TChain using: " << configFileName << std::endl;
+  std::cout << "Initializing input TChain using : " << configFileName << std::endl;
+  NPL::InputParser parser(configFileName);
 
-  std::ifstream inputConfigFile;
-  inputConfigFile.open(configFileName.c_str());
-  pRootFile  = NULL;
-  if (!inputConfigFile.is_open()) {
-    std::cout << "\033[1;31mWarning : Run to Read file: " << configFileName << " not found\033[0m" << std::endl; 
-    //exit(1);
+  // Old style file
+  vector<NPL::InputBlock*> old_blocks = parser.GetAllBlocksWithToken("TTreeName");
+  if(old_blocks.size()==1){
+    ReadOldStyleInputFile(parser);
+  }
+  // New style file
+  vector<NPL::InputBlock*> blocks = parser.GetAllBlocksWithToken("Tree");
+  if(blocks.size()==1){
+    ReadInputFile(parser);
+  }
+  // If the tree come from a simulation, the InteractionCoordinates
+  // and InitialConditions lib are loaded
+  if(pTreeName=="SimulatedTree"){
+   std::string path = getenv("NPTOOL");
+   path+="/NPLib/lib/";
+   std::string libName="libNPInteractionCoordinates"+NPOptionManager::getInstance()->GetSharedLibExtension();
+   libName=path+libName;
+   dlopen(libName.c_str(),RTLD_NOW);
+   libName="libNPInitialConditions"+NPOptionManager::getInstance()->GetSharedLibExtension();
+   libName=path+libName;
+   dlopen(libName.c_str(),RTLD_NOW);
   }
 
-  else {
-    while (!inputConfigFile.eof()) {
-      getline(inputConfigFile, lineBuffer);
-      // search for token giving the TTree name
-      if (lineBuffer.compare(0, 9, "TTreeName") == 0) {
-        inputConfigFile >> dataBuffer;
-        // initialize pRootChain
-        pRootChain = new TChain(dataBuffer.c_str());
-        CheckTreeName = true ;
-        // If the tree come from a simulation, the InteractionCoordinates
-        // and InitialConditions lib are loaded
-        if(dataBuffer=="SimulatedTree"){
-          std::string path = getenv("NPTOOL");
-          path+="/NPLib/lib/";
-          std::string libName="libNPInteractionCoordinates"+NPOptionManager::getInstance()->GetSharedLibExtension();
-          libName=path+libName;
-          dlopen(libName.c_str(),RTLD_NOW);
-          libName="libNPInitialConditions"+NPOptionManager::getInstance()->GetSharedLibExtension();
-          libName=path+libName;
-          dlopen(libName.c_str(),RTLD_NOW);
-        }
-      }
+  // Initialise the chain
+  pRootChain = new TChain(pTreeName.c_str());
 
-      // search for token giving the list of Root files to treat
-      else if (lineBuffer.compare(0, 12, "RootFileName") == 0  &&  pRootChain) {
-        CheckRootFileName = true ;
-
-        while (!inputConfigFile.eof()) {
-          inputConfigFile >> dataBuffer;
-
-          // ignore comment Line 
-          if (dataBuffer.compare(0, 1, "%") == 0) {
-            inputConfigFile.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-          }
-
-          else if (!inputConfigFile.eof()) {
-            pRootChain->Add(dataBuffer.c_str());
-            std::cout << "Adding file " << dataBuffer << " to TChain" << std::endl;
-
-            // Test if the file is a regex or a single file
-            double counts;
-            std::string command = "ls " + dataBuffer + " > .ls_return";
-            counts= system(command.c_str());
-            std::ifstream return_ls(".ls_return");
-            
-            std::string files;
-            std::string firstfile;
-            while(return_ls >> files){
-              if(counts == 0)
-                firstfile = files;
-              counts++;
-            }
-            
-            if (!pRootFile) 
-              pRootFile = new TFile(firstfile.c_str());
-          }
-        }
-      }
+  // Add all the files
+  unsigned int size = pTreePath.size();
+  std::string firstfile;
+  for(unsigned int i = 0 ; i < size ; i++){
+    cout << "  - Adding file : " << pTreePath[i].c_str() << endl;
+    pRootChain->Add(pTreePath[i].c_str());
+    // Test if the file is a regex or a single file
+    double counts;
+    std::string command = "ls " + pTreePath[i] + " > .ls_return";
+    counts= system(command.c_str());
+    std::ifstream return_ls(".ls_return");
+    std::string files;
+    while(return_ls >> files){
+      if(counts == 0)
+        firstfile = files;
+      counts++;
     }
-    if( pRootChain->GetEntries() ==0){
-      std::cout << "\033[1;31m**** ERROR: No entries to analyse ****\033[0m" << std::endl; 
-      exit(1);
+  }
+  
+  // Add all the friends
+  for(auto it = pFriends.begin(); it!=pFriends.end() ; it++){
+    unsigned int size = it->second.size();
+    for(unsigned int i = 0 ; i < size ; i++){
+     cout << "  - Adding friend : " << it->second[i].c_str() << endl;
+     pRootChain->AddFriend(it->first.c_str(),it->second[i].c_str());
     }
-    else{
-      std::cout << "\033[1;32mROOTInput:  " << pRootChain->GetEntries() << " entries loaded in the input chain\033[0m" << std::endl ;
-    }
-
   }
 
-  if (!CheckRootFileName || !CheckTreeName) 
-    std::cout << "\033[1;33mWARNING: Token not found for InputTree Declaration : Input Tree may not be instantiate properly\033[0m" << std::endl;
+  if (!pRootFile) 
+    pRootFile = new TFile(firstfile.c_str());
 
+  if( pRootChain->GetEntries() ==0){
+    std::cout << "\033[1;31m**** ERROR: No entries to analyse ****\033[0m" << std::endl; 
+    exit(1);
+  }
+ else
+    std::cout << "\033[1;32mROOTInput:  " << pRootChain->GetEntries() << " entries loaded in the input chain\033[0m" << std::endl ;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
