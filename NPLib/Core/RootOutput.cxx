@@ -58,7 +58,8 @@ RootOutput::RootOutput(std::string fileNameBase, std::string treeNameBase,bool s
   cout << "Initializing ouput trees and files ";
   if(pSplit)
     cout << "in split mode (one tree per detector)" << endl;
-  
+  else
+    cout << endl;
   pTreeName=treeNameBase;
   pCurrentDirectory= gDirectory;
   bool analysis=false;
@@ -150,15 +151,15 @@ RootOutput::RootOutput(std::string fileNameBase, std::string treeNameBase,bool s
 void RootOutput::CreateTreeAndFile(std::string name){
   // Create the tree only if does not exist already
   string file_name=pBaseName;
-  if(name!="global"){
-   string  strip= pBaseName.substr(pBaseName.rfind("/"));
-   strip = strip.substr(0,strip.rfind(".root"));
-   string  insertion= "_"+name;
-   file_name.insert(file_name.rfind(".root"),insertion);
-   file_name.insert(file_name.rfind("/"),strip);
-  }
 
   if(pRootFiles.find(name)==pRootFiles.end()){
+    if(pSplit){
+      string  strip= pBaseName.substr(pBaseName.rfind("/"));
+      strip = strip.substr(0,strip.rfind(".root"));
+      string  insertion= "_"+name;
+      file_name.insert(file_name.rfind(".root"),insertion);
+      file_name.insert(file_name.rfind("/"),strip);
+    }
     cout << " - Creating output file " << file_name.c_str() << endl;
     pRootFiles[name] = new TFile(file_name.c_str(), "RECREATE");
     pRootTrees[name] = new TTree(pTreeName.c_str(), "Data created / analysed with the nptool package");
