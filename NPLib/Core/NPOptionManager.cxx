@@ -106,6 +106,8 @@ void NPOptionManager::ReadTheInputArgument(int argc, char** argv){
   fLastPhyFile = false;
   fLastResFile = false;
   fLastAnyFile = false;
+  fIsAnalysis  = false;
+  fIsSimulation= false;
   fVerboseLevel               = 1;
   fNumberOfEntryToAnalyse     = -1;
 	fFirstEntryToAnalyse        = 0;
@@ -114,7 +116,6 @@ void NPOptionManager::ReadTheInputArgument(int argc, char** argv){
   fDisableAllBranchOption = false;
   fInputPhysicalTreeOption = false;
   fGenerateHistoOption = false ;
-  fPROOFMode = false;
   fCircularTree = false;
   fOnline = false;
   fG4BatchMode = false;
@@ -158,6 +159,8 @@ void NPOptionManager::ReadTheInputArgument(int argc, char** argv){
     else if (argument == "-T" && argc >= i + 2)                   { std::string file = argv[++i] ; std::string tree = argv[++i]; CreateRunToTreatFile(file,tree);}
 
     else if (argument == "--cal" && argc >= i + 1)                fCalibrationFileName = argv[++i] ;
+    
+    else if (argument == "-S" && argc >= i + 1)                   fIsSplit=true; 
 
     else if (argument == "-C" && argc >= i + 1)                   fCalibrationFileName = argv[++i] ;
 
@@ -184,8 +187,6 @@ void NPOptionManager::ReadTheInputArgument(int argc, char** argv){
     else if (argument == "-check-histo")                          fCheckHistoOption = true ;
 
     else if (argument == "--generate-histo")                      fGenerateHistoOption = true ;
-
-    else if (argument == "--proof")                               fPROOFMode = true ;
 
     else if (argument == "-L")                                    fNumberOfEntryToAnalyse = atoi(argv[++i]) ;
 
@@ -444,12 +445,12 @@ void NPOptionManager::DisplayHelp(){
   std::cout << "\t--output　-O <arg>\t\tSet arg as the Output File Name (output tree)" << std::endl ;
   std::cout << "\t--tree-name <arg>\t\tSet arg as the Output Tree Name " << std::endl ;
   std::cout << "\t--definition <definition> \tAdd <definition> to the list of definition" << std::endl  ;
+  std::cout << "\t-S \t\t\t\tOne tree output per detector" << std::endl  ;
   std::cout << "\t--verbose -V <arg>\t\tSet the verbose level, 0 for nothing, 1 for normal printout."<<std::endl;
 	std::cout  << "\t\t\t\t\tError and warning are not affected" << std::endl ;
   std::cout << std::endl << "NPAnalysis only:"<<std::endl;
   std::cout << "\t--run -R <arg>\t\t\tSet arg as the run to read file list" << std::endl  ;
   std::cout << "\t-T <name> <file>\t\tTree <name> from root file <file>" << std::endl  ;
-
   std::cout << "\t--cal -C <arg>\t\t\tSet arg as the calibration file list" << std::endl ;
   std::cout << "\t--disable-branch\t\tDisable of branch of Input tree except the one of the detector (faster)" << std::endl  ;
   std::cout << "\t--generate-histo -GH\t\tInstantiate the T*Spectra class of each detector" << std::endl ;

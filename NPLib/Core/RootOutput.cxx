@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (C) 2009-2016   this file is part of the NPTool Project         *
+ * Copyright (C) 2009-2021   this file is part of the NPTool Project         *
  *                                                                           *
  * For the licensing terms see $NPTOOL/Licence/NPTool_Licence                *
  * For the list of contributors see $NPTOOL/Licence/Contributors             *
@@ -9,13 +9,14 @@
  * Original Author: N. de Sereville  contact address: deserevi@ipno.in2p3.fr *
  *                                                                           *
  * Creation Date  : 21/07/09                                                 *
- * Last update    : 03/02/11                                                 *
+ * Last update    : 10/05/21                                                 *
  *---------------------------------------------------------------------------*
  * Decription: This class is a singleton class which deals with the ROOT     *
  *             output file and tree both for NPSimulation and NPAnalysis.    *
  *---------------------------------------------------------------------------*
  * Comment:                                                                  *
  *   + 03/02/11: Add support for TAsciiFile objects (N. de Sereville)        *
+ *   + 10/05/21: Add support for split tree output (A. Matta)                *
  *                                                                           *
  *                                                                           *
  *****************************************************************************/
@@ -31,10 +32,10 @@ using namespace std;
 
 RootOutput* RootOutput::instance = 0;
 ////////////////////////////////////////////////////////////////////////////////
-RootOutput* RootOutput::getInstance(std::string fileNameBase, std::string treeNameBase){
+RootOutput* RootOutput::getInstance(std::string fileNameBase, std::string treeNameBase,bool split){
   // A new instance of RootOutput is created if it does not exist:
   if (instance == 0) {
-    instance = new RootOutput(fileNameBase.c_str(), treeNameBase.c_str());
+    instance = new RootOutput(fileNameBase.c_str(), treeNameBase.c_str(),split);
   }
 
   // The instance of RootOutput is returned:
@@ -50,103 +51,159 @@ void RootOutput::Destroy(){
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-RootOutput::RootOutput(std::string fileNameBase, std::string treeNameBase){
-  TDirectory* currentPath= gDirectory;
+RootOutput::RootOutput(std::string fileNameBase, std::string treeNameBase,bool split){
 
+  pSplit = (split || NPOptionManager::getInstance()->IsSplit());
+  cout << endl << "/////////// ROOT Output files ///////////" << endl;
+  cout << "Initializing ouput trees and files ";
+  if(pSplit)
+    cout << "in split mode (one tree per detector)" << endl;
+  
+  pTreeName=treeNameBase;
+  pCurrentDirectory= gDirectory;
   bool analysis=false;
   bool simulation=false;
-  if(fileNameBase.find("Analysis/")!=std::string::npos){
+
+  if(NPOptionManager::getInstance()->IsAnalysis()){
     analysis = true;
-    fileNameBase.erase(0,8);
   }
-  else if(fileNameBase.find("Simulation/")!=std::string::npos){
+  else if(NPOptionManager::getInstance()->IsAnalysis()){
     simulation= true;
-    fileNameBase.erase(0,10);
   }
 
-  // The ROOT file is created
-  if(!NPOptionManager::getInstance()->GetPROOF()){
-    std::string fileName;
-    if(analysis)
-      fileName = NPOptionManager::getInstance()->GetAnalysisOutputPath();
-    else if(simulation)
-      fileName = NPOptionManager::getInstance()->GetSimulationOutputPath();
-    else
-      fileName="./";
+  // Setup the base name
+  if(analysis)
+    pBaseName = NPOptionManager::getInstance()->GetAnalysisOutputPath();
+  else if(simulation)
+    pBaseName = NPOptionManager::getInstance()->GetSimulationOutputPath();
+  else
+    pBaseName="./";
 
-    if (fileNameBase.find("root")!=std::string::npos) fileName += fileNameBase;
-    else fileName += fileNameBase + ".root";
+  pBaseName += "/"+fileNameBase;
 
-    pRootFile = new TFile(fileName.c_str(), "RECREATE");
+  if (fileNameBase.find("root")==std::string::npos) 
+    pBaseName += ".root";
 
-    if(treeNameBase=="SimulatedTree"){
-      string path = getenv("NPTOOL");
-        path+="/.last_sim_file";
-      ofstream last_sim_file(path.c_str());
-      last_sim_file << "TTreeName" << endl 
-       << "  " << treeNameBase <<endl
-       << "RootFileName" <<endl
-       << "  " << fileName<<endl;
-      last_sim_file.close();
+  if(pSplit){
+    // Create a folder for all the trees
+    string stripname = pBaseName;
+    stripname.erase(stripname.find(".root"),5);
+    string path = stripname.substr(0,stripname.rfind("/"));
+    string filebase = stripname.substr(stripname.rfind("/")+1);
+    string command = "mkdir -p "+stripname;
+    int res = system(command.c_str());
+    if(res!=0){
+      std::cout << "Error creating folder " << stripname << std::endl;
+      exit(1);
     }
-
-    else if(treeNameBase=="PhysicsTree"){
-      string path = getenv("NPTOOL");
-        path+="/.last_phy_file";
-      ofstream last_phy_file(path.c_str());
-      last_phy_file << "TTreeName" << endl 
-       << "  " << treeNameBase <<endl
-       << "RootFileName" <<endl
-       << "  " << fileName<<endl;
-      last_phy_file.close();
-    }
-
-
-    else if(treeNameBase=="ResultTree"){
-      string path = getenv("NPTOOL");
-      path+="/.last_res_file";
-      ofstream last_res_file(path.c_str());
-      last_res_file << "TTreeName" << endl 
-       << "  " << treeNameBase <<endl
-       << "RootFileName" <<endl
-       << "  " << fileName<<endl;
-      last_res_file.close();
-    }
-  
-    else{
-      string path = getenv("NPTOOL");
-        path+="/.last_any_file";
-      ofstream last_any_file(path.c_str());
-      last_any_file << "TTreeName" << endl 
-       << "  " << treeNameBase <<endl
-       << "RootFileName" <<endl
-       << "  " << fileName << endl;
-      last_any_file.close();
-    }
-
-
-
+    // create the master file 
+    pMasterFile=stripname+"/"+filebase+".tree";
+    ofstream master(pMasterFile.c_str(),std::ofstream::trunc);
+    master.close();
+  }
+  else{
+    CreateTreeAndFile("global");
+  }
+  /////
+  // Create the last file 
+  if(treeNameBase=="SimulatedTree"){
+    string path = getenv("NPTOOL");
+    path+="/.last_sim_file";
+    ofstream last_sim_file(path.c_str());
+    last_sim_file << "Tree "<< pTreeName <<endl
+      << " " << pBaseName<<endl;
+    last_sim_file.close();
   }
 
-  else{ // the file path must be the current directory
-    // Does not create the Output file at instantiation
-    pRootFile = 0 ;
+  else if(treeNameBase=="PhysicsTree"){
+    string path = getenv("NPTOOL");
+    path+="/.last_phy_file";
+    ofstream last_phy_file(path.c_str());
+    last_phy_file << "Tree "<< pTreeName<<endl
+      << " " << pBaseName <<endl;
+    last_phy_file.close();
   }
 
-  pRootTree = new TTree(treeNameBase.c_str(), "Data created / analysed with the NPTool package");
-  pRootFile->SetCompressionLevel(1);
-  pRootList = new TList();
+  else if(treeNameBase=="ResultTree"){
+    string path = getenv("NPTOOL");
+    path+="/.last_res_file";
+    ofstream last_res_file(path.c_str());
+    last_res_file << "Tree " << pTreeName << endl 
+      << " " << pBaseName<<endl;
+    last_res_file.close();
+  }
 
-  // Init TAsciiFile objects
+  else{
+    string path = getenv("NPTOOL");
+    path+="/.last_any_file";
+    ofstream last_any_file(path.c_str());
+    last_any_file << "Tree " << pTreeName <<endl
+      << " " << pBaseName<< endl;
+    last_any_file.close();
+  }
+
+
   InitAsciiFiles();
-  gDirectory->cd(currentPath->GetPath()); 
-
-  if(NPOptionManager::getInstance()->GetCircularTree()){
-    cout << "Information: Output tree is set to circular mode" << endl;
-    pRootTree->SetCircular(1000); 
-  }
 }
 
+////////////////////////////////////////////////////////////////////////////////
+void RootOutput::CreateTreeAndFile(std::string name){
+  // Create the tree only if does not exist already
+  string file_name=pBaseName;
+  if(name!="global"){
+   string  strip= pBaseName.substr(pBaseName.rfind("/"));
+   strip = strip.substr(0,strip.rfind(".root"));
+   string  insertion= "_"+name;
+   file_name.insert(file_name.rfind(".root"),insertion);
+   file_name.insert(file_name.rfind("/"),strip);
+  }
+
+  if(pRootFiles.find(name)==pRootFiles.end()){
+    cout << " - Creating output file " << file_name.c_str() << endl;
+    pRootFiles[name] = new TFile(file_name.c_str(), "RECREATE");
+    pRootTrees[name] = new TTree(pTreeName.c_str(), "Data created / analysed with the nptool package");
+    pRootFiles[name]->SetCompressionLevel(1);
+
+    // Init TAsciiFile objects
+    gDirectory->cd(pCurrentDirectory->GetPath()); 
+
+    if(NPOptionManager::getInstance()->GetCircularTree()){
+      cout << "Information: Output tree is set to circular mode" << endl;
+      pRootTrees[name]->SetCircular(1000); 
+    }
+
+    if(pSplit){// Add the tree to the .tree file
+      ofstream master(pMasterFile.c_str(),std::ofstream::app);
+      file_name = file_name.substr(file_name.rfind("/")+1);
+      master << file_name.c_str() << endl;
+      master.close();
+    }
+  } 
+  //
+  /*
+     for(auto it = m_DetectorMap.begin() ; it!=m_DetectorMap.end() ;++it){
+     string insertion = "_"+it->first;
+     master << filebase << insertion << ".root" << std::endl;
+     string filename=path+"/"+filebase+"/"+filebase+insertion+".root";
+     auto file = new TFile(filename.c_str(),"RECREATE");
+     string treename = "RawTree_"+it->first;
+     auto tree = new TTree("RawTree",treename.c_str());
+     m_TreeMap[it->first]=tree;
+     m_FileMap[it->first]=file;
+     tree->SetDirectory(file);
+     std::cout << "Splitting tree: " << filename << std::endl;
+     it->second->InitBranch(tree);
+     }
+     master.close();
+
+*/
+}
+////////////////////////////////////////////////////////////////////////////////
+void RootOutput::Fill(){
+ for(auto it = pRootTrees.begin();it!=pRootTrees.end();it++){
+  it->second->Fill();
+ } 
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 void RootOutput::InitAsciiFiles(){
@@ -159,15 +216,15 @@ void RootOutput::InitAsciiFiles(){
   pEventGenerator = new TAsciiFile();
   pEventGenerator->SetNameTitle("EventGenerator", fileNameEG.c_str());
   pEventGenerator->Append(fileNameEG.c_str());
-  pEventGenerator->Write(0,TAsciiFile::kOverwrite);
-  
+  //pEventGenerator->Write(0,TAsciiFile::kOverwrite);
+
   // Detector configuration 
   // Get file name from NPOptionManager
   std::string fileNameDC = OptionManager->GetDetectorFile();
   pDetectorConfiguration = new TAsciiFile();
   pDetectorConfiguration->SetNameTitle("DetectorConfiguration", fileNameDC.c_str());
   pDetectorConfiguration->Append(fileNameDC.c_str());
-  pDetectorConfiguration->Write(0,TAsciiFile::kOverwrite);
+  //pDetectorConfiguration->Write(0,TAsciiFile::kOverwrite);
 
   // Run to treat file
   // Get file name from NPOptionManager
@@ -176,7 +233,7 @@ void RootOutput::InitAsciiFiles(){
     std::string fileNameRT = OptionManager->GetRunToReadFile();
     pRunToTreatFile->SetNameTitle("RunToTreat", fileNameRT.c_str());
     pRunToTreatFile->Append(fileNameRT.c_str());
-    pRunToTreatFile->Write(0,TAsciiFile::kOverwrite);
+    //pRunToTreatFile->Write(0,TAsciiFile::kOverwrite);
   }
 
   // Calibration files
@@ -184,61 +241,44 @@ void RootOutput::InitAsciiFiles(){
   if (!OptionManager->IsDefault("Calibration")) {
     std::string fileNameCal = OptionManager->GetCalibrationFile();
     pCalibrationFile->SetNameTitle("Calibration", fileNameCal.c_str());
-    pCalibrationFile->Write(0,TAsciiFile::kOverwrite);
+    //pCalibrationFile->Write(0,TAsciiFile::kOverwrite);
   }
 
   // Analysis configuration files
   pAnalysisConfigFile = new TAsciiFile();
   pAnalysisConfigFile->SetNameTitle("AnalysisConfig", "AnalysisConfig");
-  pAnalysisConfigFile->Write(0,TAsciiFile::kOverwrite);
+  //pAnalysisConfigFile->Write(0,TAsciiFile::kOverwrite);
 }
-
-
 
 ////////////////////////////////////////////////////////////////////////////////
 RootOutput::~RootOutput(){ 
   // The data is written to the file and the tree is closed:
-  if (pRootFile && !NPOptionManager::getInstance()->GetPROOF()) {
-    TDirectory* currentPath= gDirectory;
-    gDirectory->cd(pRootFile->GetPath());
-   
-    // write TAsciiFile if used
-    // EventGenerator
-    if (!pEventGenerator->IsEmpty()) pEventGenerator->Write(0,TAsciiFile::kOverwrite);
-    // DetectorConfiguration
-    if (!pDetectorConfiguration->IsEmpty()) pDetectorConfiguration->Write(0,TAsciiFile::kOverwrite);
-    // CalibrationFile
-    if (!pCalibrationFile->IsEmpty()) pCalibrationFile->Write(0,TAsciiFile::kOverwrite);
-    // RunToTreatFile
-    if (!pRunToTreatFile->IsEmpty()) pRunToTreatFile->Write(0,TAsciiFile::kOverwrite);
-    // Analysis ConfigFile
-    if (!pAnalysisConfigFile->IsEmpty()) pAnalysisConfigFile->Write(0,TAsciiFile::kOverwrite);
-   
-    cout << endl;
-    cout << endl << "Root Output summary" << endl;
-    cout << "  - Number of entries in the Tree: " << pRootTree->GetEntries() << endl;
-    cout << "  - Number of bites written to file: " << pRootTree->Write(0, TObject::kOverwrite) << endl;
-    pRootFile->Flush();
-    pRootFile->Purge(1);
+  if (pRootFiles.size()>0) {
+    cout << endl << endl << "Root Output summary" << endl;
+    TDirectory* pCurrentDirectory= gDirectory;
+    for(auto it = pRootFiles.begin(); it!=pRootFiles.end();it++){
+      cout << " - " <<it->first << " tree and file " << endl;
+      gDirectory->cd(it->second->GetPath());
+      // write TAsciiFile if used
+      // EventGenerator
+      if (!pEventGenerator->IsEmpty()) pEventGenerator->Write(0,TAsciiFile::kOverwrite);
+      // DetectorConfiguration
+      if (!pDetectorConfiguration->IsEmpty()) pDetectorConfiguration->Write(0,TAsciiFile::kOverwrite);
+      // CalibrationFile
+      if (!pCalibrationFile->IsEmpty()) pCalibrationFile->Write(0,TAsciiFile::kOverwrite);
+      // RunToTreatFile
+      if (!pRunToTreatFile->IsEmpty()) pRunToTreatFile->Write(0,TAsciiFile::kOverwrite);
+      // Analysis ConfigFile
+      if (!pAnalysisConfigFile->IsEmpty()) pAnalysisConfigFile->Write(0,TAsciiFile::kOverwrite);
 
-    gDirectory->cd(currentPath->GetPath());
-    pRootFile->Close();
-  }
+      cout << "  -> Number of entries in the " << it->first << " Tree: " << pRootTrees[it->first]->GetEntries() << endl;
+      cout << "  -> Number of bites written to file: " << pRootTrees[it->first]->Write(0, TObject::kOverwrite) << endl;
+      it->second->Flush();
+      it->second->Purge(1);
 
-  else if (pRootFile && NPOptionManager::getInstance()->GetPROOF()){
-    if (!pEventGenerator->IsEmpty()) pEventGenerator->Write(0,TAsciiFile::kOverwrite);
-    // DetectorConfiguration
-    if (!pDetectorConfiguration->IsEmpty()) pDetectorConfiguration->Write(0,TAsciiFile::kOverwrite);
-    // CalibrationFile
-    if (!pCalibrationFile->IsEmpty()) pCalibrationFile->Write(0,TAsciiFile::kOverwrite);
-    // RunToTreatFile
-    if (!pRunToTreatFile->IsEmpty()) pRunToTreatFile->Write(0,TAsciiFile::kOverwrite);
-    // Analysis ConfigFile
-    if (!pAnalysisConfigFile->IsEmpty()) pAnalysisConfigFile->Write(0,TAsciiFile::kOverwrite);
-  }
-
-  else if(!pRootFile && NPOptionManager::getInstance()->GetPROOF()){
-
+      gDirectory->cd(pCurrentDirectory->GetPath());
+      it->second->Close();
+    }
   }
 
   else {
@@ -247,20 +287,27 @@ RootOutput::~RootOutput(){
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-TFile* RootOutput::InitFile(std::string fileNameBase){
+TFile* RootOutput::GetFile(std::string name)  {
+  if(!pSplit)
+    name="global";
 
-  if(NPOptionManager::getInstance()->GetPROOF()){
-    std::string GlobalPath = getenv("NPTOOL");
-    std::string fileName = GlobalPath + "/Outputs/Analysis/";
-    if (fileNameBase.find("root")!=std::string::npos) fileName += fileNameBase;
-    else fileName += fileNameBase + ".root";
-    pRootFile = new TFile(fileName.c_str(), "RECREATE");
-    pRootFile->Flush();
-    return pRootFile;
-  }
-
+  if(pRootFiles.find(name)!=pRootFiles.end())
+    return pRootFiles[name];
   else{
-    cout << "ERROR: Do not use RootOutput::InitFile without a proof environment (use --proof option to NPTool)" << endl ;
+    std::cout << "Error: Requested file for detector " << name << " does not exist" << std::endl;
     exit(1);
   }
+  return 0;
 }
+
+////////////////////////////////////////////////////////////////////////////////
+TTree* RootOutput::GetTree(std::string name) {
+  if(!pSplit)
+    name="global";
+
+  if(pRootTrees.find(name)==pRootTrees.end())
+    CreateTreeAndFile(name);
+  
+  return pRootTrees[name];
+}
+

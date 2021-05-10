@@ -24,6 +24,7 @@ void ProgressDisplay(struct timeval& begin, struct timeval& end, unsigned long& 
 int main(int argc , char** argv){
   // command line parsing
   NPOptionManager* myOptionManager = NPOptionManager::getInstance(argc,argv);
+  myOptionManager->SetIsAnalysis();
   std::string inputfilename = myOptionManager->GetRunToReadFile();
   // if input files are not given, use those from TAsciiFile
   if (myOptionManager->IsDefault("DetectorConfiguration")) {
@@ -68,8 +69,8 @@ int main(int argc , char** argv){
       OutputfileName="ResultTree";
   }
 
-  RootOutput::getInstance("Analysis/"+OutputfileName,TreeName);
-  TTree* tree= RootOutput::getInstance()->GetTree();
+  RootOutput::getInstance(OutputfileName,TreeName);
+  //TTree* tree= RootOutput::getInstance()->GetTree();
 
   // Instantiate the detector using a file
   NPL::DetectorManager* myDetector = new NPL::DetectorManager();
@@ -137,7 +138,7 @@ int main(int argc , char** argv){
         // Build the current event
         myDetector->BuildPhysicalEvent();
         // Fill the tree
-        tree->Fill();
+        myDetector->FillOutputTree();
 
         current_tree = Chain->GetTreeNumber()+1;
         //ProgressDisplay(begin,end,treated,inter,nentries,mean_rate,displayed,current_tree,total_tree);
@@ -182,7 +183,7 @@ int main(int argc , char** argv){
         // User Analysis
         UserAnalysis->TreatEvent();
         // Fill the tree      
-        tree->Fill();
+        myDetector->FillOutputTree();
       
         current_tree = Chain->GetTreeNumber()+1;
         //ProgressDisplay(begin,end,treated,inter,nentries,mean_rate,displayed,current_tree,total_tree);
@@ -216,7 +217,7 @@ int main(int argc , char** argv){
         // User Analysis
         UserAnalysis->TreatEvent();
         // Fill the tree      
-        tree->Fill();
+        myDetector->FillOutputTree();
 
         current_tree = Chain->GetTreeNumber()+1;
         //ProgressDisplay(begin,end,treated,inter,nentries,mean_rate,displayed,current_tree,total_tree);
