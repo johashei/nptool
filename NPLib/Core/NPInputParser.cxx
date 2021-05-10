@@ -29,6 +29,16 @@ std::string NPL::StripSpaces(std::string line){
   if(line.length()>0)
     while(*line.rbegin()==' ')
       line = line.substr(0,line.length()-1);
+
+  // Remove preceding tabs
+  while(*line.begin()=='\t')
+    line = line.substr(1,line.length());
+
+  // Remove trailing tabs
+  if(line.length()>0)
+    while(*line.rbegin()=='\t')
+      line = line.substr(0,line.length()-1);
+
   return line;
 
 }
