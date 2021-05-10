@@ -82,7 +82,7 @@ void RootInput::ReadInputFile(NPL::InputParser& parser){
     vector<NPL::InputBlock*> friends = parser.GetAllBlocksWithToken("Friend");
     unsigned int sizeF = friends.size();
     for(unsigned int i = 0 ; i < sizeF ; i++){
-      pFriends.insert(pair< string,vector<string> > (friends[i]->GetMainValue(),friends[i]->GetLines()));
+      pFriendsPath.insert(pair< string,vector<string> > (friends[i]->GetMainValue(),friends[i]->GetLines()));
     }
 }
 
@@ -90,17 +90,17 @@ void RootInput::ReadInputFile(NPL::InputParser& parser){
 void  RootInput::ReadTreeFile(std::string path){
   ifstream tree(path.c_str());
   path=path.substr(0,path.rfind("/")+1);
-  path+="/";
   std::string buffer;
   bool first=true;
+  unsigned int count = 0 ;
   while(tree>>buffer){
     if(first){
       pTreePath.push_back(path+buffer);
+      count++;
       first=false;
     }
     else{
-      vector<string> friends={path+buffer};
-      pFriends.insert(pair<string,vector<string>>(pTreeName, friends));
+      pFriendsTreePath[count++].push_back(path+buffer);
     }
   }
 }
@@ -163,15 +163,28 @@ RootInput::RootInput(std::string configFileName){
     }
   }
   
-  // Add all the friends
-  for(auto it = pFriends.begin(); it!=pFriends.end() ; it++){
-    unsigned int size = it->second.size();
-    for(unsigned int i = 0 ; i < size ; i++){
-     cout << "  - Adding friend : " << it->second[i].c_str() << endl;
-     pRootChain->AddFriend(it->first.c_str(),it->second[i].c_str());
+  // Case of user made Friends
+  for(auto it = pFriendsPath.begin(); it!=pFriendsPath.end() ; it++){
+    TChain* chain = new TChain(it->first.c_str());
+    cout << "  - Adding friend : " << endl;
+    for(auto itp = it->second.begin() ; itp!=it->second.end() ; itp++){
+     cout << "    - " << (*itp).c_str() << endl;
+     chain->Add((*itp).c_str());
     }
+    pRootChain->AddFriend(chain);
   }
 
+  // Case of tree file
+  for(auto it = pFriendsTreePath.begin(); it!=pFriendsTreePath.end() ; it++){
+    TChain* chain = new TChain(pTreeName.c_str());
+    cout << "  - Adding friend : " << endl;
+    for(auto itp = it->second.begin() ; itp!=it->second.end() ; itp++){
+      cout << "    - " << (*itp).c_str() << endl;
+      chain->Add((*itp).c_str());
+    } 
+    pRootChain->AddFriend(chain);
+  }
+  
   if (!pRootFile) 
     pRootFile = new TFile(firstfile.c_str());
 
@@ -181,76 +194,6 @@ RootInput::RootInput(std::string configFileName){
   }
  else
     std::cout << "\033[1;32mROOTInput:  " << pRootChain->GetEntries() << " entries loaded in the input chain\033[0m" << std::endl ;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-void RootInput::AddFriendChain(std::string RunToAdd){
-  NumberOfFriend++;
-  std::ostringstream suffix_buffer;
-  suffix_buffer << "_" << NumberOfFriend ; 
-  std::string suffix = suffix_buffer.str();
-  bool CheckTreeName     = false;
-  bool CheckRootFileName = false;
-
-  // Read configuration file Buffer
-  std::string lineBuffer, dataBuffer;
-
-  // Open file
-  std::ifstream inputConfigFile;
-  inputConfigFile.open(RunToAdd.c_str());
-
-  TChain* localChain = new TChain();
-  
-  std::cout << "/////////////////////////////////" << std::endl;
-  std::cout << "Adding friend to current TChain" << std::endl;
-
-  if (!inputConfigFile) {
-    std::cout << "Run to Add file :" << RunToAdd << " not found " << std::endl; 
-    return;
-  }
-
-  else {
-    while (!inputConfigFile.eof()) {
-      getline(inputConfigFile, lineBuffer);
-
-      // search for token giving the TTree name
-      if (lineBuffer.compare(0, 9, "TTreeName") == 0) {
-        inputConfigFile >> dataBuffer;
-        // adding suffix to insure uniquity of the chain name
-        dataBuffer+suffix;
-        // initialize localChain
-        localChain->SetName(dataBuffer.c_str());
-        CheckTreeName = true ;
-      }
-
-      // search for token giving the list of Root files to treat
-      else if (lineBuffer.compare(0, 12, "RootFileName") == 0  &&  localChain) {
-        CheckRootFileName = true ;
-
-        while (!inputConfigFile.eof()) {
-          inputConfigFile >> dataBuffer;
-
-          // ignore comment Line 
-          if (dataBuffer.compare(0, 1, "%") == 0) {
-            inputConfigFile.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-          }
-
-          else if (!inputConfigFile.eof()) {
-            localChain->Add(dataBuffer.c_str());
-            std::cout << "Adding file " << dataBuffer << " to TChain" << std::endl;
-          }
-        }
-      }
-    }
-  }
-
-  if (!CheckRootFileName || !CheckTreeName) 
-    std::cout << "WARNING: Token not found for InputTree Declaration : Input Tree has not be Added to the current Chain" << std::endl;
-
-  else
-    pRootChain->AddFriend( localChain->GetName() );
-
-  std::cout << "/////////////////////////////////" << std::endl;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -332,9 +275,3 @@ RootInput::~RootInput(){
   pRootFile->Close();
 }
 
-////////////////////////////////////////////////////////////////////////////////
-TChain* MakeFriendTrees(std::string RunToRead1,std::string RunToRead2){
-  RootInput:: getInstance(RunToRead1)	;
-  RootInput:: getInstance()->AddFriendChain(RunToRead2);
-  return RootInput:: getInstance()->GetChain();
-}

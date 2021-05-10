@@ -73,9 +73,7 @@ public:
    TFile*   GetFile()   {return pRootFile;}
    void     SetChain(TChain* c)  {pRootChain = c;} 
 
-   // Add a Friend chain to the input chain
-   void     AddFriendChain(std::string RunToAdd);
-
+   // Read Input file
    void     ReadOldStyleInputFile(NPL::InputParser& parser);
    void     ReadInputFile(NPL::InputParser& parser);
    void     ReadTreeFile(std::string path);
@@ -85,12 +83,12 @@ private:
    TFile    *pRootFile;
    std::string pTreeName;// the main tree name
    std::vector<std::string> pTreePath;// the main tree path
-   std::multimap<std::string,std::vector<std::string>> pFriends;// list of Friends tree indexed by their tree name
+   // Used for user made tree friends
+   std::multimap<std::string,std::vector<std::string>> pFriendsPath;// list of Friends tree indexed by their tree name
+   // Used for .tree file input
+   std::map<unsigned int, std::vector<std::string>> pFriendsTreePath;// list of Friends tree path indexed by number
    int NumberOfFriend;
   
 };
-
-// A convenient function related to Root Input, coded Here so it can be called within ROOT CINT
-TChain* MakeFriendTrees(std::string,std::string);
 
 #endif // ROOTINPUT_HH

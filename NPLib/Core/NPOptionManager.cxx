@@ -222,9 +222,7 @@ void NPOptionManager::CreateRunToTreatFile(std::string file, std::string tree){
   if(!run.is_open())
     exit(1);
 
-  run << "TTreeName" << std::endl;
-  run << " " << tree << std::endl;
-  run << "RootFileName" << std::endl;
+  run << "Tree " << tree << std::endl;
   run << " " << file << std::endl << std::endl;
   run.close();
   fRunToReadFileName=".RunToTreat.txt";
