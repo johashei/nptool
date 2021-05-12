@@ -103,9 +103,12 @@ class NPOptionManager{
       bool   GetGenerateHistoOption()      {return fGenerateHistoOption;}
       bool   GetCheckHistoOption()         {return fCheckHistoOption;}
       bool   GetOnline()                   {return fOnline;}
-      bool   GetPROOF()                    {return fPROOFMode;}
       bool   GetG4BatchMode()              {return fG4BatchMode;}
-      bool   GetCircularTree()                 {return fCircularTree;}
+      bool   GetCircularTree()             {return fCircularTree;}
+      bool   IsAnalysis()                  {return fIsAnalysis;};
+      bool   IsSimulation()                {return fIsSimulation;}
+      bool   IsSplit()                     {return fIsSplit;}
+
       int    GetVerboseLevel()             {return fVerboseLevel;}
       int    GetNumberOfEntryToAnalyse()   {return fNumberOfEntryToAnalyse;} 
       int    GetFirstEntryToAnalyse()      {return fFirstEntryToAnalyse;} 
@@ -121,7 +124,8 @@ class NPOptionManager{
       void SetDetectorFile(const std::string& name)  {fDetectorFileName = name;CheckDetectorConfiguration();}
       void SetRunToReadFile(const std::string& name) {fRunToReadFileName = name;}
       void SetVerboseLevel(int VerboseLevel)         {fVerboseLevel = VerboseLevel;}
- 
+      void SetIsAnalysis(bool val=true){fIsAnalysis=val;};
+      void SetIsSimulation(bool val=true){fIsSimulation=val;}
 
    public: // user definition
       bool HasDefinition(std::string def) {return(fDefinition.find(def)!=fDefinition.end());}
@@ -143,17 +147,19 @@ class NPOptionManager{
       std::string fCalibrationFileName;
       std::string fOutputFileName;
       std::string fOutputTreeName;
+      bool   fIsSplit; // One tree per detector
       bool   fDisableAllBranchOption;
       bool   fInputPhysicalTreeOption;
       bool   fGenerateHistoOption;
       bool   fCheckHistoOption;
       bool   fOnline; // true if spectra server is started
-      bool   fPROOFMode; // if true, the system run in a pROOF environment
       bool   fLastSimFile;
       bool   fLastPhyFile;
       bool   fLastResFile;
       bool   fLastAnyFile;
       bool   fCircularTree;
+      bool   fIsAnalysis;
+      bool   fIsSimulation;
       int    fVerboseLevel; // 0 for not talk, 1 for talking
       int    fNumberOfEntryToAnalyse; // use to limit the number of analysed in NPA
       int    fFirstEntryToAnalyse; // use to set the first event analysed in NPA (total: fFirstEntryToAnalyse -> fFirstEntryToAnalyse + fNumberOfEntryToAnalyse)

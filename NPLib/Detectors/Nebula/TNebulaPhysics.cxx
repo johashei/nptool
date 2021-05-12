@@ -313,7 +313,7 @@ void TNebulaPhysics::InitializeRootInputPhysics() {
 
 ///////////////////////////////////////////////////////////////////////////
 void TNebulaPhysics::InitializeRootOutput() {
-  TTree* outputTree = RootOutput::getInstance()->GetTree();
+  TTree* outputTree = RootOutput::getInstance()->GetTree("Nebula");
   outputTree->Branch("Nebula", "TNebulaPhysics", &m_EventPhysics);
 }
 

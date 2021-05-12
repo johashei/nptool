@@ -313,7 +313,7 @@ void TSamuraiHodoscopePhysics::InitializeRootInputPhysics() {
 
 ///////////////////////////////////////////////////////////////////////////
 void TSamuraiHodoscopePhysics::InitializeRootOutput() {
-  TTree* outputTree = RootOutput::getInstance()->GetTree();
+  TTree* outputTree = RootOutput::getInstance()->GetTree("SamuraiHodoscope");
   outputTree->Branch("SamuraiHodoscope", "TSamuraiHodoscopePhysics", &m_EventPhysics);
 }
 

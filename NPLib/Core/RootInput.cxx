@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (C) 2009-2016   this file is part of the NPTool Project         *
+ * Copyright (C) 2009-2021   this file is part of the NPTool Project         *
  *                                                                           *
  * For the licensing terms see $NPTOOL/Licence/NPTool_Licence                *
  * For the list of contributors see $NPTOOL/Licence/Contributors             *
@@ -9,7 +9,7 @@
  * Original Author: N. de Sereville  contact address: deserevi@ipno.in2p3.fr *
  *                                                                           *
  * Creation Date  : 21/07/09                                                 *
- * Last update    :                                                          *
+ * Last update    : 10/05/21 Add support for Split tree input (A. Matta)     *
  *---------------------------------------------------------------------------*
  * Decription: This class is a singleton class which deals with the ROOT     *
  *             input file and tree both for NPSimulation and NPAnalysis.     *

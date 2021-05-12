@@ -306,7 +306,7 @@ void TMinosPhysics::InitializeRootInputPhysics() {
 
 ///////////////////////////////////////////////////////////////////////////
 void TMinosPhysics::InitializeRootOutput() {
-  TTree* outputTree = RootOutput::getInstance()->GetTree();
+  TTree* outputTree = RootOutput::getInstance()->GetTree("Minos");
   outputTree->Branch("Minos", "TMinosPhysics", &m_EventPhysics);
 }
 

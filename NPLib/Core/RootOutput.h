@@ -1,7 +1,7 @@
 #ifndef ROOTOUTPUT_HH
 #define ROOTOUTPUT_HH
 /*****************************************************************************
- * Copyright (C) 2009-2016    this file is part of the NPTool Project        *
+ * Copyright (C) 2009-2021   this file is part of the NPTool Project         *
  *                                                                           *
  * For the licensing terms see $NPTOOL/Licence/NPTool_Licence                *
  * For the list of contributors see $NPTOOL/Licence/Contributors             *
@@ -11,18 +11,20 @@
  * Original Author: N. de Sereville  contact address: deserevi@ipno.in2p3.fr *
  *                                                                           *
  * Creation Date  : 21/07/09                                                 *
- * Last update    : 03/02/11                                                 *
+ * Last update    : 10/05/21                                                 *
  *---------------------------------------------------------------------------*
  * Decription: This class is a singleton class which deals with the ROOT     *
  *             output file and tree both for NPSimulation and NPAnalysis.    *
  *---------------------------------------------------------------------------*
  * Comment:                                                                  *
  *   + 03/02/11: Add support for TAsciiFile objects (N. de Sereville)        *
+ *   + 10/05/21: Add support for split tree output (A. Matta)                *
  *                                                                           *
  *                                                                           *
  *****************************************************************************/
 
-
+// STL
+#include <map>
 
 // NPL headers
 #include "TAsciiFile.h"
@@ -41,7 +43,8 @@ public:
   // it does not yet exist:
   // (see the constructor for an explanation of the arguments)
   static RootOutput* getInstance(std::string fileNameBase = "Simulation",
-                                 std::string treeNameBase = "SimulatedTree");
+                                 std::string treeNameBase = "SimulatedTree",
+                                 bool split = false);
   
   // The analysis class instance can be deleted by calling the Destroy
   // method (NOTE: The class destructor is protected, and can thus not be
@@ -50,8 +53,8 @@ public:
   
 protected:
   // Constructor (protected)
-  RootOutput(std::string fileNameBase, std::string treeNameBase);
-  
+  RootOutput(std::string fileNameBase, std::string treeNameBase, bool split=false);
+ 
   // Destructor (protected)
   virtual ~RootOutput();
   
@@ -65,27 +68,32 @@ private:
   
 private:
   void InitAsciiFiles();
-  
+  void CreateTreeAndFile(std::string name);
 public:
-  TFile*      GetFile()                           {return pRootFile;}
-  TTree*      GetTree()                           {return pRootTree;}
-  TList*      GetList()                           {return pRootList;}
+  TFile*      GetFile(std::string name="global") ; 
+  TTree*      GetTree(std::string name="global") ;
+  TList*      GetList(std::string name="global") ;
   TAsciiFile* GetAsciiFileEventGenerator()        {return pEventGenerator;}
   TAsciiFile* GetAsciiFileDetectorConfiguration() {return pDetectorConfiguration;}
   TAsciiFile* GetAsciiFileCalibration()           {return pCalibrationFile;}
   TAsciiFile* GetAsciiFileRunToTreat()            {return pRunToTreatFile;}
   TAsciiFile* GetAsciiFileAnalysisConfig()        {return pAnalysisConfigFile;}
-  TFile*      InitFile(std::string fileNameBase); // use only for proof environment
+  void        Fill();
   
 private:
-  TFile      *pRootFile;
-  TTree      *pRootTree;
-  TList      *pRootList;
-  TAsciiFile *pEventGenerator;
-  TAsciiFile *pDetectorConfiguration;
-  TAsciiFile *pCalibrationFile;
-  TAsciiFile *pRunToTreatFile;
-  TAsciiFile *pAnalysisConfigFile;
+  std::string                   pBaseName;
+  std::string                   pTreeName;
+  std::string                   pMasterFile;
+  TDirectory*                   pCurrentDirectory;
+  bool                          pSplit;
+  std::map<std::string, TFile*> pRootFiles;
+  std::map<std::string, TTree*> pRootTrees;
+  std::map<std::string, TList*> pRootLists;
+  TAsciiFile* pEventGenerator;
+  TAsciiFile* pDetectorConfiguration;
+  TAsciiFile* pCalibrationFile;
+  TAsciiFile* pRunToTreatFile;
+  TAsciiFile* pAnalysisConfigFile;
   
 };
 

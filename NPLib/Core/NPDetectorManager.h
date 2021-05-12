@@ -23,6 +23,7 @@
 //   NPL
 #include "NPVDetector.h"
 #include "NPSpectraServer.h"
+#include "RootOutput.h"
 // ROOT
 #include "TH1.h"
 
@@ -66,6 +67,13 @@ namespace NPL{
       void CheckSpectraServer();
     private :
       NPL::SpectraServer* m_SpectraServer;
+
+
+    private:// root outpu
+      RootOutput* m_RootOutput;
+
+    public:
+      void       FillOutputTree();
 
     private:   
       // The std::map containning all detectors

@@ -447,7 +447,7 @@ void TSamuraiFDC0Physics::InitializeRootInputPhysics(){
 
 ///////////////////////////////////////////////////////////////////////////
 void TSamuraiFDC0Physics::InitializeRootOutput(){
-  TTree* outputTree = RootOutput::getInstance()->GetTree();
+  TTree* outputTree = RootOutput::getInstance()->GetTree("SamuraiFDC0");
   outputTree->Branch( "SamuraiFDC0" , "TSamuraiFDC0Physics" , &m_EventPhysics );
 }
 
