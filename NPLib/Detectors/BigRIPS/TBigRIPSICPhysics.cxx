@@ -119,7 +119,7 @@ std::cout << ">> adc : " << adc << std::endl;
 
     if(NLFired>0){ 
             AvSum = AvSum/NLFired;
-            SqSum = std::pow(SqSum,1/NLFired);
+            SqSum = std::pow(SqSum,1./NLFired);
             RawAvSum.push_back(AvSum);
             RawSqSum.push_back(SqSum);
             CalAvSum.push_back(ch2mev_0[id] + AvSum * ch2mev_1[id]);
