@@ -53,6 +53,7 @@ namespace NPL{
       std::string m_MainValue;
       std::vector<std::string> m_Token;
       std::vector<std::string> m_Value; 
+      std::vector<std::string> m_Lines; 
 
     public:
       void AddLine(std::string line);  
@@ -83,6 +84,7 @@ namespace NPL{
       std::vector<int> GetVectorInt(std::string Token);
       std::vector<std::string> GetVectorString(std::string Token);
       std::vector<NPL::InputBlock*> GetSubBlock(std::string Token);
+      std::vector<std::string> GetLines(){return m_Lines;};
 
     public:
       void Dump();

@@ -82,7 +82,8 @@ class TMinosPhysics : public TObject, public NPL::VDetector {
     double m_ShapingTime;//!
     double m_Baseline;//!
     unsigned int m_Sampling;//!
-    double m_ZOffset;//!
+    TVector3 m_Position;//!
+    double   m_ZRotation;//!
 
 
     NPL::MinosUtility m_utility;//! // an utility to fit the pad signal

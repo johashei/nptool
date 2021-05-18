@@ -19,18 +19,25 @@
 #include"NPLinearRansac3D.h"
 using namespace std;
 using namespace NPL;
-
 ////////////////////////////////////////////////////////////////////////////////
 void LinearCluster3D::LinearFit(){
 
   unsigned int sizeI = m_index.size();   
-  vector<double>va,vb,vd;
   double min_distance = 1e20;
   unsigned int min_i = 0 ; unsigned int min_j = 0; 
+
+  double meanDX=0;
+  double meanDY=0;
+  double meanDZ=0;
+  double totalW=0;
+  double meanX=0;
+  double meanY=0;
+  double meanZ=0;
+  double w;
+
   for(unsigned int i = 0 ; i < sizeI ; i++){
     TVector3 Pi((*m_X)[m_index[i]],(*m_Y)[m_index[i]],(*m_Z)[m_index[i]]);
     for(unsigned int j = i+1 ; j < sizeI ; j++){
-
       double dij=0;
       TVector3 Pj((*m_X)[m_index[j]],(*m_Y)[m_index[j]],(*m_Z)[m_index[j]]);
       // compute the average distance of all point to this line
@@ -38,16 +45,30 @@ void LinearCluster3D::LinearFit(){
         TVector3 Pp((*m_X)[m_index[p]],(*m_Y)[m_index[p]],(*m_Z)[m_index[p]]);
         dij+=MinimumDistancePointLine(Pi,Pj,Pp);
       }
-      if(dij/sizeI < min_distance){
-        min_distance = dij/sizeI;
-        min_i = i;
-        min_j = j;
-      }
-    }  
+      
+      w = 1./dij; 
+      totalW+=w;
 
+      meanX+=w*((*m_X)[m_index[i]]);
+      meanY+=w*((*m_Y)[m_index[i]]);
+      meanZ+=w*((*m_Z)[m_index[i]]);
+
+      meanDX+=w*((*m_X)[m_index[i]]-(*m_X)[m_index[j]]);
+      meanDY+=w*((*m_Y)[m_index[i]]-(*m_Y)[m_index[j]]);
+      meanDZ+=w*((*m_Z)[m_index[i]]-(*m_Z)[m_index[j]]);
+    }  
   }
-  m_P0 = TVector3((*m_X)[m_index[min_i]],(*m_Y)[m_index[min_i]],(*m_Z)[m_index[min_i]]);
-  m_Dir = (m_P0 - TVector3((*m_X)[m_index[min_j]],(*m_Y)[m_index[min_j]],(*m_Z)[m_index[min_j]])).Unit();
+
+  meanDX/=totalW;
+  meanDY/=totalW;
+  meanDZ/=totalW;
+  meanX/=totalW;
+  meanY/=totalW;
+  meanZ/=totalW;
+
+  m_P0  = TVector3(meanX,meanY,meanZ);
+  m_Dir = (TVector3(meanDX,meanDY,meanDZ)).Unit();
+
 };
 
 ////////////////////////////////////////////////////////////////////////////////

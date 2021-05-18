@@ -190,8 +190,13 @@ void TBigRIPSPlasticPhysics::PreTreat(){
        T.push_back((TR_cal+TL_cal)/2.);
        if(tmp.FQL.size()==1 && tmp.FQR.size()==1){
           TSlew.push_back((TRSlew_cal+TLSlew_cal)/2.);
-       }            
-    }            
+       }else{
+          TSlew.push_back(-99999);
+       }
+    }else{
+       T.push_back(-99999);
+       TSlew.push_back(-99999);
+    }
 
     //Simply fill QL and QR
     if(tmp.FQL.size()==1){

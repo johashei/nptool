@@ -60,7 +60,9 @@ class NPOptionManager{
   private:
     // Read the input argument
     void ReadTheInputArgument(int argc = 0, char** argv = NULL);
-      
+    // Look for and Read the project config file if existing
+    void ReadProjectConfigFile();
+
    private:
       // The static instance of the NPOptionManager class:
       static NPOptionManager* instance;
@@ -101,9 +103,12 @@ class NPOptionManager{
       bool   GetGenerateHistoOption()      {return fGenerateHistoOption;}
       bool   GetCheckHistoOption()         {return fCheckHistoOption;}
       bool   GetOnline()                   {return fOnline;}
-      bool   GetPROOF()                    {return fPROOFMode;}
       bool   GetG4BatchMode()              {return fG4BatchMode;}
-      bool   GetCircularTree()                 {return fCircularTree;}
+      bool   GetCircularTree()             {return fCircularTree;}
+      bool   IsAnalysis()                  {return fIsAnalysis;};
+      bool   IsSimulation()                {return fIsSimulation;}
+      bool   IsSplit()                     {return fIsSplit;}
+
       int    GetVerboseLevel()             {return fVerboseLevel;}
       int    GetNumberOfEntryToAnalyse()   {return fNumberOfEntryToAnalyse;} 
       int    GetFirstEntryToAnalyse()      {return fFirstEntryToAnalyse;} 
@@ -111,13 +116,17 @@ class NPOptionManager{
       int    GetRandomSeed()               {return fRandomSeed;}
       std::string GetSharedLibExtension()       {return fSharedLibExtension;}     
       std::string GetLastFile();                 
-      
+      std::string GetAnalysisOutputPath(){return m_AnalysisOutputPath;};
+      std::string GetSimulationOutputPath(){return m_SimulationOutputPath;};
+      std::string GetEnergyLossPath(){return m_EnergyLossPath;};
       // Setters
       void SetReactionFile(const std::string& name)  {fReactionFileName = name;CheckEventGenerator();}
       void SetDetectorFile(const std::string& name)  {fDetectorFileName = name;CheckDetectorConfiguration();}
       void SetRunToReadFile(const std::string& name) {fRunToReadFileName = name;}
       void SetVerboseLevel(int VerboseLevel)         {fVerboseLevel = VerboseLevel;}
- 
+      void SetIsAnalysis(bool val=true){fIsAnalysis=val;};
+      void SetIsSimulation(bool val=true){fIsSimulation=val;}
+
    public: // user definition
       bool HasDefinition(std::string def) {return(fDefinition.find(def)!=fDefinition.end());}
 
@@ -138,17 +147,19 @@ class NPOptionManager{
       std::string fCalibrationFileName;
       std::string fOutputFileName;
       std::string fOutputTreeName;
+      bool   fIsSplit; // One tree per detector
       bool   fDisableAllBranchOption;
       bool   fInputPhysicalTreeOption;
       bool   fGenerateHistoOption;
       bool   fCheckHistoOption;
       bool   fOnline; // true if spectra server is started
-      bool   fPROOFMode; // if true, the system run in a pROOF environment
       bool   fLastSimFile;
       bool   fLastPhyFile;
       bool   fLastResFile;
       bool   fLastAnyFile;
       bool   fCircularTree;
+      bool   fIsAnalysis;
+      bool   fIsSimulation;
       int    fVerboseLevel; // 0 for not talk, 1 for talking
       int    fNumberOfEntryToAnalyse; // use to limit the number of analysed in NPA
       int    fFirstEntryToAnalyse; // use to set the first event analysed in NPA (total: fFirstEntryToAnalyse -> fFirstEntryToAnalyse + fNumberOfEntryToAnalyse)
@@ -158,6 +169,10 @@ class NPOptionManager{
       std::string fG4MacroPath; // Path to a geant4 macro to execute at start of nps
       bool fG4BatchMode; // Execute geant4 in batch mode, running the given macro
       std::set<std::string> fDefinition; // a set of user defined definition 
+      std::string m_AnalysisOutputPath;// output path of analysed tree
+      std::string m_SimulationOutputPath;// output path of simulated tree
+      std::string m_EnergyLossPath;// input/output path of energy loss table
+
 };
 
 #endif

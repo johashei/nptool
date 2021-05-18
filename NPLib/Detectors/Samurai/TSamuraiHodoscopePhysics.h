@@ -153,7 +153,7 @@ class TSamuraiHodoscopePhysics : public TObject, public NPL::VDetector {
   public:
     // remove bad channels, calibrate the data and apply thresholds
     void PreTreat();
-
+    
     // clear the pre-treated object
     void ClearPreTreatedData()   {m_PreTreatedData->Clear();}
 

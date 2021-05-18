@@ -110,11 +110,12 @@ void TMinosPhysics::PreTreat() {
 
           double z_mm = (T*m_TimeBin+cal->GetValue(cal_o,0))*cal->GetValue(cal_v,0);    
 
-          z_mm += m_ZOffset;    
+          TVector3 Pos=TVector3(x_mm+m_Position.X(),y_mm+m_Position.Y(),z_mm+m_Position.Z());
+          Pos.RotateZ(m_ZRotation); 
           // Calibrate the Pad:
-          X_Pad.push_back(x_mm);
-          Y_Pad.push_back(y_mm);
-          Z_Pad.push_back(z_mm);    
+          X_Pad.push_back(Pos.X());
+          Y_Pad.push_back(Pos.Y());
+          Z_Pad.push_back(Pos.Z());    
           Ring_Pad.push_back(ring);
           Q_Pad.push_back(Q);    
           T_Pad.push_back(T);  
@@ -224,7 +225,7 @@ void TMinosPhysics::ReadConfiguration(NPL::InputParser parser) {
   if(NPOptionManager::getInstance()->GetVerboseLevel())
     cout << "//// " << blocks.size() << " detector(s) found " << endl; 
 
-  vector<string> token= {"XML","TimeBin","ShapingTime","Baseline","Sampling","ZOffset"};
+  vector<string> token= {"XML","TimeBin","ShapingTime","Baseline","Sampling","Position","ZRotation"};
 
   for(unsigned int i = 0 ; i < blocks.size() ; i++){
         
@@ -235,7 +236,8 @@ void TMinosPhysics::ReadConfiguration(NPL::InputParser parser) {
       m_Sampling= blocks[i]->GetInt("Sampling");   
       m_Baseline= blocks[i]->GetInt("BaseLine");   
       m_utility.SetParameters(m_TimeBin,m_ShapingTime,m_Baseline,m_Sampling);
-      m_ZOffset = blocks[i]->GetDouble("ZOffset","mm");   
+      m_Position = blocks[i]->GetTVector3("Position","mm");   
+      m_ZRotation= blocks[i]->GetDouble("ZRotation","deg");   
       string xmlpath = blocks[i]->GetString("XML");
       NPL::XmlParser xml;
       xml.LoadFile(xmlpath);
@@ -305,7 +307,7 @@ void TMinosPhysics::InitializeRootInputPhysics() {
 
 ///////////////////////////////////////////////////////////////////////////
 void TMinosPhysics::InitializeRootOutput() {
-  TTree* outputTree = RootOutput::getInstance()->GetTree();
+  TTree* outputTree = RootOutput::getInstance()->GetTree("Minos");
   outputTree->Branch("Minos", "TMinosPhysics", &m_EventPhysics);
 }
 

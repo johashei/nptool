@@ -88,6 +88,7 @@ NPL::DetectorManager::DetectorManager(){
   m_ShieldFrontRadius = 0 ; 
   m_ShieldBackRadius = 0 ;
   m_ShieldMaterial = "" ;
+  m_RootOutput=RootOutput::getInstance();
 }
 
 
@@ -266,7 +267,6 @@ void NPL::DetectorManager::BuildPhysicalEvent(){
   for (it =begin; it != end; ++it) {
     (it->second->*m_ClearEventPhysicsPtr)();
     (it->second->*m_BuildPhysicalPtr)();
-    if(m_FillSpectra){
       (it->second->*m_FillSpectra)();
       if(m_CheckSpectra)
         (it->second->*m_CheckSpectra)();
@@ -498,6 +498,12 @@ void NPL::DetectorManager::CheckSpectraServer(){
     std::cout <<"WARNING: requesting to check spectra server, which is not started" << std::endl; 
 
 }
+
+////////////////////////////////////////////////////////////////////////////////
+void  NPL::DetectorManager::FillOutputTree(){
+  m_RootOutput->Fill();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 bool NPL::DetectorManager::IsCryogenic() const {return  m_CryoTarget;};
 double NPL::DetectorManager::GetTargetThickness() const {return m_TargetThickness;};

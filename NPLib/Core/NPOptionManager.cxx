@@ -22,6 +22,7 @@
 
 #include "NPOptionManager.h"
 #include "NPLibVersion.h"
+#include "NPInputParser.h"
 #include <fstream>
 #include <sstream>
 #include <cstdlib>
@@ -44,15 +45,56 @@ NPOptionManager* NPOptionManager::getInstance(std::string arg){
   return instance ;
 
 }
+
+////////////////////////////////////////////////////////////////////////////////
+void NPOptionManager::ReadProjectConfigFile(){
+ // check if the file exist
+ std::ifstream ProjectFile;
+ ProjectFile.open("./project.config");
+
+ if(ProjectFile.is_open()){
+    std::cout << "///// Loading Project Configuration: " << std::endl;
+    ProjectFile.close();
+    NPL::InputParser parser("./project.config");
+    std::vector<NPL::InputBlock*> blocks = parser.GetAllBlocksWithToken("Project");
+    unsigned int size = blocks.size();
+    for(unsigned int i = 0 ; i < size ; i++){
+
+      if(blocks[i]->HasToken("AnalysisOutput"))
+        m_AnalysisOutputPath = blocks[i]->GetString("AnalysisOutput"); 
+
+      if(blocks[i]->HasToken("SimulationOutput"))
+        m_SimulationOutputPath = blocks[i]->GetString("SimulationOutput"); 
+      
+      if(blocks[i]->HasToken("EnergyLoss"))
+        m_EnergyLossPath = blocks[i]->GetString("EnergyLoss"); 
+    }
+ } 
+
+
+ // else use the standard config
+ else{
+
+  std::cout << "///// No Project Configuration: " << std::endl;
+  std::string Path = getenv("NPTOOL");
+  m_AnalysisOutputPath=Path+"/Outputs/Analysis/";
+  m_SimulationOutputPath=Path+"/Outputs/Simulation/";
+  m_EnergyLossPath=Path+"/Inputs/EnergyLoss/";
+  std::cout << "AnalysisOutput= " << m_AnalysisOutputPath << std::endl;
+  std::cout << "SimulationOutput= " << m_SimulationOutputPath << std::endl;
+  std::cout << "EnergyLoss= " << m_EnergyLossPath << std::endl;
+ }
+}
+
+////////////////////////////////////////////////////////////////////////////////
 void NPOptionManager::ReadTheInputArgument(int argc, char** argv){
   if(argc==1)
     DisplayHelp();
 
-
   // Default Setting
   fDefaultReactionFileName    = "defaultReaction.reaction";
   fDefaultDetectorFileName    = "defaultDetector.detector";
-  fDefaultOutputFileName      = "myResult.root";
+  fDefaultOutputFileName      = "SimulatedTree.root";
   fDefaultOutputTreeName      = "NPTool_Tree";
   fDefaultRunToReadFileName   = "defaultRunToTreat.txt";
   fDefaultCalibrationFileName = "defaultCalibration.txt";
@@ -69,6 +111,8 @@ void NPOptionManager::ReadTheInputArgument(int argc, char** argv){
   fLastPhyFile = false;
   fLastResFile = false;
   fLastAnyFile = false;
+  fIsAnalysis  = false;
+  fIsSimulation= false;
   fVerboseLevel               = 1;
   fNumberOfEntryToAnalyse     = -1;
 	fFirstEntryToAnalyse        = 0;
@@ -77,7 +121,6 @@ void NPOptionManager::ReadTheInputArgument(int argc, char** argv){
   fDisableAllBranchOption = false;
   fInputPhysicalTreeOption = false;
   fGenerateHistoOption = false ;
-  fPROOFMode = false;
   fCircularTree = false;
   fOnline = false;
   fG4BatchMode = false;
@@ -121,6 +164,8 @@ void NPOptionManager::ReadTheInputArgument(int argc, char** argv){
     else if (argument == "-T" && argc >= i + 2)                   { std::string file = argv[++i] ; std::string tree = argv[++i]; CreateRunToTreatFile(file,tree);}
 
     else if (argument == "--cal" && argc >= i + 1)                fCalibrationFileName = argv[++i] ;
+    
+    else if (argument == "-S" && argc >= i + 1)                   fIsSplit=true; 
 
     else if (argument == "-C" && argc >= i + 1)                   fCalibrationFileName = argv[++i] ;
 
@@ -147,8 +192,6 @@ void NPOptionManager::ReadTheInputArgument(int argc, char** argv){
     else if (argument == "-check-histo")                          fCheckHistoOption = true ;
 
     else if (argument == "--generate-histo")                      fGenerateHistoOption = true ;
-
-    else if (argument == "--proof")                               fPROOFMode = true ;
 
     else if (argument == "-L")                                    fNumberOfEntryToAnalyse = atoi(argv[++i]) ;
 
@@ -185,9 +228,7 @@ void NPOptionManager::CreateRunToTreatFile(std::string file, std::string tree){
   if(!run.is_open())
     exit(1);
 
-  run << "TTreeName" << std::endl;
-  run << " " << tree << std::endl;
-  run << "RootFileName" << std::endl;
+  run << "Tree " << tree << std::endl;
   run << " " << file << std::endl << std::endl;
   run.close();
   fRunToReadFileName=".RunToTreat.txt";
@@ -211,6 +252,8 @@ void NPOptionManager::DisplayVersion(){
 }
 ////////////////////////////////////////////////////////////////////////////////
 NPOptionManager::NPOptionManager(int argc, char** argv){
+  // Start by reading the project configuration
+  ReadProjectConfigFile();
   ReadTheInputArgument(argc,argv);
 }
 ////////////////////////////////////////////////////////////////////////////////
@@ -407,12 +450,12 @@ void NPOptionManager::DisplayHelp(){
   std::cout << "\t--output　-O <arg>\t\tSet arg as the Output File Name (output tree)" << std::endl ;
   std::cout << "\t--tree-name <arg>\t\tSet arg as the Output Tree Name " << std::endl ;
   std::cout << "\t--definition <definition> \tAdd <definition> to the list of definition" << std::endl  ;
+  std::cout << "\t-S \t\t\t\tOne tree output per detector" << std::endl  ;
   std::cout << "\t--verbose -V <arg>\t\tSet the verbose level, 0 for nothing, 1 for normal printout."<<std::endl;
 	std::cout  << "\t\t\t\t\tError and warning are not affected" << std::endl ;
   std::cout << std::endl << "NPAnalysis only:"<<std::endl;
   std::cout << "\t--run -R <arg>\t\t\tSet arg as the run to read file list" << std::endl  ;
   std::cout << "\t-T <name> <file>\t\tTree <name> from root file <file>" << std::endl  ;
-
   std::cout << "\t--cal -C <arg>\t\t\tSet arg as the calibration file list" << std::endl ;
   std::cout << "\t--disable-branch\t\tDisable of branch of Input tree except the one of the detector (faster)" << std::endl  ;
   std::cout << "\t--generate-histo -GH\t\tInstantiate the T*Spectra class of each detector" << std::endl ;
