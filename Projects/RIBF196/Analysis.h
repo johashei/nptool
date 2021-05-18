@@ -31,6 +31,7 @@
 #include "TBigRIPSPPACPhysics.h"
 #include "TBigRIPSPlasticPhysics.h"
 #include "TBigRIPSICPhysics.h"
+#include <TMatrixD.h>
 #include <TRandom3.h>
 #include <TVector3.h>
 #include <TVector2.h>
@@ -75,7 +76,12 @@ class Analysis: public NPL::VAnalysis{
     void TreatEvent();
     void End();
     void ReadXmls();
+    //TMatrixD* RecReadTransferMatrix(char*);
+    TMatrixD RecReadTransferMatrix(string);
     std::vector<double> RecFPposition(std::vector<TVector2>,std::vector<int>);
+    double RecDeltaBrho(std::vector<double>,std::vector<double>, TMatrixD matrix);
+    double RecAoqOneFold(double, double, double);
+    double RecZ(double,double,double);
 
     void InitOutputBranch();
     void InitInputBranch();
@@ -83,16 +89,52 @@ class Analysis: public NPL::VAnalysis{
     static NPL::VAnalysis* Construct();
 
   private:
+    //calculated variables
     double aoq;
     double zet;
     double beta;
-    double delta;
+    double delta35;
+    double delta57;
+    double Brho35;
+    double Brho57;
+    double tof37;
+    double aoq35;
+    double aoq57;
+    double aoq37;
+    double beta35;
+    double beta57;
+    double beta37;
+    double dE_ICF7;
+    double z_BR;
+    double tf3;
+    double tf7;
     double fX;
     double fY;
     double fA;
     double fB;
 
-    // intermediate variable
+    // List of Dipole Brho, manually set for the moment 
+    // But method to read from root file should be implemented
+    double BrhoD1 = 7.9677;
+    double BrhoD2 = 7.0945;
+    double BrhoD3 = 7.0658;
+    double BrhoD4 = 7.0658;
+    double BrhoD5 = 6.8037;
+    double BrhoD6 = 6.8037;
+    double BrhoD7 = 5.9429;
+    double BrhoD8 = 5.9381;
+
+    //double tof_offset37 = 0.;
+    //double tof_offset37 = 300.06;
+    double tof_offset37 = 299.968;
+
+    const double clight = 299.7792458; // in mm/ns
+    const double mnucleon = 931.49432;  // MeV
+
+
+    // intermediate variables
+    TMatrixD matF35;
+    TMatrixD matF57;
 
 
     // Branches and detectors
@@ -100,16 +142,28 @@ class Analysis: public NPL::VAnalysis{
     TBigRIPSPlasticPhysics* PL;
     TBigRIPSICPhysics* IC;
     map<int,BigRIPSPPACHitList> FP_PPACHitList  ;
+    int EventNumber;
+    int RunNumber;
 
     //maps containings infos from input xml config files
     // for PPACs
     map<int,int>  PPAC_IDtoFP;//! Focal plane where the PPAC is located
     map<int,double> PPAC_XZoffset;
     map<int,double> PPAC_YZoffset;
+    // for Plastics
+    map<int,int>  PL_IDtoFP;
+    map<int, string>  PL_IDtoName; 
+    map<string,int>  PL_NametoID; 
+    map<string,double>  PL_NametoZ; 
+    // for IC
+    map<int,int>  IC_IDtoFP;
+    map<int, string>  IC_IDtoName; 
+    map<string,int>  IC_NametoID; 
     // for FocalPlanes
-    map<int,int>  FPL_IDtoFP;//! Focal plane where the PPAC is located
-    map<int,double> FPL_Z;
-    map<int,double> FPL_Zoffset;
+    map<int,int>  FP_IDtoFP;
+    map<int,int>  FPtoID;
+    map<int,double> FP_Z;
+    map<int,double> FP_Zoffset;
 
 };
 
