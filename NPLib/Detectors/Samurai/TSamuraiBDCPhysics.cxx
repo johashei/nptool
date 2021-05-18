@@ -61,7 +61,15 @@ void TSamuraiBDCPhysics::BuildSimplePhysicalEvent(){
 ///////////////////////////////////////////////////////////////////////////
 void TSamuraiBDCPhysics::BuildPhysicalEvent(){
   PreTreat();
-//  RemoveNoise();
+/*
+  static unsigned int det,layer,wire,size;
+  for(auto it = Layer.begin(); it!=Layer.end(); it++){
+    det = it->first;
+    size = it->second.size();
+
+  }
+
+  //  RemoveNoise();
 
   // Map[plane angle, vector of spatial information]
   static map<double, vector<double> > X ; 
@@ -109,11 +117,11 @@ void TSamuraiBDCPhysics::BuildPhysicalEvent(){
 #endif
 
    // for Debug, write a file of 
-/*   { std::ofstream f("distance.txt", std::ios::app);
-   f<< D[it->first] << endl;
-   f.close();
-   }
-  */ 
+ //  { std::ofstream f("distance.txt", std::ios::app);
+ //  f<< D[it->first] << endl;
+ //  f.close();
+ //  }
+   
     // very large a means track perpendicular to the chamber, what happen when there is pile up
     if(abs(a)>5000)
       PileUp++;
@@ -206,7 +214,7 @@ void TSamuraiBDCPhysics::BuildPhysicalEvent(){
     PhiY=(PosY100-PosY)/100.;
     Dir=TVector3(PosX100-PosX,PosY100-PosY,100).Unit();
   }
-
+*/
   return;
 }
 ///////////////////////////////////////////////////////////////////////////
@@ -214,10 +222,6 @@ void TSamuraiBDCPhysics::PreTreat(){
   ClearPreTreatedData();
   static CalibrationManager* Cal = CalibrationManager::getInstance();
   static string channel;
-  // one map per detector
-  map<unsigned int, vector<double> > X ; 
-  map<unsigned int, vector<double> > Z ; 
-  map<unsigned int, vector<double> > R ; 
 
   unsigned int size = m_EventData->Mult();
   for(unsigned int i = 0 ; i < size ; i++){
@@ -247,75 +251,39 @@ void TSamuraiBDCPhysics::PreTreat(){
       }
       // a valid wire must have an edge
       if(etime && time && etime-time>ToTThreshold_L && etime-time<ToTThreshold_H){
-        Detector.push_back(det);
-        Layer.push_back(layer);       
-        Wire.push_back(wire);
-        Time.push_back(time);
-        ToT.push_back(etime-time);
-        channel="SamuraiBDC/L" + NPL::itoa(layer);
-        DriftLength.push_back(2.5-Cal->ApplySigmoid(channel,etime));
+        Layer[det].push_back(layer);       
+        Wire[det].push_back(wire);
+        Time[det].push_back(time);
+        ToT[det].push_back(etime-time);
+        channel="SamuraiBDC"+NPL::itoa(det)+"/L" + NPL::itoa(layer);
+        DriftLength[det].push_back(2.5-Cal->ApplySigmoid(channel,etime));
       }
     }
 
-  }
-  return;
-}
-///////////////////////////////////////////////////////////////////////////
-void TSamuraiBDCPhysics::RemoveNoise(){
-  // Remove the noise by looking if a matching wire exist in the adjacent layer
-  // this done by looking at the closest plane with the same orientation
-  unsigned int size = Detector.size(); 
-  for(unsigned int i = 0 ; i < size ; i++){
-    bool match=false;
-    int det = Detector[i];
-    int layer = Layer[i];
-    int wire = Wire[i];
-    // look for matching adjacent wire   
-
-    for(unsigned int j = 0 ; j < size ; j++){
-      int adet = Detector[j];
-      int alayer = Layer[j];
-      int awire = Wire[j];
-      bool blayer = false;
-      if(layer%2==0){
-        if(layer+1==alayer)
-          blayer=true;
-      }
-
-      else{
-        if(layer-1==alayer)
-          blayer=true;
-      }
-
-      if(det==adet && blayer && abs(wire-awire)<=1){
-        match=true;
-        break;
-      }
-    }
-
-    if(match)
-      Matched.push_back(true);
-    else
-      Matched.push_back(false);
   }
   return;
 }
 ///////////////////////////////////////////////////////////////////////////
 void TSamuraiBDCPhysics::Clear(){
-  MultMean=0;
-  PileUp=0;
-  Mult=0;
-  PosX=PosY=-10000;
-  devX=devY=-10000;
-  DriftLength.clear();
-  Detector.clear();
-  Layer.clear();
-  Wire.clear();
-  Time.clear();
-  ToT.clear();
-  ParticleDirection.clear();
-  MiddlePosition.clear();
-  Matched.clear();
+    DriftLength.clear();
+    Detector.clear();
+    Layer.clear();
+    Wire.clear();
+    Time.clear();
+    ToT.clear();
+
+    // Computed variable
+    ParticleDirection.clear();
+    MiddlePosition.clear();
+
+    PosX.clear();
+    PosY.clear();
+    ThetaX.clear();
+    PhiY.clear();
+    devX.clear();
+    devY.clear();
+    Dir.clear();
+    PileUp.clear();
 }
 ///////////////////////////////////////////////////////////////////////////
 
@@ -334,7 +302,7 @@ void TSamuraiBDCPhysics::ReadConfiguration(NPL::InputParser parser){
     string xmlpath = blocks[i]->GetString("XML");
     NPL::XmlParser xml;
     xml.LoadFile(xmlpath);
-    AddDC("SAMURAIBDC",xml);
+    AddDC(std::atoi(blocks[i]->GetMainValue().c_str()),xml);
   }
 
 #if __cplusplus > 199711L && NPMULTITHREADING 
@@ -348,11 +316,9 @@ void TSamuraiBDCPhysics::ReadConfiguration(NPL::InputParser parser){
 }
 
 ///////////////////////////////////////////////////////////////////////////
-void TSamuraiBDCPhysics::AddDC(string name, NPL::XmlParser& xml){
+void TSamuraiBDCPhysics::AddDC(int det, NPL::XmlParser& xml){
+  std::string name = "SAMURAIBC"+NPL::itoa(det);
   std::vector<NPL::XML::block*> b = xml.GetAllBlocksWithName(name);  
-  // BDC case
-  if(name=="SAMURAIBDC"){
-    unsigned int det=0;
     unsigned int sizeB = b.size();
     for(unsigned int i = 0 ; i < sizeB ; i++){
       unsigned int layer = b[i]->AsInt("layer"); 
@@ -378,7 +344,6 @@ void TSamuraiBDCPhysics::AddDC(string name, NPL::XmlParser& xml){
       Wire_Z[idx]=Z;
       Wire_Angle[idx]=T;
     }
-  }
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -421,9 +386,12 @@ void TSamuraiBDCPhysics::WriteSpectra(){
 void TSamuraiBDCPhysics::AddParameterToCalibrationManager(){
   CalibrationManager* Cal = CalibrationManager::getInstance();
 
+  // for each det
+  for( int d = 1 ; d < 3 ; ++d){
   // each layer
   for( int l = 0 ; l < 8 ; ++l){
-    Cal->AddParameter("SamuraiBDC", "L"+ NPL::itoa(l),"BDC_L"+ NPL::itoa(l));
+    Cal->AddParameter("SamuraiBDC"+NPL::itoa(d), "L"+ NPL::itoa(l),"BDC"+NPL::itoa(d)+"_L"+ NPL::itoa(l));
+  }
   }
 
 }
@@ -435,8 +403,8 @@ void TSamuraiBDCPhysics::InitializeRootInputRaw(){
   // The following line is necessary only for system were the tree is splitted
   // (older root version). The found argument silenced the Branches not found
   // warning for non splitted tree.
-  if(inputChain->FindBranch("fDC_*"))
-    inputChain->SetBranchStatus( "fDC_*",true);
+  if(inputChain->FindBranch("fBDC_*"))
+    inputChain->SetBranchStatus( "fBDC_*",true);
   inputChain->SetBranchAddress( "SamuraiBDC" , &m_EventData );
 
 }

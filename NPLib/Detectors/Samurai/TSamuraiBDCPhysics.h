@@ -60,34 +60,33 @@ class TSamuraiBDCPhysics : public TObject, public NPL::VDetector{
     void Clear(const Option_t*) {};
 
   public:
-    //   Provide Physical Multiplicity
-    std::vector<double> DriftLength;
-    std::vector<int> Detector;
-    std::vector<int> Layer;
-    std::vector<int> Wire;
-    std::vector<double> Time;
-    std::vector<double> ToT;
-    std::vector<bool>   Matched;
-    // Computed variable
-    std::vector<TVector3> ParticleDirection;
-    std::vector<TVector3> MiddlePosition;
+    //  map of [bdc number, vector of info]
+    std::map<unsigned int,std::vector<double>> DriftLength;
+    std::map<unsigned int,std::vector<int>>    Layer;
+    std::map<unsigned int,std::vector<int>>    Wire;
+    std::map<unsigned int,std::vector<double>> Time;
+    std::map<unsigned int,std::vector<double>> ToT;
 
-    double PosX;
-    double PosY;
-    double ThetaX;
-    double PhiY;
-    double devX,devY;
-    TVector3 Dir;
-    int Mult;
-    int MultMean;
-    int PileUp;
+    // Computed variable
+    std::map<unsigned int, std::vector<TVector3> > ParticleDirection;
+    std::map<unsigned int, std::vector<TVector3> > MiddlePosition;
+
+    std::vector<double> PosX;
+    std::vector<double> PosY;
+    std::vector<double> ThetaX;
+    std::vector<double> PhiY;
+    std::vector<double> devX;
+    std::vector<double> devY;
+    std::vector<unsigned int> Detector;
+    std::vector<TVector3> Dir;
+    std::vector<int> PileUp;
 
   public:
     // Projected position at given Z plan
     TVector3 ProjectedPosition(double Z);
 
   private: // Charateristic of the DC 
-    void AddDC(std::string name, NPL::XmlParser&);//! take the XML file and fill in Wire_X and Layer_Angle
+    void AddDC(int det, NPL::XmlParser&);//! take the XML file and fill in Wire_X and Layer_Angle
     std::map<SamuraiDCIndex,double> Wire_X;//! X position of the wires
     std::map<SamuraiDCIndex,double> Wire_Z;//! Z position of the wires
     std::map<SamuraiDCIndex,double> Wire_Angle;//! Wire Angle (0 for X, 90 for Y, U and V are typically at +/-30)
@@ -99,7 +98,6 @@ class TSamuraiBDCPhysics : public TObject, public NPL::VDetector{
     double DriftLowThreshold;//! Minimum Drift length to keep the hit 
     double DriftUpThreshold;//! Maximum Drift length to keep the hit
     double PowerThreshold;//! Maximum P2 minimisation value to keep the track   
-    void RemoveNoise();
     // Construct the 2D track and ref position at Z=0 and Z=100 based on X,Z and Radius provided
 
     // Object use to perform the DC reconstruction
@@ -168,13 +166,13 @@ class TSamuraiBDCPhysics : public TObject, public NPL::VDetector{
     TSamuraiBDCData* GetRawData()        const {return m_EventData;}
     TSamuraiBDCData* GetPreTreatedData() const {return m_PreTreatedData;}
   
-    double GetPosX(){return PosX;}
-    double GetPosY(){return PosY;}
-    double GetThetaX(){return ThetaX;}
-    double GetPhiY(){return PhiY;}
-    double GetDevX(){return devX;}
-    double GetDevY(){return devY;}
-    int GetPileUp(){return PileUp;}
+    double GetPosX(unsigned int det)  {return PosX[det];}
+    double GetPosY(unsigned int det)  {return PosY[det];}
+    double GetThetaX(unsigned int det){return ThetaX[det];}
+    double GetPhiY(unsigned int det)  {return PhiY[det];}
+    double GetDevX(unsigned int det)  {return devX[det];}
+    double GetDevY(unsigned int det)  {return devY[det];}
+    int    GetPileUp(unsigned int det){return PileUp[det];}
 
   private:   //   Root Input and Output tree classes
     TSamuraiBDCData*         m_EventData;//!

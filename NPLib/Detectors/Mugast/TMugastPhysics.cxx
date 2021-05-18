@@ -402,6 +402,7 @@ bool TMugastPhysics::IsValidChannel(const int& Type,
 
 ///////////////////////////////////////////////////////////////////////////
 void TMugastPhysics::ReadAnalysisConfig() {
+
   NPL::InputParser parser("./configs/ConfigMugast.dat");
   vector<NPL::InputBlock*> blocks = parser.GetAllBlocksWithToken("ConfigMugast");
 

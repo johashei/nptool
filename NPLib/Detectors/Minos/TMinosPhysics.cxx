@@ -110,7 +110,7 @@ void TMinosPhysics::PreTreat() {
 
           double z_mm = (T*m_TimeBin+cal->GetValue(cal_o,0))*cal->GetValue(cal_v,0);    
 
-          TVector3 Pos=TVector3(x_mm+m_Position.X(),y_mm+m_Position.Y(),z_mm+m_Position.Z())
+          TVector3 Pos=TVector3(x_mm+m_Position.X(),y_mm+m_Position.Y(),z_mm+m_Position.Z());
           Pos.RotateZ(m_ZRotation); 
           // Calibrate the Pad:
           X_Pad.push_back(Pos.X());

@@ -68,7 +68,7 @@ RootOutput::RootOutput(std::string fileNameBase, std::string treeNameBase,bool s
   if(NPOptionManager::getInstance()->IsAnalysis()){
     analysis = true;
   }
-  else if(NPOptionManager::getInstance()->IsAnalysis()){
+  else if(NPOptionManager::getInstance()->IsSimulation()){
     simulation= true;
   }
 
@@ -112,7 +112,7 @@ RootOutput::RootOutput(std::string fileNameBase, std::string treeNameBase,bool s
     path+="/.last_sim_file";
     ofstream last_sim_file(path.c_str());
     last_sim_file << "Tree "<< pTreeName <<endl
-      << " " << pBaseName<<endl;
+      << " " << pBaseName <<endl;
     last_sim_file.close();
   }
 

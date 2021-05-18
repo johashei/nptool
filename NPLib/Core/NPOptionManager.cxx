@@ -74,10 +74,15 @@ void NPOptionManager::ReadProjectConfigFile(){
 
  // else use the standard config
  else{
+
+  std::cout << "///// No Project Configuration: " << std::endl;
   std::string Path = getenv("NPTOOL");
   m_AnalysisOutputPath=Path+"/Outputs/Analysis/";
   m_SimulationOutputPath=Path+"/Outputs/Simulation/";
   m_EnergyLossPath=Path+"/Inputs/EnergyLoss/";
+  std::cout << "AnalysisOutput= " << m_AnalysisOutputPath << std::endl;
+  std::cout << "SimulationOutput= " << m_SimulationOutputPath << std::endl;
+  std::cout << "EnergyLoss= " << m_EnergyLossPath << std::endl;
  }
 }
 
