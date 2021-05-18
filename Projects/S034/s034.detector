@@ -7,7 +7,11 @@ Target
  X= 0 mm
  Y= 0 mm 
  Z= 0 mm
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+SAMURAIBDC 1
+  XML= db/SAMURAIBDC1.xml
+SAMURAIBDC 2
+  XML= db/SAMURAIBDC2.xml
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 SAMURAIFDC2
   XML= db/SAMURAIFDC2.xml
@@ -20,6 +24,7 @@ SAMURAIHOD
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 Minos
  Position= 0 0 0 mm
+ ZRotation= 35 deg
  TargetLength= 152.76 mm
  TargetMaterial= LH2 
  CellMaterial= Mylar 
@@ -28,5 +33,4 @@ Minos
  ShapingTime= 333.9 ns
  BaseLine= 250
  Sampling= 10
- ZOffset= 0 mm
  XML= db/MINOS.xml
