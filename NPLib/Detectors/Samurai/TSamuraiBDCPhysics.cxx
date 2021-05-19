@@ -61,14 +61,18 @@ void TSamuraiBDCPhysics::BuildSimplePhysicalEvent(){
 ///////////////////////////////////////////////////////////////////////////
 void TSamuraiBDCPhysics::BuildPhysicalEvent(){
   PreTreat();
-/*
+
   static unsigned int det,layer,wire,size;
-  for(auto it = Layer.begin(); it!=Layer.end(); it++){
+  for(auto it = m_DCHit.begin(); it!=m_DCHit.end(); it++){
     det = it->first;
     size = it->second.size();
+    for (auto itt = it->second.begin(); itt != it->second.end(); itt++){
+    double angle = itt->first;
+//    cout << det << " " << angle << " " << itt->second.size() << endl;
 
+    }
   }
-
+/*
   //  RemoveNoise();
 
   // Map[plane angle, vector of spatial information]
@@ -251,12 +255,10 @@ void TSamuraiBDCPhysics::PreTreat(){
       }
       // a valid wire must have an edge
       if(etime && time && etime-time>ToTThreshold_L && etime-time<ToTThreshold_H){
-        Layer[det].push_back(layer);       
-        Wire[det].push_back(wire);
-        Time[det].push_back(time);
-        ToT[det].push_back(etime-time);
         channel="SamuraiBDC"+NPL::itoa(det)+"/L" + NPL::itoa(layer);
-        DriftLength[det].push_back(2.5-Cal->ApplySigmoid(channel,etime));
+        SamuraiDCIndex idx(det,layer,wire);
+        double angle = Wire_Angle[idx]; 
+        m_DCHit[det][angle].push_back(DCHit(layer,wire,time,etime-time,2.5-Cal->ApplySigmoid(channel,etime)));
       }
     }
 
@@ -265,13 +267,14 @@ void TSamuraiBDCPhysics::PreTreat(){
 }
 ///////////////////////////////////////////////////////////////////////////
 void TSamuraiBDCPhysics::Clear(){
-    DriftLength.clear();
+  m_DCHit.clear();
+/*    DriftLength.clear();
     Detector.clear();
     Layer.clear();
     Wire.clear();
     Time.clear();
     ToT.clear();
-
+*/
     // Computed variable
     ParticleDirection.clear();
     MiddlePosition.clear();
