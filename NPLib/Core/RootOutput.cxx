@@ -86,9 +86,9 @@ RootOutput::RootOutput(std::string fileNameBase, std::string treeNameBase,bool s
     pBaseName += ".root";
 
   // removing "//" from path
-  while(size_t pos = pBaseName.find("//")!=std::string::npos){
-    pBaseName.erase(pos);
-  }
+//  while(size_t pos = pBaseName.find("//")!=std::string::npos){
+//    pBaseName.erase(pos);
+//  }
 
   if(pSplit){
     // Create a folder for all the trees
