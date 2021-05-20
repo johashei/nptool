@@ -50,8 +50,8 @@
 
 class DCHit{
   public:
-
-    DCHit(unsigned int layer , unsigned int wire, double time, double tot, double drift){
+    DCHit(unsigned int detector, unsigned int layer , unsigned int wire, double time, double tot, double drift){
+      Detector=detector;
       Layer=layer;
       Wire=wire;
       Time=time;
@@ -61,7 +61,8 @@ class DCHit{
     DCHit(){};
     ~DCHit(){};
 
-  private:
+  public:
+    unsigned int Detector;
     unsigned int Layer;
     unsigned int Wire;
     double Time;
@@ -80,13 +81,11 @@ class TSamuraiBDCPhysics : public TObject, public NPL::VDetector{
     void Clear(const Option_t*) {};
 
   public:
-    //  double map of [bdc number][layer angle]=vector of hit
-    std::map<unsigned int,std::map<double,std::vector<DCHit>>> m_DCHit;
+    //  map of [bdc number]=vector of hit
+    std::map<unsigned int, std::vector<DCHit>> m_DCHit;//!
+
 
     // Computed variable
-    std::map<unsigned int, std::vector<TVector3> > ParticleDirection;
-    std::map<unsigned int, std::vector<TVector3> > MiddlePosition;
-
     std::vector<double> PosX;
     std::vector<double> PosY;
     std::vector<double> ThetaX;

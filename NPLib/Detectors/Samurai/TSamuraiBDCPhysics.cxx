@@ -47,7 +47,7 @@ ClassImp(TSamuraiBDCPhysics)
     m_EventPhysics      = this ;
     //m_Spectra           = NULL;
     ToTThreshold_L = 0;
-    ToTThreshold_H = 180;
+    ToTThreshold_H = 1000;
     DriftLowThreshold=0.1 ;
     DriftUpThreshold=2.4;
     PowerThreshold=5;
@@ -63,162 +63,164 @@ void TSamuraiBDCPhysics::BuildPhysicalEvent(){
   PreTreat();
 
   static unsigned int det,layer,wire,size;
-  for(auto it = m_DCHit.begin(); it!=m_DCHit.end(); it++){
-    det = it->first;
-    size = it->second.size();
-    for (auto itt = it->second.begin(); itt != it->second.end(); itt++){
-    double angle = itt->first;
-//    cout << det << " " << angle << " " << itt->second.size() << endl;
-
-    }
-  }
-/*
-  //  RemoveNoise();
-
+  static double dl;
   // Map[plane angle, vector of spatial information]
   static map<double, vector<double> > X ; 
   static map<double, vector<double> > Z ; 
   static map<double, vector<double> > R ; 
-  static int det,layer,wire;
-  X.clear();Z.clear();R.clear();
-  unsigned int size = Detector.size();
-  for(unsigned int i = 0 ; i < size ; i++){
-    if(DriftLength[i] > DriftLowThreshold && DriftLength[i] < DriftUpThreshold){
-      det = Detector[i];
-      layer = Layer[i];
-      wire = Wire[i]; 
-      SamuraiDCIndex idx(det,layer,wire);
-      X[Wire_Angle[idx]].push_back(Wire_X[idx]); 
-      Z[Wire_Angle[idx]].push_back(Wire_Z[idx]); 
-      R[Wire_Angle[idx]].push_back(DriftLength[i]); 
-    }
-  }
-  
-  // Reconstruct the vector for each of the plane of each of the detector
   static double X0,X100,a,b; // store the BuildTrack2D results
   static map<double, TVector3 > VX0 ;  
   static map<double, TVector3 > VX100 ;  
   static map<double, double > D ;// the minimum distance  
   static unsigned int uid; uid=0;
-  VX0.clear();VX100.clear(),D.clear();
-
-  for(auto it = X.begin();it!=X.end();++it){
-#if __cplusplus > 199711L && NPMULTITHREADING 
-    m_reconstruction.AddPlan(uid++,X[it->first],Z[it->first],R[it->first]); 
-#else
-    D[it->first]=m_reconstruction.BuildTrack2D(X[it->first],Z[it->first],R[it->first],X0,X100,a,b); 
-#endif 
-    }
-#if __cplusplus > 199711L && NPMULTITHREADING 
-  // do all plan at once in parallele, return when all plan are done
-  m_reconstruction.BuildTrack2D();
-  uid=0;
-#endif
-  
-  for(auto it = X.begin();it!=X.end();++it){
-#if __cplusplus > 199711L && NPMULTITHREADING 
-  D[it->first]=m_reconstruction.GetResults(uid++,X0,X100,a,b); 
-#endif
-
-   // for Debug, write a file of 
- //  { std::ofstream f("distance.txt", std::ios::app);
- //  f<< D[it->first] << endl;
- //  f.close();
- //  }
-   
-    // very large a means track perpendicular to the chamber, what happen when there is pile up
-    if(abs(a)>5000)
-      PileUp++;
-
-    Mult+=X[it->first].size();
-    // Position at z=0
-    TVector3 P(X0,0,0);
-    P.RotateZ(it->first);
-    VX0[it->first]=P;
-    // Position at z=100
-    TVector3 P100= TVector3(X100,0,0);
-    P100.RotateZ(it->first);
-    VX100[it->first]=P100;
-
-  }
-  
-  // Reconstruct the central position (z=0) for each detector
   static vector<TVector3> C ;  
   static vector<double  > W ; // weight based on D  
-  C.clear(),W.clear();
-  TVector3 P;
-  for(auto it1 = VX0.begin();it1!=VX0.end();++it1){
-    for(auto it2 = it1;it2!=VX0.end();++it2){
-      if(it1!=it2){// different plane
-        //cout << "BDC" << endl;
-        m_reconstruction.ResolvePlane(it1->second,it1->first,it2->second,it2->first,P);
-        // cout << "done " << D[it1->first] << " " << D[it2->first] << endl;
-        if(P.X()!=-10000 && D[it1->first]<PowerThreshold&& D[it2->first]<PowerThreshold){
-          C.push_back(P);
-          // Mean pos are weighted based on the the sum of distance from track
-          // to hit obtained during the minimisation
-          W.push_back(1./sqrt(D[it1->first]*D[it2->first]));
+  unsigned int count = 0 ;
+  for(auto it = m_DCHit.begin(); it!=m_DCHit.end(); it++){
+    // Each entry in the map is a detector 
+    det = it->first;
+    Detector.push_back(det);
+    PosX.push_back(0);
+    PosY.push_back(0);
+    ThetaX.push_back(0);
+    PhiY.push_back(0);
+    devX.push_back(0);
+    devY.push_back(0);
+    Dir.push_back(TVector3());
+    PileUp.push_back(0);
+
+
+    X.clear();Z.clear();R.clear();
+    // Build the necessary X,Z,R vector
+    for(auto itt = it->second.begin() ; itt!= it->second.end() ; itt++){
+      dl = (*itt).DriftLength; 
+      if(dl > DriftLowThreshold && dl < DriftUpThreshold){
+        SamuraiDCIndex idx(det,(*itt).Layer,(*itt).Wire);
+        X[Wire_Angle[idx]].push_back(Wire_X[idx]); 
+        Z[Wire_Angle[idx]].push_back(Wire_Z[idx]); 
+        R[Wire_Angle[idx]].push_back(dl);
+      }
+    }
+    // Reconstruct the vector for each of the plane of each of the detector
+    VX0.clear();VX100.clear(),D.clear();
+
+
+    uid=0;
+    for(auto it = X.begin();it!=X.end();++it){
+#if __cplusplus > 199711L && NPMULTITHREADING 
+      m_reconstruction.AddPlan(uid++,X[it->first],Z[it->first],R[it->first]); 
+#else
+      D[it->first]=m_reconstruction.BuildTrack2D(X[it->first],Z[it->first],R[it->first],X0,X100,a,b); 
+#endif 
+    }
+
+#if __cplusplus > 199711L && NPMULTITHREADING 
+    // do all plan at once in parallele, return when all plan are done
+    m_reconstruction.BuildTrack2D();
+    uid=0;
+#endif 
+
+    // Loop over the results
+    for(auto it = X.begin();it!=X.end();++it){
+#if __cplusplus > 199711L && NPMULTITHREADING
+      D[it->first]=m_reconstruction.GetResults(uid++,X0,X100,a,b); 
+#endif
+      // for Debug, write a file of 
+      //  { std::ofstream f("distance.txt", std::ios::app);
+      //  f<< D[it->first] << endl;
+      //  f.close();
+      //  }
+
+      // very large "a" means track perpendicular to the chamber, what happen when there is pile up
+      if(abs(a)>5000)
+        PileUp[count]++;
+
+      // Position at z=0
+      TVector3 P(X0,0,0);
+      P.RotateZ(it->first);
+      VX0[it->first]=P;
+      // Position at z=100
+      TVector3 P100= TVector3(X100,0,0);
+      P100.RotateZ(it->first);
+      VX100[it->first]=P100;
+
+      // Reconstruct the central position (z=0) for each detector
+      C.clear(),W.clear();
+      for(auto it1 = VX0.begin();it1!=VX0.end();++it1){
+        for(auto it2 = it1;it2!=VX0.end();++it2){
+          if(it1!=it2){// different plane
+            //cout << "BDC" << endl;
+            m_reconstruction.ResolvePlane(it1->second,it1->first,it2->second,it2->first,P);
+            // cout << "done " << D[it1->first] << " " << D[it2->first] << endl;
+            if(P.X()!=-10000 && D[it1->first]<PowerThreshold&& D[it2->first]<PowerThreshold){
+              C.push_back(P);
+              // Mean pos are weighted based on the the sum of distance from track
+              // to hit obtained during the minimisation
+              W.push_back(1./sqrt(D[it1->first]*D[it2->first]));
+            }
           }
+        }
+      }
+
+      // Reconstruct the position at z=100 for each detector
+      static vector<TVector3> C100 ;  
+      C100.clear();
+      for(auto it1 = VX100.begin();it1!=VX100.end();++it1){
+        for(auto it2 = it1;it2!=VX100.end();++it2){
+          if(it1!=it2 ){// different plane, same detector
+            m_reconstruction.ResolvePlane(it1->second,it1->first,it2->second,it2->first,P);
+
+            if(P.X()!=-10000&& D[it1->first]<PowerThreshold && D[it2->first]<PowerThreshold)
+              C100.push_back(P);
+          }
+        }
+      }
+      // Build the Reference position by averaging all possible pair 
+      size = C.size();
+      static double PosX100,PosY100,norm;
+      if(size){
+        norm=0;
+        for(unsigned int i = 0 ; i < size ; i++){
+          PosX[count]+= C[i].X()*W[i]; 
+          PosY[count]+= C[i].Y()*W[i]; 
+          PosX100+= C100[i].X()*W[i]; 
+          PosY100+= C100[i].Y()*W[i]; 
+          norm+=W[i];
+        } 
+        //MultMean=size;
+        // Mean position at Z=0
+        PosX[count]/=norm; 
+        PosY[count]/=norm; 
+        // Mean position at Z=100
+        PosX100/=norm; 
+        PosY100/=norm; 
+
+        for(unsigned int i = 0 ; i < size ; i++){
+          devX[count]+=W[i]*(C[i].X()-PosX[count])*(C[i].X()-PosX[count]);
+          devY[count]+=W[i]*(C[i].Y()-PosY[count])*(C[i].Y()-PosY[count]);
+        }
+        devX[count]=sqrt(devX[count]/((size-1)*norm));
+        devY[count]=sqrt(devY[count]/((size-1)*norm));
+        // Compute ThetaX, angle between the Direction vector projection in XZ with
+        // the Z axis
+        //ThetaX=atan((PosX100-PosX)/100.);
+        ThetaX[count] = (PosX100-PosX[count])/100.;
+        // Compute PhiY, angle between the Direction vector projection in YZ with
+        // the Z axis
+        //PhiY=atan((PosY100-PosY)/100.);
+        PhiY[count]=(PosY100-PosY[count])/100.;
+        Dir[count]=TVector3(PosX100-PosX[count],PosY100-PosY[count],100).Unit();
       }
     }
-  }
-  // Reconstruct the position at z=100 for each detector
-  static vector<TVector3> C100 ;  
-  C100.clear();
-  for(auto it1 = VX100.begin();it1!=VX100.end();++it1){
-    for(auto it2 = it1;it2!=VX100.end();++it2){
-      if(it1!=it2 ){// different plane, same detector
-        m_reconstruction.ResolvePlane(it1->second,it1->first,it2->second,it2->first,P);
-
-        if(P.X()!=-10000&& D[it1->first]<PowerThreshold && D[it2->first]<PowerThreshold)
-          C100.push_back(P);
-      }
+    if(PosX[count]==0){
+      PosX[count]=-10000;
+      PosY[count]=-10000;
+      ThetaX[count]=-10000;
+      PhiY[count]=-10000;
     }
-  }
-  
-  // Build the Reference position by averaging all possible pair 
-  size = C.size();
-  static double PosX100,PosY100,norm;
-  if(size){
-    PosX=0;
-    PosY=0;
-    PosX100=0;
-    PosY100=0;
-    norm=0;
-    for(unsigned int i = 0 ; i < size ; i++){
-      PosX+= C[i].X()*W[i]; 
-      PosY+= C[i].Y()*W[i]; 
-      PosX100+= C100[i].X()*W[i]; 
-      PosY100+= C100[i].Y()*W[i]; 
-      norm+=W[i];
-    } 
-    MultMean=size;
-    // Mean position at Z=0
-    PosX=PosX/norm; 
-    PosY=PosY/norm; 
-    // Mean position at Z=100
-    PosX100=PosX100/norm; 
-    PosY100=PosY100/norm; 
+    count++;
 
-    devX=0;
-    devY=0;
-    for(unsigned int i = 0 ; i < size ; i++){
-      devX+=W[i]*(C[i].X()-PosX)*(C[i].X()-PosX);
-      devY+=W[i]*(C[i].Y()-PosY)*(C[i].Y()-PosY);
-    }
-    devX=sqrt(devX/((size-1)*norm));
-    devY=sqrt(devY/((size-1)*norm));
-    // Compute ThetaX, angle between the Direction vector projection in XZ with
-    // the Z axis
-    //ThetaX=atan((PosX100-PosX)/100.);
-    ThetaX = (PosX100-PosX)/100.;
-    // Compute PhiY, angle between the Direction vector projection in YZ with
-    // the Z axis
-    //PhiY=atan((PosY100-PosY)/100.);
-    PhiY=(PosY100-PosY)/100.;
-    Dir=TVector3(PosX100-PosX,PosY100-PosY,100).Unit();
-  }
-*/
+  }// detector loop
   return;
 }
 ///////////////////////////////////////////////////////////////////////////
@@ -257,8 +259,7 @@ void TSamuraiBDCPhysics::PreTreat(){
       if(etime && time && etime-time>ToTThreshold_L && etime-time<ToTThreshold_H){
         channel="SamuraiBDC"+NPL::itoa(det)+"/L" + NPL::itoa(layer);
         SamuraiDCIndex idx(det,layer,wire);
-        double angle = Wire_Angle[idx]; 
-        m_DCHit[det][angle].push_back(DCHit(layer,wire,time,etime-time,2.5-Cal->ApplySigmoid(channel,etime)));
+        m_DCHit[det].push_back(DCHit(det,layer,wire,time,etime-time,2.5-Cal->ApplySigmoid(channel,etime)));
       }
     }
 
@@ -268,25 +269,15 @@ void TSamuraiBDCPhysics::PreTreat(){
 ///////////////////////////////////////////////////////////////////////////
 void TSamuraiBDCPhysics::Clear(){
   m_DCHit.clear();
-/*    DriftLength.clear();
-    Detector.clear();
-    Layer.clear();
-    Wire.clear();
-    Time.clear();
-    ToT.clear();
-*/
-    // Computed variable
-    ParticleDirection.clear();
-    MiddlePosition.clear();
-
-    PosX.clear();
-    PosY.clear();
-    ThetaX.clear();
-    PhiY.clear();
-    devX.clear();
-    devY.clear();
-    Dir.clear();
-    PileUp.clear();
+  // Computed variable
+  PosX.clear();
+  PosY.clear();
+  ThetaX.clear();
+  PhiY.clear();
+  devX.clear();
+  devY.clear();
+  Dir.clear();
+  PileUp.clear();
 }
 ///////////////////////////////////////////////////////////////////////////
 
@@ -320,33 +311,33 @@ void TSamuraiBDCPhysics::ReadConfiguration(NPL::InputParser parser){
 
 ///////////////////////////////////////////////////////////////////////////
 void TSamuraiBDCPhysics::AddDC(int det, NPL::XmlParser& xml){
-  std::string name = "SAMURAIBC"+NPL::itoa(det);
+  std::string name = "SAMURAIBDC"+NPL::itoa(det);
   std::vector<NPL::XML::block*> b = xml.GetAllBlocksWithName(name);  
-    unsigned int sizeB = b.size();
-    for(unsigned int i = 0 ; i < sizeB ; i++){
-      unsigned int layer = b[i]->AsInt("layer"); 
-      unsigned int wire  = b[i]->AsInt("wireid"); 
-      double X = b[i]->AsDouble("wirepos");  
-      double Z = b[i]->AsDouble("wirez");  
-      string sDir = b[i]->AsString("anodedir");
-      double T=0;
-      if(sDir=="X")
-        T= 0*deg;
-      else if(sDir=="Y")
-        T= -90*deg;
-      else if(sDir=="U")
-        T=-30*deg;
-      else if(sDir=="V")
-        T=+30*deg;
-      else{
-        cout << "ERROR: Unknown layer orientation for Samurai BDC"<< endl;
-        exit(1);
-      }
-      SamuraiDCIndex idx(det,layer,wire);
-      Wire_X[idx]=X;
-      Wire_Z[idx]=Z;
-      Wire_Angle[idx]=T;
+  unsigned int sizeB = b.size();
+  for(unsigned int i = 0 ; i < sizeB ; i++){
+    unsigned int layer = b[i]->AsInt("layer"); 
+    unsigned int wire  = b[i]->AsInt("wireid"); 
+    double X = b[i]->AsDouble("wirepos");  
+    double Z = b[i]->AsDouble("wirez");  
+    string sDir = b[i]->AsString("anodedir");
+    double T=0;
+    if(sDir=="X")
+      T= 0*deg;
+    else if(sDir=="Y")
+      T= -90*deg;
+    else if(sDir=="U")
+      T=-30*deg;
+    else if(sDir=="V")
+      T=+30*deg;
+    else{
+      cout << "ERROR: Unknown layer orientation for Samurai BDC"<< endl;
+      exit(1);
     }
+    SamuraiDCIndex idx(det,layer,wire);
+    Wire_X[idx]=X;
+    Wire_Z[idx]=Z;
+    Wire_Angle[idx]=T;
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -391,10 +382,10 @@ void TSamuraiBDCPhysics::AddParameterToCalibrationManager(){
 
   // for each det
   for( int d = 1 ; d < 3 ; ++d){
-  // each layer
-  for( int l = 0 ; l < 8 ; ++l){
-    Cal->AddParameter("SamuraiBDC"+NPL::itoa(d), "L"+ NPL::itoa(l),"BDC"+NPL::itoa(d)+"_L"+ NPL::itoa(l));
-  }
+    // each layer
+    for( int l = 0 ; l < 8 ; ++l){
+      Cal->AddParameter("SamuraiBDC"+NPL::itoa(d), "L"+ NPL::itoa(l),"BDC"+NPL::itoa(d)+"_L"+ NPL::itoa(l));
+    }
   }
 
 }
