@@ -136,7 +136,6 @@ void TMinosPhysics::PreTreat() {
 
   }
 }
-
 ///////////////////////////////////////////////////////////////////////////
 void TMinosPhysics::ReadAnalysisConfig() {
   bool ReadingStatus = false;

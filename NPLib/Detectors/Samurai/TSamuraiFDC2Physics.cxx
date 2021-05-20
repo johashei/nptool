@@ -46,9 +46,9 @@ ClassImp(TSamuraiFDC2Physics)
     //m_Spectra           = NULL;
     ToTThreshold_L = 180;
     ToTThreshold_H = 1000;
-    DriftLowThreshold=0.4 ;
+    DriftLowThreshold=0.4;
     DriftUpThreshold=9.3;
-    PowerThreshold=5;
+    PowerThreshold=14;
   }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -103,7 +103,7 @@ void TSamuraiFDC2Physics::BuildPhysicalEvent(){
   m_reconstruction.BuildTrack2D();
   uid=0;
 #endif
-
+  
   for(auto it = X.begin();it!=X.end();++it){
 #if __cplusplus > 199711L && NPMULTITHREADING
  
@@ -170,6 +170,7 @@ void TSamuraiFDC2Physics::BuildPhysicalEvent(){
   size = C.size();
   static double PosX100,PosY100,norm;
   if(size){
+    
     PosX=0;
     PosY=0;
     PosX100=0;
@@ -191,7 +192,7 @@ void TSamuraiFDC2Physics::BuildPhysicalEvent(){
     // Mean position at Z=100
     PosX100=PosX100/norm; 
     PosY100=PosY100/norm; 
-
+    
     devX=0;
     devY=0;
     for(unsigned int i = 0 ; i < size ; i++){

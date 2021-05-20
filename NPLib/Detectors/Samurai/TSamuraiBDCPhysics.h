@@ -48,24 +48,40 @@
 // Forward declaration
 //class TSamuraiBDCSpectra;
 
+class DCHit{
+  public:
 
+    DCHit(unsigned int layer , unsigned int wire, double time, double tot, double drift){
+      Layer=layer;
+      Wire=wire;
+      Time=time;
+      ToT=tot; 
+      DriftLength=drift;
+    }
+    DCHit(){};
+    ~DCHit(){};
+
+  private:
+    unsigned int Layer;
+    unsigned int Wire;
+    double Time;
+    double ToT; 
+    double DriftLength;
+};
 
 class TSamuraiBDCPhysics : public TObject, public NPL::VDetector{
   public:
     TSamuraiBDCPhysics();
     ~TSamuraiBDCPhysics() {};
 
+    friend class DCHit;
   public: 
     void Clear();   
     void Clear(const Option_t*) {};
 
   public:
-    //  map of [bdc number, vector of info]
-    std::map<unsigned int,std::vector<double>> DriftLength;
-    std::map<unsigned int,std::vector<int>>    Layer;
-    std::map<unsigned int,std::vector<int>>    Wire;
-    std::map<unsigned int,std::vector<double>> Time;
-    std::map<unsigned int,std::vector<double>> ToT;
+    //  double map of [bdc number][layer angle]=vector of hit
+    std::map<unsigned int,std::map<double,std::vector<DCHit>>> m_DCHit;
 
     // Computed variable
     std::map<unsigned int, std::vector<TVector3> > ParticleDirection;
@@ -90,7 +106,7 @@ class TSamuraiBDCPhysics : public TObject, public NPL::VDetector{
     std::map<SamuraiDCIndex,double> Wire_X;//! X position of the wires
     std::map<SamuraiDCIndex,double> Wire_Z;//! Z position of the wires
     std::map<SamuraiDCIndex,double> Wire_Angle;//! Wire Angle (0 for X, 90 for Y, U and V are typically at +/-30)
-  
+
   private: // Analysis
     double ToTThreshold_H;//! a ToT Low threshold to remove noise
     double ToTThreshold_L;//! a ToT High threshold to remove noise
@@ -101,11 +117,11 @@ class TSamuraiBDCPhysics : public TObject, public NPL::VDetector{
     // Construct the 2D track and ref position at Z=0 and Z=100 based on X,Z and Radius provided
 
     // Object use to perform the DC reconstruction
-    #if __cplusplus > 199711L && NPMULTITHREADING 
+#if __cplusplus > 199711L && NPMULTITHREADING 
     NPL::DCReconstructionMT m_reconstruction;//!
-    #else
+#else
     NPL::DCReconstruction m_reconstruction;//!
-    #endif
+#endif
 
   public: //   Innherited from VDetector Class
 
@@ -165,7 +181,7 @@ class TSamuraiBDCPhysics : public TObject, public NPL::VDetector{
     // Retrieve raw and pre-treated data
     TSamuraiBDCData* GetRawData()        const {return m_EventData;}
     TSamuraiBDCData* GetPreTreatedData() const {return m_PreTreatedData;}
-  
+
     double GetPosX(unsigned int det)  {return PosX[det];}
     double GetPosY(unsigned int det)  {return PosY[det];}
     double GetThetaX(unsigned int det){return ThetaX[det];}
@@ -181,7 +197,7 @@ class TSamuraiBDCPhysics : public TObject, public NPL::VDetector{
 
 
   private: // Spectra Class
-   // TSamuraiBDCSpectra* m_Spectra; // !
+    // TSamuraiBDCSpectra* m_Spectra; // !
 
   public: // Spectra Getter
     std::map< std::string , TH1*> GetSpectra(); 
