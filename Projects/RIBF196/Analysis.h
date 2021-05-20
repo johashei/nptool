@@ -31,6 +31,8 @@
 #include "TBigRIPSPPACPhysics.h"
 #include "TBigRIPSPlasticPhysics.h"
 #include "TBigRIPSICPhysics.h"
+#include "TBigRIPSFocal.h"
+#include "TBigRIPSReco.h"
 #include <TMatrixD.h>
 #include <TRandom3.h>
 #include <TVector3.h>
@@ -77,11 +79,12 @@ class Analysis: public NPL::VAnalysis{
     void End();
     void ReadXmls();
     //TMatrixD* RecReadTransferMatrix(char*);
-    TMatrixD RecReadTransferMatrix(string);
+    //TMatrixD RecReadTransferMatrix(string);
+    std::vector<std::vector<double>> RecReadTransferMatrix2(string);
     std::vector<double> RecFPposition(std::vector<TVector2>,std::vector<int>);
-    double RecDeltaBrho(std::vector<double>,std::vector<double>, TMatrixD matrix);
-    double RecAoqOneFold(double, double, double);
-    double RecZ(double,double,double);
+    //double RecDeltaBrho(std::vector<double>,std::vector<double>, TMatrixD matrix);
+    //double RecAoqOneFold(double, double, double);
+    double RecZ(double,double,double, bool);
 
     void InitOutputBranch();
     void InitInputBranch();
@@ -90,28 +93,16 @@ class Analysis: public NPL::VAnalysis{
 
   private:
     //calculated variables
-    double aoq;
-    double zet;
-    double beta;
-    double delta35;
-    double delta57;
-    double Brho35;
-    double Brho57;
     double tof37;
-    double aoq35;
-    double aoq57;
-    double aoq37;
-    double beta35;
-    double beta57;
-    double beta37;
+    double tof811;
     double dE_ICF7;
+    double dE_ICF11;
     double z_BR;
+    double z_ZD;
     double tf3;
     double tf7;
-    double fX;
-    double fY;
-    double fA;
-    double fB;
+    double tf8;
+    double tf11;
 
     // List of Dipole Brho, manually set for the moment 
     // But method to read from root file should be implemented
@@ -124,17 +115,24 @@ class Analysis: public NPL::VAnalysis{
     double BrhoD7 = 5.9429;
     double BrhoD8 = 5.9381;
 
-    //double tof_offset37 = 0.;
-    //double tof_offset37 = 300.06;
-    double tof_offset37 = 299.968;
+    double length35;
+    double length57;
+    double length37;
+    double length89;
+    double length911;
+    double length811;
+
+    double tof_offset37 = 300.06;
+    double tof_offset811 = -134.503;
 
     const double clight = 299.7792458; // in mm/ns
     const double mnucleon = 931.49432;  // MeV
 
-
-    // intermediate variables
-    TMatrixD matF35;
-    TMatrixD matF57;
+    //5 columns/ 6 rows transfer matrices
+    vector<vector<double>> matrixF35;
+    vector<vector<double>> matrixF57;
+    vector<vector<double>> matrixF89;
+    vector<vector<double>> matrixF911;
 
 
     // Branches and detectors
@@ -144,6 +142,15 @@ class Analysis: public NPL::VAnalysis{
     map<int,BigRIPSPPACHitList> FP_PPACHitList  ;
     int EventNumber;
     int RunNumber;
+    int Trigger;
+    unsigned long long int TimeStamp;
+    //Focal* FP;
+    //TBigRIPSFocal* FP;
+    TBigRIPSReco* Rec35;
+    TBigRIPSReco* Rec57;
+    TBigRIPSReco* Rec89;
+    TBigRIPSReco* Rec911;
+    std::vector<std::vector<double>> RecFP;
 
     //maps containings infos from input xml config files
     // for PPACs
@@ -159,11 +166,14 @@ class Analysis: public NPL::VAnalysis{
     map<int,int>  IC_IDtoFP;
     map<int, string>  IC_IDtoName; 
     map<string,int>  IC_NametoID; 
+    map<string,vector<double>>  IC_Zcoef;
+    map<string,double>  IC_Ionpair;
     // for FocalPlanes
     map<int,int>  FP_IDtoFP;
     map<int,int>  FPtoID;
     map<int,double> FP_Z;
     map<int,double> FP_Zoffset;
+    int NmaxFP;
 
 };
 
