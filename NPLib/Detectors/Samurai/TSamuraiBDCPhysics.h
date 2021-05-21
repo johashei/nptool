@@ -98,7 +98,7 @@ class TSamuraiBDCPhysics : public TObject, public NPL::VDetector{
 
   public:
     // Projected position at given Z plan
-    TVector3 ProjectedPosition(double Z);
+    TVector3 ProjectedPosition(int Detector, double Z);
 
   private: // Charateristic of the DC 
     void AddDC(int det, NPL::XmlParser&);//! take the XML file and fill in Wire_X and Layer_Angle

@@ -364,7 +364,7 @@ void TSamuraiFDC0Physics::AddDC(string name, NPL::XmlParser& xml){
       if(sDir=="X")
         T= 0*deg;
       else if(sDir=="Y")
-        T= -90*deg;
+        T= 90*deg;
       else if(sDir=="U")
         T=-30*deg;
       else if(sDir=="V")

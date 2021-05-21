@@ -22,15 +22,15 @@ SAMURAIFDC0
 SAMURAIHOD
   XML= db/SAMURAIHOD_s034_all40mV_s037_20170702.xml
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-Minos
- Position= 0 0 0 mm
- ZRotation= 35 deg
- TargetLength= 152.76 mm
- TargetMaterial= LH2 
- CellMaterial= Mylar 
- TPCOnly= 0 
- TimeBin= 30 ns
- ShapingTime= 333.9 ns
- BaseLine= 250
- Sampling= 10
- XML= db/MINOS.xml
+%Minos
+% Position= 0 0 0 mm
+% ZRotation= 35 deg
+% TargetLength= 152.76 mm
+% TargetMaterial= LH2 
+% CellMaterial= Mylar 
+% TPCOnly= 0 
+% TimeBin= 30 ns
+% ShapingTime= 333.9 ns
+% BaseLine= 250
+% Sampling= 10
+% XML= db/MINOS.xml
