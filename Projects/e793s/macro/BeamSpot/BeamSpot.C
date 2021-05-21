@@ -30,6 +30,8 @@ void BeamSpot(){
   vector <double> Xd, Yd, Zd;      //Vector of particle direction. Calculated as Xp-Xb, Yp-Yb...
   ifstream MugastDataFile;
 
+  gErrorIgnoreLevel = kWarning; // Suppress ".pdf created" lines
+
   /*** ITERATIVE GRID CONTROLS ***/
   /***** pos varied as offset ****/
   /**/ double xmin = +0.000;   /**/
@@ -40,15 +42,25 @@ void BeamSpot(){
   /**/ double ymax = +0.100;   /**/
   /**/ unsigned int ydiv = 10; /**/
   /**/                         /**/
-  /**/ double zmin = -0.000;   /**/
-  /**/ double zmax = +0.000;   /**/
-  /**/ unsigned int zdiv =  1; /**/
+  /**/ double zmin = -0.100;   /**/
+  /**/ double zmax = +0.100;   /**/
+  /**/ unsigned int zdiv =  2; /**/
   /**/                         /**/
   /***** thick varied as %ge *****/
   /**/ unsigned int tmin = 7;  /**/
   /**/ unsigned int tmax = 13; /**/
   /**/ double tmult = 0.1;     /**/
   /*******************************/
+
+  /******* METRIC CONTROLS *******/
+  /**/ double peakE = 0.143;   /**/
+  /**/ double sigMultip = 0.1; /**/
+  /*******************************/
+
+  // File name controls
+  const char* XYZE_file = "XYZE_gammaGated_Run63.txt";
+  const char* outputMetric = "output_Run63_metrics.txt";
+  const char* outputHisto = "output_Run63_histograms.root";
 
   // Calculate size of iteratve steps
   double xstp = (xmax-xmin)/ ((double) xdiv);
@@ -73,10 +85,7 @@ void BeamSpot(){
   reaction.ReadConfigurationFile("../../Reaction/47Kdp_0keV.reaction");
 
   // Open and read event data file
-  //MugastDataFile.open("XYZE_gammaGated_Full.txt", ios::in);
-  MugastDataFile.open("XYZE_gammaGated_Run63.txt", ios::in);
-  //MugastDataFile.open("XYZE_writeRun62_May04.txt", ios::in);
-  //MugastDataFile.open("XYZE_writeRun63_May05.txt", ios::in);
+  MugastDataFile.open(XYZE_file, ios::in);
   if(!MugastDataFile){
     cout << "ERROR: File not opened." << endl;
   }
@@ -109,7 +118,12 @@ void BeamSpot(){
   TH1F *tempMG5 = new TH1F("tempMG5","Individual MG#", 40,-1.0,1.0);
   TH1F *tempMG7 = new TH1F("tempMG7","Individual MG#", 40,-1.0,1.0);
 
+  ofstream output;
+  output.open(outputMetric);
+
+  TFile *histroot = new TFile(outputHisto, "RECREATE");
   // ------------ ITERATE BEAM POSITION ------------ //
+  cout << " Progress: 00%" << flush;
   for(int thickiter=tmin; thickiter<tmax+1; thickiter++){
     double TargetThickness = (thickiter * tmult) * 0.00476; //multiplier * original thickness
     //cout << " Thickness @ " << TargetThickness << endl;
@@ -203,10 +217,8 @@ void BeamSpot(){
           // -------------------------------------- // 
 
 	  // Initilise gaussian variable arrays
-          double mean[7];
-          double meanErr[7];
-          double sigma[7];
-          double sigmaErr[7];
+          double mean[7];  double meanErr[7];
+          double sigma[7]; double sigmaErr[7];
 
 	  // Draw Ex histograms
           TCanvas *c1 = new TCanvas("c1","Ex Histograms",20,20,1600,800);
@@ -227,6 +239,7 @@ void BeamSpot(){
           tempMG1->GetYaxis()->SetTitle("Counts");
       
           // ----- MG1 -----
+          tempMG1->SetStats(0);
           tempMG1->SetLineColor(kRed);
           tempMG1->SetFillStyle(3244);
           tempMG1->SetFillColor(kRed);
@@ -240,6 +253,7 @@ void BeamSpot(){
           sigmaErr[1] = gaus->GetParError(2);
           // ---------------
           // ----- MG2 -----
+          tempMG2->SetStats(0);
           tempMG2->SetLineColor(kOrange);
           tempMG2->SetFillStyle(3244);
           tempMG2->SetFillColor(kOrange);
@@ -253,6 +267,7 @@ void BeamSpot(){
           sigmaErr[2] = gaus->GetParError(2);
           // ---------------
           // ----- MG3 -----
+          tempMG3->SetStats(0);
           tempMG3->SetLineColor(kGreen);
           tempMG3->SetFillStyle(3344);
           tempMG3->SetFillColor(kGreen);
@@ -266,6 +281,7 @@ void BeamSpot(){
           sigmaErr[3] = gaus->GetParError(2);
           // ---------------
           // ----- MG4 -----
+          tempMG4->SetStats(0);
           tempMG4->SetLineColor(kTeal);
           tempMG4->SetFillStyle(3444);
           tempMG4->SetFillColor(kTeal);
@@ -279,6 +295,7 @@ void BeamSpot(){
           sigmaErr[4] = gaus->GetParError(2);
           // ---------------
           // ----- MG5 -----
+          tempMG5->SetStats(0);
 	  tempMG5->SetLineColor(kBlue);
           tempMG5->SetFillStyle(3544);
           tempMG5->SetFillColor(kBlue);
@@ -292,6 +309,7 @@ void BeamSpot(){
           sigmaErr[5] = gaus->GetParError(2);
           // ---------------
 	  // ----- MG7 -----
+          tempMG7->SetStats(0);
 	  tempMG7->SetLineColor(kViolet);
           tempMG7->SetFillStyle(3644);
           tempMG7->SetFillColor(kViolet);
@@ -315,6 +333,7 @@ void BeamSpot(){
           legend->Draw();
           // ----- ALL -----
 	  c1->cd(2);
+          tempHist->SetStats(0);
           tempHist->GetXaxis()->SetTitle("Ex [MeV]");
           tempHist->GetYaxis()->SetTitle("Counts");
           tempHist->Draw();
@@ -330,52 +349,52 @@ void BeamSpot(){
 	  // Caluclate metric
           double metric[7];
           for (int i=0; i<7; i++){
-            metric[i] = pow(mean[i]-0.143,2) + pow(0.5 * sigma[i],2);
+            metric[i] = pow(mean[i]-peakE,2) + pow(sigMultip * sigma[i],2);
           }
 
-	  // Write values to screen
-          //cout << TargetThickness << "\t"
-	  //     << xmin+(xiter*xstp) << "\t"
-	  //     << ymin+(yiter*ystp) << "\t"
-	  //     << zmin+(ziter*zstp) << "\t\t"
-	  //     << metric[0] << "\t"
-          //     << metric[1] << "\t"
-          //     << metric[2] << "\t"
-          //     << metric[3] << "\t"
-          //     << metric[4] << "\t"
-          //     << metric[5] << "\t"
-          //     << metric[6] << endl;
+	  // Write values to outfile
+	  output << TargetThickness << "\t"
+	         << xmin+(xiter*xstp) << "\t"
+	         << ymin+(yiter*ystp) << "\t"
+	         << zmin+(ziter*zstp) << "\t\t"
+	         << mean[0] << "\t" << sigma[0] << "\t" << metric[0] << "\t"
+	         << mean[1] << "\t" << sigma[1] << "\t" << metric[1] << "\t"
+	         << mean[2] << "\t" << sigma[2] << "\t" << metric[2] << "\t"
+	         << mean[3] << "\t" << sigma[3] << "\t" << metric[3] << "\t"
+	         << mean[4] << "\t" << sigma[4] << "\t" << metric[4] << "\t"
+	         << mean[5] << "\t" << sigma[5] << "\t" << metric[5] << "\t"
+	         << mean[6] << "\t" << sigma[6] << "\t" << metric[6] << "\t"
+                 << endl;
 
-	  cout << TargetThickness << "\t"
-	       << xmin+(xiter*xstp) << "\t"
-	       << ymin+(yiter*ystp) << "\t"
-	       << zmin+(ziter*zstp) << "\t\t"
-	       << mean[0] << "\t" << sigma[0] << "\t"
-	       << mean[1] << "\t" << sigma[1] << "\t"
-	       << mean[2] << "\t" << sigma[2] << "\t"
-	       << mean[3] << "\t" << sigma[3] << "\t"
-	       << mean[4] << "\t" << sigma[4] << "\t"
-	       << mean[5] << "\t" << sigma[5] << "\t"
-	       << mean[6] << "\t" << sigma[6] << "\t"
-               << endl;
+	  // Generate histogram name in file
+          string histOut;
+	  histOut += "t";
+          histOut += to_string(TargetThickness);
+          histOut += "_x";
+          histOut += to_string(xmin+(xiter*xstp));
+          histOut += "_y";
+          histOut += to_string(ymin+(yiter*ystp));
+          histOut += "_z";
+          histOut += to_string(zmin+(ziter*zstp));
+          
+	  histroot->cd();
+	  c1->Write(histOut.c_str());
 
+          c1->Close();
+	  gSystem->ProcessEvents();
+	  delete c1;
+	  c1 = 0;
 
-	  // Write histograms to file
-          string fileOut = "./Histograms/targetIter";
-          fileOut += to_string(TargetThickness);
-          fileOut += "_x";
-          fileOut += to_string(xmin+(xiter*xstp));
-          fileOut += "_y";
-          fileOut += to_string(ymin+(yiter*ystp));
-          fileOut += "_z";
-          fileOut += to_string(zmin+(ziter*zstp));
-          fileOut += ".pdf";
-
-          c1->SaveAs(fileOut.c_str());
-        } //iterate Z
+	} //iterate Z
       } //iterate Y
+      cout << " - " << flush;
     } //iterate X
+    cout << "\r                                                    " << flush;
+    cout << "\r Progress: " << 100*(thickiter+1-tmin)/(tmax+1-tmin) << "%" << flush;
   } //iterate thickness
-  //cout << " --- COMPLETE --- " << endl;
+
+  histroot->Close();
+  output.close();
+  cout << " --- COMPLETE --- " << endl;
   // ----------------------------------------------- //
 }
