@@ -1,17 +1,30 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-Target
- Thickness= 18 micrometer
- Radius=  30 mm
- Material= CD2
- Angle= 0 deg
- X= 0 mm
- Y= 0 mm 
- Z= 0 mm
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 SAMURAIBDC 1
   XML= db/SAMURAIBDC1.xml
+  Offset= 0 0 0 mm
+  InvertX= 0 
+  InvertY= 0
+
+%%%%%%%%%%%%
 SAMURAIBDC 2
   XML= db/SAMURAIBDC2.xml
+  Offset= 0 0 0 mm
+  InvertX= 0 
+  InvertY= 0
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Minos
+ Position= 0 0 0 mm
+ ZRotation= 35 deg
+ TargetLength= 152.76 mm
+ TargetMaterial= LH2 
+ CellMaterial= Mylar 
+ TPCOnly= 0 
+ TimeBin= 30 ns
+ ShapingTime= 333.9 ns
+ BaseLine= 250
+ Sampling= 10
+ XML= db/MINOS.xml
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 SAMURAIFDC2
   XML= db/SAMURAIFDC2.xml
@@ -21,16 +34,4 @@ SAMURAIFDC0
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 SAMURAIHOD
   XML= db/SAMURAIHOD_s034_all40mV_s037_20170702.xml
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%Minos
-% Position= 0 0 0 mm
-% ZRotation= 35 deg
-% TargetLength= 152.76 mm
-% TargetMaterial= LH2 
-% CellMaterial= Mylar 
-% TPCOnly= 0 
-% TimeBin= 30 ns
-% ShapingTime= 333.9 ns
-% BaseLine= 250
-% Sampling= 10
-% XML= db/MINOS.xml
+

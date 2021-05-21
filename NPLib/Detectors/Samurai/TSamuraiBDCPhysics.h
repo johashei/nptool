@@ -88,6 +88,7 @@ class TSamuraiBDCPhysics : public TObject, public NPL::VDetector{
     // Computed variable
     std::vector<double> PosX;
     std::vector<double> PosY;
+    std::vector<double> PosZ;
     std::vector<double> ThetaX;
     std::vector<double> PhiY;
     std::vector<double> devX;
@@ -194,6 +195,10 @@ class TSamuraiBDCPhysics : public TObject, public NPL::VDetector{
     TSamuraiBDCData*         m_PreTreatedData;//!
     TSamuraiBDCPhysics*      m_EventPhysics;//!
 
+  private: // offset and inversion 
+    std::map<unsigned int, TVector3> m_offset;//!
+    std::map<unsigned int, bool> m_invertX;//!
+    std::map<unsigned int, bool> m_invertY;//!
 
   private: // Spectra Class
     // TSamuraiBDCSpectra* m_Spectra; // !

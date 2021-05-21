@@ -76,13 +76,14 @@ void TSamuraiBDCPhysics::BuildPhysicalEvent(){
   static vector<TVector3> C ;  
   static vector<double  > W ; // weight based on D  
   static double PosX100,PosY100,norm;
-  unsigned int count = 0 ;
+  int count = 0 ;
   for(auto it = m_DCHit.begin(); it!=m_DCHit.end(); it++){
     // Each entry in the map is a detector 
     det = it->first;
     Detector.push_back(det);
     PosX.push_back(0);
     PosY.push_back(0);
+    PosZ.push_back(0);
     ThetaX.push_back(0);
     PhiY.push_back(0);
     devX.push_back(0);
@@ -194,7 +195,7 @@ void TSamuraiBDCPhysics::BuildPhysicalEvent(){
         // Mean position at Z=100
         PosX100/=norm; 
         PosY100/=norm; 
-
+        
         for(unsigned int i = 0 ; i < size ; i++){
           devX[count]+=W[i]*(C[i].X()-PosX[count])*(C[i].X()-PosX[count]);
           devY[count]+=W[i]*(C[i].Y()-PosY[count])*(C[i].Y()-PosY[count]);
@@ -210,14 +211,25 @@ void TSamuraiBDCPhysics::BuildPhysicalEvent(){
         // the Z axis
         PhiY[count]=(PosY100-PosY[count])/100.;
         Dir[count]=TVector3(PosX100-PosX[count],PosY100-PosY[count],100).Unit();
+        if(m_invertX[det])
+          PosX[count]*=-1;
+        if(m_invertY[det])
+          PosY[count]*=-1;
+        
+        PosX[count]+=m_offset[det].X();
+        PosY[count]+=m_offset[det].Y();
+        PosZ[count]=m_offset[det].Z();
       }
     }
 
-    if(PosX[count]==0){
-      PosX[count]=-10000;
-      PosY[count]=-10000;
-      ThetaX[count]=-10000;
-      PhiY[count]=-10000;
+    if(PosX[count]==0&&PosY[count]==0){
+      PosX.erase(PosX.begin()+count);
+      PosY.erase(PosY.begin()+count);
+      PosZ.erase(PosZ.begin()+count);
+      ThetaX.erase(ThetaX.begin()+count);
+      PhiY.erase(PhiY.begin()+count);
+      Detector.erase(Detector.begin()+count);
+      count--;
     }
     count++;
 
@@ -272,6 +284,7 @@ void TSamuraiBDCPhysics::Clear(){
   // Computed variable
   PosX.clear();
   PosY.clear();
+  PosZ.clear();
   ThetaX.clear();
   PhiY.clear();
   devX.clear();
@@ -290,14 +303,23 @@ void TSamuraiBDCPhysics::ReadConfiguration(NPL::InputParser parser){
   if(NPOptionManager::getInstance()->GetVerboseLevel())
     cout << "//// " << blocks.size() << " detector(s) found " << endl; 
 
-  vector<string> token= {"XML"};
+  vector<string> token= {"XML","Offset","InvertX","InvertY"};
 
   for(unsigned int i = 0 ; i < blocks.size() ; i++){
-    cout << endl << "////  Samurai BDC (" << i+1 << ")" << endl;
-    string xmlpath = blocks[i]->GetString("XML");
-    NPL::XmlParser xml;
-    xml.LoadFile(xmlpath);
-    AddDC(std::atoi(blocks[i]->GetMainValue().c_str()),xml);
+    if(blocks[i]->HasTokenList(token)){
+      cout << endl << "////  Samurai BDC (" << i+1 << ")" << endl;
+      unsigned int det = std::atoi(blocks[i]->GetMainValue().c_str());
+      string xmlpath = blocks[i]->GetString("XML");
+      NPL::XmlParser xml;
+      xml.LoadFile(xmlpath);
+      AddDC(det,xml);
+      TVector3 offset = blocks[i]->GetTVector3("Offset","mm"); 
+      bool invertX = blocks[i]->GetInt("InvertX"); 
+      bool invertY = blocks[i]->GetInt("InvertY"); 
+      m_offset[det] = offset;
+      m_invertX[det] = invertX;
+      m_invertY[det] = invertY;
+    }
   }
 
 #if __cplusplus > 199711L && NPMULTITHREADING 
