@@ -48,8 +48,8 @@ ClassImp(TSamuraiBDCPhysics)
     //m_Spectra           = NULL;
     ToTThreshold_L = 0;
     ToTThreshold_H = 1000;
-    DriftLowThreshold=0.1 ;
-    DriftUpThreshold=2.4;
+    DriftLowThreshold=0 ;
+    DriftUpThreshold=2.5;
     PowerThreshold=5;
   }
 
@@ -75,6 +75,7 @@ void TSamuraiBDCPhysics::BuildPhysicalEvent(){
   static unsigned int uid; uid=0;
   static vector<TVector3> C ;  
   static vector<double  > W ; // weight based on D  
+  static double PosX100,PosY100,norm;
   unsigned int count = 0 ;
   for(auto it = m_DCHit.begin(); it!=m_DCHit.end(); it++){
     // Each entry in the map is a detector 
@@ -134,7 +135,7 @@ void TSamuraiBDCPhysics::BuildPhysicalEvent(){
       // very large "a" means track perpendicular to the chamber, what happen when there is pile up
       if(abs(a)>5000)
         PileUp[count]++;
-
+//cout << a << " " << b << endl;
       // Position at z=0
       TVector3 P(X0,0,0);
       P.RotateZ(it->first);
@@ -177,9 +178,8 @@ void TSamuraiBDCPhysics::BuildPhysicalEvent(){
       }
       // Build the Reference position by averaging all possible pair 
       size = C.size();
-      static double PosX100,PosY100,norm;
       if(size){
-        norm=0;
+        norm=0;PosX100=0;PosY100=0;
         for(unsigned int i = 0 ; i < size ; i++){
           PosX[count]+= C[i].X()*W[i]; 
           PosY[count]+= C[i].Y()*W[i]; 
@@ -199,19 +199,20 @@ void TSamuraiBDCPhysics::BuildPhysicalEvent(){
           devX[count]+=W[i]*(C[i].X()-PosX[count])*(C[i].X()-PosX[count]);
           devY[count]+=W[i]*(C[i].Y()-PosY[count])*(C[i].Y()-PosY[count]);
         }
+        
         devX[count]=sqrt(devX[count]/((size-1)*norm));
         devY[count]=sqrt(devY[count]/((size-1)*norm));
+
         // Compute ThetaX, angle between the Direction vector projection in XZ with
         // the Z axis
-        //ThetaX=atan((PosX100-PosX)/100.);
-        ThetaX[count] = (PosX100-PosX[count])/100.;
+        ThetaX[count]=(PosX100-PosX[count])/100.;
         // Compute PhiY, angle between the Direction vector projection in YZ with
         // the Z axis
-        //PhiY=atan((PosY100-PosY)/100.);
         PhiY[count]=(PosY100-PosY[count])/100.;
         Dir[count]=TVector3(PosX100-PosX[count],PosY100-PosY[count],100).Unit();
       }
     }
+
     if(PosX[count]==0){
       PosX[count]=-10000;
       PosY[count]=-10000;
@@ -262,7 +263,6 @@ void TSamuraiBDCPhysics::PreTreat(){
         m_DCHit[det].push_back(DCHit(det,layer,wire,time,etime-time,2.5-Cal->ApplySigmoid(channel,etime)));
       }
     }
-
   }
   return;
 }
@@ -278,6 +278,7 @@ void TSamuraiBDCPhysics::Clear(){
   devY.clear();
   Dir.clear();
   PileUp.clear();
+  Detector.clear();
 }
 ///////////////////////////////////////////////////////////////////////////
 

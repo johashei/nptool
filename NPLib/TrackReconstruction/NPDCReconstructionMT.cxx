@@ -236,24 +236,37 @@ void DCReconstructionMT::StartThread(unsigned int id){
       // Define the starting point of the fit: a straight line passing through the 
       // the first and last wire
       // z = ax+b -> x=(z-b)/a
-      ai = ((*fitZ[id])[sizeX[id]-1]-(*fitZ[id])[0])/((*fitX[id])[sizeX[id]-1]-(*fitX[id])[0]);
-      bi = (*fitZ[id])[0]-ai*((*fitX[id])[0]);
+      unsigned int i = 1;
+      ai=1/0.;
+      while(isinf(ai)&&i!=sizeX[id]){
+        ai = ((*fitZ[id])[sizeX[id]-i]-(*fitZ[id])[0])/((*fitX[id])[sizeX[id]-i]-(*fitX[id])[0]);
+        bi = (*fitZ[id])[0]-ai*((*fitX[id])[0]);
+        i++;
+      }
+      if(isinf(ai)){ // then there is no two point in different layer
+        m_a[uid]=-10000;
+        m_b[uid]=-10000;
+        m_X0[uid]=-10000;
+        m_X100[uid]=-10000;
+        m_minimum[uid] = 10000;
+      }
+      else{
+        mini->Clear(); 
+        mini->SetVariable(0,"a",ai,1);
+        mini->SetVariable(1,"b",bi,1);
+        mini->SetFixedVariable(2,"id",id);
+        // Perform minimisation
+        mini->Minimize(); 
 
-      mini->Clear(); 
-      mini->SetVariable(0,"a",ai,1);
-      mini->SetVariable(1,"b",bi,1);
-      mini->SetFixedVariable(2,"id",id);
-      // Perform minimisation
-      mini->Minimize(); 
-
-      // access set of parameter that produce the minimum
-      xs = mini->X();
-      uid = m_uid[id]; 
-      m_a[uid]=xs[0];
-      m_b[uid]=xs[1];
-      m_X0[uid]=-m_b[uid]/m_a[uid];
-      m_X100[uid]=(100-m_b[uid])/m_a[uid];
-      m_minimum[uid] = mini->MinValue();
+        // access set of parameter that produce the minimum
+        xs = mini->X();
+        uid = m_uid[id]; 
+        m_a[uid]=xs[0];
+        m_b[uid]=xs[1];
+        m_X0[uid]=-m_b[uid]/m_a[uid];
+        m_X100[uid]=(100-m_b[uid])/m_a[uid];
+        m_minimum[uid] = mini->MinValue();
+      }
       // notify main thread job is done
       m_mtx.lock();// make sure no other thread is reading/writing to the map
       m_Ready[id].flip();
