@@ -50,26 +50,15 @@ TNebulaPhysics::TNebulaPhysics()
      m_Spectra(0),
      m_E_RAW_Threshold(0), // adc channels
      m_E_Threshold(0),     // MeV
-     m_NumberOfDetectors(0) {
+     m_NumberOfBars(0) {
 }
 
 ///////////////////////////////////////////////////////////////////////////
 /// A usefull method to bundle all operation to add a detector
-void TNebulaPhysics::AddDetector(TVector3 , string ){
-  // In That simple case nothing is done
-  // Typically for more complex detector one would calculate the relevant 
-  // positions (stripped silicon) or angles (gamma array)
-  m_NumberOfDetectors++;
+void TNebulaPhysics::ReadXML(NPL::XmlParser xml){ 
+  m_NumberOfBars++;
 } 
 
-///////////////////////////////////////////////////////////////////////////
-void TNebulaPhysics::AddDetector(double R, double Theta, double Phi, string shape){
-  // Compute the TVector3 corresponding
-  TVector3 Pos(R*sin(Theta)*cos(Phi),R*sin(Theta)*sin(Phi),R*cos(Theta));
-  // Call the cartesian method
-  AddDetector(Pos,shape);
-} 
-  
 ///////////////////////////////////////////////////////////////////////////
 void TNebulaPhysics::BuildSimplePhysicalEvent() {
   BuildPhysicalEvent();
@@ -204,41 +193,33 @@ void TNebulaPhysics::Clear() {
 
 ///////////////////////////////////////////////////////////////////////////
 void TNebulaPhysics::ReadConfiguration(NPL::InputParser parser) {
-  vector<NPL::InputBlock*> blocks = parser.GetAllBlocksWithToken("Nebula");
+  vector<NPL::InputBlock*> blocks = parser.GetAllBlocksWithToken("NEBULA");
   if(NPOptionManager::getInstance()->GetVerboseLevel())
-    cout << "//// " << blocks.size() << " detectors found " << endl; 
+    cout << "//// " << blocks.size() << " detector(s) found " << endl; 
 
-  vector<string> cart = {"POS","Shape"};
-  vector<string> sphe = {"R","Theta","Phi","Shape"};
+  vector<string> token= {"XML","Offset","InvertX","InvertY"};
 
   for(unsigned int i = 0 ; i < blocks.size() ; i++){
-    if(blocks[i]->HasTokenList(cart)){
-      if(NPOptionManager::getInstance()->GetVerboseLevel())
-        cout << endl << "////  Nebula " << i+1 <<  endl;
-    
-      TVector3 Pos = blocks[i]->GetTVector3("POS","mm");
-      string Shape = blocks[i]->GetString("Shape");
-      AddDetector(Pos,Shape);
-    }
-    else if(blocks[i]->HasTokenList(sphe)){
-      if(NPOptionManager::getInstance()->GetVerboseLevel())
-        cout << endl << "////  Nebula " << i+1 <<  endl;
-      double R = blocks[i]->GetDouble("R","mm");
-      double Theta = blocks[i]->GetDouble("Theta","deg");
-      double Phi = blocks[i]->GetDouble("Phi","deg");
-      string Shape = blocks[i]->GetString("Shape");
-      AddDetector(R,Theta,Phi,Shape);
-    }
-    else{
-      cout << "ERROR: check your input file formatting " << endl;
-      exit(1);
+    if(blocks[i]->HasTokenList(token)){
+      cout << endl << "////  Nebula (" << i+1 << ")" << endl;
+      unsigned int det = std::atoi(blocks[i]->GetMainValue().c_str());
+      string xmlpath = blocks[i]->GetString("XML");
+      NPL::XmlParser xml;
+      xml.LoadFile(xmlpath);
+      ReadXML(xml);
+      TVector3 offset = blocks[i]->GetTVector3("Offset","mm"); 
+      bool invertX = blocks[i]->GetInt("InvertX"); 
+      bool invertY = blocks[i]->GetInt("InvertY"); 
+      m_offset[det] = offset;
+      m_invertX[det] = invertX;
+      m_invertY[det] = invertY;
     }
   }
 }
 
 ///////////////////////////////////////////////////////////////////////////
 void TNebulaPhysics::InitSpectra() {
-  m_Spectra = new TNebulaSpectra(m_NumberOfDetectors);
+  m_Spectra = new TNebulaSpectra(m_NumberOfBars);
 }
 
 
@@ -286,9 +267,9 @@ void TNebulaPhysics::WriteSpectra() {
 ///////////////////////////////////////////////////////////////////////////
 void TNebulaPhysics::AddParameterToCalibrationManager() {
   CalibrationManager* Cal = CalibrationManager::getInstance();
-  for (int i = 0; i < m_NumberOfDetectors; ++i) {
-    Cal->AddParameter("Nebula", "D"+ NPL::itoa(i+1)+"_ENERGY","Nebula_D"+ NPL::itoa(i+1)+"_ENERGY");
-    Cal->AddParameter("Nebula", "D"+ NPL::itoa(i+1)+"_TIME","Nebula_D"+ NPL::itoa(i+1)+"_TIME");
+  for (int i = 0; i < m_NumberOfBars; ++i) {
+    Cal->AddParameter("NEBULA_ID"+ NPL::itoa(i+1)+"_T");
+    Cal->AddParameter("NEBULA_ID"+ NPL::itoa(i+1)+"_Y");
   }
 }
 

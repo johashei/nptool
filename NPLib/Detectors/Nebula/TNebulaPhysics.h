@@ -38,6 +38,7 @@ using namespace std;
 #include "NPCalibrationManager.h"
 #include "NPVDetector.h"
 #include "NPInputParser.h"
+#include "NPXmlParser.h"
 // forward declaration
 class TNebulaSpectra;
 
@@ -67,8 +68,7 @@ class TNebulaPhysics : public TObject, public NPL::VDetector {
     vector<double>   Time;
 
   /// A usefull method to bundle all operation to add a detector
-  void AddDetector(TVector3 POS, string shape); 
-  void AddDetector(double R, double Theta, double Phi, string shape); 
+  void ReadXML(NPL::XmlParser); 
   
   //////////////////////////////////////////////////////////////
   // methods inherited from the VDetector ABC class
@@ -161,7 +161,13 @@ class TNebulaPhysics : public TObject, public NPL::VDetector {
 
   // number of detectors
   private:
-    int m_NumberOfDetectors;  //!
+    int m_NumberOfBars;  //!
+
+  private: // offset and inversion 
+    std::map<unsigned int, TVector3> m_offset;//!
+    std::map<unsigned int, bool> m_invertX;//!
+    std::map<unsigned int, bool> m_invertY;//!
+
 
   // spectra class
   private:

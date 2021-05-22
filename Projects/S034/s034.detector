@@ -25,13 +25,22 @@ Minos
  BaseLine= 250
  Sampling= 10
  XML= db/MINOS.xml
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 SAMURAIFDC2
   XML= db/SAMURAIFDC2.xml
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 SAMURAIFDC0
   XML= db/SAMURAIFDC0_20200109.xml
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 SAMURAIHOD
   XML= db/SAMURAIHOD_s034_all40mV_s037_20170702.xml
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+NEBULA
+  XML= db/NEBULA.xml
+  Offset= 0 0 0 mm
+  InvertX= 0
+  InvertY= 0
