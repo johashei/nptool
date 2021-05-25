@@ -181,6 +181,11 @@ class TSamuraiFDC0Physics : public TObject, public NPL::VDetector{
     TSamuraiFDC0Data*         m_PreTreatedData;//!
     TSamuraiFDC0Physics*      m_EventPhysics;//!
 
+  private: // offset and inversion 
+    TVector3 m_offset;//!
+    bool m_invertX;//!
+    bool m_invertY;//!
+    bool m_invertD;//!
 
   private: // Spectra Class
    // TSamuraiFDC0Spectra* m_Spectra; // !

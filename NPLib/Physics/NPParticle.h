@@ -126,8 +126,8 @@ namespace NPL {
     void				SetSpinParity(const char* spinparity)	{fSpinParity = spinparity;}
     void				SetSpin(double spin) {fSpin = spin;}
     void				SetParity(const char* parity)	{fParity = parity;}
-    void          SetLifeTime(double LifeTime) {fLifeTime=LifeTime;}
-    void          SetLifeTimeError(double LifeTimeErr) {fLifeTimeErr=LifeTimeErr;}
+    void        SetLifeTime(double LifeTime) {fLifeTime=LifeTime;}
+    void        SetLifeTimeError(double LifeTimeErr) {fLifeTimeErr=LifeTimeErr;}
     void				SetKineticEnergy(double energy)	{fKineticEnergy = energy; EnergyToBrho(); EnergyToTof(); EnergyToBeta(); BetaToGamma();BetaToVelocity();}
     void				SetBrho(double brho) {fBrho = brho; BrhoToEnergy(); BrhoToTof(); EnergyToBeta(); BetaToGamma();BetaToVelocity();}
     void				SetTimeOfFlight(double tof) {fTimeOfFlight = tof; TofToEnergy(); TofToBrho(); EnergyToBeta(); BetaToGamma();BetaToVelocity();}

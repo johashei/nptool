@@ -199,6 +199,7 @@ class TSamuraiBDCPhysics : public TObject, public NPL::VDetector{
     std::map<unsigned int, TVector3> m_offset;//!
     std::map<unsigned int, bool> m_invertX;//!
     std::map<unsigned int, bool> m_invertY;//!
+    std::map<unsigned int, bool> m_invertD;//!
 
   private: // Spectra Class
     // TSamuraiBDCSpectra* m_Spectra; // !

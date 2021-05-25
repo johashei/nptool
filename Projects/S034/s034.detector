@@ -4,6 +4,7 @@ SAMURAIBDC 1
   Offset= 0 0 0 mm
   InvertX= 0 
   InvertY= 0
+  InvertD= 1
 
 %%%%%%%%%%%%
 SAMURAIBDC 2
@@ -11,6 +12,7 @@ SAMURAIBDC 2
   Offset= 0 0 0 mm
   InvertX= 0 
   InvertY= 0
+  IverteD= 1
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 Minos
@@ -27,12 +29,20 @@ Minos
  XML= db/MINOS.xml
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-SAMURAIFDC2
-  XML= db/SAMURAIFDC2.xml
+SAMURAIFDC0
+ XML= db/SAMURAIFDC0_20200109.xml
+ Offset= 3.005 1.864 0 mm
+ InvertX= 1 
+ InvertY= 0
+ InvertD= 1
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-SAMURAIFDC0
-  XML= db/SAMURAIFDC0_20200109.xml
+SAMURAIFDC2
+ XML= db/SAMURAIFDC2.xml
+ Offset= 0 0 0 mm
+ InvertX= 0 
+ InvertY= 1
+ InvertD= 1
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 SAMURAIHOD

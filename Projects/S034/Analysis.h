@@ -50,7 +50,7 @@ class Analysis: public NPL::VAnalysis{
     TSamuraiHodoscopePhysics* Hodo;
  
   private: // output variable
-    double Broh;
+    double Brho;
     double Beta_f;
     int    Trigger;
   public:

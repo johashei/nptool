@@ -1,330 +1,33 @@
-/*****************************************************************************
- * Copyright (C) 2009-2021    this file is part of the NPTool Project        *
- *                                                                           *
- * For the licensing terms see $NPTOOL/Licence/NPTool_Licence                *
- * For the list of contributors see $NPTOOL/Licence/Contributors             *
- *****************************************************************************/
+double r_fit(double *x) ;
 
-/*****************************************************************************
- * Original Author: A. Matta contact address: matta@lpccaen.in2p3.fr         *
- *                                                                           *
- * Creation Date  : May 2021                                                 *
- * Last update    :                                                          *
- *---------------------------------------------------------------------------*
- * Decription:                                                               *
- *  This class describe  S034 analysis project                               *
- *                                                                           *
- *---------------------------------------------------------------------------*
- * Comment:                                                                  *
- *                                                                           *
- *****************************************************************************/
+void rigz(){
 
+ auto fz = new TFile("root/zaihong/run0582_RIG20210424_6He.root");
+ auto tz = (TTree*) fz->FindObjectAny("rig");
+ auto fl = new TFile("root/analysis/test582.root");
+ auto tl = (TTree*) fl->FindObjectAny("PhysicsTree");
+ 
+ double FDC0_X,FDC0_Y,FDC2_X,FDC2_ThetaX;
+ tz->SetBranchAddress("FDC0_X",&FDC0_X);
+ tz->SetBranchAddress("FDC0_Y",&FDC0_Y);
+ tz->SetBranchAddress("FDC2_X",&FDC2_X);
+ tz->SetBranchAddress("FDC2_ThetaX",&FDC2_ThetaX);
+ auto h = new TH1D("brho","brho",1000,0,8);
+ unsigned int entries = tz->GetEntries();
 
-
-#include<iostream>
-using namespace std;
-#include"Analysis.h"
-#include"NPAnalysisFactory.h"
-#include"NPDetectorManager.h"
-#include"RootInput.h"
-#include"RootOutput.h"
-////////////////////////////////////////////////////////////////////////////////
-Analysis::Analysis(){
-}
-////////////////////////////////////////////////////////////////////////////////
-Analysis::~Analysis(){
-}
-
-////////////////////////////////////////////////////////////////////////////////
-void Analysis::Init(){
-   Minos= (TMinosPhysics*) m_DetectorManager->GetDetector("Minos");
-   //Nebula = (TNebulaPhysics*) m_DetectorManager->GetDetector("NEBULA");
-   BDC = (TSamuraiBDCPhysics*) m_DetectorManager->GetDetector("SAMURAIBDC");
-   FDC0 = (TSamuraiFDC0Physics*) m_DetectorManager->GetDetector("SAMURAIFDC0");
-   FDC2 = (TSamuraiFDC2Physics*) m_DetectorManager->GetDetector("SAMURAIFDC2");
-   Hodo = (TSamuraiHodoscopePhysics*) m_DetectorManager->GetDetector("SAMURAIHOD");
-
-   InitOutputBranch();
-   InitInputBranch();
-}
-
-////////////////////////////////////////////////////////////////////////////////
-void Analysis::TreatEvent(){
-  Clear();
-  //cout << Trigger << " " ; 
-  Trigger=Trigger&0x00ff;
-//cout << Trigger << endl;
-  // Compute Brho 
-  if(FDC2->PosX>-10000 && FDC0->PosX>-10000 ){ // if both are correctly build
-   // Compute ThetaX and PhiY using Minos vertex and FDC0 XY
-   double FDC0_ThetaX = FDC0->ThetaX;
-   double FDC0_PhiY   = FDC0->PhiY;
-
-   if(Minos->Z_Vertex>0){
-    FDC0_ThetaX = atan((FDC0->PosX-Minos->X_Vertex)/(1283.7-Minos->Z_Vertex));
-    FDC0_PhiY   = atan((FDC0->PosY-Minos->Y_Vertex)/(1283.7-Minos->Z_Vertex));
-   } 
-    double brho_param[6]={FDC0->PosX/*+1.77*/, FDC0->PosY, tan(FDC0_ThetaX), tan(FDC0_PhiY), FDC2->PosX/*-252.55*/, FDC2->ThetaX};
-    Brho=r_fit(brho_param);
+ for(unsigned int i = 0 ; i < 100000 /*entries*/ ; i++){
+  tz->GetEntry(i);
+  double brho_param[6]={FDC0_X/*+1.77*/, FDC0_Y, 0, 0, FDC2_X/*-252.55*/, FDC2_ThetaX};
+  double Brho=r_fit(brho_param);
+  if(Brho>0)
+    h->Fill(Brho);
   }
+  h->Scale(1./h->Integral());
+  h->Draw();
+  cout << tl->Draw("Brho>>g","Brho>0","same") << endl;
+  auto g = (TH1*) gDirectory->FindObjectAny("g");
+  g->Scale(1./g->Integral());
 }
-
-////////////////////////////////////////////////////////////////////////////////
-void Analysis::End(){
-}
-
-////////////////////////////////////////////////////////////////////////////////
-void Analysis::Clear(){
-  Brho=-1000;
-  Beta_f=-1000;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-void Analysis::InitOutputBranch() {
-  RootOutput::getInstance()->GetTree()->Branch("Brho",&Brho,"Brho/D");
-  RootOutput::getInstance()->GetTree()->Branch("Beta_f",&Beta_f,"Beta_f/D");
-  RootOutput::getInstance()->GetTree()->Branch("Trigger",&Trigger,"Trigger/I");
-} 
-////////////////////////////////////////////////////////////////////////////////
-void Analysis::InitInputBranch(){
-    RootInput::getInstance()->GetChain()->SetBranchAddress("Trigger",&Trigger);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-//
-static int    e_gNVariables    = 6;
-static int    e_gNCoefficients = 56;
-static double e_gDMean         = 140.96;
-// Assignment to mean vector.
-static double e_gXMean[] = {
-  0.0025732, -0.284362, -0.566756, -0.946845, 0.361982, -0.52295 };
-
-// Assignment to minimum vector.
-static double e_gXMin[] = {
-  -331.189, -196.066, -257.522, -304.613, -333.804, -292.129 };
-
-// Assignment to maximum vector.
-static double e_gXMax[] = {
-  329.322, 351.904, 931.885, 11176.9, 1147.99, 933.394 };
-
-// Assignment to coefficients vector.
-static double e_gCoefficient[] = {
-  -1915.5,
-  -3376.77,
-  9001.24,
-  1517.31,
-  6.5778,
-  -296.117,
-  -3507.57,
-  102.821,
-  1180.97,
-  366.41,
-  4244.46,
-  1292.38,
-  -6569.85,
-  48.611,
-  -1145.28,
-  6475.24,
-  -461.55,
-  618.848,
-  8140.28,
-  1052.09,
-  149.209,
-  761.819,
-  -184.68,
-  43.8596,
-  2527.57,
-  -12.1075,
-  -4.13165,
-  -6.7228,
-  -2.09925,
-  43.2175,
-  13.6207,
-  -1162.11,
-  2455.15,
-  309.178,
-  -4.67617,
-  0.881522,
-  -185.94,
-  -21.6162,
-  -55.7686,
-  -1034.58,
-  -23.6721,
-  2179.29,
-  740.309,
-  8385.12,
-  2721.25,
-  -2174.5,
-  159.758,
-  1176.06,
-  -4487.32,
-  1365.38,
-  5.61114,
-  177.229,
-  268.174,
-  -45.8185,
-  -85.2077,
-  -45.3608
- };
-
-// Assignment to error coefficients vector.
-static double e_gCoefficientRMS[] = {
-  164.828,
-  294.513,
-  506.942,
-  116.759,
-  111.515,
-  20.2561,
-  184.244,
-  25.4792,
-  228.82,
-  34.9984,
-  275.86,
-  98.3259,
-  349.254,
-  189.385,
-  85.2052,
-  437.683,
-  54.1842,
-  46.0126,
-  447.321,
-  62.0962,
-  36.481,
-  177.681,
-  19.1419,
-  49.0136,
-  155.81,
-  65.5158,
-  2.72524,
-  4.55078,
-  1.88398,
-  48.9402,
-  14.3597,
-  100.324,
-  135.04,
-  59.2191,
-  0.820262,
-  0.701362,
-  21.6537,
-  7.42057,
-  20.6061,
-  86.9029,
-  18.9372,
-  164.455,
-  54.5583,
-  549.607,
-  184.047,
-  158.979,
-  48.9787,
-  334.83,
-  254.413,
-  85.1526,
-  6.5432,
-  22.5547,
-  83.4628,
-  25.3156,
-  84.8766,
-  48.3489
- };
-
-// Assignment to powers vector.
-// The powers are stored row-wise, that is
-//  p_ij = e_gPower[i * NVariables + j];
-static int    e_gPower[] = {
-  1,  1,  1,  1,  1,  1,
-  1,  1,  1,  1,  1,  2,
-  2,  1,  1,  1,  1,  1,
-  1,  1,  1,  1,  2,  1,
-  1,  2,  1,  1,  1,  1,
-  1,  1,  1,  2,  1,  1,
-  1,  1,  2,  1,  1,  1,
-  1,  1,  1,  1,  1,  3,
-  1,  1,  1,  1,  2,  2,
-  1,  3,  1,  1,  1,  1,
-  2,  1,  2,  1,  1,  1,
-  1,  2,  2,  1,  1,  1,
-  1,  1,  2,  1,  1,  2,
-  1,  2,  1,  1,  1,  2,
-  1,  1,  3,  1,  1,  1,
-  2,  1,  1,  1,  1,  2,
-  3,  1,  1,  1,  1,  1,
-  1,  1,  1,  1,  3,  1,
-  2,  1,  1,  2,  1,  1,
-  1,  1,  1,  2,  2,  1,
-  1,  1,  2,  1,  2,  1,
-  2,  1,  1,  1,  2,  1,
-  1,  1,  1,  3,  1,  1,
-  1,  1,  1,  1,  2,  3,
-  2,  1,  1,  3,  1,  1,
-  1,  2,  1,  3,  1,  1,
-  3,  1,  1,  1,  2,  1,
-  2,  2,  1,  1,  2,  1,
-  1,  3,  1,  1,  2,  1,
-  1,  2,  2,  1,  2,  1,
-  1,  1,  3,  1,  2,  1,
-  2,  2,  1,  2,  1,  1,
-  1,  2,  1,  2,  2,  1,
-  1,  1,  1,  3,  2,  1,
-  2,  1,  1,  1,  3,  1,
-  1,  2,  1,  1,  3,  1,
-  1,  1,  2,  1,  3,  1,
-  3,  2,  1,  1,  1,  1,
-  1,  2,  3,  1,  1,  1,
-  3,  1,  1,  1,  1,  2,
-  2,  1,  3,  1,  1,  1,
-  2,  2,  1,  1,  1,  2,
-  1,  3,  1,  1,  1,  2,
-  2,  1,  2,  1,  1,  2,
-  1,  2,  2,  1,  1,  2,
-  1,  1,  3,  1,  1,  2,
-  3,  1,  2,  1,  1,  1,
-  2,  1,  1,  1,  2,  2,
-  1,  2,  1,  1,  2,  2,
-  1,  1,  1,  1,  3,  2,
-  2,  3,  1,  1,  1,  1,
-  1,  2,  1,  1,  1,  3,
-  2,  1,  2,  1,  2,  1,
-  1,  3,  2,  1,  1,  1,
-  2,  2,  2,  1,  1,  1,
-  2,  1,  1,  1,  1,  3
-};
-
-// 
-// The function   double e_fit(double *x)
-// 
-double e_fit(double *x) {
-  double returnValue = e_gDMean;
-  int    i = 0, j = 0, k = 0;
-  for (i = 0; i < e_gNCoefficients ; i++) {
-    // Evaluate the ith term in the expansion
-    double term = e_gCoefficient[i];
-    for (j = 0; j < e_gNVariables; j++) {
-      // Evaluate the polynomial in the jth variable.
-      int power = e_gPower[e_gNVariables * i + j]; 
-      double p1 = 1, p2 = 0, p3 = 0, r = 0;
-      double v =  1 + 2. / (e_gXMax[j] - e_gXMin[j]) * (x[j] - e_gXMax[j]);
-      // what is the power to use!
-      switch(power) {
-      case 1: r = 1; break; 
-      case 2: r = v; break; 
-      default: 
-        p2 = v; 
-        for (k = 3; k <= power; k++) { 
-          p3 = p2 * v;
-          p3 = 2 * v * p2 - p1; 
-          p1 = p2; p2 = p3; 
-        }
-        r = p3;
-      }
-      // multiply this term by the poly in the jth var
-      term *= r; 
-    }
-    // Add this term to the final result
-    returnValue += term;
-  }
-  return returnValue;
-}
-
 // EOF for ../Geant4/samurai/simtree_energy.C
 // -*- mode: c++ -*-
 // 
@@ -1087,6 +790,7 @@ double l_fit(double *x) {
   return returnValue;
 }
 
+
 // EOF for ../Geant4/samurai/simtree_length.C
 // -*- mode: c++ -*-
 // 
@@ -1341,25 +1045,4 @@ double t_fit(double *x) {
 
 // EOF for ../Geant4/samurai/simtree_tof.C
 
-
-////////////////////////////////////////////////////////////////////////////////
-//            Construct Method to be pass to the DetectorFactory              //
-////////////////////////////////////////////////////////////////////////////////
-NPL::VAnalysis* Analysis::Construct(){
-  return (NPL::VAnalysis*) new Analysis();
-}
-
-////////////////////////////////////////////////////////////////////////////////
-//            Registering the construct method to the factory                 //
-////////////////////////////////////////////////////////////////////////////////
-extern "C"{
-class proxy{
-  public:
-    proxy(){
-      NPL::AnalysisFactory::getInstance()->SetConstructor(Analysis::Construct);
-    }
-};
-
-proxy p;
-}
 

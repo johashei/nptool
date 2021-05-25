@@ -46,11 +46,14 @@ ClassImp(TSamuraiFDC0Physics)
     m_PreTreatedData    = new TSamuraiFDC0Data ;
     m_EventPhysics      = this ;
     //m_Spectra           = NULL;
+//    ToTThreshold_L = 0;
+//    ToTThreshold_H = 180;
     ToTThreshold_L = 0;
-    ToTThreshold_H = 180;
+    ToTThreshold_H = 10000;
+ 
     DriftLowThreshold=0.1 ;
     DriftUpThreshold=2.4;
-    PowerThreshold=5;
+    PowerThreshold=15;
   }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -107,9 +110,9 @@ void TSamuraiFDC0Physics::BuildPhysicalEvent(){
 #if __cplusplus > 199711L && NPMULTITHREADING 
   D[it->first]=m_reconstruction.GetResults(uid++,X0,X100,a,b); 
 #endif
-
+/*
    // for Debug, write a file of 
-/*   { std::ofstream f("distance.txt", std::ios::app);
+   { std::ofstream f("distance.txt", std::ios::app);
    f<< D[it->first] << endl;
    f.close();
    }
@@ -141,7 +144,7 @@ void TSamuraiFDC0Physics::BuildPhysicalEvent(){
         //cout << "FDC0" << endl;
         m_reconstruction.ResolvePlane(it1->second,it1->first,it2->second,it2->first,P);
         // cout << "done " << D[it1->first] << " " << D[it2->first] << endl;
-        if(P.X()!=-10000 && D[it1->first]<PowerThreshold&& D[it2->first]<PowerThreshold){
+        if(P.X()!=-10000/* && D[it1->first]<PowerThreshold&& D[it2->first]<PowerThreshold*/){
           C.push_back(P);
           // Mean pos are weighted based on the the sum of distance from track
           // to hit obtained during the minimisation
@@ -158,7 +161,7 @@ void TSamuraiFDC0Physics::BuildPhysicalEvent(){
       if(it1!=it2 ){// different plane, same detector
         m_reconstruction.ResolvePlane(it1->second,it1->first,it2->second,it2->first,P);
 
-        if(P.X()!=-10000&& D[it1->first]<PowerThreshold && D[it2->first]<PowerThreshold)
+        if(P.X()!=-10000/*&& D[it1->first]<PowerThreshold && D[it2->first]<PowerThreshold*/)
           C100.push_back(P);
       }
     }
@@ -180,10 +183,12 @@ void TSamuraiFDC0Physics::BuildPhysicalEvent(){
       PosY100+= C100[i].Y()*W[i]; 
       norm+=W[i];
     } 
+
     MultMean=size;
     // Mean position at Z=0
     PosX=PosX/norm; 
     PosY=PosY/norm; 
+
     // Mean position at Z=100
     PosX100=PosX100/norm; 
     PosY100=PosY100/norm; 
@@ -196,15 +201,28 @@ void TSamuraiFDC0Physics::BuildPhysicalEvent(){
     }
     devX=sqrt(devX/((size-1)*norm));
     devY=sqrt(devY/((size-1)*norm));
+   
+    if(m_invertX){
+      PosX*=-1;
+      PosX100*=-1;
+    }
+
+    if(m_invertY){
+      PosY*=-1;
+      PosY100*=-1;
+    }
     // Compute ThetaX, angle between the Direction vector projection in XZ with
     // the Z axis
-    //ThetaX=atan((PosX100-PosX)/100.);
-    ThetaX = (PosX100-PosX)/100.;
+    ThetaX=atan((PosX100-PosX)/100.);
+    //ThetaX = (PosX100-PosX)/100.;
     // Compute PhiY, angle between the Direction vector projection in YZ with
     // the Z axis
-    //PhiY=atan((PosY100-PosY)/100.);
-    PhiY=(PosY100-PosY)/100.;
+    PhiY=atan((PosY100-PosY)/100.);
+    //PhiY=(PosY100-PosY)/100.;
     Dir=TVector3(PosX100-PosX,PosY100-PosY,100).Unit();
+    PosX+=m_offset.X();
+    PosY+=m_offset.Y();
+
   }
 
   return;
@@ -253,7 +271,10 @@ void TSamuraiFDC0Physics::PreTreat(){
         Time.push_back(time);
         ToT.push_back(etime-time);
         channel="SamuraiFDC0/L" + NPL::itoa(layer);
-        DriftLength.push_back(2.5-Cal->ApplySigmoid(channel,etime));
+        if(!m_invertD)
+          DriftLength.push_back(Cal->ApplySigmoid(channel,etime));
+        else
+          DriftLength.push_back(2.5-Cal->ApplySigmoid(channel,etime));
       }
     }
 
@@ -306,6 +327,7 @@ void TSamuraiFDC0Physics::Clear(){
   PileUp=0;
   Mult=0;
   PosX=PosY=-10000;
+  ThetaX=PhiY=-10000;
   devX=devY=-10000;
   DriftLength.clear();
   Detector.clear();
@@ -327,7 +349,7 @@ void TSamuraiFDC0Physics::ReadConfiguration(NPL::InputParser parser){
   if(NPOptionManager::getInstance()->GetVerboseLevel())
     cout << "//// " << blocks.size() << " detector(s) found " << endl; 
 
-  vector<string> token= {"XML"};
+  vector<string> token= {"XML","Offset","InvertX","InvertY","InvertD"};
 
   for(unsigned int i = 0 ; i < blocks.size() ; i++){
     cout << endl << "////  Samurai FDC0 (" << i+1 << ")" << endl;
@@ -335,6 +357,10 @@ void TSamuraiFDC0Physics::ReadConfiguration(NPL::InputParser parser){
     NPL::XmlParser xml;
     xml.LoadFile(xmlpath);
     AddDC("SAMURAIFDC0",xml);
+    m_offset = blocks[i]->GetTVector3("Offset","mm"); 
+    m_invertX = blocks[i]->GetInt("InvertX"); 
+    m_invertY = blocks[i]->GetInt("InvertY"); 
+    m_invertD = blocks[i]->GetInt("InvertD"); 
   }
 
 #if __cplusplus > 199711L && NPMULTITHREADING 

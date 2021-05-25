@@ -236,13 +236,9 @@ void DCReconstructionMT::StartThread(unsigned int id){
       // Define the starting point of the fit: a straight line passing through the 
       // the first and last wire
       // z = ax+b -> x=(z-b)/a
-      unsigned int i = 1;
-      ai=1/0.;
-      while(isinf(ai)&&i!=sizeX[id]){
-        ai = ((*fitZ[id])[sizeX[id]-i]-(*fitZ[id])[0])/((*fitX[id])[sizeX[id]-i]-(*fitX[id])[0]);
-        bi = (*fitZ[id])[0]-ai*((*fitX[id])[0]);
-        i++;
-      }
+        ai = ((*fitZ[id])[sizeX[id]-1]-(*fitZ[id])[0])/((*fitX[id])[sizeX[id]-1]-(*fitX[id])[0]+(*fitR[id])[sizeX[id]-1]-(*fitR[id])[0]);
+        bi = (*fitZ[id])[0]-ai*((*fitX[id])[0]+(*fitR[id])[0]);
+
       if(isinf(ai)){ // then there is no two point in different layer
         m_a[uid]=-10000;
         m_b[uid]=-10000;
@@ -250,6 +246,7 @@ void DCReconstructionMT::StartThread(unsigned int id){
         m_X100[uid]=-10000;
         m_minimum[uid] = 10000;
       }
+
       else{
         mini->Clear(); 
         mini->SetVariable(0,"a",ai,1);

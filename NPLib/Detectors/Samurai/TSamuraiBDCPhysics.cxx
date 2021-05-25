@@ -154,7 +154,7 @@ void TSamuraiBDCPhysics::BuildPhysicalEvent(){
             //cout << "BDC" << endl;
             m_reconstruction.ResolvePlane(it1->second,it1->first,it2->second,it2->first,P);
             // cout << "done " << D[it1->first] << " " << D[it2->first] << endl;
-            if(P.X()!=-10000 && D[it1->first]<PowerThreshold&& D[it2->first]<PowerThreshold){
+            if(P.X()!=-10000 /*&& D[it1->first]<PowerThreshold&& D[it2->first]<PowerThreshold*/){
               C.push_back(P);
               // Mean pos are weighted based on the the sum of distance from track
               // to hit obtained during the minimisation
@@ -172,7 +172,7 @@ void TSamuraiBDCPhysics::BuildPhysicalEvent(){
           if(it1!=it2 ){// different plane, same detector
             m_reconstruction.ResolvePlane(it1->second,it1->first,it2->second,it2->first,P);
 
-            if(P.X()!=-10000&& D[it1->first]<PowerThreshold && D[it2->first]<PowerThreshold)
+            if(P.X()!=-10000/*&& D[it1->first]<PowerThreshold && D[it2->first]<PowerThreshold*/)
               C100.push_back(P);
           }
         }
@@ -272,7 +272,10 @@ void TSamuraiBDCPhysics::PreTreat(){
       if(etime && time && etime-time>ToTThreshold_L && etime-time<ToTThreshold_H){
         channel="SamuraiBDC"+NPL::itoa(det)+"/L" + NPL::itoa(layer);
         SamuraiDCIndex idx(det,layer,wire);
-        m_DCHit[det].push_back(DCHit(det,layer,wire,time,etime-time,2.5-Cal->ApplySigmoid(channel,etime)));
+        if(!m_invertD[det])
+          m_DCHit[det].push_back(DCHit(det,layer,wire,time,etime-time,Cal->ApplySigmoid(channel,etime)));
+        else
+          m_DCHit[det].push_back(DCHit(det,layer,wire,time,etime-time,2.5-Cal->ApplySigmoid(channel,etime)));
       }
     }
   }
@@ -303,7 +306,7 @@ void TSamuraiBDCPhysics::ReadConfiguration(NPL::InputParser parser){
   if(NPOptionManager::getInstance()->GetVerboseLevel())
     cout << "//// " << blocks.size() << " detector(s) found " << endl; 
 
-  vector<string> token= {"XML","Offset","InvertX","InvertY"};
+  vector<string> token= {"XML","Offset","InvertX","InvertY","InvertD"};
 
   for(unsigned int i = 0 ; i < blocks.size() ; i++){
     if(blocks[i]->HasTokenList(token)){
@@ -316,9 +319,11 @@ void TSamuraiBDCPhysics::ReadConfiguration(NPL::InputParser parser){
       TVector3 offset = blocks[i]->GetTVector3("Offset","mm"); 
       bool invertX = blocks[i]->GetInt("InvertX"); 
       bool invertY = blocks[i]->GetInt("InvertY"); 
+      bool invertD = blocks[i]->GetInt("InvertD"); 
       m_offset[det] = offset;
       m_invertX[det] = invertX;
       m_invertY[det] = invertY;
+      m_invertD[det] = invertD;
     }
   }
 
