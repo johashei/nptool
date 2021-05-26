@@ -1,7 +1,7 @@
 #ifndef TSamuraiHodoscopePHYSICS_H
 #define TSamuraiHodoscopePHYSICS_H
 /*****************************************************************************
- * Copyright (C) 2009-2019   this file is part of the NPTool Project         *
+ * Copyright (C) 2009-2021   this file is part of the NPTool Project         *
  *                                                                           *
  * For the licensing terms see $NPTOOL/Licence/NPTool_Licence                *
  * For the list of contributors see $NPTOOL/Licence/Contributors             *

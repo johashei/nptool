@@ -43,6 +43,7 @@ void Analysis::Init(){
    FDC0 = (TSamuraiFDC0Physics*) m_DetectorManager->GetDetector("SAMURAIFDC0");
    FDC2 = (TSamuraiFDC2Physics*) m_DetectorManager->GetDetector("SAMURAIFDC2");
    Hodo = (TSamuraiHodoscopePhysics*) m_DetectorManager->GetDetector("SAMURAIHOD");
+   m_field.LoadMap("field_map/180702-2,40T-3000.table.bin");
 
    InitOutputBranch();
    InitInputBranch();

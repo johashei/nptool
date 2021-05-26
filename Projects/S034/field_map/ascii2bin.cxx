@@ -1,0 +1,38 @@
+void ascii2bin(){
+  std::string file ="180702-2,40T-3000.table";
+  ifstream in(file.c_str());
+  if(!in.is_open()){
+    cout << "Error: failed to load samurai field map " << file << endl;
+    exit(1);
+  }
+  
+  cout << "//////// Loading Samurai Field Map " << file << endl; 
+  float x,y,z,Bx,By,Bz;
+  std::string name = file+".bin";
+  ofstream out(name.c_str(),std::ofstream::binary);
+
+  unsigned int  count =0 ;
+
+  // ignore 8 first line 
+  string buffer;
+  for(unsigned int i = 0 ; i < 8 ; i++){
+    getline(in,buffer);
+  }
+
+  while(in >> x >> y >> z >> Bx >> By >> Bz){
+    if(++count%10000==0)
+      cout << "\r  - Loading " << count << " values " << flush; 
+    out.write((char*)&x,sizeof(x));
+    out.write((char*)&y,sizeof(y));
+    out.write((char*)&z,sizeof(z));
+    out.write((char*)&Bx,sizeof(Bx));
+    out.write((char*)&By,sizeof(By));
+    out.write((char*)&Bz,sizeof(Bz));
+     //out << x << y << z << Bx << By << Bz;
+  }
+
+      cout << "\r  - " << count << " values loaded" << endl; 
+
+  out.close();
+  in.close();
+}
