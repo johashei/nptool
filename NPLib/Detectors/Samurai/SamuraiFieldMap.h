@@ -43,13 +43,16 @@ class SamuraiFieldMap{
     // map[Pos]=B;
     std::map<std::vector<float>,std::vector<float>> m_field;
     float m_x_max,m_y_max,m_z_max,m_x_min,m_y_min,m_z_min;
+    int m_bin;
 
   public:
-    std::vector<float>& GetB(std::vector<float>& pos);
-    inline std::vector<float>& GetB(float x,float y ,float z){
+    std::vector<float> GetB(std::vector<float>& pos);
+    std::vector<float> InterpolateB(std::vector<float>& pos);
+    inline std::vector<float> GetB(float x,float y ,float z){
       std::vector<float> pos = {x,y,z};
       return GetB(pos);
     };
+
 
     ClassDef(SamuraiFieldMap,1);
 };

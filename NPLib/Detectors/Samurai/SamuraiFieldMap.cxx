@@ -39,14 +39,69 @@ void SamuraiFieldMap::LoadMap(std::string file){
     LoadAscii(file);
 }
 ////////////////////////////////////////////////////////////////////////////////
-std::vector<float>& SamuraiFieldMap::GetB(std::vector<float>& pos){
+std::vector<float> SamuraiFieldMap::GetB(std::vector<float>& pos){
   static vector<float> nullv ={0,0,0};
   auto it=m_field.find(pos);
   if(it!=m_field.end()){
-   return it->second;
+    return it->second;
   }
   else 
     return nullv;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+std::vector<float> SamuraiFieldMap::InterpolateB(std::vector<float>& pos){
+  static vector<float> nullv ={0,0,0};
+  double x = pos[0];
+  double y = pos[1];
+  double z = pos[2];
+
+  // out of bound 
+  if(x<m_x_min || x>m_x_max)
+    return nullv;
+  if(y<m_y_min || y>m_y_max)
+    return nullv;
+  if(z<m_z_min || z>m_z_max)
+    return nullv;
+
+  m_bin = 10;
+  float xm = (float)((int)x/m_bin*m_bin);
+  float ym = (float)((int)y/m_bin*m_bin);
+  float zm = (float)((int)z/m_bin*m_bin);
+
+  vector<float> p0={xm,ym,zm};
+  vector<float> p1={xm+m_bin,ym,zm};
+  vector<float> p2={xm,ym+m_bin,zm};
+  vector<float> p3={xm,ym,zm+m_bin};
+  vector<float> p4={xm-m_bin,ym,zm};
+  vector<float> p5={xm,ym-m_bin,zm};
+  vector<float> p6={xm,ym,zm-m_bin};
+
+  vector<map<vector<float>,vector<float>>::iterator> it=
+  { m_field.lower_bound(p0),
+    m_field.lower_bound(p1),m_field.lower_bound(p2),m_field.lower_bound(p3),
+    m_field.lower_bound(p4),m_field.lower_bound(p5),m_field.lower_bound(p6)};
+
+  float Bx=0;
+  float By=0;
+  float Bz=0;
+  float totalW=0;
+  auto end=m_field.end();
+  unsigned int size = it.size();
+  for(unsigned int i = 0 ; i < size; i++){
+    if(it[i]!=end){
+      double d = 1e-6+sqrt( (pos[0]-it[i]->first[0])*(pos[0]-it[i]->first[0])+
+          (pos[1]-it[i]->first[1])*(pos[1]-it[i]->first[1])+
+          (pos[2]-it[i]->first[2])*(pos[2]-it[i]->first[2]));
+
+      Bx+=it[i]->second[0]/d;
+      By+=it[i]->second[1]/d;
+      Bz+=it[i]->second[2]/d;
+      totalW+=1./d;
+    }
+  }
+  vector<float> res = {Bx/totalW,By/totalW,Bz/totalW};
+  return res;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -56,7 +111,7 @@ void SamuraiFieldMap::LoadAscii(std::string file){
     cout << "Error: failed to load samurai field map " << file << endl;
     exit(1);
   }
-  
+
   cout << "//////// Loading Ascii Samurai field map " << file << endl; 
   float x,y,z,Bx,By,Bz;
 
@@ -90,8 +145,8 @@ void SamuraiFieldMap::LoadAscii(std::string file){
       m_z_max=z;  
   }
 
-      cout << "\r  - " << count << " values loaded" << endl; 
-      in.close();
+  cout << "\r  - " << count << " values loaded" << endl; 
+  in.close();
 }
 ////////////////////////////////////////////////////////////////////////////////
 void SamuraiFieldMap::LoadBinary(std::string file){
@@ -100,7 +155,7 @@ void SamuraiFieldMap::LoadBinary(std::string file){
     cout << "Error: failed to load samurai field map " << file << endl;
     exit(1);
   }
-  
+
   cout << "//////// Loading Binary Samurai field map " << file << endl; 
   float x,y,z,Bx,By,Bz;
 
@@ -135,7 +190,7 @@ void SamuraiFieldMap::LoadBinary(std::string file){
     if(z>m_z_max)
       m_z_max=z;  
   }
-      cout << "\r  - " << count << " values loaded" << endl; 
-      cout << "  - min(" << m_x_min <<";"<< m_y_min <<";" << m_z_min<< ") max(" << m_x_max <<";"<< m_y_max <<";" << m_z_max<< ")" << endl; 
-      in.close();
+  cout << "\r  - " << count << " values loaded" << endl; 
+  cout << "  - min(" << m_x_min <<";"<< m_y_min <<";" << m_z_min<< ") max(" << m_x_max <<";"<< m_y_max <<";" << m_z_max<< ")" << endl; 
+  in.close();
 }

@@ -53,6 +53,8 @@ void Analysis::Init(){
 void Analysis::TreatEvent(){
   Clear();
   //cout << Trigger << " " ; 
+  std::vector<float> x2 ={0, -400,289};
+
   Trigger=Trigger&0x00ff;
 //cout << Trigger << endl;
   // Compute Brho 
