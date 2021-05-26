@@ -7,26 +7,75 @@ void rigz(){
  auto fl = new TFile("root/analysis/test582.root");
  auto tl = (TTree*) fl->FindObjectAny("PhysicsTree");
  
- double FDC0_X,FDC0_Y,FDC2_X,FDC2_ThetaX;
+ double FDC0_X,FDC0_Y,FDC2_X,FDC2_ThetaX,beta;
+ int    FragID;
  tz->SetBranchAddress("FDC0_X",&FDC0_X);
  tz->SetBranchAddress("FDC0_Y",&FDC0_Y);
  tz->SetBranchAddress("FDC2_X",&FDC2_X);
  tz->SetBranchAddress("FDC2_ThetaX",&FDC2_ThetaX);
+ tz->SetBranchAddress("fBeta",&beta);
+ tz->SetBranchAddress("FragID",&FragID);
+ NPL::Particle H2("2H");
+ NPL::Particle H3("3H");
+ NPL::Particle He4("4He");
+ NPL::Particle He6("6He");
+
  auto h = new TH1D("brho","brho",1000,0,8);
+ auto b = new TH1D("rig","rig",1000,0,8);
+ auto b1 = new TH1D("rig1","rig1",1000,0,8);
+ auto b2 = new TH1D("rig2","rig2",1000,0,8);
+ auto b3 = new TH1D("rig3","rig3",1000,0,8);
+ auto b4 = new TH1D("rig4","rig4",1000,0,8);
  unsigned int entries = tz->GetEntries();
 
- for(unsigned int i = 0 ; i < 100000 /*entries*/ ; i++){
+ for(unsigned int i = 0 ; i < entries ; i++){
   tz->GetEntry(i);
   double brho_param[6]={FDC0_X/*+1.77*/, FDC0_Y, 0, 0, FDC2_X/*-252.55*/, FDC2_ThetaX};
   double Brho=r_fit(brho_param);
-  if(Brho>0)
+  if(Brho>0&&FragID>0 && FragID<27){
     h->Fill(Brho);
+    // compute Brho based on beta and FragID
+    double rig ;
+    if(FragID==12){
+      H2.SetBeta(beta);
+      rig = H2.GetBrho();
+      b1->Fill(rig);
+    }
+    else if(FragID==13){
+      H3.SetBeta(beta);
+      rig = H3.GetBrho();
+      b2->Fill(rig);
+    }
+    else if(FragID==24){
+      He4.SetBeta(beta);
+      rig = He4.GetBrho();
+      b3->Fill(rig);
+    }
+    else if(FragID==26){
+      He6.SetBeta(beta);
+      rig = He6.GetBrho();
+      b4->Fill(rig);
+    }
+    b->Fill(rig);
   }
-  h->Scale(1./h->Integral());
-  h->Draw();
-  cout << tl->Draw("Brho>>g","Brho>0","same") << endl;
+  }
+//  h->Scale(1./h->Integral());
+  h->Draw(); h->SetLineColor(kBlack);
+  b->Draw("same"); 
+  b->SetLineColor(kOrange+7);b->SetLineWidth(4);
+  cout << tl->Draw("Brho>>g","Brho>0&&SamuraiFDC2.devX<10","same") << endl;
   auto g = (TH1*) gDirectory->FindObjectAny("g");
-  g->Scale(1./g->Integral());
+  g->SetLineColor(kAzure+7);g->SetLineWidth(4);
+//  g->Scale(1./g->Integral());
+  auto l = new TLine(3.62,0,3.62,h->GetMaximum());l->Draw();
+  l = new TLine(5.53,0,5.53,h->GetMaximum());l->Draw();
+  l = new TLine(5.48,0,5.48,h->GetMaximum());l->Draw();
+  new TCanvas();
+  b->Draw();
+  b1->Draw("same");
+  b2->Draw("same");
+  b3->Draw("same");
+  b4->Draw("same");
 }
 // EOF for ../Geant4/samurai/simtree_energy.C
 // -*- mode: c++ -*-
