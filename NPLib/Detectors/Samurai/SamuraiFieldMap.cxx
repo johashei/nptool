@@ -21,6 +21,8 @@
  *****************************************************************************/
 
 #include "SamuraiFieldMap.h"
+
+#include <cmath>
 #include <fstream>
 #include <iostream>
 using namespace std;
@@ -90,7 +92,7 @@ std::vector<float> SamuraiFieldMap::InterpolateB(std::vector<float>& pos){
   unsigned int size = it.size();
   for(unsigned int i = 0 ; i < size; i++){
     if(it[i]!=end){
-      double d = 1e-6+sqrt( (pos[0]-it[i]->first[0])*(pos[0]-it[i]->first[0])+
+      double d = 1e-6+ sqrt( (pos[0]-it[i]->first[0])*(pos[0]-it[i]->first[0])+
           (pos[1]-it[i]->first[1])*(pos[1]-it[i]->first[1])+
           (pos[2]-it[i]->first[2])*(pos[2]-it[i]->first[2]));
 
