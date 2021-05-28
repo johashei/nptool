@@ -16,7 +16,7 @@ std::vector< TVector3 > track = field.Propagate(3000,Brho,pos,dir);
 ////////////////////////////////////////////////////////////////////////////////
 void testB(){
   auto c = new TCanvas("trajectory","trajectory",1000,1000);
-  double angle = 0*deg;
+  double angle = 30*deg;
   field.LoadMap(angle,"field_map/180702-2,40T-3000.table.bin",10);
   unsigned int size = 1000;
   vector<float> pos = {0,0,0};

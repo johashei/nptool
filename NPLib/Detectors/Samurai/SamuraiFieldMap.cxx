@@ -24,6 +24,7 @@
 #include "NPPhysicalConstants.h"
 using namespace NPUNITS;
 
+#include <cmath>
 #include <fstream>
 #include <iostream>
 using namespace std;
