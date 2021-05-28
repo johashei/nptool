@@ -19,6 +19,6 @@ add_custom_command(OUTPUT TSamuraiFDC0PhysicsDict.cxx COMMAND ${CMAKE_BINARY_DIR
 
 add_library(NPSamurai SHARED SamuraiFieldMapDict.cxx SamuraiFieldMap.cxx TSamuraiHodoscopeData.cxx TSamuraiBDCData.cxx TSamuraiBDCPhysics.cxx TSamuraiBDCDataDict.cxx TSamuraiBDCPhysicsDict.cxx TSamuraiFDC2Data.cxx TSamuraiFDC2DataDict.cxx TSamuraiHodoscopePhysics.cxx TSamuraiHodoscopePhysicsDict.cxx TSamuraiFDC2Physics.cxx TSamuraiHodoscopeDataDict.cxx TSamuraiFDC2PhysicsDict.cxx TSamuraiFDC0Data.cxx TSamuraiFDC0DataDict.cxx TSamuraiFDC0Physics.cxx TSamuraiFDC0PhysicsDict.cxx)
 
-target_link_libraries(NPSamurai ${ROOT_LIBRARIES} NPCore NPTrackReconstruction) 
+target_link_libraries(NPSamurai ${ROOT_LIBRARIES} NPCore NPTrackReconstruction NPPhysics) 
 install(FILES SamuraiFieldMap.h TSamuraiBDCData.h TSamuraiBDCPhysics.h TSamuraiHodoscopeData.h TSamuraiHodoscopePhysics.h TSamuraiFDC2Data.h TSamuraiFDC2Physics.h  TSamuraiFDC0Data.h TSamuraiFDC0Physics.h SamuraiDCIndex.h DESTINATION ${CMAKE_INCLUDE_OUTPUT_DIRECTORY})
 

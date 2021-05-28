@@ -118,6 +118,7 @@ namespace NPL {
     double			   GetGamma()			      const	{return fGamma;}
     double			   GetVelocity()	   	   const	{return fVelocity;}
     TLorentzVector GetEnergyImpulsion()    const {return fEnergyImpulsion;}
+    TVector3       GetImpulsion()          const {return fEnergyImpulsion.Vect();}
     double         GetExcitationEnergy()   const {return fExcitationEnergy;}
     void				SetName(const char* name)	{fName = name;}
     void				SetZ(int charge)					{fCharge = charge;}
