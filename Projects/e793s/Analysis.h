@@ -25,6 +25,7 @@
 #include"NPVAnalysis.h"
 #include"NPEnergyLoss.h"
 #include"NPReaction.h"
+#include"NPBeam.h"
 #include"RootOutput.h"
 #include"RootInput.h"
 #include "TMust2Physics.h"
@@ -64,7 +65,7 @@ class Analysis: public NPL::VAnalysis{
     std::vector<double> ELab;
     std::vector<double> Ex;
     std::vector<double> Ecm;
-    std::vector<double> RawEnergy; //CPx ADDITION
+    std::vector<double> RawEnergy;
     std::vector<double> ThetaLab;
     std::vector<double> PhiLab;
     std::vector<double> ThetaCM;
@@ -81,6 +82,10 @@ class Analysis: public NPL::VAnalysis{
     // Beam Energy
     double OriginalBeamEnergy ; // AMEV
     double FinalBeamEnergy; 
+
+    // Beam Position
+    double XBeam;
+    double YBeam;
 
     // intermediate variable
     TVector3 BeamDirection;
@@ -211,6 +216,10 @@ class Analysis: public NPL::VAnalysis{
     TMugastPhysics* MG;
     //TCATSPhysics* CATS;
     TModularLeafPhysics* ML;
+
+    // Beam object
+    NPL::Beam* Beam;
+
     unsigned int GATCONF_MASTER;
 
     unsigned long long int count ;

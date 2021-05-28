@@ -43,7 +43,6 @@ Analysis::~Analysis(){
 ////////////////////////////////////////////////////////////////////////////////
 void Analysis::Init() {
   ///////////////////////////////////////////////////////////////////////////////  
- 
 
   agata_zShift=51*mm;
   //BrhoRef=0.65;
@@ -60,6 +59,17 @@ void Analysis::Init() {
   // get reaction information
   reaction.ReadConfigurationFile(NPOptionManager::getInstance()->GetReactionFile());
   OriginalBeamEnergy = reaction.GetBeamEnergy();
+  reaction.Print(); //TESTING PARSER
+
+  // get beam position from .reaction file
+  Beam = (NPL::Beam*) reaction.GetParticle1(); 
+  XBeam = Beam->GetMeanX();
+  YBeam = Beam->GetMeanY();
+
+  cout << " ---------------- Beam Position ---------------- " << endl;
+  cout << " \tX = " << XBeam << " mm\tY = " << YBeam  << " mm" << endl;
+  cout << " ----------------------------------------------- " << endl;
+
   // target thickness
   TargetThickness = m_DetectorManager->GetTargetThickness();
   string TargetMaterial = m_DetectorManager->GetTargetMaterial();
@@ -128,13 +138,8 @@ void Analysis::TreatEvent(){
     }
   }
 
-  double xbeam = 0.0; 
-  double ybeam = 0.0;
-
-  // double XTarget = CATS->GetPositionOnTarget().X();
-  // double YTarget = CATS->GetPositionOnTarget().Y();
-  TVector3 BeamDirection(xbeam,ybeam,1);
-  BeamImpact = TVector3(xbeam,ybeam,m_DetectorManager->GetTargetZ()); 
+  TVector3 BeamDirection(XBeam,YBeam,1);
+  BeamImpact = TVector3(XBeam,YBeam,m_DetectorManager->GetTargetZ()); 
 
   ParticleMult=M2->Si_E.size()+MG->DSSD_E.size();
   //ParticleMult=M2->Si_E.size();
@@ -167,7 +172,7 @@ void Analysis::TreatEvent(){
     Z.push_back(M2->GetPositionOfInteraction(countMust2).Z());
 
     ThetaM2Surface = HitDirection.Angle(- M2->GetTelescopeNormal(countMust2) );
-    ThetaNormalTarget = HitDirection.Angle( TVector3(xbeam,ybeam,1) ) ;
+    ThetaNormalTarget = HitDirection.Angle( TVector3(XBeam,YBeam,1) ) ;
 
    // cout<<"Must2 Znormal:"<<M2 -> GetTelescopeNormal(countMust2).Z()<<endl;
   //  cout<<"Must2 telescope:"<<M2->TelescopeNumber[countMust2]<<endl;
@@ -231,8 +236,6 @@ void Analysis::TreatEvent(){
     thetalab_tmp = 0;
     philab_tmp = 0;
     TVector3 HitDirection = MG->GetPositionOfInteraction(countMugast) - BeamImpact;
-//    cout << HitDirection.X() << "\t" << HitDirection.Y() << "\t" << HitDirection.Z() << "\t\t" << MG->GetPositionOfInteraction(countMugast).X() << "\t" << MG->GetPositionOfInteraction(countMugast).Y() << "\t" << MG->GetPositionOfInteraction(countMugast).Z() << "\t\t" << BeamImpact.X() << "\t" << BeamImpact.Y() << "\t" << BeamImpact.Z() << endl;
-    //HitDirection = [Xp, Yp, Zp] - [Xb, Yb, Zb] = [Xd, Td, Zd] IN MY CODE!
     thetalab_tmp = HitDirection.Angle(BeamDirection);
     philab_tmp = HitDirection.Phi();
 
@@ -242,7 +245,7 @@ void Analysis::TreatEvent(){
 
     //ThetaMGSurface = HitDirection.Angle( TVector3(0,0,1) ) ;
     ThetaMGSurface = HitDirection.Angle( MG -> GetTelescopeNormal(countMugast) );
-    ThetaNormalTarget = HitDirection.Angle( TVector3(xbeam,ybeam,-1) ) ;
+    ThetaNormalTarget = HitDirection.Angle( TVector3(XBeam,YBeam,-1) ) ;
 
     // Part 2 : Impact Energy
     Energy = elab_tmp = 0;
@@ -264,27 +267,6 @@ void Analysis::TreatEvent(){
     ThetaLab.push_back(thetalab_tmp/deg);
      
     PhiLab.push_back(philab_tmp/deg);
-
-
-
-//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-/*
-cout << MG->TelescopeNumber[countMugast] << " "
-     << MG->GetPositionOfInteraction(countMugast).X() << " " 
-     << MG->GetPositionOfInteraction(countMugast).Y() << " " 
-     << MG->GetPositionOfInteraction(countMugast).Z() << " " 
-     << Energy <<  " " 
-     << endl; 
-*/
-
-///////////!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-
-
-
-
-
 
     if(sizeMG==1){
       MG_T = MG->DSSD_T[0];
@@ -602,7 +584,7 @@ cout << MG->TelescopeNumber[countMugast] << " "
     AddBack_EDC.clear();
     EAgata = -1000;
     ELab.clear();
-    RawEnergy.clear(); //CPx ADDITION
+    RawEnergy.clear(); 
     ThetaLab.clear();
     PhiLab.clear();
     ThetaCM.clear();
