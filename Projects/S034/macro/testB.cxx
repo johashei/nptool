@@ -6,7 +6,6 @@ std::vector< TVector3 > track = field.Propagate(3000,Brho,pos,dir);
   auto g = new TGraph();
   unsigned int size = track.size();
   g->Set(size);
-  cout << size << endl;
   for(unsigned int i = 0 ; i < size ; i++){
     g->SetPoint(i,-track[i].X(),track[i].Z());
   }
@@ -18,6 +17,10 @@ void testB(){
   auto c = new TCanvas("trajectory","trajectory",1000,1000);
   double angle = 30*deg;
   field.LoadMap(angle,"field_map/180702-2,40T-3000.table.bin",10);
+  field.SetFDC2Angle((59.930-90.0)*deg);
+  field.SetFDC2R(3686.77 + 880.745/2.);
+  auto scan  = field.BrhoScan(2.5,10,0.1);
+  
   unsigned int size = 1000;
   vector<float> pos = {0,0,0};
   auto h = new TH2F("h","h", size,-4000,4000,size,-4000,4000);
@@ -35,12 +38,13 @@ void testB(){
   h->Draw("colz");
   h->GetZaxis()->SetRangeUser(-1,3);
   DrawT(TVector3(0,0,-3500),TVector3(0,0,1),5.48);
-  //DrawT(TVector3(0,0,-3500),TVector3(0.01,0.01,1),5);
-  //DrawT(TVector3(0,0,-3500),TVector3(-0.01,-0.01,1),5);
-
   DrawT(TVector3(0,0,-3500),TVector3(0,0,1),3.62);
-//  DrawT(TVector3(0,0,-3500),TVector3(0.01,0.01,1),3.5);
-//  DrawT(TVector3(0,0,-3500),TVector3(-0.01,-0.01,1),3.5);
+
+  TVector3 p(1,1,-3500); TVector3 d(0.01,-0.01,1); double b = 5.481923;
+  DrawT(p,d,b);
+  std::vector< TVector3 > track = field.Propagate(3000,b,p,d);
+  cout << field.FindBrho(p,d,track.back(),d)<< endl;;
+
   double rFDC2 = 3686.77 + 880.745/2.;
   double phiFDC2 = (59.930-90.0-angle/deg)*deg;
   TVector3 C(-252 ,0, rFDC2 );
@@ -64,4 +68,11 @@ void testB(){
   mag->SetLineWidth(4);
   mag->SetFillStyle(0);
   mag->Draw();
+
+  new TCanvas();
+  scan->Draw("ac");
+  cout << scan->Eval(700-252) << endl;
+  
+  
+
 }

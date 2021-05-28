@@ -26,12 +26,13 @@
 #include<vector>
 #include<map>
 #include"TObject.h"
+#include"TGraph.h"
 #include"TVector3.h"
 #include "NPParticle.h"
 class SamuraiFieldMap{
 
   public:
-    SamuraiFieldMap(){};
+    SamuraiFieldMap(){m_BrhoScan=NULL;};
     SamuraiFieldMap(std::string file);
     ~SamuraiFieldMap(){};
   
@@ -69,7 +70,20 @@ class SamuraiFieldMap{
     // return a 3D track of the particle in the field
     std::vector< TVector3 > Propagate(double rmax, double Brho, TVector3 pos, TVector3 dir);
     void func(NPL::Particle& N, TVector3 pos, TVector3 dir, TVector3& new_pos, TVector3& new_dir);
-    TVector3 PropagateToFDC2(TVector3 pos, TVector3 dir,double angle,double R);
+  private:
+    double m_fdc2angle;
+    double m_fdc2R;
+  public:
+    void SetFDC2Angle(double angle){m_fdc2angle=angle;};
+    void SetFDC2R(double R){m_fdc2R=R;};
+    TVector3 PropagateToFDC2(TVector3 pos, TVector3 dir);
+
+  public:
+    TGraph* BrhoScan(double min,double max,double step);
+    double  FindBrho(TVector3& p_fdc0,TVector3& d_fdc0,TVector3& p_fdc2,TVector3& d_fdc2);
+
+  private:
+    TGraph* m_BrhoScan;
     //
     ClassDef(SamuraiFieldMap,1);
 };

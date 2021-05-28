@@ -30,18 +30,63 @@ using namespace NPUNITS;
 using namespace std;
 
 ClassImp(SamuraiFieldMap);
-////////////////////////////////////////////////////////////////////////////////
-TVector3 SamuraiFieldMap::PropagateToFDC2(TVector3 pos, TVector3 dir, double angle,double R){
-  // go to FDC2 frame reference
-  pos.RotateY(-angle);
-  dir.RotateY(-angle);
 
-  double deltaZ=R-pos.Z();
+////////////////////////////////////////////////////////////////////////////////
+double SamuraiFieldMap::FindBrho(TVector3& p_fdc0,TVector3& d_fdc0,TVector3& p_fdc2,TVector3& d_fdc2){
+  if(!m_BrhoScan)
+    BrhoScan(2.5,10,0.1);
+
+  // do a first guess based on fdc2 pos
+  double b = m_BrhoScan->Eval(p_fdc2.X()); 
+  double b0 = b;
+  vector<TVector3> pos=Propagate(3000,b,p_fdc0,d_fdc0);
+  double step = 1;
+  double d = (pos.back()-p_fdc2).Mag();
+  double dd=d;
+  short sign =1;
+  unsigned int limit =1000;
+  unsigned count=0;
+  while(step>1e-6 && count<limit){
+   dd=d;
+   b+=sign*step;
+   pos=Propagate(3000,b,p_fdc0,d_fdc0); 
+   d = (pos.back()-p_fdc2).Mag();
+   if(d>=dd){
+    step/=10;
+    sign=-sign;
+   }
+   count++;
+  }
+  return b-sign*0.5*step;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TGraph* SamuraiFieldMap::BrhoScan(double min, double max,double step){
+  if(m_BrhoScan)
+    delete m_BrhoScan;
+  m_BrhoScan=new TGraph;
+  unsigned int size = (max-min)/step;
+  m_BrhoScan->Set(size);
+  unsigned int i=0;
+  for(double b = min ; b < max ; b+=step){
+   vector<TVector3> pos= Propagate(3000,b,TVector3(0,0,0),TVector3(0,0,1));
+   pos.back().RotateY(-m_fdc2angle);
+   m_BrhoScan->SetPoint(i++,pos.back()[0],b); 
+  }
+  return m_BrhoScan;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TVector3 SamuraiFieldMap::PropagateToFDC2(TVector3 pos, TVector3 dir){
+  // go to FDC2 frame reference
+  pos.RotateY(-m_fdc2angle);
+  dir.RotateY(-m_fdc2angle);
+
+  double deltaZ=m_fdc2R-pos.Z();
   dir*=deltaZ/dir.Z();
   pos+=dir;
-  cout << pos.Z() << " " << R << endl;
   pos.SetX(pos.X());
-  pos.RotateY(angle);
+  pos.RotateY(m_fdc2angle);
   return pos;
 }
 
@@ -112,7 +157,7 @@ std::vector< TVector3 > SamuraiFieldMap::Propagate(double rmax, double Brho, TVe
     count++;
   }
   imp=imp.Unit();
-  pos = PropagateToFDC2(pos, imp, (59.930-90.0)*deg, 3686.77 + 880.745/2.);
+  pos = PropagateToFDC2(pos, imp);
   pos.RotateY(-m_angle);
   track.push_back(pos);
   
