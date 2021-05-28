@@ -31,9 +31,25 @@ using namespace std;
 
 ClassImp(SamuraiFieldMap);
 ////////////////////////////////////////////////////////////////////////////////
+TVector3 SamuraiFieldMap::PropagateToFDC2(TVector3 pos, TVector3 dir, double angle,double R){
+  // go to FDC2 frame reference
+  pos.RotateY(-angle);
+  dir.RotateY(-angle);
+
+  double deltaZ=R-pos.Z();
+  dir*=deltaZ/dir.Z();
+  pos+=dir;
+  cout << pos.Z() << " " << R << endl;
+  pos.SetX(pos.X());
+  pos.RotateY(angle);
+  return pos;
+}
+
+////////////////////////////////////////////////////////////////////////////////
 std::vector< TVector3 > SamuraiFieldMap::Propagate(double rmax, double Brho, TVector3 pos, TVector3 dir){
   pos.RotateY(m_angle);
   dir.RotateY(m_angle);
+  dir=dir.Unit();
   // Property of a particle with the correct Brho:
   // We assume a 4He to compute v
   // The choice of the particle is of no importance
@@ -95,7 +111,11 @@ std::vector< TVector3 > SamuraiFieldMap::Propagate(double rmax, double Brho, TVe
     r = sqrt(pos.X()*pos.X()+pos.Z()*pos.Z());
     count++;
   }
-
+  imp=imp.Unit();
+  pos = PropagateToFDC2(pos, imp, (59.930-90.0)*deg, 3686.77 + 880.745/2.);
+  pos.RotateY(-m_angle);
+  track.push_back(pos);
+  
   return track;
 
 }

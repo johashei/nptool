@@ -69,7 +69,7 @@ class SamuraiFieldMap{
     // return a 3D track of the particle in the field
     std::vector< TVector3 > Propagate(double rmax, double Brho, TVector3 pos, TVector3 dir);
     void func(NPL::Particle& N, TVector3 pos, TVector3 dir, TVector3& new_pos, TVector3& new_dir);
-    //TVector3 PropagateToFDC2(double angle,double);
+    TVector3 PropagateToFDC2(TVector3 pos, TVector3 dir,double angle,double R);
     //
     ClassDef(SamuraiFieldMap,1);
 };
