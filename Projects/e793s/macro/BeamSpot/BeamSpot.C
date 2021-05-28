@@ -29,21 +29,23 @@ void BeamSpot(){
   double ELab = 0.0, Ex = 0.0;
   vector <double> Xd, Yd, Zd;      //Vector of particle direction. Calculated as Xp-Xb, Yp-Yb...
   ifstream MugastDataFile;
+  double ThetaNormalTarget;
+
 
   gErrorIgnoreLevel = kWarning; // Suppress ".pdf created" lines
 
   /*** ITERATIVE GRID CONTROLS ***/
   /***** pos varied as offset ****/
-  /**/ double xmin = +0.000;   /**/
-  /**/ double xmax = +0.100;   /**/
-  /**/ unsigned int xdiv = 10; /**/
+  /**/ double xmin = +0.020;   /**/
+  /**/ double xmax = +0.080;   /**/
+  /**/ unsigned int xdiv = 12; /**/
   /**/                         /**/
-  /**/ double ymin = -0.100;   /**/
-  /**/ double ymax = +0.100;   /**/
+  /**/ double ymin = -0.050;   /**/
+  /**/ double ymax = +0.050;   /**/
   /**/ unsigned int ydiv = 10; /**/
   /**/                         /**/
-  /**/ double zmin = -0.100;   /**/
-  /**/ double zmax = +0.100;   /**/
+  /**/ double zmin = -0.050;   /**/
+  /**/ double zmax = +0.050;   /**/
   /**/ unsigned int zdiv =  2; /**/
   /**/                         /**/
   /***** thick varied as %ge *****/
@@ -58,9 +60,9 @@ void BeamSpot(){
   /*******************************/
 
   // File name controls
-  const char* XYZE_file = "XYZE_gammaGated_Run63.txt";
-  const char* outputMetric = "output_Run63_metrics.txt";
-  const char* outputHisto = "output_Run63_histograms.root";
+  const char* XYZE_file = "XYZE_gammaGated_Full_TestThetaNormalTarget.txt";
+  const char* outputMetric = "output_Run63_metrics_ThetaNormal.txt";
+  const char* outputHisto = "output_Run63_histograms_ThetaNormal.root";
 
   // Calculate size of iteratve steps
   double xstp = (xmax-xmin)/ ((double) xdiv);
@@ -153,7 +155,8 @@ void BeamSpot(){
   	 	                  Yp[i] - beamSpot.Y(),   //Yd
 			          Zp[i] - beamSpot.Z() }; //Zd
 	  
-	    tempTheta = ELab = Ex = 0.0;
+            ThetaNormalTarget = tempTheta = ELab = Ex = 0.0;
+
 
 	    switch(DetNum[i]){
 	      case 1:
@@ -179,13 +182,23 @@ void BeamSpot(){
 	        return; // Exit code
 	    }
 
+            // Change beam spot vector to inverse beam direction vector
+            beamSpot.SetZ(-1.0);
+            ThetaNormalTarget = particleDir.Angle(beamSpot);
+
 	    //micrometer defined in NPSystemOfUnits.h
-	    ELab = LightAl.EvaluateInitialEnergy(Ep[i], 0.4*micrometer, tempTheta); 
-	    ELab = LightTarget.EvaluateInitialEnergy(ELab, 0.5*TargetThickness, 0.);
+	    ELab = LightAl.EvaluateInitialEnergy(
+			    Ep[i],               //energy after Al 
+			    0.4*micrometer,      //thickness of Al
+			    tempTheta);          //angle of impingement
+	    ELab = LightTarget.EvaluateInitialEnergy(
+			    ELab,                //energy after leaving target 
+			    0.5*TargetThickness, //pass through half target
+			    ThetaNormalTarget);  //angle leaving target
 
             // Change beam spot vector to beam direction vector
 	    beamSpot.SetZ(1.0);
-            Ex = reaction.ReconstructRelativistic( ELab, particleDir.Angle(beamSpot) );
+            Ex = reaction.ReconstructRelativistic(ELab, particleDir.Angle(beamSpot));
 
 	    // Fill Ex histograms
 	    tempHist->Fill(Ex);

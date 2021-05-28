@@ -174,9 +174,6 @@ void Analysis::TreatEvent(){
     ThetaM2Surface = HitDirection.Angle(- M2->GetTelescopeNormal(countMust2) );
     ThetaNormalTarget = HitDirection.Angle( TVector3(XBeam,YBeam,1) ) ;
 
-   // cout<<"Must2 Znormal:"<<M2 -> GetTelescopeNormal(countMust2).Z()<<endl;
-  //  cout<<"Must2 telescope:"<<M2->TelescopeNumber[countMust2]<<endl;
-
     /************************************************/
     // Part 2 : Impact Energy
     Energy = 0;
@@ -195,9 +192,7 @@ void Analysis::TreatEvent(){
     else
       Energy = Si_E_M2;
 
-
-    RawEnergy.push_back(Energy); //CPx ADDITION
-
+    RawEnergy.push_back(Energy);
 
     // Evaluate energy using the thickness
     elab_tmp = LightAl.EvaluateInitialEnergy(Energy, 0.4*micrometer, ThetaM2Surface);
@@ -243,30 +238,32 @@ void Analysis::TreatEvent(){
     Y.push_back( MG -> GetPositionOfInteraction(countMugast).Y());
     Z.push_back( MG -> GetPositionOfInteraction(countMugast).Z());
 
-    //ThetaMGSurface = HitDirection.Angle( TVector3(0,0,1) ) ;
     ThetaMGSurface = HitDirection.Angle( MG -> GetTelescopeNormal(countMugast) );
     ThetaNormalTarget = HitDirection.Angle( TVector3(XBeam,YBeam,-1) ) ;
 
     // Part 2 : Impact Energy
     Energy = elab_tmp = 0;
     Energy = MG->GetEnergyDeposit(countMugast);
-
     RawEnergy.push_back(Energy);
 
-    elab_tmp = LightAl.EvaluateInitialEnergy(Energy, 0.4*micrometer, ThetaMGSurface);
-   
-    elab_tmp = LightTarget.EvaluateInitialEnergy(elab_tmp, 0.5*TargetThickness, 0.);
-    //elab_tmp   = LightTarget.EvaluateInitialEnergy( elab_tmp ,TargetThickness*0.5, ThetaNormalTarget);
+    elab_tmp = LightAl.EvaluateInitialEnergy(
+		    Energy,              //particle energy after Al
+		    0.4*micrometer,      //thickness of Al
+		    ThetaMGSurface);     //angle of impingement
+    elab_tmp = LightTarget.EvaluateInitialEnergy(
+		    elab_tmp,            //particle energy after leaving target
+		    TargetThickness*0.5, //distance passed through target
+		    ThetaNormalTarget);  //angle of exit from target
     ELab.push_back(elab_tmp);
 
     // Part 3 : Excitation Energy Calculation
     Ex.push_back(reaction.ReconstructRelativistic(elab_tmp,thetalab_tmp));
     Ecm.push_back(elab_tmp*(AHeavy+ALight)/(4*AHeavy*cos(thetalab_tmp)*cos(thetalab_tmp)));
+    
     // Part 4 : Theta CM Calculation
-    ThetaCM.push_back(reaction.EnergyLabToThetaCM(elab_tmp, thetalab_tmp)/deg);
     ThetaLab.push_back(thetalab_tmp/deg);
-     
     PhiLab.push_back(philab_tmp/deg);
+    ThetaCM.push_back(reaction.EnergyLabToThetaCM(elab_tmp, thetalab_tmp)/deg);
 
     if(sizeMG==1){
       MG_T = MG->DSSD_T[0];
