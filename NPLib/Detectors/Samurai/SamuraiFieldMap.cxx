@@ -50,12 +50,8 @@ double SamuraiFieldMap::Delta(const double* parameter){
     // Move the fdc2 pos from lab frame to fdc2 frame 
     pos.back().RotateY(-m_fdc2angle+m_angle); 
 
-//    cout << parameter[0] << " " << pos.back().X()-m_FitPosFDC2.X() << endl;
- //   m_FitPosFDC2.Print();
- //   pos.back().Print();
     double d = (pos.back().X()-m_FitPosFDC2.X())*(pos.back().X()-m_FitPosFDC2.X());
     //diff = pos.back()-m_FitPosFDC2;
-    //diff.Print();
     return d;
     //return diff.Mag2();
 }
@@ -74,13 +70,10 @@ double SamuraiFieldMap::FindBrho(TVector3 p_fdc0,TVector3 d_fdc0,TVector3 p_fdc2
   double b0[1] ={m_BrhoScan->Eval(p_fdc2.X())}; 
   
   m_min->Clear(); 
-  m_min->SetPrecision(1e-5);
+  m_min->SetPrecision(1e-6);
   m_min->SetMaxFunctionCalls(1000);
-  m_min->SetLimitedVariable(0,"B",b0[0],1,1,10);
+  m_min->SetLimitedVariable(0,"B",b0[0],0.1,1,10);
   m_min->Minimize(); 
-  //cout << Delta(m_min->X()) << endl; 
- // exit(1);
-  //cout << m_min->NCalls() << endl;
   return m_min->X()[0];
 }
 
@@ -173,7 +166,7 @@ std::vector< TVector3 > SamuraiFieldMap::Propagate(double Brho, TVector3 pos, TV
   double py = P*dir.Y();//py
   double pz = P*dir.Z();//pz
   TVector3 imp = P*dir;
-  double h = 0.1*nanosecond; // typical step length  ~1mm at beta 0.6
+  double h = 1*nanosecond;
   while(r<=m_Rmax && count < limit){
     func(N, pos           , imp            , xk1, pk1);
     func(N, pos+xk1*(h/2.), imp+pk1*(h/2.) , xk2, pk2);
