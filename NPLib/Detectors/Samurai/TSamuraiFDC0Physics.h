@@ -82,6 +82,13 @@ class TSamuraiFDC0Physics : public TObject, public NPL::VDetector{
     int MultMean;
     int PileUp;
 
+  private: // offset and inversion 
+    TVector3 m_offset;//!
+    bool m_invertX;//!
+    bool m_invertY;//!
+    bool m_invertD;//!
+
+
   public:
     // Projected position at given Z plan
     TVector3 ProjectedPosition(double Z);
@@ -168,6 +175,7 @@ class TSamuraiFDC0Physics : public TObject, public NPL::VDetector{
     TSamuraiFDC0Data* GetRawData()        const {return m_EventData;}
     TSamuraiFDC0Data* GetPreTreatedData() const {return m_PreTreatedData;}
   
+    TVector3 GetPos(){return TVector3(PosX,PosY,m_offset.Z());}
     double GetPosX(){return PosX;}
     double GetPosY(){return PosY;}
     double GetThetaX(){return ThetaX;}
@@ -180,12 +188,6 @@ class TSamuraiFDC0Physics : public TObject, public NPL::VDetector{
     TSamuraiFDC0Data*         m_EventData;//!
     TSamuraiFDC0Data*         m_PreTreatedData;//!
     TSamuraiFDC0Physics*      m_EventPhysics;//!
-
-  private: // offset and inversion 
-    TVector3 m_offset;//!
-    bool m_invertX;//!
-    bool m_invertY;//!
-    bool m_invertD;//!
 
   private: // Spectra Class
    // TSamuraiFDC0Spectra* m_Spectra; // !

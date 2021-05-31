@@ -31,7 +31,8 @@ Minos
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 SAMURAIFDC0
  XML= db/SAMURAIFDC0_20200109.xml
- Offset= 3.005 1.864 0 mm
+%Offset= 3.005 1.864 0 mm
+ Offset= 1.77 0 -3456.52 mm
  InvertX= 1 
  InvertY= 0
  InvertD= 1
@@ -39,7 +40,8 @@ SAMURAIFDC0
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 SAMURAIFDC2
  XML= db/SAMURAIFDC2.xml
- Offset= 0 0 0 mm
+%Offset= 0 0 0 mm
+ Offset= -252.55 0 4123.47 mm
  InvertX= 0 
  InvertY= 1
  InvertD= 1

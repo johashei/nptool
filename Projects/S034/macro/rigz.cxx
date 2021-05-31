@@ -4,9 +4,9 @@ void rigz(){
 
  auto fz = new TFile("root/zaihong/run0582_RIG20210424_6He.root");
  auto tz = (TTree*) fz->FindObjectAny("rig");
- auto fl = new TFile("root/analysis/test582.root");
- auto tl = (TTree*) fl->FindObjectAny("PhysicsTree");
- 
+ auto fl = new TFile("root/analysis/Results582.root");
+ auto tl = (TTree*) fl->FindObjectAny("ResultTree");
+  tl->AddFriend(tz); 
  double FDC0_X,FDC0_Y,FDC2_X,FDC2_ThetaX,beta;
  int    FragID;
  tz->SetBranchAddress("FDC0_X",&FDC0_X);
@@ -32,7 +32,7 @@ void rigz(){
   tz->GetEntry(i);
   double brho_param[6]={FDC0_X/*+1.77*/, FDC0_Y, 0, 0, FDC2_X/*-252.55*/, FDC2_ThetaX};
   double Brho=r_fit(brho_param);
-  if(Brho>0&&FragID>0 && FragID<27){
+  if(Brho>2&&FragID>0 && FragID<27){
     h->Fill(Brho);
     // compute Brho based on beta and FragID
     double rig ;
@@ -59,14 +59,15 @@ void rigz(){
     b->Fill(rig);
   }
   }
-//  h->Scale(1./h->Integral());
+  h->Scale(1./h->Integral());
   h->Draw(); h->SetLineColor(kBlack);
   b->Draw("same"); 
+  b->Scale(1./b->Integral());
   b->SetLineColor(kOrange+7);b->SetLineWidth(4);
-  cout << tl->Draw("Brho>>g","Brho>0&&SamuraiFDC2.devX<10","same") << endl;
+  cout << tl->Draw("Brho>>g","Brho>2&&FragID>0 && FragID<27","same") << endl;
   auto g = (TH1*) gDirectory->FindObjectAny("g");
   g->SetLineColor(kAzure+7);g->SetLineWidth(4);
-//  g->Scale(1./g->Integral());
+  g->Scale(1./g->Integral());
   auto l = new TLine(3.62,0,3.62,h->GetMaximum());l->Draw();
   l = new TLine(5.53,0,5.53,h->GetMaximum());l->Draw();
   l = new TLine(5.48,0,5.48,h->GetMaximum());l->Draw();

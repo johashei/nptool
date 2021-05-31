@@ -43,8 +43,10 @@ void Analysis::Init(){
    FDC0 = (TSamuraiFDC0Physics*) m_DetectorManager->GetDetector("SAMURAIFDC0");
    FDC2 = (TSamuraiFDC2Physics*) m_DetectorManager->GetDetector("SAMURAIFDC2");
    Hodo = (TSamuraiHodoscopePhysics*) m_DetectorManager->GetDetector("SAMURAIHOD");
-  // m_field.LoadMap("field_map/180702-2,40T-3000.table.bin",10);
+   m_field.LoadMap(30*deg,"field_map/180702-2,40T-3000.table.bin",10);
+   m_field.SetFDC2Angle((59.930-90.0)*deg);
 
+   m_field.SetFDC2R(FDC2->GetOffset().Z());
    InitOutputBranch();
    InitInputBranch();
 }
@@ -56,7 +58,12 @@ void Analysis::TreatEvent(){
   Trigger=Trigger&0x00ff;
 //cout << Trigger << endl;
   // Compute Brho 
-  if(FDC2->PosX>-10000 && FDC0->PosX>-10000 ){ // if both are correctly build
+  //
+  if( FDC2->PosX>-1500 && FDC2->PosX<1000 
+      && FDC2->PosY>-500 && FDC2->PosY<500 
+      && FDC0->PosX>-80 && FDC0->PosX<80 
+      && FDC0->PosY>-80 && FDC0->PosY<80
+      && FDC0->Dir.Z()>0.8) { // if both are correctly build
    // Compute ThetaX and PhiY using Minos vertex and FDC0 XY
    double FDC0_ThetaX = FDC0->ThetaX;
    double FDC0_PhiY   = FDC0->PhiY;
@@ -67,8 +74,10 @@ void Analysis::TreatEvent(){
    } 
     //double brho_param[6]={FDC0->PosX/*+1.77*/, FDC0->PosY, tan(FDC0_ThetaX), tan(FDC0_PhiY), FDC2->PosX/*-252.55*/, FDC2->ThetaX};
 
-    double brho_param[6]={FDC0->PosX/*+1.77*/, FDC0->PosY, 0, 0, FDC2->PosX/*-252.55*/, FDC2->ThetaX};
-    Brho=r_fit(brho_param);
+    //double brho_param[6]={FDC0->PosX/*+1.77*/, FDC0->PosY, 0, 0, FDC2->PosX/*-252.55*/, FDC2->ThetaX};
+
+   // Brho=r_fit(brho_param);
+   Brho=m_field.FindBrho(FDC0->GetPos(),FDC0->Dir,FDC2->GetPos(),TVector3(0,0,1));
   }
 }
 

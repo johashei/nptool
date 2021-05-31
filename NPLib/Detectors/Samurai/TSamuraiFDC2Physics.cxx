@@ -397,6 +397,9 @@ void TSamuraiFDC2Physics::ReadConfiguration(NPL::InputParser parser){
    }
 #endif 
 
+    GetOffset().Print();
+    PosX=1;
+    cout << m_invertY << endl;
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -494,6 +497,9 @@ void TSamuraiFDC2Physics::InitializeRootInputRaw(){
 
 ///////////////////////////////////////////////////////////////////////////
 void TSamuraiFDC2Physics::InitializeRootInputPhysics(){
+  TChain* inputChain = RootInput::getInstance()->GetChain()   ;
+  inputChain->SetBranchStatus( "SamuraiFDC2" , true );
+  inputChain->SetBranchAddress( "SamuraiFDC2" , &m_EventPhysics);
 }
 
 ///////////////////////////////////////////////////////////////////////////
