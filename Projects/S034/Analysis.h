@@ -29,7 +29,7 @@
 #include"TSamuraiFDC2Physics.h"
 #include"TSamuraiHodoscopePhysics.h"
 #include"SamuraiFieldMap.h"
-
+#include<fstream>
 class Analysis: public NPL::VAnalysis{
   public:
     Analysis();
@@ -50,14 +50,16 @@ class Analysis: public NPL::VAnalysis{
     TSamuraiFDC2Physics* FDC2;
     TSamuraiHodoscopePhysics* Hodo;
     SamuraiFieldMap m_field ;
+    ofstream file;
   private: // output variable
-    double Brho;
+    double Brho,BrhoP,BDCX,BDCY,Z;
     double Beta_f;
     int    Trigger;
   public:
     void  Clear();
     void  InitOutputBranch();
     void  InitInputBranch();
+
 };
 
 // use for broh calculation

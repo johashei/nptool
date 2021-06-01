@@ -50,10 +50,10 @@ double SamuraiFieldMap::Delta(const double* parameter){
     // Move the fdc2 pos from lab frame to fdc2 frame 
     pos.back().RotateY(-m_fdc2angle+m_angle); 
 
-    double d = (pos.back().X()-m_FitPosFDC2.X())*(pos.back().X()-m_FitPosFDC2.X());
-    //diff = pos.back()-m_FitPosFDC2;
-    return d;
-    //return diff.Mag2();
+    //double d = (pos.back().X()-m_FitPosFDC2.X())*(pos.back().X()-m_FitPosFDC2.X());
+   // return d;
+    diff = pos.back()-m_FitPosFDC2;
+    return diff.Mag2();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

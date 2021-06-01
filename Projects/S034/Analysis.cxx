@@ -37,18 +37,19 @@ Analysis::~Analysis(){
 
 ////////////////////////////////////////////////////////////////////////////////
 void Analysis::Init(){
-   Minos= (TMinosPhysics*) m_DetectorManager->GetDetector("Minos");
-   //Nebula = (TNebulaPhysics*) m_DetectorManager->GetDetector("NEBULA");
-   BDC = (TSamuraiBDCPhysics*) m_DetectorManager->GetDetector("SAMURAIBDC");
-   FDC0 = (TSamuraiFDC0Physics*) m_DetectorManager->GetDetector("SAMURAIFDC0");
-   FDC2 = (TSamuraiFDC2Physics*) m_DetectorManager->GetDetector("SAMURAIFDC2");
-   Hodo = (TSamuraiHodoscopePhysics*) m_DetectorManager->GetDetector("SAMURAIHOD");
-   m_field.LoadMap(30*deg,"field_map/180702-2,40T-3000.table.bin",10);
-   m_field.SetFDC2Angle((59.930-90.0)*deg);
-
-   m_field.SetFDC2R(FDC2->GetOffset().Z());
-   InitOutputBranch();
-   InitInputBranch();
+  Minos= (TMinosPhysics*) m_DetectorManager->GetDetector("Minos");
+  //Nebula = (TNebulaPhysics*) m_DetectorManager->GetDetector("NEBULA");
+  BDC = (TSamuraiBDCPhysics*) m_DetectorManager->GetDetector("SAMURAIBDC");
+  FDC0 = (TSamuraiFDC0Physics*) m_DetectorManager->GetDetector("SAMURAIFDC0");
+  FDC2 = (TSamuraiFDC2Physics*) m_DetectorManager->GetDetector("SAMURAIFDC2");
+  Hodo = (TSamuraiHodoscopePhysics*) m_DetectorManager->GetDetector("SAMURAIHOD");
+  m_field.LoadMap(30*deg,"field_map/180702-2,40T-3000.table.bin",10);
+  m_field.SetFDC2Angle((59.930-90.0)*deg);
+  m_field.SetFDC2R(FDC2->GetOffset().Z());
+  InitOutputBranch();
+  InitInputBranch();
+  // for fdc/bdc alignement
+  file.open("Calibration/Pos/fdc.txt");
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -56,28 +57,60 @@ void Analysis::TreatEvent(){
   Clear();
   //cout << Trigger << " " ; 
   Trigger=Trigger&0x00ff;
-//cout << Trigger << endl;
+  //cout << Trigger << endl;
   // Compute Brho 
   //
   if( FDC2->PosX>-1500 && FDC2->PosX<1000 
       && FDC2->PosY>-500 && FDC2->PosY<500 
       && FDC0->PosX>-80 && FDC0->PosX<80 
-      && FDC0->PosY>-80 && FDC0->PosY<80
-      && FDC0->Dir.Z()>0.8) { // if both are correctly build
-   // Compute ThetaX and PhiY using Minos vertex and FDC0 XY
-   double FDC0_ThetaX = FDC0->ThetaX;
-   double FDC0_PhiY   = FDC0->PhiY;
+      && FDC0->PosY>-80 && FDC0->PosY<80 // both FDC ok
+      && (Minos->Tracks_P0.size()==1)|| (Minos->Tracks_P0.size()==2)) {  // p,pn or p,2p
+    // Compute ThetaX and PhiY using Minos vertex and FDC0 X
+    double FDC0_ThetaX = FDC0->ThetaX;
+    double FDC0_PhiY   = FDC0->PhiY;
+    TVector3 FDC0_Dir = FDC0->Dir;
+    // Check if both BDC are reconstructed
+    //
+    TVector3 BDC1=BDC->GetPos(1);
+    TVector3 BDC2=BDC->GetPos(2);
 
-   if(Minos->Z_Vertex>0){
-    FDC0_ThetaX = atan((FDC0->PosX-Minos->X_Vertex)/(1283.7-Minos->Z_Vertex));
-    FDC0_PhiY   = atan((FDC0->PosY-Minos->Y_Vertex)/(1283.7-Minos->Z_Vertex));
-   } 
-    //double brho_param[6]={FDC0->PosX/*+1.77*/, FDC0->PosY, tan(FDC0_ThetaX), tan(FDC0_PhiY), FDC2->PosX/*-252.55*/, FDC2->ThetaX};
+    if( BDC1.Z()!=-10000 && BDC2.Z()!=-10000){
+      TVector3 Vertex;
+      TVector3 P1 = Minos->Tracks_P0[0]+Minos->Tracks_Dir[0];
+      TVector3 delta;
+      MinimumDistanceTwoLines(BDC1,BDC2, 
+          Minos->Tracks_P0[0], P1,
+          Vertex, delta) ;
+      FDC0_Dir= FDC0->GetPos()-Vertex;
+      FDC0_Dir=FDC0_Dir.Unit();
+      TVector3 BDCDir=BDC2-BDC1;
+      BDCDir=BDCDir.Unit();
+      BDCDir*=(Vertex.Z()-BDC2.Z())/BDCDir.Z();
+      //cout << "BDC" << endl;
+      BDCX=(BDC2+BDCDir).X();
+      BDCY=(BDC2+BDCDir).Y();
+      // Z relative to Minos entrance
+      Z=Vertex.Z()+4657.39;
+      //double brho_param[6]={FDC0->PosX/*+1.77*/, FDC0->PosY, 0, 0, FDC2->PosX/*-252.55*/, FDC2->ThetaX};
 
-    //double brho_param[6]={FDC0->PosX/*+1.77*/, FDC0->PosY, 0, 0, FDC2->PosX/*-252.55*/, FDC2->ThetaX};
-
-   // Brho=r_fit(brho_param);
-   Brho=m_field.FindBrho(FDC0->GetPos(),FDC0->Dir,FDC2->GetPos(),TVector3(0,0,1));
+      if(FDC0->GetPos().X()>-10000 && FDC0_Dir.Z()>0.8){
+        FDC0_ThetaX = atan((FDC0->PosX-Vertex.X())/(1283.7-Z));
+        FDC0_PhiY   = atan((FDC0->PosY-Vertex.Y())/(1283.7-Z));
+        double brho_param[6]={FDC0->PosX-1.77, FDC0->PosY, tan(FDC0_ThetaX), tan(FDC0_PhiY), FDC2->PosX+252.55, FDC2->ThetaX};
+        BrhoP=r_fit(brho_param);
+        Brho=m_field.FindBrho(FDC0->GetPos(),FDC0_Dir,FDC2->GetPos(),TVector3(0,0,1));
+        //    cout << Brho-BrhoP << endl;
+      }
+  /*    // Calib//////////////////////////////////////////////////////////////////
+      static int count=0;
+      if(FDC2->PosX-252.55>0&&FDC0->GetPos().X()>-10000 && FDC0->Dir.Z()>0.8){
+        file << FDC0->GetPos().X() <<" " << FDC0->GetPos().Y() << " " << FDC0->GetPos().Z() <<" " << FDC0_Dir.X() <<" " << FDC0_Dir.Y() << " " << FDC0_Dir.Z()<< " " ;
+        file << FDC2->GetPos().X() <<" " << FDC2->GetPos().Y() << " " << FDC2->GetPos().Z() <<" " << FDC2->Dir.X() <<" " << FDC2->Dir.Y() << " " << FDC2->Dir.Z()<< endl;
+        count ++;
+      }
+      if(count>10000)
+        exit(1);*/
+    }
   }
 }
 
@@ -88,18 +121,26 @@ void Analysis::End(){
 ////////////////////////////////////////////////////////////////////////////////
 void Analysis::Clear(){
   Brho=-1000;
+  BDCX=-1000;
+  BDCY=-1000;
+  BrhoP=-1000;
   Beta_f=-1000;
+  Z=-1000;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 void Analysis::InitOutputBranch() {
   RootOutput::getInstance()->GetTree()->Branch("Brho",&Brho,"Brho/D");
+  RootOutput::getInstance()->GetTree()->Branch("BrhoP",&BrhoP,"BrhoP/D");
+  RootOutput::getInstance()->GetTree()->Branch("BDCX",&BDCX,"BDCX/D");
+  RootOutput::getInstance()->GetTree()->Branch("BDCY",&BDCY,"BDCY/D");
+  RootOutput::getInstance()->GetTree()->Branch("Z",&Z,"Z/D");
   RootOutput::getInstance()->GetTree()->Branch("Beta_f",&Beta_f,"Beta_f/D");
   RootOutput::getInstance()->GetTree()->Branch("Trigger",&Trigger,"Trigger/I");
 } 
 ////////////////////////////////////////////////////////////////////////////////
 void Analysis::InitInputBranch(){
-    RootInput::getInstance()->GetChain()->SetBranchAddress("Trigger",&Trigger);
+  RootInput::getInstance()->GetChain()->SetBranchAddress("Trigger",&Trigger);
 }
 
 // -*- mode: c++ -*-
@@ -213,7 +254,7 @@ static double e_gCoefficient[] = {
   -0.188488,
   -0.675742,
   -0.181284
- };
+};
 
 // Assignment to error coefficients vector.
 static double e_gCoefficientRMS[] = {
@@ -293,7 +334,7 @@ static double e_gCoefficientRMS[] = {
   0.547759,
   2.82987,
   2.05714
- };
+};
 
 // Assignment to powers vector.
 // The powers are stored row-wise, that is
@@ -393,16 +434,16 @@ double e_fit(double *x) {
       double v =  1 + 2. / (e_gXMax[j] - e_gXMin[j]) * (x[j] - e_gXMax[j]);
       // what is the power to use!
       switch(power) {
-      case 1: r = 1; break; 
-      case 2: r = v; break; 
-      default: 
-        p2 = v; 
-        for (k = 3; k <= power; k++) { 
-          p3 = p2 * v;
-          p3 = 2 * v * p2 - p1; 
-          p1 = p2; p2 = p3; 
-        }
-        r = p3;
+        case 1: r = 1; break; 
+        case 2: r = v; break; 
+        default: 
+                p2 = v; 
+                for (k = 3; k <= power; k++) { 
+                  p3 = p2 * v;
+                  p3 = 2 * v * p2 - p1; 
+                  p1 = p2; p2 = p3; 
+                }
+                r = p3;
       }
       // multiply this term by the poly in the jth var
       term *= r; 
@@ -525,7 +566,7 @@ static double p_gCoefficient[] = {
   -0.145767,
   -1.13422,
   0.865558
- };
+};
 
 // Assignment to error coefficients vector.
 static double p_gCoefficientRMS[] = {
@@ -605,7 +646,7 @@ static double p_gCoefficientRMS[] = {
   3.21076e-11,
   8.11735e-11,
   7.22006e-11
- };
+};
 
 // Assignment to powers vector.
 // The powers are stored row-wise, that is
@@ -705,16 +746,16 @@ double p_fit(double *x) {
       double v =  1 + 2. / (p_gXMax[j] - p_gXMin[j]) * (x[j] - p_gXMax[j]);
       // what is the power to use!
       switch(power) {
-      case 1: r = 1; break; 
-      case 2: r = v; break; 
-      default: 
-        p2 = v; 
-        for (k = 3; k <= power; k++) { 
-          p3 = p2 * v;
-          p3 = 2 * v * p2 - p1; 
-          p1 = p2; p2 = p3; 
-        }
-        r = p3;
+        case 1: r = 1; break; 
+        case 2: r = v; break; 
+        default: 
+                p2 = v; 
+                for (k = 3; k <= power; k++) { 
+                  p3 = p2 * v;
+                  p3 = 2 * v * p2 - p1; 
+                  p1 = p2; p2 = p3; 
+                }
+                r = p3;
       }
       // multiply this term by the poly in the jth var
       term *= r; 
@@ -837,7 +878,7 @@ static double r_gCoefficient[] = {
   -0.0019449,
   -0.0151334,
   0.0115488
- };
+};
 
 // Assignment to error coefficients vector.
 static double r_gCoefficientRMS[] = {
@@ -917,7 +958,7 @@ static double r_gCoefficientRMS[] = {
   3.21076e-11,
   8.11735e-11,
   7.22006e-11
- };
+};
 
 // Assignment to powers vector.
 // The powers are stored row-wise, that is
@@ -1017,16 +1058,16 @@ double r_fit(double *x) {
       double v =  1 + 2. / (r_gXMax[j] - r_gXMin[j]) * (x[j] - r_gXMax[j]);
       // what is the power to use!
       switch(power) {
-      case 1: r = 1; break; 
-      case 2: r = v; break; 
-      default: 
-        p2 = v; 
-        for (k = 3; k <= power; k++) { 
-          p3 = p2 * v;
-          p3 = 2 * v * p2 - p1; 
-          p1 = p2; p2 = p3; 
-        }
-        r = p3;
+        case 1: r = 1; break; 
+        case 2: r = v; break; 
+        default: 
+                p2 = v; 
+                for (k = 3; k <= power; k++) { 
+                  p3 = p2 * v;
+                  p3 = 2 * v * p2 - p1; 
+                  p1 = p2; p2 = p3; 
+                }
+                r = p3;
       }
       // multiply this term by the poly in the jth var
       term *= r; 
@@ -1150,7 +1191,7 @@ static double l_gCoefficient[] = {
   -25.8219,
   2.18449,
   -0.917242
- };
+};
 
 // Assignment to error coefficients vector.
 static double l_gCoefficientRMS[] = {
@@ -1231,7 +1272,7 @@ static double l_gCoefficientRMS[] = {
   31.7885,
   20.2812,
   22.29
- };
+};
 
 // Assignment to powers vector.
 // The powers are stored row-wise, that is
@@ -1332,16 +1373,16 @@ double l_fit(double *x) {
       double v =  1 + 2. / (l_gXMax[j] - l_gXMin[j]) * (x[j] - l_gXMax[j]);
       // what is the power to use!
       switch(power) {
-      case 1: r = 1; break; 
-      case 2: r = v; break; 
-      default: 
-        p2 = v; 
-        for (k = 3; k <= power; k++) { 
-          p3 = p2 * v;
-          p3 = 2 * v * p2 - p1; 
-          p1 = p2; p2 = p3; 
-        }
-        r = p3;
+        case 1: r = 1; break; 
+        case 2: r = v; break; 
+        default: 
+                p2 = v; 
+                for (k = 3; k <= power; k++) { 
+                  p3 = p2 * v;
+                  p3 = 2 * v * p2 - p1; 
+                  p1 = p2; p2 = p3; 
+                }
+                r = p3;
       }
       // multiply this term by the poly in the jth var
       term *= r; 
@@ -1465,7 +1506,7 @@ static double t_gCoefficient[] = {
   -0.0377476,
   -0.150836,
   0.0571845
- };
+};
 
 // Assignment to error coefficients vector.
 static double t_gCoefficientRMS[] = {
@@ -1546,7 +1587,7 @@ static double t_gCoefficientRMS[] = {
   0.930273,
   2.8245,
   2.14083
- };
+};
 
 // Assignment to powers vector.
 // The powers are stored row-wise, that is
@@ -1647,16 +1688,16 @@ double t_fit(double *x) {
       double v =  1 + 2. / (t_gXMax[j] - t_gXMin[j]) * (x[j] - t_gXMax[j]);
       // what is the power to use!
       switch(power) {
-      case 1: r = 1; break; 
-      case 2: r = v; break; 
-      default: 
-        p2 = v; 
-        for (k = 3; k <= power; k++) { 
-          p3 = p2 * v;
-          p3 = 2 * v * p2 - p1; 
-          p1 = p2; p2 = p3; 
-        }
-        r = p3;
+        case 1: r = 1; break; 
+        case 2: r = v; break; 
+        default: 
+                p2 = v; 
+                for (k = 3; k <= power; k++) { 
+                  p3 = p2 * v;
+                  p3 = 2 * v * p2 - p1; 
+                  p1 = p2; p2 = p3; 
+                }
+                r = p3;
       }
       // multiply this term by the poly in the jth var
       term *= r; 
@@ -1668,10 +1709,8 @@ double t_fit(double *x) {
 }
 
 // EOF for simtree_tof.C
-
-
 ////////////////////////////////////////////////////////////////////////////////
-//            Construct Method to be pass to the DetectorFactory              //
+//            Construct Method to be pass to the AnalysisFactory              //
 ////////////////////////////////////////////////////////////////////////////////
 NPL::VAnalysis* Analysis::Construct(){
   return (NPL::VAnalysis*) new Analysis();
@@ -1681,13 +1720,13 @@ NPL::VAnalysis* Analysis::Construct(){
 //            Registering the construct method to the factory                 //
 ////////////////////////////////////////////////////////////////////////////////
 extern "C"{
-class proxy{
-  public:
-    proxy(){
-      NPL::AnalysisFactory::getInstance()->SetConstructor(Analysis::Construct);
-    }
-};
+  class proxy_analysis{
+    public:
+      proxy_analysis(){
+        NPL::AnalysisFactory::getInstance()->SetConstructor(Analysis::Construct);
+      }
+  };
 
-proxy p;
+  proxy_analysis p_analysis;
 }
 

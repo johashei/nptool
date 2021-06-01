@@ -1,24 +1,26 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 SAMURAIBDC 1
-  XML= db/SAMURAIBDC1.xml
-  Offset= 0 0 0 mm
-  InvertX= 0 
-  InvertY= 0
-  InvertD= 1
+ XML= db/SAMURAIBDC1.xml
+% Offset= -0.69 +1.1 -6876.34 mm
+ Offset= 0 0 -6876.34 mm
+ InvertX= 0 
+ InvertY= 0
+ InvertD= 1
 
 %%%%%%%%%%%%
 SAMURAIBDC 2
-  XML= db/SAMURAIBDC2.xml
-  Offset= 0 0 0 mm
-  InvertX= 0 
-  InvertY= 0
-  IverteD= 1
+ XML= db/SAMURAIBDC2.xml
+% Offset= +0.25 +1.6 -5876.7 mm
+ Offset= 0 0 -5876.7 mm
+ InvertX= 0 
+ InvertY= 0
+ InvertD= 1
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 Minos
- Position= 0 0 0 mm
+ Position= 0 0 -4657.39 mm
  ZRotation= 35 deg
- TargetLength= 152.76 mm
+ TargetLength= 151.72 mm
  TargetMaterial= LH2 
  CellMaterial= Mylar 
  TPCOnly= 0 
@@ -32,7 +34,9 @@ Minos
 SAMURAIFDC0
  XML= db/SAMURAIFDC0_20200109.xml
 %Offset= 3.005 1.864 0 mm
- Offset= 1.77 0 -3456.52 mm
+% Offset= 1.77 0 -3372.07 mm
+ Offset= 4.52872 -9.97899  -3403.03 mm
+ Offset= 0 0 0 mm
  InvertX= 1 
  InvertY= 0
  InvertD= 1
@@ -40,8 +44,8 @@ SAMURAIFDC0
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 SAMURAIFDC2
  XML= db/SAMURAIFDC2.xml
-%Offset= 0 0 0 mm
- Offset= -252.55 0 4123.47 mm
+ Offset= -255.13 9.86883 4168.46 mm
+% Offset= -252.55 0 4123.47 mm
  InvertX= 0 
  InvertY= 1
  InvertD= 1

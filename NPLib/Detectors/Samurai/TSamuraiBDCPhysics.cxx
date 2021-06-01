@@ -54,6 +54,19 @@ ClassImp(TSamuraiBDCPhysics)
   }
 
 ///////////////////////////////////////////////////////////////////////////
+TVector3 TSamuraiBDCPhysics::GetPos(unsigned int det){
+  TVector3 res(-10000,-10000,-10000); 
+  unsigned int size = PosX.size();
+  for(unsigned int i = 0 ; i < size ; i++){
+    if(Detector[i]==det){
+      res = TVector3(PosX[i],PosY[i],PosZ[i]);
+    }
+  }
+  return res;
+
+
+}
+///////////////////////////////////////////////////////////////////////////
 void TSamuraiBDCPhysics::BuildSimplePhysicalEvent(){
   BuildPhysicalEvent();
 }
@@ -324,6 +337,10 @@ void TSamuraiBDCPhysics::ReadConfiguration(NPL::InputParser parser){
       m_invertX[det] = invertX;
       m_invertY[det] = invertY;
       m_invertD[det] = invertD;
+    }
+    else{
+      cout << " --- ERROR : BDC block wrongly formatted" << endl;
+      exit(1);
     }
   }
 

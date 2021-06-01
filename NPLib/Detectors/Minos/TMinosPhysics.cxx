@@ -88,11 +88,12 @@ void TMinosPhysics::BuildPhysicalEvent() {
 void TMinosPhysics::PreTreat() {
   // apply thresholds and calibration
   static unsigned int sizePad,sizeQ ;
-  sizePad = m_EventData->GetPadMult();
   static unsigned short PadNumber;
   static double Q,T;
   static auto cal= CalibrationManager::getInstance();
   static string cal_v, cal_o;
+
+  sizePad = m_EventData->GetPadMult();
   if(sizePad>20){
     for(unsigned int i = 0 ; i < sizePad ; i++){
       vector<unsigned short>* Charge = m_EventData->GetChargePtr(i);
