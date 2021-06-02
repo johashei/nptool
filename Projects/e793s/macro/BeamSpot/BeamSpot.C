@@ -8,6 +8,8 @@
 #include <fstream>
 #include <vector>
 #include <cmath>
+#include <string>
+#include <sstream>
 //Root
 #include <TVector3.h>
 //NPTool
@@ -30,23 +32,23 @@ void BeamSpot(){
   vector <double> Xd, Yd, Zd;      //Vector of particle direction. Calculated as Xp-Xb, Yp-Yb...
   ifstream MugastDataFile;
   double ThetaNormalTarget;
-
+  TVector3 beamDir{ 0.0, 0.0, 1.0 }; 
 
   gErrorIgnoreLevel = kWarning; // Suppress ".pdf created" lines
 
   /*** ITERATIVE GRID CONTROLS ***/
   /***** pos varied as offset ****/
-  /**/ double xmin = +0.020;   /**/
-  /**/ double xmax = +0.080;   /**/
-  /**/ unsigned int xdiv = 12; /**/
+  /**/ double xmin = -8.000;   /**/
+  /**/ double xmax = +2.000;   /**/
+  /**/ unsigned int xdiv = 10; /**/
   /**/                         /**/
-  /**/ double ymin = -0.050;   /**/
-  /**/ double ymax = +0.050;   /**/
+  /**/ double ymin = -5.000;   /**/
+  /**/ double ymax = +5.000;   /**/
   /**/ unsigned int ydiv = 10; /**/
   /**/                         /**/
-  /**/ double zmin = -0.050;   /**/
-  /**/ double zmax = +0.050;   /**/
-  /**/ unsigned int zdiv =  2; /**/
+  /**/ double zmin = -5.000;   /**/
+  /**/ double zmax = +5.000;   /**/
+  /**/ unsigned int zdiv =  10; /**/
   /**/                         /**/
   /***** thick varied as %ge *****/
   /**/ unsigned int tmin = 7;  /**/
@@ -56,19 +58,48 @@ void BeamSpot(){
 
   /******* METRIC CONTROLS *******/
   /**/ double peakE = 0.143;   /**/
-  /**/ double sigMultip = 0.1; /**/
+  /**/ double sigMultip = 0.05; /**/
   /*******************************/
 
   // File name controls
-  const char* XYZE_file = "XYZE_gammaGated_Full_TestThetaNormalTarget.txt";
-  const char* outputMetric = "output_Run63_metrics_ThetaNormal.txt";
-  const char* outputHisto = "output_Run63_histograms_ThetaNormal.root";
+  string tag;
+  string addtag;
+  cout << "===================================================" << endl;
+  cout << " Enter the version tag " << endl;
+  cout << "              (i.e. Run63_BeamDirectionCorrection)" << endl;
+  cout << " - - - - - - - - - - - - - - - - - - - - - - - - - " << endl;
+    getline(cin,tag);
+  cout << " - - - - - - - - - - - - - - - - - - - - - - - - - " << endl;
+  cout << " Additional output tagging? Coarse, fine? " << endl;
+  cout << " - - - - - - - - - - - - - - - - - - - - - - - - - " << endl;
+    getline(cin,addtag);
+
+  string XYZE_string = "XYZE_";
+    XYZE_string.append(tag);
+    XYZE_string.append(".txt");
+
+  string out_string = "output_";
+    out_string.append(tag);
+    out_string.append("_");
+    out_string.append(addtag);
+  string met_string = out_string;
+    met_string.append("_metrics.txt");
+  string hst_string = out_string;
+    hst_string.append("_histograms.root");
+
+  const char* XYZE_file = XYZE_string.c_str();
+  const char* outputMetric = met_string.c_str();
+  const char* outputHisto = hst_string.c_str();
 
   // Calculate size of iteratve steps
   double xstp = (xmax-xmin)/ ((double) xdiv);
   double ystp = (ymax-ymin)/ ((double) ydiv);
   double zstp = (zmax-zmin)/ ((double) zdiv);
-  cout << "Xstp = " << xstp << "   Ystp = " << ystp << "   Zstp = " << zstp << endl;
+  cout << "===================================================" << endl;
+  cout << " X: " << xmin << " to " << xmax << " in steps of " << xstp << endl;
+  cout << " Y: " << ymin << " to " << ymax << " in steps of " << ystp << endl;
+  cout << " Z: " << zmin << " to " << zmax << " in steps of " << zstp << endl;
+  cout << "===================================================" << endl;
 
   // Vectors of the normal for each detector. UPDATE WITH NEW POSITIONS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!1
   TVector3 MugastNormal1{ -0.453915, +0.455463, -0.765842};
@@ -157,7 +188,6 @@ void BeamSpot(){
 	  
             ThetaNormalTarget = tempTheta = ELab = Ex = 0.0;
 
-
 	    switch(DetNum[i]){
 	      case 1:
                 tempTheta = particleDir.Angle(MugastNormal1);
@@ -182,9 +212,9 @@ void BeamSpot(){
 	        return; // Exit code
 	    }
 
-            // Change beam spot vector to inverse beam direction vector
-            beamSpot.SetZ(-1.0);
-            ThetaNormalTarget = particleDir.Angle(beamSpot);
+            // Change beamDir vector to inverse beam direction
+	    beamDir.SetZ(-1.0);
+            ThetaNormalTarget = particleDir.Angle(beamDir);
 
 	    //micrometer defined in NPSystemOfUnits.h
 	    ELab = LightAl.EvaluateInitialEnergy(
@@ -196,9 +226,9 @@ void BeamSpot(){
 			    0.5*TargetThickness, //pass through half target
 			    ThetaNormalTarget);  //angle leaving target
 
-            // Change beam spot vector to beam direction vector
-	    beamSpot.SetZ(1.0);
-            Ex = reaction.ReconstructRelativistic(ELab, particleDir.Angle(beamSpot));
+            // Change beamDir vector back to forward direction
+	    beamDir.SetZ(1.0);
+            Ex = reaction.ReconstructRelativistic(ELab, particleDir.Angle(beamDir));
 
 	    // Fill Ex histograms
 	    tempHist->Fill(Ex);

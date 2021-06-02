@@ -138,7 +138,7 @@ void Analysis::TreatEvent(){
     }
   }
 
-  TVector3 BeamDirection(XBeam,YBeam,1);
+  TVector3 BeamDirection(0.,0.,1.);
   BeamImpact = TVector3(XBeam,YBeam,m_DetectorManager->GetTargetZ()); 
 
   ParticleMult=M2->Si_E.size()+MG->DSSD_E.size();
