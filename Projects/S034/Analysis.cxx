@@ -49,7 +49,7 @@ void Analysis::Init(){
   InitOutputBranch();
   InitInputBranch();
   // for fdc/bdc alignement
-  file.open("Calibration/Pos/fdc.txt");
+  //file.open("Calibration/Pos/bdc.txt");
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -64,13 +64,9 @@ void Analysis::TreatEvent(){
       && FDC2->PosY>-500 && FDC2->PosY<500 
       && FDC0->PosX>-80 && FDC0->PosX<80 
       && FDC0->PosY>-80 && FDC0->PosY<80 // both FDC ok
-      && (Minos->Tracks_P0.size()==1)|| (Minos->Tracks_P0.size()==2)) {  // p,pn or p,2p
+      && (Minos->Tracks_P0.size()>1)) {  // p,pn or p,2p
     // Compute ThetaX and PhiY using Minos vertex and FDC0 X
-    double FDC0_ThetaX = FDC0->ThetaX;
-    double FDC0_PhiY   = FDC0->PhiY;
-    TVector3 FDC0_Dir = FDC0->Dir;
     // Check if both BDC are reconstructed
-    //
     TVector3 BDC1=BDC->GetPos(1);
     TVector3 BDC2=BDC->GetPos(2);
 
@@ -81,7 +77,7 @@ void Analysis::TreatEvent(){
       MinimumDistanceTwoLines(BDC1,BDC2, 
           Minos->Tracks_P0[0], P1,
           Vertex, delta) ;
-      FDC0_Dir= FDC0->GetPos()-Vertex;
+      TVector3 FDC0_Dir= FDC0->GetPos()-Vertex;
       FDC0_Dir=FDC0_Dir.Unit();
       TVector3 BDCDir=BDC2-BDC1;
       BDCDir=BDCDir.Unit();
@@ -93,23 +89,36 @@ void Analysis::TreatEvent(){
       Z=Vertex.Z()+4657.39;
       //double brho_param[6]={FDC0->PosX/*+1.77*/, FDC0->PosY, 0, 0, FDC2->PosX/*-252.55*/, FDC2->ThetaX};
 
-      if(FDC0->GetPos().X()>-10000 && FDC0_Dir.Z()>0.8){
-        FDC0_ThetaX = atan((FDC0->PosX-Vertex.X())/(1283.7-Z));
-        FDC0_PhiY   = atan((FDC0->PosY-Vertex.Y())/(1283.7-Z));
-        double brho_param[6]={FDC0->PosX-1.77, FDC0->PosY, tan(FDC0_ThetaX), tan(FDC0_PhiY), FDC2->PosX+252.55, FDC2->ThetaX};
+      if(FDC0_Dir.Z()>0.6){
+        double FDC0_ThetaX = atan((FDC0->PosX-Vertex.X())/(1254.39-Z));
+        double FDC0_PhiY   = atan((FDC0->PosY-Vertex.Y())/(1254.39-Z));
+        double brho_param[6]={FDC0->PosX, FDC0->PosY, tan(FDC0_ThetaX), tan(FDC0_PhiY), FDC2->PosX+252.416, FDC2->ThetaX};
         BrhoP=r_fit(brho_param);
         Brho=m_field.FindBrho(FDC0->GetPos(),FDC0_Dir,FDC2->GetPos(),TVector3(0,0,1));
         //    cout << Brho-BrhoP << endl;
       }
-  /*    // Calib//////////////////////////////////////////////////////////////////
-      static int count=0;
-      if(FDC2->PosX-252.55>0&&FDC0->GetPos().X()>-10000 && FDC0->Dir.Z()>0.8){
-        file << FDC0->GetPos().X() <<" " << FDC0->GetPos().Y() << " " << FDC0->GetPos().Z() <<" " << FDC0_Dir.X() <<" " << FDC0_Dir.Y() << " " << FDC0_Dir.Z()<< " " ;
-        file << FDC2->GetPos().X() <<" " << FDC2->GetPos().Y() << " " << FDC2->GetPos().Z() <<" " << FDC2->Dir.X() <<" " << FDC2->Dir.Y() << " " << FDC2->Dir.Z()<< endl;
+      // Calib//////////////////////////////////////////////////////////////////
+ /*     static int count=0;
+      if(Minos->Delta_Vertex < 5 && FDC2->PosX-252.55>0&&FDC0->GetPos().X()>-10000 && FDC0->Dir.Z()>0.9 && Minos->Z_Vertex>0&& sqrt(Minos->X_Vertex*Minos->X_Vertex+Minos->Y_Vertex*Minos->Y_Vertex)<15){
+        file << FDC0->GetPos().X()   <<" " << FDC0->GetPos().Y() << " " << FDC0->GetPos().Z() <<" " ;
+        file << Minos->X_Vertex      <<" " << Minos->Y_Vertex    << " " << Minos->Z_Vertex    << " " ;
+        file << FDC2->GetPos().X()   <<" " << FDC2->GetPos().Y() << " " << FDC2->GetPos().Z() <<" " << FDC2->Dir.X() <<" " << FDC2->Dir.Y() << " " << FDC2->Dir.Z()<< endl;
+        count ++;
+      }
+      if(count>1000)
+        exit(1);
+        */
+    /*  static int count=0;
+      if(Minos->Delta_Vertex < 5 && sqrt(Minos->X_Vertex*Minos->X_Vertex+Minos->Y_Vertex*Minos->Y_Vertex)<15 && Minos->Z_Vertex>-4650){
+        file << BDC1.X()  <<" " << BDC1.Y()<< " " << BDC1.Z() <<" " ;
+        file << BDC2.X()  <<" " << BDC2.Y()<< " " << BDC2.Z() <<" " ;
+        file << Minos->X_Vertex      <<" " << Minos->Y_Vertex    << " " << Minos->Z_Vertex    << endl ;
         count ++;
       }
       if(count>10000)
-        exit(1);*/
+        exit(1);
+      */  
+
     }
   }
 }

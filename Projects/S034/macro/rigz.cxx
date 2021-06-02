@@ -4,9 +4,9 @@ void rigz(){
 
  auto fz = new TFile("root/zaihong/run0582_RIG20210424_6He.root");
  auto tz = (TTree*) fz->FindObjectAny("rig");
- auto fl = new TFile("root/analysis/Results582.root");
- auto tl = (TTree*) fl->FindObjectAny("ResultTree");
-  tl->AddFriend(tz); 
+ auto fl = new TFile("root/analysis/Result582.root");
+ auto tl = (TTree*) fl->FindObjectAny("PhysicsTree");
+ tl->AddFriend(tz); 
  double FDC0_X,FDC0_Y,FDC2_X,FDC2_ThetaX,beta;
  int    FragID;
  tz->SetBranchAddress("FDC0_X",&FDC0_X);
@@ -24,11 +24,11 @@ void rigz(){
  auto b = new TH1D("rig","rig",1000,2,8);
  unsigned int entries = tz->GetEntries();
 
- for(unsigned int i = 0 ; i < entries ; i++){
+ for(unsigned int i = 0 ; i < entries; i++){
   tz->GetEntry(i);
   double brho_param[6]={FDC0_X/*+1.77*/, FDC0_Y, 0, 0, FDC2_X/*-252.55*/, FDC2_ThetaX};
   double Brho=r_fit(brho_param);
-  if(Brho>2&& Brho<8 && FragID>0 && FragID<27){
+  if(FragID>0 && FragID<27){
     h->Fill(Brho);
     // compute Brho based on beta and FragID
     double rig ;
@@ -48,18 +48,25 @@ void rigz(){
       He6.SetBeta(beta);
       rig = He6.GetBrho();
     }
-    b->Fill(rig);
+    if(rig>2 && rig<8)
+      b->Fill(rig);
   }
   }
-  h->Scale(1./h->Integral());
-  h->Draw(); h->SetLineColor(kBlack);
-  b->Draw("same"); 
+//  h->Scale(1./h->Integral());
+//  h->Draw(); h->SetLineColor(kBlack);
+  b->Draw(""); 
   b->Scale(1./b->Integral());
-  b->SetLineColor(kOrange+7);b->SetLineWidth(4);
-  cout << tl->Draw("Brho>>g","Brho>2 && Brho<8 &&FragID>0 && FragID<27","same") << endl;
+  b->SetLineColor(kOrange+7);b->SetLineWidth(2);
+  cout << "ratio Z: "  << b->Integral(b->FindBin(3),b->FindBin(4.3))/ b->Integral(b->FindBin(4.5),b->FindBin(6.5));
+  cout << tl->Draw("Brho>>g(1000,2,8)","Brho>2 && Brho<8 &&FragID>0 && FragID<27","same") << endl;
+  cout << tl->Draw("BrhoP>>hp(1000,2,8)","Brho>2 && Brho<8 &&FragID>0 && FragID<27","same") << endl;
   auto g = (TH1*) gDirectory->FindObjectAny("g");
-  g->SetLineColor(kAzure+7);g->SetLineWidth(4);
+  auto hp = (TH1*) gDirectory->FindObjectAny("hp");
+  g->SetLineColor(kAzure+7);g->SetLineWidth(2);
   g->Scale(1./g->Integral());
+  cout << "ratio N: "  << g->Integral(g->FindBin(3),g->FindBin(4.3))/ g->Integral(g->FindBin(4.5),g->FindBin(6.5));
+  hp->Scale(1./hp->Integral());
+  hp->SetLineColor(kBlack);b->SetLineWidth(2); 
   auto l = new TLine(3.62,0,3.62,h->GetMaximum());l->Draw();
   l = new TLine(5.53,0,5.53,h->GetMaximum());l->Draw();
   l = new TLine(5.48,0,5.48,h->GetMaximum());l->Draw();

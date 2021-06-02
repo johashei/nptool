@@ -58,7 +58,6 @@ double SamuraiFieldMap::Delta(const double* parameter){
 
 ////////////////////////////////////////////////////////////////////////////////
 double SamuraiFieldMap::FindBrho(TVector3 p_fdc0,TVector3 d_fdc0,TVector3 p_fdc2,TVector3 d_fdc2){
-
   m_FitPosFDC0=p_fdc0;
   m_FitDirFDC0=d_fdc0;
   m_FitPosFDC2=p_fdc2;
@@ -123,7 +122,8 @@ std::vector< TVector3 > SamuraiFieldMap::Propagate(double Brho, TVector3 pos, TV
   N.SetBrho(Brho);
 
   // track result
-  std::vector< TVector3 > track;
+  static std::vector< TVector3 > track;
+  track.clear();
 
   // starting point of the track
   if(store){
@@ -132,11 +132,13 @@ std::vector< TVector3 > SamuraiFieldMap::Propagate(double Brho, TVector3 pos, TV
     pos.RotateY(m_angle);
   }
   dir=dir.Unit();
-  double r = sqrt(pos.X()*pos.X()+pos.Z()*pos.Z());
+  static double r;
+  r = sqrt(pos.X()*pos.X()+pos.Z()*pos.Z());
   // number of step taken
-  unsigned int count = 0;
+  static unsigned int count,limit;
+  count = 0;
   // maximum number of state before giving up
-  unsigned int limit = 1000;
+  limit = 1000;
 
   // First propagate to r_max with one line
   while(r>m_Rmax && count<limit){
@@ -156,17 +158,18 @@ std::vector< TVector3 > SamuraiFieldMap::Propagate(double Brho, TVector3 pos, TV
     return track;
   }
 
-  TVector3 xk1,xk2,xk3,xk4; // position
-  TVector3 pk1,pk2,pk3,pk4; // impulsion
-
-  double K = N.GetEnergy(); // kinetic energy
-  double m = N.Mass(); // mc2
-  double P = sqrt(K*K+2*K*m)/c_light; // P
-  double px = P*dir.X();//px
-  double py = P*dir.Y();//py
-  double pz = P*dir.Z();//pz
-  TVector3 imp = P*dir;
-  double h = 1*nanosecond;
+  static TVector3 xk1,xk2,xk3,xk4; // position
+  static TVector3 pk1,pk2,pk3,pk4; // impulsion
+  static TVector3 imp;
+  static double K,m,P,px,py,pz;
+  K = N.GetEnergy(); // kinetic energy
+  m = N.Mass(); // mc2
+  P = sqrt(K*K+2*K*m)/c_light; // P
+  px = P*dir.X();//px
+  py = P*dir.Y();//py
+  pz = P*dir.Z();//pz
+  imp = P*dir;
+  static double h = 1*nanosecond;
   while(r<=m_Rmax && count < limit){
     func(N, pos           , imp            , xk1, pk1);
     func(N, pos+xk1*(h/2.), imp+pk1*(h/2.) , xk2, pk2);
@@ -193,26 +196,26 @@ std::vector< TVector3 > SamuraiFieldMap::Propagate(double Brho, TVector3 pos, TV
 
 ////////////////////////////////////////////////////////////////////////////////
 void SamuraiFieldMap::func(NPL::Particle& N, TVector3 pos, TVector3 imp, TVector3& new_pos, TVector3& new_imp){
-  double px,py,pz;
+  static double px,py,pz,vx,vy,vz,Bx,By,Bz,q,P2,D,m2c4;
+  static vector<double> B; 
   px=imp.X(); 
   py=imp.Y();
   pz=imp.Z();
 
-  double P2,D,m2c4;
   P2=imp.Mag2(); // P2
   m2c4 = N.Mass()*N.Mass();
   D=sqrt(m2c4+P2*c_squared); // sqrt(m2c4+P2c2)
-  double vx=px*c_squared/D;// pxc * c / D = pxc2/D
-  double vy=py*c_squared/D;
-  double vz=pz*c_squared/D;
+  vx=px*c_squared/D;// pxc * c / D = pxc2/D
+  vy=py*c_squared/D;
+  vz=pz*c_squared/D;
   new_pos.SetX(vx);
   new_pos.SetY(vy);
   new_pos.SetZ(vz);
-  vector<double> B = InterpolateB(pos);
-  double Bx= B[0]; 
-  double By= B[1];
-  double Bz= B[2];
-  double q = N.GetZ()*eplus; // issue with the tesla/coulomb definition
+  B = InterpolateB(pos);
+  Bx= B[0]; 
+  By= B[1];
+  Bz= B[2];
+  q = N.GetZ()*eplus; // issue with the tesla/coulomb definition
   new_imp.SetX(q*(vy*Bz-vz*By));// q*pyc2*Bz/D -q*pzc2*By/D
   new_imp.SetY(q*(vz*Bx-vx*Bz));
   new_imp.SetZ(q*(vx*By-vy*Bx));
