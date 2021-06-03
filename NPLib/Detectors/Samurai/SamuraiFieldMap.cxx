@@ -93,6 +93,7 @@ TGraph* SamuraiFieldMap::BrhoScan(double min, double max,double step){
     pos.back().RotateY(-m_fdc2angle);
     m_BrhoScan->SetPoint(i++,pos.back().X(),b); 
   }
+  m_BrhoScan->Sort();
   return m_BrhoScan;
 }
 
