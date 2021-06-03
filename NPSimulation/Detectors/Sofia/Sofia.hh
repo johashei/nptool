@@ -35,7 +35,7 @@ using namespace std;
 
 // NPTool header
 #include "NPSVDetector.hh"
-#include "TSofiaData.h"
+#include "TSofTofWData.h"
 #include "NPInputParser.h"
 
 class Sofia : public NPS::VDetector{
@@ -98,7 +98,7 @@ class Sofia : public NPS::VDetector{
     ///////////Event class to store Data////////////////
     ////////////////////////////////////////////////////
   private:
-    TSofiaData* m_Event ;
+    TSofTofWData* m_Event ;
 
     ////////////////////////////////////////////////////
     ///////////////Private intern Data//////////////////
