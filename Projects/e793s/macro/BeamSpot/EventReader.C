@@ -20,8 +20,7 @@ using namespace std;
 void EventReader(){
 
   // Read ROOT file and pull the tree	
-  //auto DataFile = new TFile("../../../../Outputs/Analysis/47K_RawEnergyBranch_Run63_May11.root", "READ");
-  auto DataFile = new TFile("../../../../Outputs/Analysis/47K_RawEnergyBranch_Full_May11.root", "READ");
+  auto DataFile = new TFile("../../../../Outputs/Analysis/47K_Full_02June.root", "READ");
   auto PhysTree = (TTree*) DataFile->FindObjectAny("PhysicsTree");
 
   // Initilise the Mugast branch
@@ -56,7 +55,7 @@ void EventReader(){
 
   // Open output file
   ofstream outfile;
-  outfile.open("./XYZE_gammaGated_Full.txt");
+  outfile.open("./XYZE_Full_02June.txt");
 
   // Loop on entries
   for(unsigned int i=0; i<numEntries; i++){
