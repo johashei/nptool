@@ -97,6 +97,13 @@ class TSamuraiBDCPhysics : public TObject, public NPL::VDetector{
     std::vector<TVector3> Dir;
     std::vector<int> PileUp;
 
+  private: // offset and inversion 
+    std::map<unsigned int, TVector3> m_offset;//!
+    std::map<unsigned int, bool> m_invertX;//!
+    std::map<unsigned int, bool> m_invertY;//!
+    std::map<unsigned int, bool> m_invertD;//!
+
+
   public:
     // Projected position at given Z plan
     TVector3 ProjectedPosition(int Detector, double Z);
@@ -182,24 +189,19 @@ class TSamuraiBDCPhysics : public TObject, public NPL::VDetector{
     TSamuraiBDCData* GetRawData()        const {return m_EventData;}
     TSamuraiBDCData* GetPreTreatedData() const {return m_PreTreatedData;}
 
-    double GetPosX(unsigned int det)  {return PosX[det];}
-    double GetPosY(unsigned int det)  {return PosY[det];}
-    double GetThetaX(unsigned int det){return ThetaX[det];}
-    double GetPhiY(unsigned int det)  {return PhiY[det];}
-    double GetDevX(unsigned int det)  {return devX[det];}
-    double GetDevY(unsigned int det)  {return devY[det];}
-    int    GetPileUp(unsigned int det){return PileUp[det];}
+    TVector3 GetPos(unsigned int det);
+    double GetPosX(unsigned int i)  {return PosX[i];}
+    double GetPosY(unsigned int i)  {return PosY[i];}
+    double GetThetaX(unsigned int i){return ThetaX[i];}
+    double GetPhiY(unsigned int i)  {return PhiY[i];}
+    double GetDevX(unsigned int i)  {return devX[i];}
+    double GetDevY(unsigned int i)  {return devY[i];}
+    int    GetPileUp(unsigned int i){return PileUp[i];}
 
   private:   //   Root Input and Output tree classes
     TSamuraiBDCData*         m_EventData;//!
     TSamuraiBDCData*         m_PreTreatedData;//!
     TSamuraiBDCPhysics*      m_EventPhysics;//!
-
-  private: // offset and inversion 
-    std::map<unsigned int, TVector3> m_offset;//!
-    std::map<unsigned int, bool> m_invertX;//!
-    std::map<unsigned int, bool> m_invertY;//!
-    std::map<unsigned int, bool> m_invertD;//!
 
   private: // Spectra Class
     // TSamuraiBDCSpectra* m_Spectra; // !

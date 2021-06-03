@@ -2,7 +2,7 @@
 SamuraiFieldMap field;
 
 void DrawT(TVector3 pos, TVector3 dir, double Brho){
-std::vector< TVector3 > track = field.Propagate(3000,Brho,pos,dir);
+std::vector< TVector3 > track = field.Propagate(Brho,pos,dir);
   auto g = new TGraph();
   unsigned int size = track.size();
   g->Set(size);
@@ -40,9 +40,11 @@ void testB(){
   DrawT(TVector3(0,0,-3500),TVector3(0,0,1),5.48);
   DrawT(TVector3(0,0,-3500),TVector3(0,0,1),3.62);
 
+  DrawT(TVector3(),TVector3(0,0,1),3.62);
+
   TVector3 p(1,1,-3500); TVector3 d(0.01,-0.01,1); double b = 5.481923;
   DrawT(p,d,b);
-  std::vector< TVector3 > track = field.Propagate(3000,b,p,d);
+  std::vector< TVector3 > track = field.Propagate(b,p,d);
   cout << field.FindBrho(p,d,track.back(),d)<< endl;;
 
   double rFDC2 = 3686.77 + 880.745/2.;

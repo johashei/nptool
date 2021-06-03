@@ -469,6 +469,9 @@ void TSamuraiFDC0Physics::InitializeRootInputRaw(){
 
 ///////////////////////////////////////////////////////////////////////////
 void TSamuraiFDC0Physics::InitializeRootInputPhysics(){
+  TChain* inputChain = RootInput::getInstance()->GetChain()   ;
+  inputChain->SetBranchStatus( "SamuraiFDC0" , true );
+  inputChain->SetBranchAddress( "SamuraiFDC0" , &m_EventPhysics);
 }
 
 ///////////////////////////////////////////////////////////////////////////

@@ -5,9 +5,9 @@ void ascii2bin(){
     cout << "Error: failed to load samurai field map " << file << endl;
     exit(1);
   }
-  
+
   cout << "//////// Loading Samurai Field Map " << file << endl; 
-  float x,y,z,Bx,By,Bz;
+  double x,y,z,Bx,By,Bz;
   std::string name = file+".bin";
   ofstream out(name.c_str(),std::ofstream::binary);
 
@@ -19,19 +19,27 @@ void ascii2bin(){
     getline(in,buffer);
   }
 
-  while(in >> x >> y >> z >> Bx >> By >> Bz){
+  while(!in.eof()){
     if(++count%10000==0)
-      cout << "\r  - Loading " << count << " values " << flush; 
-    out.write((char*)&x,sizeof(x));
-    out.write((char*)&y,sizeof(y));
-    out.write((char*)&z,sizeof(z));
-    out.write((char*)&Bx,sizeof(Bx));
-    out.write((char*)&By,sizeof(By));
-    out.write((char*)&Bz,sizeof(Bz));
-     //out << x << y << z << Bx << By << Bz;
+      cout << "\r  - Loading " << count << " values " << flush;
+
+    if(in >> x >> y >> z >> Bx >> By >> Bz){
+      out.write((char*)&x,sizeof(x));
+      out.write((char*)&y,sizeof(y));
+      out.write((char*)&z,sizeof(z));
+      out.write((char*)&Bx,sizeof(Bx));
+      out.write((char*)&By,sizeof(By));
+      out.write((char*)&Bz,sizeof(Bz));
+    }
+    else{
+    cout << x <<" " <<  y << " "<< z << " "<< Bx <<" "<< By << " " << Bz << endl;;
+    if(!in.eof())
+      in.clear();
+    }
+    //     cout << x << endl;
   }
 
-      cout << "\r  - " << count << " values loaded" << endl; 
+  cout << "\r  - " << count << " values loaded" << endl; 
 
   out.close();
   in.close();
