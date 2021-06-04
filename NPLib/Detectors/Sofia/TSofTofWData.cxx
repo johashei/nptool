@@ -19,7 +19,7 @@
  *                                                                           *   
  *                                                                           *
  *****************************************************************************/
-#include "TSofiaData.h"
+#include "TSofTofWData.h"
 
 #include <iostream>
 #include <fstream>
@@ -27,51 +27,40 @@
 #include <string>
 using namespace std; 
 
-ClassImp(TSofiaData)
+ClassImp(TSofTofWData)
 
 
 //////////////////////////////////////////////////////////////////////
-TSofiaData::TSofiaData() {
+TSofTofWData::TSofTofWData() {
 }
 
 
 
 //////////////////////////////////////////////////////////////////////
-TSofiaData::~TSofiaData() {
+TSofTofWData::~TSofTofWData() {
 }
 
 
 
 //////////////////////////////////////////////////////////////////////
-void TSofiaData::Clear() {
-  // TOF
-  fTOF_DetectorNbr.clear();
+void TSofTofWData::Clear() {
   fTOF_PlasticNbr.clear();
+  fTOF_Pmt.clear();
   fTOF_Energy.clear();
-  fTOF_Time.clear();
-  
-  // TWIN
-  fTWIN_SectorNbr.clear();
-  fTWIN_AnodeNbr.clear();
-  fTWIN_AnodeEnergy.clear();
-  fTWIN_AnodeTime.clear();
-  
-  fTWIN_Esum1 = -10;
-  fTWIN_Esum2 = -10;
-  fTWIN_Esum3 = -10;
-  fTWIN_Esum4 = -10;
+  fTOF_CT.clear();
+  fTOF_FT.clear();
+  fTOF_WhichFlag.clear();
 }
 
 
 
 //////////////////////////////////////////////////////////////////////
-void TSofiaData::Dump() const {
+void TSofTofWData::Dump() const {
   // This method is very useful for debuging and worth the dev.
-  cout << "XXXXXXXXXXXXXXXXXXXXXXXX New Event [TSofiaData::Dump()] XXXXXXXXXXXXXXXXX" << endl;
+  cout << "XXXXXXXXXXXXXXXXXXXXXXXX New Event [TSofTofWData::Dump()] XXXXXXXXXXXXXXXXX" << endl;
 
   // Energy
-  size_t mysize = fTOF_DetectorNbr.size();
-  cout << "TWIN_Mult: " << GetTwinMult() << endl;
+  size_t mysize = fTOF_PlasticNbr.size();
   cout << "TOF_Mult: " << mysize << endl;
  
 }

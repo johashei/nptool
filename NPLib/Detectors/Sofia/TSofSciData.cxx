@@ -1,5 +1,3 @@
-#ifndef TSofiaSPECTRA_H
-#define TSofiaSPECTRA_H
 /*****************************************************************************
  * Copyright (C) 2009-2020   this file is part of the NPTool Project       *
  *                                                                           *
@@ -9,54 +7,57 @@
 
 /*****************************************************************************
  * Original Author: Pierre Morfouace  contact address: pierre.morfouace2@cea.fr                        *
- *                                                                           *
- * Creation Date  : November 2020                                           *
+ * Creation Date  : May 2021                                           *
  * Last update    :                                                          *
  *---------------------------------------------------------------------------*
  * Decription:                                                               *
- *  This class hold Sofia Spectra                                     *
+ *  This class hold SofSci Raw data                                    *
  *                                                                           *
  *---------------------------------------------------------------------------*
  * Comment:                                                                  *
  *                                                                           *   
  *                                                                           *
  *****************************************************************************/
+#include "TSofSciData.h"
 
-// NPLib headers
-#include "NPVSpectra.h"
-#include "TSofiaData.h"
-#include "TSofiaPhysics.h"
+#include <iostream>
+#include <fstream>
+#include <sstream>
+#include <string>
+using namespace std; 
 
-// Forward Declaration
-class TSofiaPhysics;
+ClassImp(TSofSciData)
 
 
-class TSofiaSpectra : public VSpectra {
-  //////////////////////////////////////////////////////////////
-  // constructor and destructor
-  public:
-    TSofiaSpectra();
-    TSofiaSpectra(unsigned int NumberOfDetectors);
-    ~TSofiaSpectra();
+//////////////////////////////////////////////////////////////////////
+TSofSciData::TSofSciData() {
+}
 
-  //////////////////////////////////////////////////////////////
-  // Initialization methods
-  private:
-    void InitRawSpectra();
-    void InitPreTreatedSpectra();
-    void InitPhysicsSpectra();
 
-  //////////////////////////////////////////////////////////////
-  // Filling methods
-  public:
-    void FillRawSpectra(TSofiaData*);
-    void FillPreTreatedSpectra(TSofiaData*);
-    void FillPhysicsSpectra(TSofiaPhysics*);
 
-  //////////////////////////////////////////////////////////////
-  // Detector parameters 
-  private:
-    unsigned int fNumberOfDetectors;
-};
+//////////////////////////////////////////////////////////////////////
+TSofSciData::~TSofSciData() {
+}
 
-#endif
+
+
+//////////////////////////////////////////////////////////////////////
+void TSofSciData::Clear() {
+  fSofSci_DetNbr.clear();
+  fSofSci_Pmt.clear();
+  fSofSci_CT.clear();
+  fSofSci_FT.clear();
+}
+
+
+
+//////////////////////////////////////////////////////////////////////
+void TSofSciData::Dump() const {
+  // This method is very useful for debuging and worth the dev.
+  cout << "XXXXXXXXXXXXXXXXXXXXXXXX New Event [TSofSciData::Dump()] XXXXXXXXXXXXXXXXX" << endl;
+
+  // Energy
+  size_t mysize = fSofSci_DetNbr.size();
+  cout << "SofSci_Mult: " << GetMultiplicity() << endl;
+ 
+}

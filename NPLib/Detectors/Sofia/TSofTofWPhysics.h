@@ -1,5 +1,5 @@
-#ifndef TSofiaPHYSICS_H
-#define TSofiaPHYSICS_H
+#ifndef TSofTofWPHYSICS_H
+#define TSofTofWPHYSICS_H
 /*****************************************************************************
  * Copyright (C) 2009-2020   this file is part of the NPTool Project       *
  *                                                                           *
@@ -14,7 +14,7 @@
  * Last update    :                                                          *
  *---------------------------------------------------------------------------*
  * Decription:                                                               *
- *  This class hold Sofia Treated data                                *
+ *  This class hold TofTofW Treated data                                *
  *                                                                           *
  *---------------------------------------------------------------------------*
  * Comment:                                                                  *
@@ -33,22 +33,19 @@ using namespace std;
 #include "TH1.h"
 #include "TVector3.h"
 // NPTool headers
-#include "TSofiaData.h"
-#include "TSofiaSpectra.h"
+#include "TSofTofWData.h"
 #include "NPCalibrationManager.h"
 #include "NPVDetector.h"
 #include "NPInputParser.h"
-// forward declaration
-class TSofiaSpectra;
 
 
 
-class TSofiaPhysics : public TObject, public NPL::VDetector {
+class TSofTofWPhysics : public TObject, public NPL::VDetector {
   //////////////////////////////////////////////////////////////
   // constructor and destructor
   public:
-    TSofiaPhysics();
-    ~TSofiaPhysics() {};
+    TSofTofWPhysics();
+    ~TSofTofWPhysics() {};
 
 
   //////////////////////////////////////////////////////////////
@@ -62,14 +59,14 @@ class TSofiaPhysics : public TObject, public NPL::VDetector {
   // data obtained after BuildPhysicalEvent() and stored in
   // output ROOT file
   public:
-    vector<int>      DetectorNumber;
     vector<int>      PlasticNumber;
     vector<double>   Energy;
     vector<double>   Time;
+    vector<double>   PosY;
 
   /// A usefull method to bundle all operation to add a detector
-  void AddDetector(TVector3 POS, string shape); 
-  void AddDetector(double R, double Theta, double Phi, string shape); 
+  void AddDetector(TVector3 POS); 
+  void AddDetector(double R, double Theta, double Phi); 
   
   //////////////////////////////////////////////////////////////
   // methods inherited from the VDetector ABC class
@@ -108,27 +105,9 @@ class TSofiaPhysics : public TObject, public NPL::VDetector {
     void ClearEventPhysics() {Clear();}      
     void ClearEventData()    {m_EventData->Clear();}   
 
-    // methods related to the TSofiaSpectra class
-    // instantiate the TSofiaSpectra class and 
-    // declare list of histograms
-    void InitSpectra();
-
-    // fill the spectra
-    void FillSpectra();
-
-    // used for Online mainly, sanity check for histograms and 
-    // change their color if issues are found, for example
-    void CheckSpectra();
-
-    // used for Online only, clear all the spectra
-    void ClearSpectra();
-
-    // write spectra to ROOT output file
-    void WriteSpectra();
-
 
   //////////////////////////////////////////////////////////////
-  // specific methods to Sofia array
+  // specific methods to SofTofW array
   public:
     // remove bad channels, calibrate the data and apply thresholds
     void PreTreat();
@@ -139,20 +118,20 @@ class TSofiaPhysics : public TObject, public NPL::VDetector {
     // read the user configuration file. If no file is found, load standard one
     void ReadAnalysisConfig();
 
-    // give and external TSofiaData object to TSofiaPhysics. 
+    // give and external TSofTofWData object to TSofTofWPhysics. 
     // needed for online analysis for example
-    void SetRawDataPointer(TSofiaData* rawDataPointer) {m_EventData = rawDataPointer;}
+    void SetRawDataPointer(TSofTofWData* rawDataPointer) {m_EventData = rawDataPointer;}
     
   // objects are not written in the TTree
   private:
-    TSofiaData*         m_EventData;        //!
-    TSofiaData*         m_PreTreatedData;   //!
-    TSofiaPhysics*      m_EventPhysics;     //!
+    TSofTofWData*         m_EventData;        //!
+    TSofTofWData*         m_PreTreatedData;   //!
+    TSofTofWPhysics*      m_EventPhysics;     //!
 
   // getters for raw and pre-treated data object
   public:
-    TSofiaData* GetRawData()        const {return m_EventData;}
-    TSofiaData* GetPreTreatedData() const {return m_PreTreatedData;}
+    TSofTofWData* GetRawData()        const {return m_EventData;}
+    TSofTofWData* GetPreTreatedData() const {return m_PreTreatedData;}
 
   // parameters used in the analysis
   private:
@@ -164,18 +143,10 @@ class TSofiaPhysics : public TObject, public NPL::VDetector {
   private:
     int m_NumberOfDetectors;  //!
 
-  // spectra class
-  private:
-    TSofiaSpectra* m_Spectra; // !
-
-  // spectra getter
-  public:
-    map<string, TH1*>   GetSpectra(); 
-
   // Static constructor to be passed to the Detector Factory
   public:
     static NPL::VDetector* Construct();
 
-    ClassDef(TSofiaPhysics,1)  // SofiaPhysics structure
+    ClassDef(TSofTofWPhysics,1)  // SofTofWPhysics structure
 };
 #endif

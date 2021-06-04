@@ -12,7 +12,7 @@
  * Last update    :                                                          *
  *---------------------------------------------------------------------------*
  * Decription:                                                               *
- *  This class hold Sofia Treated  data                               *
+ *  This class hold SofTrim Treated  data                               *
  *                                                                           *
  *---------------------------------------------------------------------------*
  * Comment:                                                                  *
@@ -20,7 +20,7 @@
  *                                                                           *
  *****************************************************************************/
 
-#include "TSofiaPhysics.h"
+#include "TSofTrimPhysics.h"
 
 //   STL
 #include <sstream>
@@ -39,23 +39,22 @@ using namespace std;
 //   ROOT
 #include "TChain.h"
 
-ClassImp(TSofiaPhysics)
+ClassImp(TSofTrimPhysics)
 
 
-///////////////////////////////////////////////////////////////////////////
-TSofiaPhysics::TSofiaPhysics()
-   : m_EventData(new TSofiaData),
-     m_PreTreatedData(new TSofiaData),
-     m_EventPhysics(this),
-     m_Spectra(0),
-     m_E_RAW_Threshold(0), // adc channels
-     m_E_Threshold(0),     // MeV
-     m_NumberOfDetectors(0) {
-}
+  ///////////////////////////////////////////////////////////////////////////
+TSofTrimPhysics::TSofTrimPhysics()
+  : m_EventData(new TSofTrimData),
+  m_PreTreatedData(new TSofTrimData),
+  m_EventPhysics(this),
+  m_NumberOfDetectors(0), 
+  m_NumberOfSections(3), 
+  m_NumberOfAnodesPerSection(6) {
+  }
 
 ///////////////////////////////////////////////////////////////////////////
 /// A usefull method to bundle all operation to add a detector
-void TSofiaPhysics::AddDetector(TVector3 , string ){
+void TSofTrimPhysics::AddDetector(TVector3 ){
   // In That simple case nothing is done
   // Typically for more complex detector one would calculate the relevant 
   // positions (stripped silicon) or angles (gamma array)
@@ -63,37 +62,34 @@ void TSofiaPhysics::AddDetector(TVector3 , string ){
 } 
 
 ///////////////////////////////////////////////////////////////////////////
-void TSofiaPhysics::AddDetector(double R, double Theta, double Phi, string shape){
+void TSofTrimPhysics::AddDetector(double R, double Theta, double Phi){
   // Compute the TVector3 corresponding
   TVector3 Pos(R*sin(Theta)*cos(Phi),R*sin(Theta)*sin(Phi),R*cos(Theta));
   // Call the cartesian method
-  AddDetector(Pos,shape);
+  AddDetector(Pos);
 } 
-  
+
 ///////////////////////////////////////////////////////////////////////////
-void TSofiaPhysics::BuildSimplePhysicalEvent() {
+void TSofTrimPhysics::BuildSimplePhysicalEvent() {
   BuildPhysicalEvent();
 }
 
 
 
 ///////////////////////////////////////////////////////////////////////////
-void TSofiaPhysics::BuildPhysicalEvent() {
+void TSofTrimPhysics::BuildPhysicalEvent() {
   // apply thresholds and calibration
   PreTreat();
 
   // match energy and time together
   unsigned int mysizeE = m_PreTreatedData->GetMultiplicity();
   for (UShort_t e = 0; e < mysizeE ; e++) {
-    DetectorNumber.push_back(m_PreTreatedData->GetDetectorNbr(e));
-    PlasticNumber.push_back(m_PreTreatedData->GetPlasticNbr(e));
-    Energy.push_back(m_PreTreatedData->GetEnergy(e));
-    Time.push_back(m_PreTreatedData->GetTime(e));
+    //to do 
   }
 }
 
 ///////////////////////////////////////////////////////////////////////////
-void TSofiaPhysics::PreTreat() {
+void TSofTrimPhysics::PreTreat() {
   // This method typically applies thresholds and calibrations
   // Might test for disabled channels for more complex detector
 
@@ -103,43 +99,42 @@ void TSofiaPhysics::PreTreat() {
   // instantiate CalibrationManager
   static CalibrationManager* Cal = CalibrationManager::getInstance();
 
-  // Energy
   unsigned int mysize = m_EventData->GetMultiplicity();
-  for (UShort_t i = 0; i < mysize ; ++i) {
-    if (m_EventData->GetEnergy(i) > m_E_RAW_Threshold) {
-      Double_t Energy = Cal->ApplyCalibration("Sofia/ENERGY"+NPL::itoa(m_EventData->GetPlasticNbr(i)),m_EventData->GetEnergy(i));
-      if (Energy > m_E_Threshold) {
-        m_PreTreatedData->SetDetectorNbr(m_EventData->GetDetectorNbr(i));
-        m_PreTreatedData->SetPlasticNbr(m_EventData->GetPlasticNbr(i));
-        m_PreTreatedData->SetTime(m_EventData->GetTime(i));
-        m_PreTreatedData->SetEnergy(Energy);
-      }
-    }
+  for (unsigned int i = 0; i < mysize ; ++i) {
+    Double_t Energy = Cal->ApplyCalibration("SofTrim/ENERGY_SEC"+NPL::itoa(m_EventData->GetSectionNbr(i))+"_ANODE"+NPL::itoa(m_EventData->GetAnodeNbr(i))+"_ENERGY",m_EventData->GetEnergy(i));
+    Double_t Time = Cal->ApplyCalibration("SofTrim/TIME_SEC"+NPL::itoa(m_EventData->GetSectionNbr(i))+"_ANODE"+NPL::itoa(m_EventData->GetAnodeNbr(i))+"_TIME",m_EventData->GetDriftTime(i));
+
+    m_PreTreatedData->SetSectionNbr(m_EventData->GetSectionNbr(i));
+    m_PreTreatedData->SetAnodeNbr(m_EventData->GetAnodeNbr(i));
+    m_PreTreatedData->SetEnergy(Energy);
+    m_PreTreatedData->SetDriftTime(Time);
+    m_PreTreatedData->SetPileUp(m_EventData->GetPileUp(i));
+    m_PreTreatedData->SetOverflow(m_EventData->GetOverflow(i));
   }
 }
 
 
 
 ///////////////////////////////////////////////////////////////////////////
-void TSofiaPhysics::ReadAnalysisConfig() {
+void TSofTrimPhysics::ReadAnalysisConfig() {
   bool ReadingStatus = false;
 
   // path to file
-  string FileName = "./configs/ConfigSofia.dat";
+  string FileName = "./configs/ConfigSofTrim.dat";
 
   // open analysis config file
   ifstream AnalysisConfigFile;
   AnalysisConfigFile.open(FileName.c_str());
 
   if (!AnalysisConfigFile.is_open()) {
-    cout << " No ConfigSofia.dat found: Default parameter loaded for Analayis " << FileName << endl;
+    cout << " No ConfigSofTrim.dat found: Default parameter loaded for Analayis " << FileName << endl;
     return;
   }
-  cout << " Loading user parameter for Analysis from ConfigSofia.dat " << endl;
+  cout << " Loading user parameter for Analysis from ConfigSofTrim.dat " << endl;
 
   // Save it in a TAsciiFile
   TAsciiFile* asciiConfig = RootOutput::getInstance()->GetAsciiFileAnalysisConfig();
-  asciiConfig->AppendLine("%%% ConfigSofia.dat %%%");
+  asciiConfig->AppendLine("%%% ConfigSofTrim.dat %%%");
   asciiConfig->Append(FileName.c_str());
   asciiConfig->AppendLine("");
   // read analysis config file
@@ -149,7 +144,7 @@ void TSofiaPhysics::ReadAnalysisConfig() {
     getline(AnalysisConfigFile, LineBuffer);
 
     // search for "header"
-    string name = "ConfigSofia";
+    string name = "ConfigSofTrim";
     if (LineBuffer.compare(0, name.length(), name) == 0) 
       ReadingStatus = true;
 
@@ -163,17 +158,17 @@ void TSofiaPhysics::ReadAnalysisConfig() {
         AnalysisConfigFile.ignore(numeric_limits<streamsize>::max(), '\n' );
       }
 
-      else if (whatToDo=="E_RAW_THRESHOLD") {
+      /*else if (whatToDo=="E_RAW_THRESHOLD") {
         AnalysisConfigFile >> DataBuffer;
         m_E_RAW_Threshold = atof(DataBuffer.c_str());
         cout << whatToDo << " " << m_E_RAW_Threshold << endl;
-      }
+        }
 
-      else if (whatToDo=="E_THRESHOLD") {
+        else if (whatToDo=="E_THRESHOLD") {
         AnalysisConfigFile >> DataBuffer;
         m_E_Threshold = atof(DataBuffer.c_str());
         cout << whatToDo << " " << m_E_Threshold << endl;
-      }
+        }*/
 
       else {
         ReadingStatus = false;
@@ -185,41 +180,43 @@ void TSofiaPhysics::ReadAnalysisConfig() {
 
 
 ///////////////////////////////////////////////////////////////////////////
-void TSofiaPhysics::Clear() {
-  DetectorNumber.clear();
-  PlasticNumber.clear();
-  Energy.clear();
-  Time.clear();
+void TSofTrimPhysics::Clear() {
+  SectionNbr.clear();
+  EnergyPair1.clear();
+  EnergyPair2.clear();
+  EnergyPair2.clear();
+  DriftTimePair1.clear();
+  DriftTimePair2.clear();
+  DriftTimePair3.clear();
+  EnergySum.clear();
 }
 
 
 
 ///////////////////////////////////////////////////////////////////////////
-void TSofiaPhysics::ReadConfiguration(NPL::InputParser parser) {
-  vector<NPL::InputBlock*> blocks = parser.GetAllBlocksWithToken("Sofia");
+void TSofTrimPhysics::ReadConfiguration(NPL::InputParser parser) {
+  vector<NPL::InputBlock*> blocks = parser.GetAllBlocksWithToken("SofTrim");
   if(NPOptionManager::getInstance()->GetVerboseLevel())
     cout << "//// " << blocks.size() << " detectors found " << endl; 
 
-  vector<string> cart = {"POS","Shape"};
-  vector<string> sphe = {"R","Theta","Phi","Shape"};
+  vector<string> cart = {"POS"};
+  vector<string> sphe = {"R","Theta","Phi"};
 
   for(unsigned int i = 0 ; i < blocks.size() ; i++){
     if(blocks[i]->HasTokenList(cart)){
       if(NPOptionManager::getInstance()->GetVerboseLevel())
-        cout << endl << "////  Sofia " << i+1 <<  endl;
-    
+        cout << endl << "////  SofTrim " << i+1 <<  endl;
+
       TVector3 Pos = blocks[i]->GetTVector3("POS","mm");
-      string Shape = blocks[i]->GetString("Shape");
-      AddDetector(Pos,Shape);
+      AddDetector(Pos);
     }
     else if(blocks[i]->HasTokenList(sphe)){
       if(NPOptionManager::getInstance()->GetVerboseLevel())
-        cout << endl << "////  Sofia " << i+1 <<  endl;
+        cout << endl << "////  SofTrim " << i+1 <<  endl;
       double R = blocks[i]->GetDouble("R","mm");
       double Theta = blocks[i]->GetDouble("Theta","deg");
       double Phi = blocks[i]->GetDouble("Phi","deg");
-      string Shape = blocks[i]->GetString("Shape");
-      AddDetector(R,Theta,Phi,Shape);
+      AddDetector(R,Theta,Phi);
     }
     else{
       cout << "ERROR: check your input file formatting " << endl;
@@ -228,85 +225,42 @@ void TSofiaPhysics::ReadConfiguration(NPL::InputParser parser) {
   }
 }
 
-///////////////////////////////////////////////////////////////////////////
-void TSofiaPhysics::InitSpectra() {
-  m_Spectra = new TSofiaSpectra(m_NumberOfDetectors);
-}
-
-
 
 ///////////////////////////////////////////////////////////////////////////
-void TSofiaPhysics::FillSpectra() {
-  m_Spectra -> FillRawSpectra(m_EventData);
-  m_Spectra -> FillPreTreatedSpectra(m_PreTreatedData);
-  m_Spectra -> FillPhysicsSpectra(m_EventPhysics);
-}
-
-
-
-///////////////////////////////////////////////////////////////////////////
-void TSofiaPhysics::CheckSpectra() {
-  m_Spectra->CheckSpectra();
-}
-
-
-
-///////////////////////////////////////////////////////////////////////////
-void TSofiaPhysics::ClearSpectra() {
-  // To be done
-}
-
-
-
-///////////////////////////////////////////////////////////////////////////
-map< string , TH1*> TSofiaPhysics::GetSpectra() {
-  if(m_Spectra)
-    return m_Spectra->GetMapHisto();
-  else{
-    map< string , TH1*> empty;
-    return empty;
-  }
-}
-
-///////////////////////////////////////////////////////////////////////////
-void TSofiaPhysics::WriteSpectra() {
-  m_Spectra->WriteSpectra();
-}
-
-
-
-///////////////////////////////////////////////////////////////////////////
-void TSofiaPhysics::AddParameterToCalibrationManager() {
+void TSofTrimPhysics::AddParameterToCalibrationManager() {
   CalibrationManager* Cal = CalibrationManager::getInstance();
-  for (int i = 0; i < m_NumberOfDetectors; ++i) {
-    Cal->AddParameter("Sofia", "D"+ NPL::itoa(i+1)+"_ENERGY","Sofia_D"+ NPL::itoa(i+1)+"_ENERGY");
-    Cal->AddParameter("Sofia", "D"+ NPL::itoa(i+1)+"_TIME","Sofia_D"+ NPL::itoa(i+1)+"_TIME");
+  for(int sec = 0; sec < m_NumberOfSections; sec++){
+    for(int anode = 0; anode < m_NumberOfAnodesPerSection; anode++){
+      Cal->AddParameter("SofTrim","SEC"+NPL::itoa(sec+1)+"_ANODE"+NPL::itoa(anode+1)+"_ENERGY","SofTrim_SEC"+NPL::itoa(sec+1)+"_ANODE"+NPL::itoa(anode+1)+"_ENERGY");
+      Cal->AddParameter("SofTrim","SEC"+NPL::itoa(sec+1)+"_ANODE"+NPL::itoa(anode+1)+"_TIME","SofTrim_SEC"+NPL::itoa(sec+1)+"_ANODE"+NPL::itoa(anode+1)+"_TIME");
+
+    }
   }
 }
 
 
 
 ///////////////////////////////////////////////////////////////////////////
-void TSofiaPhysics::InitializeRootInputRaw() {
+void TSofTrimPhysics::InitializeRootInputRaw() {
   TChain* inputChain = RootInput::getInstance()->GetChain();
-  inputChain->SetBranchStatus("Sofia",  true );
-  inputChain->SetBranchAddress("Sofia", &m_EventData );
+  inputChain->SetBranchStatus("SofTrim",  true );
+  inputChain->SetBranchAddress("SofTrim", &m_EventData );
 }
 
 
 
 ///////////////////////////////////////////////////////////////////////////
-void TSofiaPhysics::InitializeRootInputPhysics() {
+void TSofTrimPhysics::InitializeRootInputPhysics() {
   TChain* inputChain = RootInput::getInstance()->GetChain();
-  inputChain->SetBranchAddress("Sofia", &m_EventPhysics);
+  inputChain->SetBranchAddress("SofTrim", &m_EventPhysics);
 }
 
 
 
 ///////////////////////////////////////////////////////////////////////////
-void TSofiaPhysics::InitializeRootOutput() {
+void TSofTrimPhysics::InitializeRootOutput() {
   TTree* outputTree = RootOutput::getInstance()->GetTree();
-  outputTree->Branch("Sofia", "TSofiaPhysics", &m_EventPhysics);
+  outputTree->Branch("SofTrim", "TSofTrimPhysics", &m_EventPhysics);
 }
 
 
@@ -314,8 +268,8 @@ void TSofiaPhysics::InitializeRootOutput() {
 ////////////////////////////////////////////////////////////////////////////////
 //            Construct Method to be pass to the DetectorFactory              //
 ////////////////////////////////////////////////////////////////////////////////
-NPL::VDetector* TSofiaPhysics::Construct() {
-  return (NPL::VDetector*) new TSofiaPhysics();
+NPL::VDetector* TSofTrimPhysics::Construct() {
+  return (NPL::VDetector*) new TSofTrimPhysics();
 }
 
 
@@ -324,14 +278,14 @@ NPL::VDetector* TSofiaPhysics::Construct() {
 //            Registering the construct method to the factory                 //
 ////////////////////////////////////////////////////////////////////////////////
 extern "C"{
-class proxy_Sofia{
-  public:
-    proxy_Sofia(){
-      NPL::DetectorFactory::getInstance()->AddToken("Sofia","Sofia");
-      NPL::DetectorFactory::getInstance()->AddDetector("Sofia",TSofiaPhysics::Construct);
-    }
-};
+  class proxy_SofTrim{
+    public:
+      proxy_SofTrim(){
+        NPL::DetectorFactory::getInstance()->AddToken("SofTrim","SofTrim");
+        NPL::DetectorFactory::getInstance()->AddDetector("SofTrim",TSofTrimPhysics::Construct);
+      }
+  };
 
-proxy_Sofia p_Sofia;
+  proxy_SofTrim p_SofTrim;
 }
 
