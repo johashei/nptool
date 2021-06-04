@@ -58,7 +58,6 @@ double devE(const double* parameter){
     double ThetaMugast = dir.Angle(MugastNormal);
     double Energy = energy[i];
 
-    //NOTE!!! Not calucualting energy loss in Al???
     //Energy loss in Al
     Energy=Al.EvaluateInitialEnergy(
 		Energy,                      //energy after Al 
@@ -67,16 +66,14 @@ double devE(const double* parameter){
     //Energy loss in target
     Energy=CD2.EvaluateInitialEnergy(
 		Energy,                      //energy after leaving target
-		0.5*parameter[4]*micrometer, //pass through half target
+		0.5*parameter[3]*micrometer, //pass through half target
 		ThetaTarget);                //angle leaving target
 
     //Final value of Ex
     double Ex = reaction.ReconstructRelativistic(Energy,ThetaTarget);
     
-    //Fill histogram with ERROR in Ex!
-    //h->Fill(Ex-refE); 
-    h->Fill(Ex); 
-
+    //Fill histograms with Ex
+    h->Fill(Ex);
     switch(detnum[i]){
       case 1:
         h1->Fill(Ex); 
@@ -97,30 +94,28 @@ double devE(const double* parameter){
         h7->Fill(Ex); 
         break;
       default:
-        cout << "ERRO:: Invalid DetNum " << detnum[i] << " at event " << i << endl;
+        cout << "ERROR:: Invalid DetNum " << detnum[i] << " at event " << i << endl;
         return 1; // Exit code
     }
-
   }
   //End loop over events
 
   //Write vals to screen
   cout << "Mean: " << h->GetMean() 
        << "\t StdDev: " << h->GetStdDev() 
-       << "\t Thickness??: " << parameter[4] 
+       << "\t Thickness: " << parameter[3] << " um" 
        << endl;
 
   //Draw histogram(s)
   h->Draw();
   if(flagDraw){ InitiliseCanvas(); }
 
-
+  /*
   cout << pow(h->GetMean()-refE,2)  << " + " 
        << pow(0.1*h->GetStdDev(),2) << " = " 
        << pow(h->GetMean()-refE,2) + pow(0.1*h->GetStdDev(),2) 
        << endl;
-
-
+  */
 
   //Adapt the metric as needed
   return sqrt( pow(h->GetMean()-refE,2) + pow(0.1*h->GetStdDev(),2) );
@@ -128,47 +123,47 @@ double devE(const double* parameter){
 ////////////////////////////////////////////////////////////////////////////////
 void MinimizeBeamSpot(){
 
-  // Read data in
+  //Read data in
   LoadFile();
 
-  // Start with beam (0,0,0) and 4.7um 0.5mg/c2 target
-  double parameter[4] = {0.0, 0.0, 0.0, 4.7};   
+  //Start with beam (0,0,0) and 4.76um 0.5mg/c2 target
+  double parameter[4] = {0.0, 0.0, 0.0, 4.76};   
   devE(parameter);
 
-  // Function with 4 parameter XYZ and Target thickness
+  //Function with 4 parameter XYZ and Target thickness
   auto func = ROOT::Math::Functor(&devE,4);
  
-  // Minimizer
+  //Minimizer
   auto minim = ROOT::Math::Factory::CreateMinimizer("Minuit2","Migrad"); 
 
   minim->SetPrintLevel(0);
   minim->SetPrecision(1e-10); 
 
-  // Set minimizer function
+  //Set minimizer function
   minim->SetFunction(func);
 
-  // Assign variable limits
+  //Assign variable limits
   minim->SetLimitedVariable(0,"X",parameter[0],0.01,-10,10);
   minim->SetLimitedVariable(1,"Y",parameter[1],0.01,-10,10);
   minim->SetLimitedVariable(2,"Z",parameter[2],0.01,-5,5);
-  minim->SetLimitedVariable(3,"T",parameter[3],0.01, 4.7-3.0, 4.7+3.0);
+  minim->SetLimitedVariable(3,"T",parameter[3],0.01,4.76*0.5,4.76*1.5);
 
-  // Don't draw iterations of minimizer
+  //Don't draw iterations of minimizer
   flagDraw = 0;
 
-  // Shrink it, babeyyy
+  //Shrink it, babeyyy
   minim->Minimize(); 
   
-  // Draw minimal value
+  //Draw minimal value
   flagDraw = 1;
 
-  // Pull values from minimizer
+  //Pull values from minimizer
   const double* x = minim->X();
   cout << "========================================" << endl;
   cout << "\t\tX =" << x[0] << endl;
   cout << "\t\tY =" << x[1] << endl;
   cout << "\t\tZ =" << x[2] << endl;
   cout << "\t\tT =" << x[3] << endl;
-  cout << "Minimum: " << devE(x) << endl;
+  devE(x);
   cout << "========================================" << endl;
 }
