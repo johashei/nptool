@@ -159,16 +159,12 @@ class TSamuraiFDC0Physics : public TObject, public NPL::VDetector{
 
   public:      //   Specific to SamuraiFDC0 Array
 
-    //   Clear The PreTeated object
-    void ClearPreTreatedData()   {m_PreTreatedData->Clear();}
-
     //   Remove bad channel, calibrate the data and apply threshold
     void PreTreat();
 
     // Retrieve raw and pre-treated data
     TSamuraiFDC0Data* GetRawData()        const {return m_EventData;}
-    TSamuraiFDC0Data* GetPreTreatedData() const {return m_PreTreatedData;}
-  
+ 
     TVector3 GetPos(){return TVector3(PosX,PosY,m_offset.Z());}
     double GetPosX(){return PosX;}
     double GetPosY(){return PosY;}
@@ -180,7 +176,6 @@ class TSamuraiFDC0Physics : public TObject, public NPL::VDetector{
 
   private:   //   Root Input and Output tree classes
     TSamuraiFDC0Data*         m_EventData;//!
-    TSamuraiFDC0Data*         m_PreTreatedData;//!
     TSamuraiFDC0Physics*      m_EventPhysics;//!
 
 

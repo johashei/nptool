@@ -43,7 +43,6 @@ ClassImp(TSamuraiFDC0Physics)
   ///////////////////////////////////////////////////////////////////////////
   TSamuraiFDC0Physics::TSamuraiFDC0Physics(){
     m_EventData         = new TSamuraiFDC0Data ;
-    m_PreTreatedData    = new TSamuraiFDC0Data ;
     m_EventPhysics      = this ;
     //m_Spectra           = NULL;
 //    ToTThreshold_L = 0;
@@ -229,7 +228,6 @@ void TSamuraiFDC0Physics::BuildPhysicalEvent(){
 }
 ///////////////////////////////////////////////////////////////////////////
 void TSamuraiFDC0Physics::PreTreat(){
-  ClearPreTreatedData();
   static CalibrationManager* Cal = CalibrationManager::getInstance();
   static string channel;
   // one map per detector
