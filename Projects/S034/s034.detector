@@ -9,8 +9,6 @@ SAMURAIBDC 1
 %%%%%%%%%%%%
 SAMURAIBDC 2
  XML= db/SAMURAIBDC2.xml
-% Offset= +0.25 +1.6 -5876.7 mm
-% Offset= 0 0 -5876.7 mm
  Offset= -0.0686464 0.294288 -5876.7 mm
  InvertX= 0 
  InvertY= 0

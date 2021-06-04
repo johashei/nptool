@@ -100,24 +100,44 @@ class TNebulaData : public TObject {
     fNebula_Td_ID.push_back(ID);
     fNebula_Td_Time.push_back(Time);
     };//!
-/*
-    //////////////////////    GETTERS    ////////////////////////
-    // Energy
-    inline UShort_t GetMultEnergy() const
-      {return fNebula_E_DetectorNbr.size();}
-    inline UShort_t GetE_DetectorNbr(const unsigned int &i) const 
-      {return fNebula_E_DetectorNbr[i];}//!
-    inline Double_t Get_Energy(const unsigned int &i) const 
-      {return fNebula_Energy[i];}//!
 
+    //////////////////////    GETTERS    ////////////////////////
+    // MULT //
+    // Charge 
+    inline unsigned int GetChargeUpMult() const
+      {return fNebula_Qu_ID.size();};
     // Time
-    inline UShort_t GetMultTime() const
-      {return fNebula_T_DetectorNbr.size();}
-    inline UShort_t GetT_DetectorNbr(const unsigned int &i) const 
-      {return fNebula_T_DetectorNbr[i];}//!
-    inline Double_t Get_Time(const unsigned int &i) const 
-      {return fNebula_Time[i];}//!
-*/
+    inline unsigned int GetTimeUpMult() const
+      {return fNebula_Tu_ID.size();};
+    // Charge
+    inline unsigned int GetChargeDownMult() const
+      {return fNebula_Qd_ID.size();};
+    // Time
+    inline unsigned int GetTimeDownMult() const
+      {return fNebula_Td_ID.size();};
+
+    // Value // 
+    // Charge 
+    inline UShort_t GetChargeUpID(unsigned int& i) const
+      {return fNebula_Qu_ID[i];};
+    inline double GetChargeUp(unsigned int& i) const
+      {return fNebula_Qu_Charge[i];};
+    // Time 
+    inline UShort_t GetTimeUpID(unsigned int& i) const
+      {return fNebula_Tu_ID[i];};
+    inline double GetTimeUp(unsigned int& i) const
+      {return fNebula_Tu_Time[i];};
+    // Charge 
+    inline UShort_t GetChargeDownID(unsigned int& i) const
+      {return fNebula_Qd_ID[i];};
+    inline double GetChargeDown(unsigned int& i) const
+      {return fNebula_Qd_Charge[i];};
+    // Time 
+    inline UShort_t GetTimeDownID(unsigned int& i) const
+      {return fNebula_Td_ID[i];};
+    inline double GetTimeDown(unsigned int& i) const
+      {return fNebula_Td_Time[i];};
+
 
   //////////////////////////////////////////////////////////////
   // Required for ROOT dictionnary

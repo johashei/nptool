@@ -52,26 +52,64 @@ class TNebulaPhysics : public TObject, public NPL::VDetector {
     ~TNebulaPhysics() {};
 
 
-  //////////////////////////////////////////////////////////////
-  // Inherited from TObject and overriden to avoid warnings
+    //////////////////////////////////////////////////////////////
+    // Inherited from TObject and overriden to avoid warnings
   public: 
     void Clear();   
     void Clear(const Option_t*) {};
 
 
-  //////////////////////////////////////////////////////////////
-  // data obtained after BuildPhysicalEvent() and stored in
-  // output ROOT file
+    //////////////////////////////////////////////////////////////
+    // data obtained after BuildPhysicalEvent() and stored in
+    // output ROOT file
   public:
     vector<int>      DetectorNumber;
-    vector<double>   Energy;
-    vector<double>   Time;
+    vector<double>   Charge;
+    vector<double>   TOF;
+    vector<double>   PosY;
+    vector<double>   PosX;
+    vector<double>   PosZ;
+    vector<bool>     IsVeto;
 
-  /// A usefull method to bundle all operation to add a detector
-  void ReadXML(NPL::XmlParser); 
-  
-  //////////////////////////////////////////////////////////////
-  // methods inherited from the VDetector ABC class
+  public:
+    TVector3 GetPos(const unsigned int& i) const{
+      return TVector3(PosX[i],PosY[i],PosZ[i]);
+    }
+
+    // Return true if one veto fired
+    bool HasVeto(){
+      unsigned int size = IsVeto.size();
+      for(unsigned int i = 0 ; i < size ; i++){
+        if(IsVeto[i])
+          return true;
+      }
+      return false;
+    };
+
+    /////////// Get index of fastest neutron
+    int GetFirstHit(){
+      unsigned int size = TOF.size();
+      unsigned int index=0;
+
+      if(!size)
+        return -1;
+
+      double tof = TOF[0];
+      for(unsigned int i = 1 ; i < size ; i++){
+        if(tof<TOF[i]){
+          tof=TOF[i];
+          index=i;
+        }
+      }
+      return index;
+    };
+
+  public:
+    /// A usefull method to bundle all operation to add a detector
+    void ReadXML(NPL::XmlParser); 
+
+    //////////////////////////////////////////////////////////////
+    // methods inherited from the VDetector ABC class
   public:
     // read stream from ConfigFile to pick-up detector parameters
     void ReadConfiguration(NPL::InputParser);
@@ -126,14 +164,11 @@ class TNebulaPhysics : public TObject, public NPL::VDetector {
     void WriteSpectra();
 
 
-  //////////////////////////////////////////////////////////////
-  // specific methods to Nebula array
+    //////////////////////////////////////////////////////////////
+    // specific methods to Nebula array
   public:
     // remove bad channels, calibrate the data and apply thresholds
     void PreTreat();
-
-    // clear the pre-treated object
-    void ClearPreTreatedData()   {m_PreTreatedData->Clear();}
 
     // read the user configuration file. If no file is found, load standard one
     void ReadAnalysisConfig();
@@ -141,25 +176,24 @@ class TNebulaPhysics : public TObject, public NPL::VDetector {
     // give and external TNebulaData object to TNebulaPhysics. 
     // needed for online analysis for example
     void SetRawDataPointer(TNebulaData* rawDataPointer) {m_EventData = rawDataPointer;}
-    
-  // objects are not written in the TTree
+
+    // objects are not written in the TTree
   private:
     TNebulaData*         m_EventData;        //!
-    TNebulaData*         m_PreTreatedData;   //!
     TNebulaPhysics*      m_EventPhysics;     //!
 
-  // getters for raw and pre-treated data object
+    // getters for raw and pre-treated data object
   public:
     TNebulaData* GetRawData()        const {return m_EventData;}
-    TNebulaData* GetPreTreatedData() const {return m_PreTreatedData;}
 
-  // parameters used in the analysis
+    // parameters used in the analysis
   private:
     // thresholds
-    double m_E_RAW_Threshold; //!
-    double m_E_Threshold;     //!
+    double m_Q_RAW_Threshold; //!
+    double m_Q_Threshold;     //!
+    double m_V_Threshold;     //!
 
-  // number of detectors
+    // number of detectors
   private:
     int m_NumberOfBars;  //!
 
@@ -168,16 +202,43 @@ class TNebulaPhysics : public TObject, public NPL::VDetector {
     std::map<unsigned int, bool> m_invertX;//!
     std::map<unsigned int, bool> m_invertY;//!
 
+  private: // xml calibration
+    // position
+    std::map<unsigned int , double > PositionX;//!
+    std::map<unsigned int , double > PositionY;//!
+    std::map<unsigned int , double > PositionZ;//!
 
-  // spectra class
+    // linear cal
+    std::map<unsigned int , double > aQu;//!
+    std::map<unsigned int , double > bQu;//!
+    std::map<unsigned int , double > aQd;//!
+    std::map<unsigned int , double > bQd;//!
+    std::map<unsigned int , double > aTu;//!
+    std::map<unsigned int , double > bTu;//!
+    std::map<unsigned int , double > aTd;//!
+    std::map<unsigned int , double > bTd;//!
+
+    // T average offset
+    std::map<unsigned int , double > avgT0;//!
+
+    // slew correction T= tcal +slwT/sqrt(Qcal)
+    std::map<unsigned int , double > slwTu;//!
+    std::map<unsigned int , double > slwTd;//!
+
+    // DT position cal
+    std::map<unsigned int , double > DTa;//!
+    std::map<unsigned int , double > DTb;//!
+
+
+    // spectra class
   private:
     TNebulaSpectra* m_Spectra; // !
 
-  // spectra getter
+    // spectra getter
   public:
     map<string, TH1*>   GetSpectra(); 
 
-  // Static constructor to be passed to the Detector Factory
+    // Static constructor to be passed to the Detector Factory
   public:
     static NPL::VDetector* Construct();
 
