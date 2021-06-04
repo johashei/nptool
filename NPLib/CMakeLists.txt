@@ -32,6 +32,9 @@ if(NPMULTITHREADING)
  message("Building application with no MutilThreading Support")
 endif()
 
+configure_file(scripts/build_dict.sh.in scripts/build_dict.sh @ONLY) 
+
+
 configure_file(Core/NPLibVersion.h.in Core/NPLibVersion.h @ONLY)
 set(DETLIST ${ETLIST})
 
