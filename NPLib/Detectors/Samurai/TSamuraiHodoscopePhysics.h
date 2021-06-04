@@ -160,7 +160,7 @@ class TSamuraiHodoscopePhysics : public TObject, public NPL::VDetector {
   
     vector <double> GetCharge() {return Charge;}
     vector <double> GetTime() {return Time;}
-    vector<int> GetID(unsigned int i) {return ID;}
+    vector<int> GetID() {return ID;}
 
     // give and external TSamuraiHodoscopeData object to TSamuraiHodoscopePhysics. 
     // needed for online analysis for example
