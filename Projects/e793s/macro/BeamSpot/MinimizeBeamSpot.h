@@ -14,8 +14,8 @@ NPL::EnergyLoss Al("proton_Al.G4table","G4Table",100);
 using namespace std;
 
 bool flagDraw = 0;
-static auto h = new TH1D("h","h", 80,-1.,1.);
-static auto h1 = new TH1D("h1","h1", 40,-1.,1.);
+static auto h = new TH1D("h","All MG#'s", 60,-1.,1.);
+static auto h1 = new TH1D("h1","Individual MG#'s", 40,-1.,1.);
 static auto h2 = new TH1D("h2","h2", 40,-1.,1.);
 static auto h3 = new TH1D("h3","h3", 40,-1.,1.);
 static auto h4 = new TH1D("h4","h4", 40,-1.,1.);
@@ -125,6 +125,7 @@ void InitiliseCanvas(){
   // ----- ALL -----
   canv->cd(2);
   h->SetStats(0);
+  h->SetLineColor(kBlack);
   h->GetXaxis()->SetTitle("Ex [MeV]");
   h->GetYaxis()->SetTitle("Counts");
   h->Draw();
