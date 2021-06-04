@@ -6,8 +6,10 @@ double devE(const double* parameter){
 
   //Beam spot offset
   TVector3 offset(parameter[0],parameter[1],parameter[2]);
-  unsigned int size = pos.size();
 
+  //Other variable initilizations
+  unsigned int size = pos.size();
+  TVector3 MugastNormal;
   double dE,Theta;
   TVector3 dir;
 
@@ -25,19 +27,51 @@ double devE(const double* parameter){
     //Particle path vector
     dir=*(pos[i])-offset;
 
-    //Detected energy, and angle of particle leaving target
-    double Theta= dir.Angle(TVector3(0,0,1));
+    //Define normal vector for the MG# of detection
+    //[[[[ UPDATE WITH NEW MG POSITIONS FROM SURVEY ]]]]
+    switch(detnum[i]){
+      case 1:
+        MugastNormal.SetXYZ(-0.453915, +0.455463, -0.765842);
+        break;
+      case 2:
+	MugastNormal.SetXYZ(-0.642828, +0.000000, -0.766010);
+        break;
+      case 3:
+	MugastNormal.SetXYZ(-0.454594, -0.450670, -0.768271);
+        break;
+      case 4:
+	MugastNormal.SetXYZ(-0.002437, -0.638751, -0.769409);
+        break;
+      case 5:
+	MugastNormal.SetXYZ(+0.452429, -0.454575, -0.767248);
+        break;
+      case 7:
+	MugastNormal.SetXYZ(+0.443072, +0.443265, -0.779232);
+        break;
+      default:
+	cout << "ERROR:: Invalid DetNum " << detnum[i] << " at event " << i << endl;
+        return 1; // Exit code
+    }
+
+    //Angle leaving target, angle entering MUGAST & energy deposited in MUGAST
+    double ThetaTarget = dir.Angle(TVector3(0,0,1));
+    double ThetaMugast = dir.Angle(MugastNormal);
     double Energy = energy[i];
 
     //NOTE!!! Not calucualting energy loss in Al???
+    //Energy loss in Al
+    Energy=Al.EvaluateInitialEnergy(
+		Energy,                      //energy after Al 
+		0.4*micrometer,              //thickness of Al
+		ThetaMugast);                //angle impinging on MUGAST
     //Energy loss in target
     Energy=CD2.EvaluateInitialEnergy(
-		    Energy,                      //energy after leaving target
-		    0.5*parameter[4]*micrometer, //pass through half target
-		    Theta);                      //angle leaving target
+		Energy,                      //energy after leaving target
+		0.5*parameter[4]*micrometer, //pass through half target
+		ThetaTarget);                //angle leaving target
 
     //Final value of Ex
-    double Ex = reaction.ReconstructRelativistic(Energy,Theta);
+    double Ex = reaction.ReconstructRelativistic(Energy,ThetaTarget);
     
     //Fill histogram with ERROR in Ex!
     //h->Fill(Ex-refE); 
@@ -63,7 +97,7 @@ double devE(const double* parameter){
         h7->Fill(Ex); 
         break;
       default:
-        cout << "ERROR! Invalid detnum: " << detnum[i] << " @" << i << endl;
+        cout << "ERRO:: Invalid DetNum " << detnum[i] << " at event " << i << endl;
         return 1; // Exit code
     }
 
@@ -79,6 +113,14 @@ double devE(const double* parameter){
   //Draw histogram(s)
   h->Draw();
   if(flagDraw){ InitiliseCanvas(); }
+
+
+  cout << pow(h->GetMean()-refE,2)  << " + " 
+       << pow(0.1*h->GetStdDev(),2) << " = " 
+       << pow(h->GetMean()-refE,2) + pow(0.1*h->GetStdDev(),2) 
+       << endl;
+
+
 
   //Adapt the metric as needed
   return sqrt( pow(h->GetMean()-refE,2) + pow(0.1*h->GetStdDev(),2) );
