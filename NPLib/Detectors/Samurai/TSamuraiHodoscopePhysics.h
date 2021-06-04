@@ -156,6 +156,11 @@ class TSamuraiHodoscopePhysics : public TObject, public NPL::VDetector {
     
     // clear the pre-treated object
     void ClearPreTreatedData()   {m_PreTreatedData->Clear();}
+    
+  
+    vector <double> GetCharge() {return Charge;}
+    vector <double> GetTime() {return Time;}
+    vector<int> GetID(unsigned int i) {return ID;}
 
     // give and external TSamuraiHodoscopeData object to TSamuraiHodoscopePhysics. 
     // needed for online analysis for example
