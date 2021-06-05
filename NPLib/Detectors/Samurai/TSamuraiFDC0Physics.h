@@ -36,19 +36,17 @@
 #include "NPInputParser.h"
 #include "NPXmlParser.h"
 
-#if __cplusplus > 199711L && NPMULTITHREADING 
-#include "NPDCReconstructionMT.h"
-#else
-#include "NPDCReconstruction.h"
-#endif
+  #if __cplusplus > 199711L && NPMULTITHREADING 
+  #include "NPDCReconstructionMT.h"
+  #else
+  #include "NPDCReconstruction.h"
+  #endif
 
 // ROOT 
 #include "TVector3.h" 
 
 // Forward declaration
 //class TSamuraiFDC0Spectra;
-
-
 
 class TSamuraiFDC0Physics : public TObject, public NPL::VDetector{
   public:
@@ -89,10 +87,6 @@ class TSamuraiFDC0Physics : public TObject, public NPL::VDetector{
     bool m_invertD;//!
 
 
-  public:
-    // Projected position at given Z plan
-    TVector3 ProjectedPosition(double Z);
-
   private: // Charateristic of the DC 
     void AddDC(std::string name, NPL::XmlParser&);//! take the XML file and fill in Wire_X and Layer_Angle
     std::map<SamuraiDCIndex,double> Wire_X;//! X position of the wires
@@ -110,12 +104,12 @@ class TSamuraiFDC0Physics : public TObject, public NPL::VDetector{
     // Construct the 2D track and ref position at Z=0 and Z=100 based on X,Z and Radius provided
 
     // Object use to perform the DC reconstruction
-    #if __cplusplus > 199711L && NPMULTITHREADING 
+    #if __cplusplus > 199711L && NPMULTITHREADING  
     NPL::DCReconstructionMT m_reconstruction;//!
     #else
     NPL::DCReconstruction m_reconstruction;//!
     #endif
-
+ 
   public: //   Innherited from VDetector Class
 
     // Read stream at ConfigFile to pick-up parameters of detector (Position,...) using Token
@@ -165,16 +159,12 @@ class TSamuraiFDC0Physics : public TObject, public NPL::VDetector{
 
   public:      //   Specific to SamuraiFDC0 Array
 
-    //   Clear The PreTeated object
-    void ClearPreTreatedData()   {m_PreTreatedData->Clear();}
-
     //   Remove bad channel, calibrate the data and apply threshold
     void PreTreat();
 
     // Retrieve raw and pre-treated data
     TSamuraiFDC0Data* GetRawData()        const {return m_EventData;}
-    TSamuraiFDC0Data* GetPreTreatedData() const {return m_PreTreatedData;}
-  
+ 
     TVector3 GetPos(){return TVector3(PosX,PosY,m_offset.Z());}
     double GetPosX(){return PosX;}
     double GetPosY(){return PosY;}
@@ -186,8 +176,13 @@ class TSamuraiFDC0Physics : public TObject, public NPL::VDetector{
 
   private:   //   Root Input and Output tree classes
     TSamuraiFDC0Data*         m_EventData;//!
-    TSamuraiFDC0Data*         m_PreTreatedData;//!
     TSamuraiFDC0Physics*      m_EventPhysics;//!
+
+
+   public:
+    // Projected position at given Z plan
+    TVector3 ProjectedPosition(double Z){return TVector3(0,0,0);/*FIXME*/};
+
 
   private: // Spectra Class
    // TSamuraiFDC0Spectra* m_Spectra; // !

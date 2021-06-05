@@ -22,6 +22,7 @@
  *****************************************************************************/
 
 #include"NPVAnalysis.h"
+#include"NPEnergyLoss.h"
 #include"TMinosPhysics.h"
 #include"TNebulaPhysics.h"
 #include"TSamuraiBDCPhysics.h"
@@ -50,18 +51,18 @@ class Analysis: public NPL::VAnalysis{
     TSamuraiFDC2Physics* FDC2;
     TSamuraiHodoscopePhysics* Hodo;
     SamuraiFieldMap m_field ;
-    ofstream file;
+//    ofstream file;
   private: // output variable
-    double Brho,BrhoP,BDCX,BDCY,Z;
+    double Brho,BDCX,BDCY,X,Y,Z,Erel;
     double Beta_f;
+    double Beta_n;
     int    Trigger;
+  private: // Energy loss table
+   NPL::EnergyLoss FragmentTarget ;
   public:
     void  Clear();
     void  InitOutputBranch();
     void  InitInputBranch();
-
 };
 
-// use for broh calculation
-double r_fit(double *x) ;
 #endif

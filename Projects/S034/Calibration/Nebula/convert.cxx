@@ -7,7 +7,7 @@ void convert(){
  double val;
  getline(in,buffer); // ignore first line
  while(in >> id >> buffer){
-    out << "NEBULA_ID" << id << "_T " << buffer  << endl;
+    out << "NEBULA_T_ID" << id << " " << buffer  << endl;
  }
  out.close();
  in.close();
@@ -16,7 +16,7 @@ void convert(){
 
  getline(in,buffer); // ignore first line
  while(in >> id >> buffer){
-    out << "NEBULA_ID" << id << "_Y " << buffer  << endl;
+    out << "NEBULA_Y_ID" << id << " " << buffer  << endl;
  }
  out.close();
  in.close();

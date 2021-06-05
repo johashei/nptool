@@ -139,6 +139,7 @@ namespace NPL {
       EnergyToBeta();
       BetaToGamma();
       BetaToVelocity();}
+
     void SetExcitationEnergy(double Ex) {fExcitationEnergy=Ex;}
     void				SetBeta(double beta)					{fBeta = beta; BetaToGamma(); BetaToEnergy(); EnergyToTof(); EnergyToBrho();BetaToVelocity();}
       double GetEnergyCM(double EnergyLab, double ThetaLab, double PhiLab, double relativisticboost);

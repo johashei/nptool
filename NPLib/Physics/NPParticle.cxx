@@ -510,7 +510,7 @@ void Particle::BetaToGamma(){
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo...... 
 void Particle::BetaToVelocity(){
-  fVelocity = (c_light*1e6)*fBeta*1e-7;
+  fVelocity = c_light*fBeta;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo...... 

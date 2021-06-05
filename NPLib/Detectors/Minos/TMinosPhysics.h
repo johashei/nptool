@@ -160,6 +160,9 @@ class TMinosPhysics : public TObject, public NPL::VDetector {
     double GetVertexX()  {return X_Vertex;} //!
     double GetVertexY()  {return Y_Vertex;} //!
     double GetVertexZ()  {return Z_Vertex;} //!
+    
+    double GetDeltaVertex()  {return Delta_Vertex;} //!
+    double GetTheta12()  {return Theta_12;} //!
   
     int GetNbrOfTracks(){return Tracks_P0.size();}
       
