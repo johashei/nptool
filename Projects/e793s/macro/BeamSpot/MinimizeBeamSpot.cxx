@@ -100,10 +100,47 @@ double devE(const double* parameter){
   }
   //End loop over events
 
+  //Select MG# being minimized
+  double mean = 0;
+  double stddev = 0;
+  switch(mgSelect){
+    case 0:
+      mean   = h->GetMean(); 
+      stddev = h->GetStdDev(); 
+      break;
+    case 1:
+      mean   = h1->GetMean(); 
+      stddev = h1->GetStdDev(); 
+      break;
+    case 2:
+      mean   = h2->GetMean(); 
+      stddev = h2->GetStdDev(); 
+      break;
+    case 3:
+      mean   = h3->GetMean(); 
+      stddev = h3->GetStdDev(); 
+      break;
+    case 4:
+      mean   = h4->GetMean(); 
+      stddev = h4->GetStdDev(); 
+      break;
+    case 5:
+      mean   = h5->GetMean(); 
+      stddev = h5->GetStdDev(); 
+      break;
+    case 6:
+      mean   = h7->GetMean(); 
+      stddev = h7->GetStdDev(); 
+      break;
+    default:
+      cout << "ERROR:: Invalid MG# selection! -> " << mgSelect << endl;
+      return 1; // Exit code
+  }
+
   //Write vals to screen
-  cout << "Mean: " << h->GetMean() 
-       << "\t StdDev: " << h->GetStdDev() 
-       << "\t Thickness: " << parameter[3] << " um" 
+  cout << "Mean: " << mean 
+       << "    StdDev: " << stddev 
+       << "    Thickness: " << parameter[3] << " um" 
        << endl;
 
   //Draw histogram(s)
@@ -118,13 +155,26 @@ double devE(const double* parameter){
   */
 
   //Adapt the metric as needed
-  return sqrt( pow(h->GetMean()-refE,2) + pow(0.1*h->GetStdDev(),2) );
+  return sqrt( pow(mean-refE,2) + pow(0.1*stddev,2) );
 }
 ////////////////////////////////////////////////////////////////////////////////
 void MinimizeBeamSpot(){
 
   //Read data in
   LoadFile();
+
+  //Output formatting
+  cout << fixed << showpoint << setprecision(6) << showpos;
+  
+  //Read in
+  cout << "==================================================" << endl;
+  cout << "=--------- SELECT TELESCOPE TO MINIMIZE ---------=" << endl;
+  cout << "= Type MG# of telescope metric to use, or type 0 =" << endl;
+  cout << "= to use the sum of all MG's                     =" << endl;
+  cout << "==================================================" << endl;
+    cin >> mgSelect;
+    if(mgSelect==7){mgSelect=6;} // Correct the input for MG7
+  cout << "==================================================" << endl;
 
   //Start with beam (0,0,0) and 4.76um 0.5mg/c2 target
   double parameter[4] = {0.0, 0.0, 0.0, 4.76};   
@@ -159,11 +209,16 @@ void MinimizeBeamSpot(){
 
   //Pull values from minimizer
   const double* x = minim->X();
-  cout << "========================================" << endl;
+  cout << "==================================================" << endl;
+  cout << "=---------------- FINAL PEAK FITS ---------------=" << endl;
+  cout << "==================================================" << endl;
+    devE(x);
+  cout << "==================================================" << endl;
+  cout << "=------------ RESULTS OF MINIMIZATION -----------=" << endl;
+  cout << "==================================================" << endl;
   cout << "\t\tX =" << x[0] << endl;
   cout << "\t\tY =" << x[1] << endl;
   cout << "\t\tZ =" << x[2] << endl;
   cout << "\t\tT =" << x[3] << endl;
-  devE(x);
-  cout << "========================================" << endl;
+  cout << "==================================================" << endl;
 }

@@ -9,12 +9,13 @@ double refE = 0.143; // the energy of the selected states
 vector<TVector3*> pos;
 vector<double> energy;
 vector<int> detnum;
+unsigned int mgSelect;
 NPL::EnergyLoss CD2("proton_CD2.G4table","G4Table",100);
 NPL::EnergyLoss Al("proton_Al.G4table","G4Table",100);
 using namespace std;
 
 bool flagDraw = 0;
-static auto h = new TH1D("h","All MG#'s", 60,-1.,1.);
+static auto h = new TH1D("h","All MG#'s", 80,-1.,1.);
 static auto h1 = new TH1D("h1","Individual MG#'s", 40,-1.,1.);
 static auto h2 = new TH1D("h2","h2", 40,-1.,1.);
 static auto h3 = new TH1D("h3","h3", 40,-1.,1.);
@@ -70,7 +71,9 @@ void InitiliseCanvas(){
   h1->SetFillStyle(3244);
   h1->SetFillColor(kRed);
   h1->Draw();
-  h1->Fit("gaus","WQ"); //add N to stop it drawing
+  cout << "\n==================================================" << endl;
+  cout << "=---------------------- MG1 ---------------------=" << endl;
+  h1->Fit("gaus","W"); //N=stop drawing, Q=stop writing
   
   // ----- MG2 -----
   h2->SetStats(0);
@@ -78,7 +81,9 @@ void InitiliseCanvas(){
   h2->SetFillStyle(3244);
   h2->SetFillColor(kOrange);
   h2->Draw("same");
-  h2->Fit("gaus","WQ"); //add N to stop it drawing
+  cout << "\n==================================================" << endl;
+  cout << "=---------------------- MG2 ---------------------=" << endl;
+  h2->Fit("gaus","W");
           
   // ----- MG3 -----
   h3->SetStats(0);
@@ -86,23 +91,29 @@ void InitiliseCanvas(){
   h3->SetFillStyle(3344);
   h3->SetFillColor(kGreen);
   h3->Draw("same");
-  h3->Fit("gaus","WQ"); //add N to stop it drawing
-          
+  cout << "\n==================================================" << endl;
+  cout << "=---------------------- MG3 ---------------------=" << endl;
+  h3->Fit("gaus","W");
+
   // ----- MG4 -----
   h4->SetStats(0);
   h4->SetLineColor(kTeal);
   h4->SetFillStyle(3444);
   h4->SetFillColor(kTeal);
   h4->Draw("same");
-  h4->Fit("gaus","WQ"); //add N to stop it drawing
-          
+  cout << "\n==================================================" << endl;
+  cout << "=---------------------- MG4 ---------------------=" << endl;
+  h4->Fit("gaus","W");          
+  
   // ----- MG5 -----
   h5->SetStats(0);
   h5->SetLineColor(kBlue);
   h5->SetFillStyle(3544);
   h5->SetFillColor(kBlue);
   h5->Draw("same");
-  h5->Fit("gaus","WQ"); //add N to stop it drawing
+  cout << "\n==================================================" << endl;
+  cout << "=---------------------- MG5 ---------------------=" << endl;
+  h5->Fit("gaus","W");
 	  
   // ----- MG7 -----
   h7->SetStats(0);
@@ -110,7 +121,9 @@ void InitiliseCanvas(){
   h7->SetFillStyle(3644);
   h7->SetFillColor(kViolet);
   h7->Draw("same");
-  h7->Fit("gaus","WQ"); //add N to stop it drawing
+  cout << "\n==================================================" << endl;
+  cout << "=---------------------- MG7 ---------------------=" << endl;
+  h7->Fit("gaus","W");
           
   // Format legend
   auto legend = new TLegend(0.15,0.7,0.35,0.9);
@@ -129,7 +142,9 @@ void InitiliseCanvas(){
   h->GetXaxis()->SetTitle("Ex [MeV]");
   h->GetYaxis()->SetTitle("Counts");
   h->Draw();
-  h->Fit("gaus", "WQ");
+  cout << "\n==================================================" << endl;
+  cout << "=---------------------- SUM ---------------------=" << endl;
+  h->Fit("gaus", "W");
   gPad->Update();
 }
 ////////////////////////////////////////////////////////////////////////////////
