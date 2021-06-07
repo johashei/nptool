@@ -9,7 +9,7 @@ double refE = 0.143; // the energy of the selected states
 vector<TVector3*> pos;
 vector<double> energy;
 vector<int> detnum;
-unsigned int mgSelect;
+unsigned int mgSelect = 10;
 NPL::EnergyLoss CD2("proton_CD2.G4table","G4Table",100);
 NPL::EnergyLoss Al("proton_Al.G4table","G4Table",100);
 using namespace std;
@@ -47,7 +47,23 @@ void LoadFile(){
   file.close();
 }
 ////////////////////////////////////////////////////////////////////////////////
+void FillResultMatrix(double* matrix, TFitResultPtr fit){
+  matrix[0] = fit->Parameter(1);    //Mean
+  matrix[1] = fit->ParError(1);
+  matrix[2] = fit->Parameter(2);    //StdDev
+  matrix[3] = fit->ParError(2);
+  matrix[4] = fit->Chi2()/fit->Ndf(); //Chi2/NDF
+
+  cout << "\n        Mean = " << matrix[0] << " +/- " << matrix[1] << endl;
+  cout << "      StdDev = " << matrix[2] << " +/- " << matrix[3] << endl;
+  cout << "    Chi2/NDF = " << matrix[4] << endl;
+}
+////////////////////////////////////////////////////////////////////////////////
 void InitiliseCanvas(){
+  double FitResultMatrix[7][5];
+  // 7 => Sum in 0 and them MG's in 1-6
+  // 5 => Mean, MeanErr, StdDev, StdDevErr, Chi2/NDF
+
   TCanvas *canv = new TCanvas("canv","Ex Histograms",20,20,1600,800);
   gStyle->SetOptStat(0);
   canv->Divide(2,1,0.005,0.005,0);
@@ -73,8 +89,9 @@ void InitiliseCanvas(){
   h1->Draw();
   cout << "\n==================================================" << endl;
   cout << "=---------------------- MG1 ---------------------=" << endl;
-  h1->Fit("gaus","W"); //N=stop drawing, Q=stop writing
-  
+  TFitResultPtr f1 = h1->Fit("gaus","WQS"); //N=stop drawing, Q=stop writing
+  FillResultMatrix(FitResultMatrix[1],f1);
+
   // ----- MG2 -----
   h2->SetStats(0);
   h2->SetLineColor(kOrange);
@@ -83,7 +100,8 @@ void InitiliseCanvas(){
   h2->Draw("same");
   cout << "\n==================================================" << endl;
   cout << "=---------------------- MG2 ---------------------=" << endl;
-  h2->Fit("gaus","W");
+  TFitResultPtr f2 = h2->Fit("gaus","WQS"); //N=stop drawing, Q=stop writing
+  FillResultMatrix(FitResultMatrix[2],f2);
           
   // ----- MG3 -----
   h3->SetStats(0);
@@ -93,7 +111,8 @@ void InitiliseCanvas(){
   h3->Draw("same");
   cout << "\n==================================================" << endl;
   cout << "=---------------------- MG3 ---------------------=" << endl;
-  h3->Fit("gaus","W");
+  TFitResultPtr f3 = h3->Fit("gaus","WQS"); //N=stop drawing, Q=stop writing
+  FillResultMatrix(FitResultMatrix[3],f3);
 
   // ----- MG4 -----
   h4->SetStats(0);
@@ -103,7 +122,8 @@ void InitiliseCanvas(){
   h4->Draw("same");
   cout << "\n==================================================" << endl;
   cout << "=---------------------- MG4 ---------------------=" << endl;
-  h4->Fit("gaus","W");          
+  TFitResultPtr f4 = h4->Fit("gaus","WQS"); //N=stop drawing, Q=stop writing
+  FillResultMatrix(FitResultMatrix[4],f4);
   
   // ----- MG5 -----
   h5->SetStats(0);
@@ -113,7 +133,8 @@ void InitiliseCanvas(){
   h5->Draw("same");
   cout << "\n==================================================" << endl;
   cout << "=---------------------- MG5 ---------------------=" << endl;
-  h5->Fit("gaus","W");
+  TFitResultPtr f5 = h5->Fit("gaus","WQS"); //N=stop drawing, Q=stop writing
+  FillResultMatrix(FitResultMatrix[5],f5);
 	  
   // ----- MG7 -----
   h7->SetStats(0);
@@ -123,7 +144,8 @@ void InitiliseCanvas(){
   h7->Draw("same");
   cout << "\n==================================================" << endl;
   cout << "=---------------------- MG7 ---------------------=" << endl;
-  h7->Fit("gaus","W");
+  TFitResultPtr f7 = h7->Fit("gaus","WQS"); //N=stop drawing, Q=stop writing
+  FillResultMatrix(FitResultMatrix[6],f7);
           
   // Format legend
   auto legend = new TLegend(0.15,0.7,0.35,0.9);
@@ -144,7 +166,8 @@ void InitiliseCanvas(){
   h->Draw();
   cout << "\n==================================================" << endl;
   cout << "=---------------------- SUM ---------------------=" << endl;
-  h->Fit("gaus", "W");
+  TFitResultPtr f0 = h->Fit("gaus","WQS"); //N=stop drawing, Q=stop writing
+  FillResultMatrix(FitResultMatrix[0],f0);
   gPad->Update();
 }
 ////////////////////////////////////////////////////////////////////////////////
