@@ -1,4 +1,5 @@
 add_custom_command(OUTPUT TSofSciDataDict.cxx COMMAND ${CMAKE_BINARY_DIR}/scripts/build_dict.sh TSofSciData.h TSofSciDataDict.cxx TSofSciData.rootmap libNPSofia.dylib DEPENDS TSofSciData.h)
+add_custom_command(OUTPUT TSofSciPhysicsDict.cxx COMMAND ${CMAKE_BINARY_DIR}/scripts/build_dict.sh TSofSciPhysics.h TSofSciPhysicsDict.cxx TSofSciPhysics.rootmap libNPSofia.dylib DEPENDS TSofSciPhysics.h)
 
 add_custom_command(OUTPUT TSofTofWDataDict.cxx COMMAND ${CMAKE_BINARY_DIR}/scripts/build_dict.sh TSofTofWData.h TSofTofWDataDict.cxx TSofTofWData.rootmap libNPSofia.dylib DEPENDS TSofTofWData.h)
 add_custom_command(OUTPUT TSofTofWPhysicsDict.cxx COMMAND ${CMAKE_BINARY_DIR}/scripts/build_dict.sh TSofTofWPhysics.h TSofTofWPhysicsDict.cxx TSofTofWPhysics.rootmap libNPSofia.dylib DEPENDS TSofTofWPhysics.h)
@@ -12,9 +13,11 @@ add_custom_command(OUTPUT TSofTrimPhysicsDict.cxx COMMAND ${CMAKE_BINARY_DIR}/sc
 
 add_custom_command(OUTPUT TSofTwimDataDict.cxx COMMAND ${CMAKE_BINARY_DIR}/scripts/build_dict.sh TSofTwimData.h TSofTwimDataDict.cxx TSofTwimData.rootmap libNPSofia.dylib DEPENDS TSofTwimData.h)
 
-add_library(NPSofia SHARED TSofSciData.cxx TSofSciDataDict.cxx TSofMwpcData.cxx TSofMwpcDataDict.cxx TSofAtData.cxx TSofAtDataDict.cxx TSofTrimData.cxx TSofTrimDataDict.cxx TSofTrimPhysics.cxx TSofTrimPhysicsDict.cxx TSofTwimData.cxx TSofTwimDataDict.cxx TSofTofWData.cxx TSofTofWDataDict.cxx TSofTofWPhysics.cxx TSofTofWPhysicsDict.cxx)
+add_custom_command(OUTPUT TSofBeamIDDict.cxx COMMAND ${CMAKE_BINARY_DIR}/scripts/build_dict.sh TSofBeamID.h TSofBeamIDDict.cxx TSofBeamID.rootmap libNPSofia.dylib DEPENDS TSofBeamID.h)
+
+add_library(NPSofia SHARED TSofSciData.cxx TSofSciDataDict.cxx TSofSciPhysics.cxx TSofSciPhysicsDict.cxx TSofMwpcData.cxx TSofMwpcDataDict.cxx TSofAtData.cxx TSofAtDataDict.cxx TSofTrimData.cxx TSofTrimDataDict.cxx TSofTrimPhysics.cxx TSofTrimPhysicsDict.cxx TSofTwimData.cxx TSofTwimDataDict.cxx TSofTofWData.cxx TSofTofWDataDict.cxx TSofTofWPhysics.cxx TSofTofWPhysicsDict.cxx TSofBeamID.cxx TSofBeamIDDict.cxx)
 
 target_link_libraries(NPSofia ${ROOT_LIBRARIES} NPCore NPPhysics)
 
-install(FILES TSofSciData.h TSofMwpcData.h TSofAtData.h TSofTrimData.h TSofTrimPhysics.h TSofTwimData.h TSofTofWData.h TSofTofWPhysics.h DESTINATION ${CMAKE_INCLUDE_OUTPUT_DIRECTORY})
+install(FILES TSofSciData.h TSofSciPhysics.h TSofMwpcData.h TSofAtData.h TSofTrimData.h TSofTrimPhysics.h TSofTwimData.h TSofTofWData.h TSofTofWPhysics.h TSofBeamID.h DESTINATION ${CMAKE_INCLUDE_OUTPUT_DIRECTORY})
 

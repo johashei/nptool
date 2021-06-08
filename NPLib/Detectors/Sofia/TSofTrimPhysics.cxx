@@ -48,7 +48,10 @@ TSofTrimPhysics::TSofTrimPhysics()
   m_PreTreatedData(new TSofTrimData),
   m_EventPhysics(this),
   m_NumberOfDetectors(0), 
+  m_Beta(0.838), 
+  m_BetaNorm(0.838), 
   m_NumberOfSections(3), 
+  m_NumberOfAnodesPaired(3),
   m_NumberOfAnodesPerSection(6) {
   }
 
@@ -80,12 +83,119 @@ void TSofTrimPhysics::BuildSimplePhysicalEvent() {
 void TSofTrimPhysics::BuildPhysicalEvent() {
   // apply thresholds and calibration
   PreTreat();
+  if(m_PreTreatedData->GetMultiplicity() != 18)
+    return;
 
-  // match energy and time together
+  double Ep1[3], DTp1[3];
+  double Ep2[3], DTp2[3];
+  double Ep3[3], DTp3[3];
+  double Esec[3];
+  for(int i=0; i<m_NumberOfSections; i++){
+    Ep1[i] = 0;
+    Ep2[i] = 0;
+    Ep3[i] = 0;
+    DTp1[i] = 0;
+    DTp2[i] = 0;
+    DTp3[i] = 0;
+    Esec[i] = 0;
+  }
+
   unsigned int mysizeE = m_PreTreatedData->GetMultiplicity();
   for (UShort_t e = 0; e < mysizeE ; e++) {
-    //to do 
+    int SectionNbr = m_PreTreatedData->GetSectionNbr(e);
+    int AnodeNbr   = m_PreTreatedData->GetAnodeNbr(e);
+    double Energy  = m_PreTreatedData->GetEnergy(e);
+    double DT      = m_PreTreatedData->GetDriftTime(e);
+
+    if(AnodeNbr==1 || AnodeNbr==2){ 
+      Ep1[SectionNbr-1] += Energy;
+      DTp1[SectionNbr-1] += DT;
+    }
+    if(AnodeNbr==3 || AnodeNbr==4){
+      Ep2[SectionNbr-1] += Energy;
+      DTp2[SectionNbr-1] += DT;
+    }
+    if(AnodeNbr==5 || AnodeNbr==6){ 
+      Ep3[SectionNbr-1] += Energy;
+      DTp3[SectionNbr-1] += DT;
+    }
   }
+
+
+  for(int i=0; i<m_NumberOfSections; i++){
+    DTp1[i] = 0.5*DTp1[i];
+    DTp2[i] = 0.5*DTp2[i];
+    DTp3[i] = 0.5*DTp3[i];
+
+    Ep1[i] = 0.5*Ep1[i];
+    Ep2[i] = 0.5*Ep2[i];
+    Ep3[i] = 0.5*Ep3[i];
+  }
+
+  static CalibrationManager* Cal = CalibrationManager::getInstance();
+  double Ddt = DTp2[2] - DTp2[0];
+  double p0_1[3], p0_2[3], p0_3[3];
+  double p1_1[3], p1_2[3], p1_3[3];
+  
+  for(int i=0; i<m_NumberOfSections; i++){
+    // Energy Alignement of pairs per section 
+    Ep1[i] = Cal->ApplyCalibration("SofTrim/SEC"+NPL::itoa(i+1)+"_ANODE1_ALIGN",Ep1[i]);
+    Ep2[i] = Cal->ApplyCalibration("SofTrim/SEC"+NPL::itoa(i+1)+"_ANODE2_ALIGN",Ep2[i]);
+    Ep3[i] = Cal->ApplyCalibration("SofTrim/SEC"+NPL::itoa(i+1)+"_ANODE3_ALIGN",Ep3[i]);
+   
+    // Beta correction per pair: DE = [0] + [1]*pow(Beta, -5./3);
+    p0_1[i] = Cal->GetValue("SofTrim/SEC"+NPL::itoa(i+1)+"_ANODE1_BETA",0);
+    p0_2[i] = Cal->GetValue("SofTrim/SEC"+NPL::itoa(i+1)+"_ANODE2_BETA",0);
+    p0_3[i] = Cal->GetValue("SofTrim/SEC"+NPL::itoa(i+1)+"_ANODE3_BETA",0);
+    p1_1[i] = Cal->GetValue("SofTrim/SEC"+NPL::itoa(i+1)+"_ANODE1_BETA",1);
+    p1_2[i] = Cal->GetValue("SofTrim/SEC"+NPL::itoa(i+1)+"_ANODE2_BETA",1);
+    p1_3[i] = Cal->GetValue("SofTrim/SEC"+NPL::itoa(i+1)+"_ANODE3_BETA",1);
+   
+    double norm1 = p0_1[i] + p1_1[i]*TMath::Power(m_BetaNorm, -5./3.);
+    double norm2 = p0_2[i] + p1_2[i]*TMath::Power(m_BetaNorm, -5./3.);
+    double norm3 = p0_3[i] + p1_3[i]*TMath::Power(m_BetaNorm, -5./3.);
+    Ep1[i] = norm1 * Ep1[i] / (p0_1[i] + p1_1[i]*TMath::Power(m_Beta, -5./3.));
+    Ep2[i] = norm2 * Ep2[i] / (p0_2[i] + p1_2[i]*TMath::Power(m_Beta, -5./3.));
+    Ep3[i] = norm3 * Ep3[i] / (p0_3[i] + p1_3[i]*TMath::Power(m_Beta, -5./3.));
+
+    // Angle correction per pair: spline
+    Ep1[i] = Ep1[i] / fcorr_EvsA[i][0]->Eval(Ddt) * fcorr_EvsA[i][0]->Eval(0);
+    Ep2[i] = Ep2[i] / fcorr_EvsA[i][1]->Eval(Ddt) * fcorr_EvsA[i][1]->Eval(0);
+    Ep3[i] = Ep3[i] / fcorr_EvsA[i][2]->Eval(Ddt) * fcorr_EvsA[i][2]->Eval(0);
+
+    // DT correction per pair: spline
+    Ep1[i] = Ep1[i] / fcorr_EvsDT[i][0]->Eval(DTp1[i]) * fcorr_EvsDT[i][0]->Eval(3000);
+    Ep2[i] = Ep2[i] / fcorr_EvsDT[i][1]->Eval(DTp2[i]) * fcorr_EvsDT[i][1]->Eval(3000);
+    Ep3[i] = Ep3[i] / fcorr_EvsDT[i][2]->Eval(DTp3[i]) * fcorr_EvsDT[i][2]->Eval(3000);
+  }
+
+  for(int i=0; i<m_NumberOfSections; i++){
+    Esec[i] = (Ep1[i] + Ep2[i] + Ep3[i])/3;
+
+    // 2nd DT correction per section: spline
+    Esec[i] = Esec[i] / fcorr_sec[i]->Eval(DTp2[i]) * fcorr_sec[i]->Eval(0);
+
+    // Section ALignement
+    Esec[i] = Cal->ApplyCalibration("SofTrim/SEC"+NPL::itoa(i+1)+"_ALIGN",Esec[i]);
+  }
+
+
+
+  // Filling output Tree //
+  for(int i=0; i<m_NumberOfSections; i++){
+    if(DTp2[i]!=0){
+      SectionNbr.push_back(i+1);
+      EnergyPair1.push_back(Ep1[i]);
+      EnergyPair2.push_back(Ep2[i]);
+      EnergyPair3.push_back(Ep3[i]);
+      DriftTimePair1.push_back(DTp1[i]);
+      DriftTimePair2.push_back(DTp2[i]);
+      DriftTimePair3.push_back(DTp3[i]);
+      EnergySection.push_back(Esec[i]);
+      Theta.push_back(DTp2[2]-DTp2[0]);
+    }
+  }
+
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -101,13 +211,13 @@ void TSofTrimPhysics::PreTreat() {
 
   unsigned int mysize = m_EventData->GetMultiplicity();
   for (unsigned int i = 0; i < mysize ; ++i) {
-    Double_t Energy = Cal->ApplyCalibration("SofTrim/ENERGY_SEC"+NPL::itoa(m_EventData->GetSectionNbr(i))+"_ANODE"+NPL::itoa(m_EventData->GetAnodeNbr(i))+"_ENERGY",m_EventData->GetEnergy(i));
-    Double_t Time = Cal->ApplyCalibration("SofTrim/TIME_SEC"+NPL::itoa(m_EventData->GetSectionNbr(i))+"_ANODE"+NPL::itoa(m_EventData->GetAnodeNbr(i))+"_TIME",m_EventData->GetDriftTime(i));
-
+    Double_t Energy = Cal->ApplyCalibration("SofTrim/SEC"+NPL::itoa(m_EventData->GetSectionNbr(i))+"_ANODE"+NPL::itoa(m_EventData->GetAnodeNbr(i))+"_ENERGY",m_EventData->GetEnergy(i));
+    Double_t DT = Cal->ApplyCalibration("SofTrim/SEC"+NPL::itoa(m_EventData->GetSectionNbr(i))+"_ANODE"+NPL::itoa(m_EventData->GetAnodeNbr(i))+"_TIME",m_EventData->GetDriftTime(i));
+   
     m_PreTreatedData->SetSectionNbr(m_EventData->GetSectionNbr(i));
     m_PreTreatedData->SetAnodeNbr(m_EventData->GetAnodeNbr(i));
     m_PreTreatedData->SetEnergy(Energy);
-    m_PreTreatedData->SetDriftTime(Time);
+    m_PreTreatedData->SetDriftTime(DT);
     m_PreTreatedData->SetPileUp(m_EventData->GetPileUp(i));
     m_PreTreatedData->SetOverflow(m_EventData->GetOverflow(i));
   }
@@ -158,17 +268,33 @@ void TSofTrimPhysics::ReadAnalysisConfig() {
         AnalysisConfigFile.ignore(numeric_limits<streamsize>::max(), '\n' );
       }
 
-      /*else if (whatToDo=="E_RAW_THRESHOLD") {
+      else if (whatToDo=="SPLINE_PAIR_ANGLE_PATH") {
         AnalysisConfigFile >> DataBuffer;
-        m_E_RAW_Threshold = atof(DataBuffer.c_str());
-        cout << whatToDo << " " << m_E_RAW_Threshold << endl;
-        }
+        m_SPLINE_PAIR_ANGLE_PATH = DataBuffer;
+        cout << "*** Loading Spline for Angle correction per pair ***" << endl;
+        LoadSplinePairAngle();
+      }
 
-        else if (whatToDo=="E_THRESHOLD") {
+      else if (whatToDo=="SPLINE_PAIR_DT_PATH") {
+        AnalysisConfigFile >> DataBuffer;
+        m_SPLINE_PAIR_DT_PATH = DataBuffer;
+        cout << "*** Loading Spline for Dritf Time correction per pair ***" << endl;
+        LoadSplinePairDriftTime();
+      }
+
+      else if (whatToDo=="SPLINE_SECTION_DT_PATH") {
+        AnalysisConfigFile >> DataBuffer;
+        m_SPLINE_SECTION_DT_PATH = DataBuffer;
+        cout << "*** Loading Spline for Dritf Time correction per section ***" << endl;
+        LoadSplineSectionDriftTime();
+      }
+
+
+      else if (whatToDo=="E_THRESHOLD") {
         AnalysisConfigFile >> DataBuffer;
         m_E_Threshold = atof(DataBuffer.c_str());
         cout << whatToDo << " " << m_E_Threshold << endl;
-        }*/
+      }
 
       else {
         ReadingStatus = false;
@@ -177,6 +303,77 @@ void TSofTrimPhysics::ReadAnalysisConfig() {
   }
 }
 
+///////////////////////////////////////////////////////////////////////////
+double TSofTrimPhysics::GetMaxEnergySection(){
+  double Emax=-1;
+
+  if(EnergySection.size() != 3){
+    cout << "WARNING! Size of EnergySection different than 3, size= " << EnergySection.size() << endl;
+    return Emax;
+  }
+
+  Emax = *max_element(EnergySection.begin(), EnergySection.end());
+
+  return Emax;
+}
+
+///////////////////////////////////////////////////////////////////////////
+void TSofTrimPhysics::LoadSplinePairAngle(){
+  TString filename = m_SPLINE_PAIR_ANGLE_PATH;
+  TFile* ifile = new TFile(filename,"read");
+
+  if(ifile->IsOpen()){
+    cout << "Loading splines..." << endl;
+    for(int s=0; s<m_NumberOfSections; s++){
+      for(int a=0; a<3; a++){
+        TString splinename = Form("spline_EvsA_sec%i_anode%i",s+1,a+1);
+        fcorr_EvsA[s][a] = (TSpline3*) ifile->FindObjectAny(splinename);
+        cout << fcorr_EvsA[s][a]->GetName() << endl;
+      }
+    }
+  }
+  else
+    cout << "File " << filename << " not found!" << endl;
+  ifile->Close();
+}
+
+///////////////////////////////////////////////////////////////////////////
+void TSofTrimPhysics::LoadSplinePairDriftTime(){
+  TString filename = m_SPLINE_PAIR_DT_PATH;
+  TFile* ifile = new TFile(filename,"read");
+
+  if(ifile->IsOpen()){
+    cout << "Loading splines..." << endl;
+    for(int s=0; s<m_NumberOfSections; s++){
+      for(int a=0; a<3; a++){
+        TString splinename = Form("spline_EvsDT_sec%i_anode%i",s+1,a+1);
+        fcorr_EvsDT[s][a] = (TSpline3*) ifile->FindObjectAny(splinename);
+        cout << fcorr_EvsDT[s][a]->GetName() << endl;
+      }
+    }
+  }
+  else
+    cout << "File " << filename << " not found!" << endl;
+  ifile->Close();
+}
+
+///////////////////////////////////////////////////////////////////////////
+void TSofTrimPhysics::LoadSplineSectionDriftTime(){
+  TString filename = m_SPLINE_SECTION_DT_PATH;
+  TFile* ifile = new TFile(filename,"read");
+
+  if(ifile->IsOpen()){
+    cout << "Loading splines..." << endl;
+    for(int s=0; s<m_NumberOfSections; s++){
+      TString splinename = Form("spline_sec%i",s+1);
+      fcorr_sec[s] = (TSpline3*) ifile->FindObjectAny(splinename);
+      cout << fcorr_sec[s]->GetName() << endl;
+    }
+  }
+  else
+    cout << "File " << filename << " not found!" << endl;
+  ifile->Close();
+}
 
 
 ///////////////////////////////////////////////////////////////////////////
@@ -184,11 +381,12 @@ void TSofTrimPhysics::Clear() {
   SectionNbr.clear();
   EnergyPair1.clear();
   EnergyPair2.clear();
-  EnergyPair2.clear();
+  EnergyPair3.clear();
   DriftTimePair1.clear();
   DriftTimePair2.clear();
   DriftTimePair3.clear();
-  EnergySum.clear();
+  EnergySection.clear();
+  Theta.clear();
 }
 
 
@@ -223,12 +421,15 @@ void TSofTrimPhysics::ReadConfiguration(NPL::InputParser parser) {
       exit(1);
     }
   }
+
+  ReadAnalysisConfig();
 }
 
 
 ///////////////////////////////////////////////////////////////////////////
 void TSofTrimPhysics::AddParameterToCalibrationManager() {
   CalibrationManager* Cal = CalibrationManager::getInstance();
+
   for(int sec = 0; sec < m_NumberOfSections; sec++){
     for(int anode = 0; anode < m_NumberOfAnodesPerSection; anode++){
       Cal->AddParameter("SofTrim","SEC"+NPL::itoa(sec+1)+"_ANODE"+NPL::itoa(anode+1)+"_ENERGY","SofTrim_SEC"+NPL::itoa(sec+1)+"_ANODE"+NPL::itoa(anode+1)+"_ENERGY");
@@ -236,9 +437,16 @@ void TSofTrimPhysics::AddParameterToCalibrationManager() {
 
     }
   }
+  for(int sec = 0; sec < m_NumberOfSections; sec++){
+    Cal->AddParameter("SofTrim","SEC"+NPL::itoa(sec+1)+"_ALIGN","SofTrim_SEC"+NPL::itoa(sec+1)+"_ALIGN");
+    
+    for(int anode = 0; anode < m_NumberOfAnodesPaired; anode++){ 
+      Cal->AddParameter("SofTrim","SEC"+NPL::itoa(sec+1)+"_ANODE"+NPL::itoa(anode+1)+"_ALIGN","SofTrim_SEC"+NPL::itoa(sec+1)+"_ANODE"+NPL::itoa(anode+1)+"_ALIGN");
+      Cal->AddParameter("SofTrim","SEC"+NPL::itoa(sec+1)+"_ANODE"+NPL::itoa(anode+1)+"_BETA","SofTrim_SEC"+NPL::itoa(sec+1)+"_ANODE"+NPL::itoa(anode+1)+"_BETA");
+    }
+  }
+
 }
-
-
 
 ///////////////////////////////////////////////////////////////////////////
 void TSofTrimPhysics::InitializeRootInputRaw() {

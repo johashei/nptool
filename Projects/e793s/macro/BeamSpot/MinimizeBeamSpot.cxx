@@ -14,6 +14,8 @@ double devE(const double* parameter){
   TVector3 dir;
 
   //Initilize histogram
+  //canv->Clear();
+  //canv->ResetDrawn();
   h->Reset();
   h1->Reset();
   h2->Reset();
@@ -22,36 +24,15 @@ double devE(const double* parameter){
   h5->Reset();
   h7->Reset();
 
+  double FitResultMatrix[7][5];
+
   //Loop over events
   for(unsigned int i = 0 ; i < size ; i++){
     //Particle path vector
     dir=*(pos[i])-offset;
 
     //Define normal vector for the MG# of detection
-    //[[[[ UPDATE WITH NEW MG POSITIONS FROM SURVEY ]]]]
-    switch(detnum[i]){
-      case 1:
-        MugastNormal.SetXYZ(-0.453915, +0.455463, -0.765842);
-        break;
-      case 2:
-	MugastNormal.SetXYZ(-0.642828, +0.000000, -0.766010);
-        break;
-      case 3:
-	MugastNormal.SetXYZ(-0.454594, -0.450670, -0.768271);
-        break;
-      case 4:
-	MugastNormal.SetXYZ(-0.002437, -0.638751, -0.769409);
-        break;
-      case 5:
-	MugastNormal.SetXYZ(+0.452429, -0.454575, -0.767248);
-        break;
-      case 7:
-	MugastNormal.SetXYZ(+0.443072, +0.443265, -0.779232);
-        break;
-      default:
-	cout << "ERROR:: Invalid DetNum " << detnum[i] << " at event " << i << endl;
-        return 1; // Exit code
-    }
+    DetectorSwitch(detnum[i], MugastNormal);
 
     //Angle leaving target, angle entering MUGAST & energy deposited in MUGAST
     double ThetaTarget = dir.Angle(TVector3(0,0,1));
@@ -74,57 +55,45 @@ double devE(const double* parameter){
     
     //Fill histograms with Ex
     h->Fill(Ex);
-    switch(detnum[i]){
-      case 1:
-        h1->Fill(Ex); 
-        break;
-      case 2:
-        h2->Fill(Ex); 
-        break;
-      case 3:
-        h3->Fill(Ex); 
-        break;
-      case 4:
-        h4->Fill(Ex); 
-        break;
-      case 5:
-        h5->Fill(Ex); 
-        break;
-      case 7:
-        h7->Fill(Ex); 
-        break;
-      default:
-        cout << "ERROR:: Invalid DetNum " << detnum[i] << " at event " << i << endl;
-        return 1; // Exit code
-    }
+    DetectorSwitch(detnum[i], Ex);
   }
-  //End loop over events
-
+  
+  //Initilise, Draw & Fit histograms
+  InitiliseCanvas(FitResultMatrix);
+  
   //Write vals to screen
-  cout << "Mean: " << h->GetMean() 
-       << "\t StdDev: " << h->GetStdDev() 
-       << "\t Thickness: " << parameter[3] << " um" 
+  if(flagDraw){cout << "==================================================" << endl;}
+  cout << "Mean: "     << FitResultMatrix[mgSelect][0]
+	               << " +/- "
+		       << FitResultMatrix[mgSelect][1]
+       << "    StdDev: " << FitResultMatrix[mgSelect][2] 
+	               << " +/- "
+		       << FitResultMatrix[mgSelect][3]
+       << "    Thick: " << parameter[3] << " um"
+       << "    Fit Chi2/NDF = " << FitResultMatrix[mgSelect][4]
        << endl;
-
-  //Draw histogram(s)
-  h->Draw();
-  if(flagDraw){ InitiliseCanvas(); }
-
-  /*
-  cout << pow(h->GetMean()-refE,2)  << " + " 
-       << pow(0.1*h->GetStdDev(),2) << " = " 
-       << pow(h->GetMean()-refE,2) + pow(0.1*h->GetStdDev(),2) 
-       << endl;
-  */
 
   //Adapt the metric as needed
-  return sqrt( pow(h->GetMean()-refE,2) + pow(0.1*h->GetStdDev(),2) );
+  return sqrt( pow(FitResultMatrix[mgSelect][0]-refE,2) + pow(0.1*FitResultMatrix[mgSelect][2],2) );
 }
 ////////////////////////////////////////////////////////////////////////////////
 void MinimizeBeamSpot(){
 
   //Read data in
   LoadFile();
+
+  //Output formatting
+  cout << fixed << showpoint << setprecision(6) << showpos;
+  
+  //Read in
+  cout << "==================================================" << endl;
+  cout << "=--------- SELECT TELESCOPE TO MINIMIZE ---------=" << endl;
+  cout << "= Type MG# of telescope metric to use, or type 0 =" << endl;
+  cout << "= to use the sum of all MG's                     =" << endl;
+  cout << "==================================================" << endl;
+      cin >> mgSelect;
+      if(mgSelect==7){mgSelect=6;} // Correct the input for MG7
+  cout << "==================================================" << endl;
 
   //Start with beam (0,0,0) and 4.76um 0.5mg/c2 target
   double parameter[4] = {0.0, 0.0, 0.0, 4.76};   
@@ -133,9 +102,8 @@ void MinimizeBeamSpot(){
   //Function with 4 parameter XYZ and Target thickness
   auto func = ROOT::Math::Functor(&devE,4);
  
-  //Minimizer
+  //Initilise minimizer
   auto minim = ROOT::Math::Factory::CreateMinimizer("Minuit2","Migrad"); 
-
   minim->SetPrintLevel(0);
   minim->SetPrecision(1e-10); 
 
@@ -150,20 +118,31 @@ void MinimizeBeamSpot(){
 
   //Don't draw iterations of minimizer
   flagDraw = 0;
-
+  //canv->SetBatch(kTRUE);
+  gROOT->SetBatch(kTRUE);
+  
   //Shrink it, babeyyy
   minim->Minimize(); 
   
   //Draw minimal value
   flagDraw = 1;
+  gROOT->SetBatch(kFALSE);
 
   //Pull values from minimizer
   const double* x = minim->X();
-  cout << "========================================" << endl;
-  cout << "\t\tX =" << x[0] << endl;
-  cout << "\t\tY =" << x[1] << endl;
-  cout << "\t\tZ =" << x[2] << endl;
-  cout << "\t\tT =" << x[3] << endl;
-  devE(x);
-  cout << "========================================" << endl;
+  cout << "==================================================" << endl;
+  cout << "=---------------- FINAL PEAK FITS ---------------=" << endl;
+  cout << "==================================================" << endl;
+    devE(x);
+//    canv->DrawClone();
+  cout << "==================================================" << endl;
+  cout << "=------------ RESULTS OF MINIMIZATION -----------=" << endl;
+    if(mgSelect==6){mgSelect=7;} // Correct the input for MG7
+  cout << "=------------------- USING MG " << mgSelect << " -----------------=" << endl;
+  cout << "==================================================" << endl;
+  cout << "\t\tX = " << x[0] << " mm" << endl;
+  cout << "\t\tY = " << x[1] << " mm" << endl;
+  cout << "\t\tZ = " << x[2] << " mm" << endl;
+  cout << "\t\tT = " << x[3] << " um" << endl;
+  cout << "==================================================" << endl;
 }

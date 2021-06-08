@@ -1,5 +1,5 @@
-#ifndef TSofTrimPHYSICS_H
-#define TSofTrimPHYSICS_H
+#ifndef TSofSciPHYSICS_H
+#define TSofSciPHYSICS_H
 /*****************************************************************************
  * Copyright (C) 2009-2020   this file is part of the NPTool Project       *
  *                                                                           *
@@ -14,7 +14,7 @@
  * Last update    :                                                          *
  *---------------------------------------------------------------------------*
  * Decription:                                                               *
- *  This class hold SofTrim Treated data                                *
+ *  This class hold SofSci Treated data                                *
  *                                                                           *
  *---------------------------------------------------------------------------*
  * Comment:                                                                  *
@@ -33,20 +33,21 @@ using namespace std;
 #include "TH1.h"
 #include "TVector3.h"
 #include "TSpline.h"
+#include "TRandom3.h"
 // NPTool headers
-#include "TSofTrimData.h"
+#include "TSofSciData.h"
 #include "NPCalibrationManager.h"
 #include "NPVDetector.h"
 #include "NPInputParser.h"
 
 
 
-class TSofTrimPhysics : public TObject, public NPL::VDetector {
+class TSofSciPhysics : public TObject, public NPL::VDetector {
   //////////////////////////////////////////////////////////////
   // constructor and destructor
   public:
-    TSofTrimPhysics();
-    ~TSofTrimPhysics() {};
+    TSofSciPhysics();
+    ~TSofSciPhysics() {};
 
 
   //////////////////////////////////////////////////////////////
@@ -60,15 +61,14 @@ class TSofTrimPhysics : public TObject, public NPL::VDetector {
   // data obtained after BuildPhysicalEvent() and stored in
   // output ROOT file
   public:
-    vector<int>      SectionNbr;
-    vector<double>   EnergyPair1;
-    vector<double>   EnergyPair2;
-    vector<double>   EnergyPair3;
-    vector<double>   DriftTimePair1;
-    vector<double>   DriftTimePair2;
-    vector<double>   DriftTimePair3;
-    vector<double>   EnergySection;
-    vector<double>   Theta;
+    vector<int>      DetectorNbr;
+    vector<double>   TimeNs;
+    vector<double>   PosNs;
+    vector<double>   PosMm;
+    vector<double>   RawTof;
+    vector<double>   CalTof;
+    vector<double>   VelocityMNs;
+    vector<double>   Beta;
 
   /// A usefull method to bundle all operation to add a detector
   void AddDetector(TVector3 POS); 
@@ -111,9 +111,14 @@ class TSofTrimPhysics : public TObject, public NPL::VDetector {
     void ClearEventPhysics() {Clear();}      
     void ClearEventData()    {m_EventData->Clear();}   
 
+    double GetDistance(){
+      return sqrt(m_X*m_X + m_Y*m_Y + m_Z*m_Z);
+    }
+    double CalculateTimeNs(int, int, int, int);
+    double GetNumberOfDetectors() {return m_NumberOfDetectors;}
 
   //////////////////////////////////////////////////////////////
-  // specific methods to SofTrim array
+  // specific methods to SofSci array
   public:
     // remove bad channels, calibrate the data and apply thresholds
     void PreTreat();
@@ -124,55 +129,45 @@ class TSofTrimPhysics : public TObject, public NPL::VDetector {
     // read the user configuration file. If no file is found, load standard one
     void ReadAnalysisConfig();
 
-    // give and external TSofTrimData object to TSofTrimPhysics. 
+    // give and external TSofSciData object to TSofSciPhysics. 
     // needed for online analysis for example
-    void SetRawDataPointer(TSofTrimData* rawDataPointer) {m_EventData = rawDataPointer;}
-   
-    void LoadSplinePairAngle();
-    void LoadSplinePairDriftTime();
-    void LoadSplineSectionDriftTime();
-
-    void SetBeta(double beta) {m_Beta = beta;}
-    double GetBeta() {return m_Beta;}
-
-    double GetMaxEnergySection();
+    void SetRawDataPointer(TSofSciData* rawDataPointer) {m_EventData = rawDataPointer;}
 
   // objects are not written in the TTree
   private:
-    TSofTrimData*         m_EventData;        //!
-    TSofTrimData*         m_PreTreatedData;   //!
-    TSofTrimPhysics*      m_EventPhysics;     //!
+    TSofSciData*         m_EventData;        //!
+    TSofSciData*         m_PreTreatedData;   //!
+    TSofSciPhysics*      m_EventPhysics;     //!
 
   // getters for raw and pre-treated data object
   public:
-    TSofTrimData* GetRawData()        const {return m_EventData;}
-    TSofTrimData* GetPreTreatedData() const {return m_PreTreatedData;}
+    TSofSciData* GetRawData()        const {return m_EventData;}
+    TSofSciData* GetPreTreatedData() const {return m_PreTreatedData;}
 
   // parameters used in the analysis
   private:
     double m_E_Threshold;     //!
-    double m_Beta;     //!
-    double m_BetaNorm;     //!
-    string m_SPLINE_PAIR_ANGLE_PATH;     //!
-    string m_SPLINE_PAIR_DT_PATH;     //!
-    string m_SPLINE_SECTION_DT_PATH;     //!
-
-  private:
-    TSpline3* fcorr_EvsA[3][3]; //!
-    TSpline3* fcorr_EvsDT[3][3]; //!
-    TSpline3* fcorr_sec[3]; //!
+    double m_DET1_PosNs_Min;     //!
+    double m_DET1_PosNs_Max;     //!
+    double m_DET2_PosNs_Min;     //!
+    double m_DET2_PosNs_Max;     //!
+    double m_RawTof_Min;         //!
+    double m_RawTof_Max;         //!
+    double m_X;     //!
+    double m_Y;     //!
+    double m_Z;     //!
+    TRandom3 rand;  //!
 
   // number of detectors
   private:
     int m_NumberOfDetectors;  //!
-    int m_NumberOfSections;  //!
-    int m_NumberOfAnodesPaired;  //!
-    int m_NumberOfAnodesPerSection;  //!
+    int m_NumberOfSignals;  //!
+    int m_NumberOfPmts;  //!
 
   // Static constructor to be passed to the Detector Factory
   public:
     static NPL::VDetector* Construct();
 
-    ClassDef(TSofTrimPhysics,1)  // SofTrimPhysics structure
+    ClassDef(TSofSciPhysics,1)  // SofSciPhysics structure
 };
 #endif

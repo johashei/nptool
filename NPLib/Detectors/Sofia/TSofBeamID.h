@@ -1,5 +1,5 @@
-#ifndef __SofSciDATA__
-#define __SofSciDATA__
+#ifndef __SofBeamIDDATA__
+#define __SofBeamIDDATA__
 /*****************************************************************************
  * Copyright (C) 2009-2020   this file is part of the NPTool Project       *
  *                                                                           *
@@ -14,7 +14,7 @@
  * Last update    :                                                          *
  *---------------------------------------------------------------------------*
  * Decription:                                                               *
- *  This class hold SofSci Raw data                                    *
+ *  This class hold SofBeamID Raw data                                    *
  *                                                                           *
  *---------------------------------------------------------------------------*
  * Comment:                                                                  *
@@ -29,21 +29,26 @@ using namespace std;
 // ROOT
 #include "TObject.h"
 
-class TSofSciData : public TObject {
+class TSofBeamID : public TObject {
   //////////////////////////////////////////////////////////////
   // data members are hold into vectors in order 
   // to allow multiplicity treatment
-  private: 
-    vector<int> fSofSci_DetNbr;
-    vector<int> fSofSci_Pmt;
-    vector<int> fSofSci_CT;
-    vector<int> fSofSci_FT;
+  private:
+    double Zbeam; 
+    double Qmax;
+    double AoQ;
+    double Abeam;
+    double Beta;
+    double Gamma;
+    double Brho;
+    double XS2;
+    double XCC;
 
   //////////////////////////////////////////////////////////////
   // Constructor and destructor
   public: 
-    TSofSciData();
-    ~TSofSciData();
+    TSofBeamID();
+    ~TSofBeamID();
     
 
   //////////////////////////////////////////////////////////////
@@ -61,21 +66,30 @@ class TSofSciData : public TObject {
   // add //! to avoid ROOT creating dictionnary for the methods
   public:
     //////////////////////    SETTERS    ////////////////////////
-    inline void SetDetectorNbr(int det){fSofSci_DetNbr.push_back(det);};//!
-    inline void SetPmt(int pmt){fSofSci_Pmt.push_back(pmt);};//!
-    inline void SetCoarseTime(int Time){fSofSci_CT.push_back(Time);};//!
-    inline void SetFineTime(int Time){fSofSci_FT.push_back(Time);};//!
+    inline void SetZbeam(double val){Zbeam = val;};//!
+    inline void SetQmax(double val){Qmax = val;};//!
+    inline void SetAoQ(double val){AoQ = val;};//!
+    inline void SetAbeam(double val){Abeam = val;};//!
+    inline void SetBeta(double val){Beta = val;};//!
+    inline void SetGamma(double val){Gamma = val;};//!
+    inline void SetBrho(double val){Brho = val;};//!
+    inline void SetXS2(double val){XS2 = val;};//!
+    inline void SetXCC(double val){XCC = val;};//!
 
     //////////////////////    GETTERS    ////////////////////////
-    inline int GetMultiplicity() const {return fSofSci_DetNbr.size();}//!
-    inline int GetDetectorNbr(const unsigned int &i) const {return fSofSci_DetNbr[i];}//! 
-    inline int GetPmt(const unsigned int &i) const {return fSofSci_Pmt[i];}//! 
-    inline int GetCoarseTime(const unsigned int &i) const {return fSofSci_CT[i];}//!     
-    inline int GetFineTime(const unsigned int &i) const {return fSofSci_FT[i];}//!     
+    inline double GetZbeam() const {return Zbeam;}//! 
+    inline double GetQmax() const {return Qmax;}//! 
+    inline double GetAoQ() const {return AoQ;}//! 
+    inline double GetAbeam() const {return Abeam;}//! 
+    inline double GetBeta() const {return Beta;}//! 
+    inline double GetGamma() const {return Gamma;}//! 
+    inline double GetBrho() const {return Brho;}//! 
+    inline double GetXS2() const {return XS2;}//! 
+    inline double GetXCC() const {return XCC;}//! 
 
   //////////////////////////////////////////////////////////////
   // Required for ROOT dictionnary
-  ClassDef(TSofSciData,1)  // SofSciData structure
+  ClassDef(TSofBeamID,1)  // SofBeamID structure
 };
 
 #endif
