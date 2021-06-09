@@ -29,6 +29,7 @@
 #include"TSamuraiFDC0Physics.h"
 #include"TSamuraiFDC2Physics.h"
 #include"TSamuraiHodoscopePhysics.h"
+#include"TBigRIPSPlasticPhysics.h"
 #include"SamuraiFieldMap.h"
 #include<fstream>
 class Analysis: public NPL::VAnalysis{
@@ -44,21 +45,32 @@ class Analysis: public NPL::VAnalysis{
     static NPL::VAnalysis* Construct();
 
   private:
+    TBigRIPSPlasticPhysics* Plastic;
     TMinosPhysics* Minos;
     TNebulaPhysics* Nebula;
     TSamuraiBDCPhysics* BDC;
     TSamuraiFDC0Physics* FDC0;
     TSamuraiFDC2Physics* FDC2;
     TSamuraiHodoscopePhysics* Hodo;
+
     SamuraiFieldMap m_field ;
 //    ofstream file;
   private: // output variable
     double Brho,BDCX,BDCY,X,Y,Z,Erel;
+    double TOF_n;
     double Beta_f;
     double Beta_n;
+    double Beta_b;
     int    Trigger;
   private: // Energy loss table
    NPL::EnergyLoss FragmentTarget ;
+   NPL::Particle He4,He6,He8,n;
+   double mhe6;
+   double mn  ;
+   double sumM;
+
+
+
   public:
     void  Clear();
     void  InitOutputBranch();

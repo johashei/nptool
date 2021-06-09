@@ -1,4 +1,12 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+BigRIPSPlastic
+  XML= db/SAMURAIPlastic.s034.2.xml
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+BigRIPSIC
+  XML= db/BigRIPSIC.xml
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 SAMURAIBDC 1
  XML= db/SAMURAIBDC1.xml
  Offset= 0.959479  -0.17903 -6876.34 mm
@@ -54,3 +62,4 @@ NEBULA
   Offset= 0 0 0 mm
   InvertX= 0
   InvertY= 0
+

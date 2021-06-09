@@ -355,12 +355,15 @@ void TBigRIPSPlasticPhysics::InitializeRootInputRaw(){
 
 ///////////////////////////////////////////////////////////////////////////
 void TBigRIPSPlasticPhysics::InitializeRootInputPhysics(){
+  TChain* inputChain = RootInput::getInstance()->GetChain()   ;
+  inputChain->SetBranchStatus( "BigRIPSPlastic" , true );
+  inputChain->SetBranchAddress( "BigRIPSPlastic" , &m_EventPhysics );
 }
 
 ///////////////////////////////////////////////////////////////////////////
 void TBigRIPSPlasticPhysics::InitializeRootOutput(){
   TTree* outputTree = RootOutput::getInstance()->GetTree();
-  outputTree->Branch( "Plastic" , "TBigRIPSPlasticPhysics" , &m_EventPhysics );
+  outputTree->Branch( "BigRIPSPlastic" , "TBigRIPSPlasticPhysics" , &m_EventPhysics );
 }
 
 ////////////////////////////////////////////////////////////////////////////////

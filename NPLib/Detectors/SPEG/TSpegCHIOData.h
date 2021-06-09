@@ -31,7 +31,7 @@
 class TSpegCHIOData : public TObject {
  private:
 
-   vector<UShort_t>	fSpeg_CHIO_Energy;
+  std::vector<UShort_t>	fSpeg_CHIO_Energy;
 
  public:
    TSpegCHIOData();

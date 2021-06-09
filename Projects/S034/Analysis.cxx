@@ -39,6 +39,8 @@ Analysis::~Analysis(){
 
 ////////////////////////////////////////////////////////////////////////////////
 void Analysis::Init(){
+
+  Plastic= (TBigRIPSPlasticPhysics*) m_DetectorManager->GetDetector("BigRIPSPlastic");
   Minos= (TMinosPhysics*) m_DetectorManager->GetDetector("Minos");
   Nebula = (TNebulaPhysics*) m_DetectorManager->GetDetector("NEBULA");
   BDC = (TSamuraiBDCPhysics*) m_DetectorManager->GetDetector("SAMURAIBDC");
@@ -54,22 +56,51 @@ void Analysis::Init(){
   InitInputBranch();
   // for fdc/bdc alignement
   //file.open("Calibration/Pos/bdc.txt");
+  He4=NPL::Particle("4He");
+  He6=NPL::Particle("6He");
+  He8=NPL::Particle("8He");
+  He8.SetBeta(0.5152);
+  n  =NPL::Particle("neutron");
+  mhe6 = He6.Mass();
+  mn   = n.Mass();
+  sumM= mhe6+mn;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 void Analysis::TreatEvent(){
   Clear();
   
-  static NPL::Particle He6("6He");
-  static NPL::Particle He8("8He");
-  static NPL::Particle n("neutron");
-  static double mhe6 = He6.Mass();
-  static double mn   = n.Mass();
-  static double sumM= mhe6+mn;
   static TLorentzVector LVHe6;
   static TLorentzVector LVn;
-  He8.SetBeta(0.5152);
   Trigger=Trigger&0x00ff;
+
+
+  // BigRIPS plastic
+  double TF5=-1;
+  double TF13=-1;
+  double TF7=-1;
+  double TOF_F5F13=-1;
+  double TOF_F5F7=-1;
+  unsigned int sizeP = Plastic->FP.size();
+  for(unsigned int i = 0 ; i < sizeP ; i++){
+    if(Plastic->FP[i]==5){
+      TF5=Plastic->TSlew[i];
+    }
+    else if(Plastic->FP[i]==13){
+      TF13=Plastic->TSlew[i];
+    }
+    else if(Plastic->FP[i]==7){
+      TF7=Plastic->TSlew[i];
+    }
+  }
+
+  if(TF5>0 && TF13>0){
+    TOF_F5F13=TF13-TF5;
+    double l = 117915-54917;
+    Beta_b=(l/TOF_F5F13)/NPUNITS::c_light;
+  }
+
+  // Samurai
   if( FDC2->PosX>-1500 && FDC2->PosX<1000 
       && FDC2->PosY>-500 && FDC2->PosY<500 
       && FDC0->PosX>-80 && FDC0->PosX<80 
@@ -126,8 +157,8 @@ void Analysis::TreatEvent(){
         TVector3 Pfirst = (Nebula->GetPos(first)-Vertex);
         double L = Pfirst.Mag();
         double TSBT= (Vertex.Z()+7377.56)/He8.GetVelocity();
-        double TOF = Nebula->TOF[first]-TSBT;
-        Beta_n = (L/TOF)/NPUNITS::c_light;
+        TOF_n = Nebula->TOF[first]-TSBT;
+        Beta_n = (L/TOF_n)/NPUNITS::c_light;
         LVn.SetVectM(TVector3(0,0,0),mn);
         LVn.Boost(Beta_n*Pfirst.Unit());
       }
@@ -175,7 +206,9 @@ void Analysis::Clear(){
   BDCY=-1000;
   Beta_f=-1000;
   Beta_n=-1000;
+  Beta_b=-1000;
   X=Y=Z=-1000;
+  TOF_n=-1000;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -189,6 +222,8 @@ void Analysis::InitOutputBranch() {
   RootOutput::getInstance()->GetTree()->Branch("Erel",&Erel,"Erel/D");
   RootOutput::getInstance()->GetTree()->Branch("Beta_f",&Beta_f,"Beta_f/D");
   RootOutput::getInstance()->GetTree()->Branch("Beta_n",&Beta_n,"Beta_n/D");
+  RootOutput::getInstance()->GetTree()->Branch("Beta_b",&Beta_b,"Beta_b/D");
+  RootOutput::getInstance()->GetTree()->Branch("TOF_n",&TOF_n,"TOF_n/D");
   RootOutput::getInstance()->GetTree()->Branch("Trigger",&Trigger,"Trigger/I");
 } 
 ////////////////////////////////////////////////////////////////////////////////
