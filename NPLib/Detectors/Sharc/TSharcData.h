@@ -23,10 +23,7 @@
  *****************************************************************************/
 
 // STL
-#include <stdlib.h>
 #include <vector>
-#include <map>
-using namespace std ;
 
 // ROOT
 #include "TNamed.h"
@@ -35,25 +32,25 @@ class TSharcData : public TNamed {
 private:
   // Sharc
   // Energy
-  vector<UShort_t>   fSharc_StripFront_DetectorNbr;
-  vector<UShort_t>   fSharc_StripFront_StripNbr;
-  vector<Double_t>   fSharc_StripFront_Energy;
-  vector<Double_t>   fSharc_StripFront_TimeCFD;
-  vector<Double_t>   fSharc_StripFront_TimeLED;
-  vector<Double_t>   fSharc_StripFront_Time;
+  std::vector<UShort_t>   fSharc_StripFront_DetectorNbr;
+  std::vector<UShort_t>   fSharc_StripFront_StripNbr;
+  std::vector<Double_t>   fSharc_StripFront_Energy;
+  std::vector<Double_t>   fSharc_StripFront_TimeCFD;
+  std::vector<Double_t>   fSharc_StripFront_TimeLED;
+  std::vector<Double_t>   fSharc_StripFront_Time;
   
-  vector<UShort_t>   fSharc_StripBack_DetectorNbr;
-  vector<UShort_t>   fSharc_StripBack_StripNbr;
-  vector<Double_t>   fSharc_StripBack_Energy;
-  vector<Double_t>   fSharc_StripBack_TimeCFD;
-  vector<Double_t>   fSharc_StripBack_TimeLED;
-  vector<Double_t>   fSharc_StripBack_Time;
+  std::vector<UShort_t>   fSharc_StripBack_DetectorNbr;
+  std::vector<UShort_t>   fSharc_StripBack_StripNbr;
+  std::vector<Double_t>   fSharc_StripBack_Energy;
+  std::vector<Double_t>   fSharc_StripBack_TimeCFD;
+  std::vector<Double_t>   fSharc_StripBack_TimeLED;
+  std::vector<Double_t>   fSharc_StripBack_Time;
 
-  vector<UShort_t>   fSharc_PAD_DetectorNbr;
-  vector<Double_t>   fSharc_PAD_Energy;
-  vector<Double_t>   fSharc_PAD_TimeCFD;
-  vector<Double_t>   fSharc_PAD_TimeLED;
-  vector<Double_t>   fSharc_PAD_Time;
+  std::vector<UShort_t>   fSharc_PAD_DetectorNbr;
+  std::vector<Double_t>   fSharc_PAD_Energy;
+  std::vector<Double_t>   fSharc_PAD_TimeCFD;
+  std::vector<Double_t>   fSharc_PAD_TimeLED;
+  std::vector<Double_t>   fSharc_PAD_Time;
 
 public:
   TSharcData();

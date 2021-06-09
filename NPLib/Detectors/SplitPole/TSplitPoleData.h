@@ -25,7 +25,6 @@
 #include "TObject.h"
 
 #include <vector>
-using namespace std;
 
 
 
@@ -38,8 +37,8 @@ class TSplitPoleData : public TObject
       Double_t fPlasticP;
       Double_t fPlasticG;
       Double_t fTick;               // data from scaler
-      vector<Double_t> fTime1;      // ch 117
-      vector<Double_t> fTime2;      // ch 126
+      std::vector<Double_t> fTime1;      // ch 117
+      std::vector<Double_t> fTime2;      // ch 126
 
 
    public:

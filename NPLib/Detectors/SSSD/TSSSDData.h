@@ -24,18 +24,17 @@
 #include <vector>
 #include "TObject.h"
 
-using namespace std ;
 class TSSSDData : public TObject {
    private:
       // SSSD
       // Energy
-      vector<UShort_t>   fSSSD_StripE_DetectorNbr;
-      vector<UShort_t>   fSSSD_StripE_StripNbr;
-      vector<Double_t>   fSSSD_StripE_Energy;
+      std::vector<UShort_t>   fSSSD_StripE_DetectorNbr;
+      std::vector<UShort_t>   fSSSD_StripE_StripNbr;
+      std::vector<Double_t>   fSSSD_StripE_Energy;
       // Time
-      vector<UShort_t>   fSSSD_StripT_DetectorNbr;
-      vector<UShort_t>   fSSSD_StripT_StripNbr;
-      vector<Double_t>   fSSSD_StripT_Time;
+      std::vector<UShort_t>   fSSSD_StripT_DetectorNbr;
+      std::vector<UShort_t>   fSSSD_StripT_StripNbr;
+      std::vector<Double_t>   fSSSD_StripT_Time;
 
 
    public:

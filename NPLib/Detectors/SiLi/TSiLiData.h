@@ -23,17 +23,16 @@
 #include <vector>
 
 #include "TObject.h"
-using namespace std ;
 
 
 class TSiLiData : public TObject {
  private:
    // Energy 
-   vector<short>   fSiLi_E_Number;
-   vector<double>  fSiLi_E_Energy;   
+   std::vector<short>   fSiLi_E_Number;
+   std::vector<double>  fSiLi_E_Energy;   
    // Time
-   vector<short>   fSiLi_T_Number;
-   vector<double>  fSiLi_T_Time;
+   std::vector<short>   fSiLi_T_Number;
+   std::vector<double>  fSiLi_T_Time;
    
  public:
    TSiLiData();
