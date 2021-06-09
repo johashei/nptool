@@ -34,7 +34,7 @@ class TTacData : public TObject {
    UShort_t	fTAC_CATS1_HF;
    UShort_t	fTAC_CATS1_EXO;
    UShort_t	fTAC_MM_HF;
-   vector<UShort_t>   fTAC_MM_HF_DetectorNbr;
+   std::vector<UShort_t>   fTAC_MM_HF_DetectorNbr;
    UShort_t fTAC_MM_EXO;
    UShort_t fTAC_BARREL_EXO;
    UShort_t fTAC_BARREL_CATS1FAG;
