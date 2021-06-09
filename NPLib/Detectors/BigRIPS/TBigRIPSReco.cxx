@@ -12,6 +12,8 @@ void TBigRIPSReco::Init(){
     aoq=-9999;
     beta=-9999;
     delta=-9999;
+    brho1=-9999;
+    brho2=-9999;
     brho=-9999;
 }
 
@@ -55,12 +57,58 @@ void TBigRIPSReco::RecBrho(std::vector<double> RecFPUpstream,std::vector<double>
     brho = BrhoCentral*(1.0+delta*0.01);
 }
 
+
 ////////////////////////////////////////////////////////////////////////////////
-void TBigRIPSReco::RecAoqOne(double tof, double length){
-    beta = length /(tof * c_mm_ns);
+void TBigRIPSReco::RecAoqOneFold(double tof, double length){
+    beta = length /(tof * c_light);
     double gamma = 1./sqrt(1 - beta*beta);
-    aoq = (brho * c_mm_ns) / (mnucleon * beta * gamma);
-//std::cout << aoq << std::endl;
+    aoq = (brho * c_light) / (amu_c2 * beta * gamma);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+void TBigRIPSReco::RecAoqTwoFold(double tof, double length1, double length2, int useBeta){
+
+    if(!(length1>0 && length2>0)){
+        std::cout << "Length1 or Length2 is not positive (or both)" << std::endl;
+        return;
+    }
+    if(!(brho1>0 && brho2>0)){
+        //std::cout << "brho1 or brho2 was not properly initialized/setup" << std::endl;
+        //std::cout << "brho1:" <<brho1<< std::endl;
+        //std::cout << "brho2:" <<brho2<< std::endl;
+        return;
+    }
+
+    double alpha  = brho2 / brho1;
+    double a1     = sqrt(alpha * alpha * c_squared * tof * tof
+          + (pow(alpha,4) - alpha * alpha) * length1 * length1
+          + (1 - alpha*alpha) * length2 * length2);
+
+  
+    double rbeta1 = ( a1 * length1 + length2 * c_light * tof ) / 
+                    ( a1 * c_light * tof + (1 - alpha * alpha) * length1 * length2);
+    double  gamma1 = 1 / sqrt(1 - pow(rbeta1,2));
+
+    double rbeta2 = ( a1 * length1 + length2 * c_light * tof ) /
+                    ( c_squared * tof * tof + (alpha * alpha - 1) * length1 * length1);
+    double gammab = 1 / sqrt(1 - pow(rbeta2,2));
+
+    aoq = brho1 * c_light / amu_c2 / rbeta1 / gamma1; // should be same as brho2/beta2/gamma2
+      
+    if(useBeta == 2 ) beta = rbeta2;
+    else if(useBeta == 1) beta = rbeta1;
+
+    brho = brho2; 
+/*
+    std::cout << "-------------" << std::endl;
+    std::cout << "brho1:" <<brho1<< std::endl;
+    std::cout << "brho2:" <<brho2<< std::endl;
+    std::cout << "brho:" <<brho<< std::endl;
+    std::cout << "alpha:" <<alpha<< std::endl;
+    std::cout << "rbeta1:" <<rbeta1<< std::endl;
+    std::cout << "rbeta2:" <<rbeta2<< std::endl;
+    std::cout << "aoq:" <<aoq<< std::endl;
+  */  
 }
 
 ////////////////////////////////////////////////////////////////////////////////

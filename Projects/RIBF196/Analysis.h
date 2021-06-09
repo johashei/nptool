@@ -14,7 +14,7 @@
  * Last update    :                                                          *
  *---------------------------------------------------------------------------*
  * Decription:                                                               *
- * Basic AoQ,Z reconstruction for RIBF196 experiment                         *
+ * AoQ,Z reconstruction for RIBF196 experiment                               *
  *                                                                           *
  *---------------------------------------------------------------------------*
  * Comment:                                                                  *
@@ -93,6 +93,8 @@ class Analysis: public NPL::VAnalysis{
 
   private:
     //calculated variables
+    double aoqc37;
+    double aoqc811;
     double tof37;
     double tof811;
     double dE_ICF7;
@@ -148,8 +150,10 @@ class Analysis: public NPL::VAnalysis{
     //TBigRIPSFocal* FP;
     TBigRIPSReco* Rec35;
     TBigRIPSReco* Rec57;
+    TBigRIPSReco* Rec37;
     TBigRIPSReco* Rec89;
     TBigRIPSReco* Rec911;
+    TBigRIPSReco* Rec811;
     std::vector<std::vector<double>> RecFP;
 
     //maps containings infos from input xml config files
@@ -174,6 +178,173 @@ class Analysis: public NPL::VAnalysis{
     map<int,double> FP_Z;
     map<int,double> FP_Zoffset;
     int NmaxFP;
+
+    // Higher order Optical corrections
+    
+    double ZD_OptCorr_Ga(double *);
+    constexpr static int    gGaZDNVariables    = 8;
+    constexpr static int    gGaZDNCoefficients = 10;
+    constexpr static double gGaZDDMean         = 2.67982;
+    // Assignment to mean vector.
+    constexpr static double gGaZDXMean[] = {
+        -0.151618, -0.97249, -0.226697, -0.0028457, -0.0250826, 0.00288959, -0.0263575, 0.180498 };
+    // Assignment to minimum vector.
+    constexpr static double gGaZDXMin[] = {
+        -112.762, -67.3691, -21.6583, -1461.26, -19.009, -25.9623, -63.8841, -82.8509 };
+
+    // Assignment to maximum vector.
+    constexpr static double gGaZDXMax[] = {
+        110.757, 6247.9, 37.3008, 1461.03, 19.6172, 25.5737, 55.9905, 60.4835 };
+
+    // Assignment to coefficients vector.
+    constexpr static double gGaZDCoefficient[] = {
+        0.0045763,
+        0.0260008,
+        0.0202036,
+        -0.00373027,
+        0.0117822,
+        -0.00717916,
+        -0.010714,
+        -6.11157e-06,
+        0.0045109,
+        -0.00397418
+    };
+
+    // Assignment to error coefficients vector.
+    constexpr static double gGaZDCoefficientRMS[] = {
+        0.0263103,
+        0.0627114,
+        0.0645658,
+        0.0289265,
+        0.0959883,
+        0.0450067,
+        0.125588,
+        0.0482148,
+        0.0962523,
+        0.0798097
+    };
+
+    // Assignment to powers vector.
+    // The powers are stored row-wise, that is
+    //  p_ij = gPower[i * NVariables + j];
+    constexpr static int    gGaZDPower[] = {
+        1,  1,  1,  1,  1,  1,  1,  1,
+        1,  1,  1,  1,  1,  1,  2,  1,
+        1,  1,  1,  1,  2,  1,  1,  1,
+        1,  1,  1,  1,  1,  2,  1,  1,
+        1,  1,  2,  1,  1,  1,  1,  1,
+        3,  1,  1,  1,  1,  1,  1,  1,
+        2,  1,  1,  1,  1,  1,  3,  1,
+        1,  1,  1,  1,  1,  1,  1,  2,
+        1,  1,  1,  1,  1,  1,  1,  3,
+        1,  1,  1,  1,  1,  3,  1,  1
+    };
+    
+
+   double BR_OptCorr_Ga(double *);
+   constexpr static int    gGaBRNVariables    = 8;
+   constexpr static int    gGaBRNCoefficients = 25;
+   constexpr static double gGaBRDMean         = 2.67489;
+    // Assignment to mean vector.
+   constexpr static double gGaBRXMean[] = {
+        -0.0642977, -0.00307703, -0.00100196, -0.0107261, -0.0131277, -0.00317987, -0.158857, -0.0435761 };
+
+    // Assignment to minimum vector.
+   constexpr static double gGaBRXMin[] = {
+        -107.29, -25.9837, -31.9689, -42.8947, -29.3661, -31.5436, -20.0646, -37.375 };
+
+    // Assignment to maximum vector.
+   constexpr static double gGaBRXMax[] = {
+        64.5168, 21.8811, 30.0843, 43.7818, 35.0687, 23.5787, 29.204, 35.7001 };
+
+    // Assignment to coefficients vector.
+   constexpr static double gGaBRCoefficient[] = {
+        0.000721757,
+        0.00503421,
+        -0.00479955,
+        0.00219026,
+        0.00552134,
+        0.00247818,
+        0.0026914,
+        -0.000758646,
+        0.00743853,
+        0.0162762,
+        0.0157268,
+        0.00235257,
+        -0.0029327,
+        -0.0115376,
+        -0.0139695,
+        -0.0526337,
+        0.000312724,
+        -0.00270404,
+        0.00261865,
+        -0.00281391,
+        0.00284842,
+        -0.00417684,
+        0.029841,
+        -0.0494852,
+        0.00822339
+    };
+
+    // Assignment to error coefficients vector.
+   constexpr static double gGaBRCoefficientRMS[] = {
+        0.0221415,
+        0.0946943,
+        0.195954,
+        0.0827622,
+        0.10566,
+        0.0550079,
+        0.091793,
+        0.0767151,
+        0.172153,
+        0.94549,
+        0.578329,
+        0.49222,
+        0.16515,
+        0.50208,
+        0.489808,
+        1.89549,
+        0.0284801,
+        0.100958,
+        0.121855,
+        0.161108,
+        0.277453,
+        0.292148,
+        4.02157,
+        3.97904,
+        0.647432
+    };
+
+    // Assignment to powers vector.
+    // The powers are stored row-wise, that is
+    //  p_ij = gPower[i * NVariables + j];
+   constexpr static int    gGaBRPower[] = {
+        1,  1,  1,  1,  1,  1,  1,  1,
+        1,  1,  1,  1,  1,  1,  2,  1,
+        1,  1,  1,  1,  1,  2,  1,  2,
+        1,  1,  1,  1,  1,  1,  3,  1,
+        2,  1,  1,  1,  1,  1,  2,  1,
+        2,  1,  1,  1,  1,  1,  1,  1,
+        1,  1,  2,  1,  1,  1,  1,  1,
+        1,  1,  1,  1,  1,  2,  2,  1,
+        1,  1,  2,  1,  2,  1,  1,  1,
+        1,  1,  1,  1,  2,  1,  1,  3,
+        2,  1,  1,  1,  2,  1,  2,  1,
+        1,  2,  1,  2,  1,  1,  2,  1,
+        4,  1,  1,  1,  1,  1,  1,  1,
+        2,  1,  1,  1,  3,  1,  1,  1,
+        1,  1,  1,  1,  3,  1,  3,  1,
+        1,  2,  4,  1,  3,  2,  1,  1,
+        1,  1,  1,  1,  1,  2,  1,  1,
+        3,  1,  1,  1,  1,  1,  1,  1,
+        1,  1,  1,  1,  1,  3,  1,  1,
+        2,  1,  1,  1,  2,  1,  1,  1,
+        1,  2,  1,  1,  1,  2,  2,  1,
+        3,  1,  1,  1,  2,  1,  1,  1,
+        1,  1,  1,  1,  2,  1,  2,  3,
+        1,  1,  2,  1,  2,  1,  1,  3,
+        3,  1,  1,  1,  1,  1,  3,  1
+    };
 
 };
 

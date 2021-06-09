@@ -40,13 +40,14 @@ Analysis::~Analysis(){
 ////////////////////////////////////////////////////////////////////////////////
 void Analysis::Init() {
 
-  NmaxFP=11;
-  //FP = new TBigRIPSFocal();
-  //FP->Init(NmaxFP+1);
+  NmaxFP=12;
+
   Rec35 = new TBigRIPSReco();
   Rec57 = new TBigRIPSReco();
+  Rec37 = new TBigRIPSReco();
   Rec89 = new TBigRIPSReco();
   Rec911 = new TBigRIPSReco();
+  Rec811 = new TBigRIPSReco();
 
   InitOutputBranch();
   InitInputBranch();
@@ -56,12 +57,7 @@ void Analysis::Init() {
   IC = (TBigRIPSICPhysics*)  m_DetectorManager -> GetDetector("BigRIPSIC");
 
   ReadXmls();
-/*
-  matF35.ResizeTo(6,5); matF35 = RecReadTransferMatrix("mat1.mat");
-  matF57.ResizeTo(6,5); matF57 = RecReadTransferMatrix("mat2.mat");
-  matF89.ResizeTo(6,5); matF89 = RecReadTransferMatrix("F8F9_LargeAccAchr.mat");
-  matF911.ResizeTo(6,5); matF911 = RecReadTransferMatrix("F9F11_LargeAccAchr.mat");
-*/
+
   matrixF35  = RecReadTransferMatrix2("mat1.mat");
   matrixF57  = RecReadTransferMatrix2("mat2.mat");
   matrixF89  = RecReadTransferMatrix2("F8F9_LargeAccAchr.mat");
@@ -165,22 +161,12 @@ void Analysis::TreatEvent() {
            RecFP[it->first] = RecFPposition(it->second.PPACHit,it->second.PPACID);
         }
     }
-    // Same as above but using an object from class TBigRIPSFocal
-    /*
-    for(auto it = FP_PPACHitList.begin();it!=FP_PPACHitList.end();++it){
-        if(it->first < NmaxFP){
-           FP->SetFPTrack(it->first, RecFPposition(it->second.PPACHit,it->second.PPACID) );
-           //FP->Print(it->first);
-        }
-    }
-*/
 
     // Brho/delta reconstruction
     Rec35->RecBrho(RecFP[3],RecFP[5],matrixF35,BrhoD3);
     Rec57->RecBrho(RecFP[5],RecFP[7],matrixF57,BrhoD5);
     Rec89->RecBrho(RecFP[8],RecFP[9],matrixF89,BrhoD7);
     Rec911->RecBrho(RecFP[9],RecFP[11],matrixF911,BrhoD8);
-
 
     /////////////////////////////////
     /// STEP2: TOF, flight length ///
@@ -204,11 +190,19 @@ void Analysis::TreatEvent() {
     /////////////////////////////////
 
     // Calculate Beta from length/tof and combine it with Brho to get AoQ
-    Rec35->RecAoqOne(tof37,length37);
-    Rec57->RecAoqOne(tof37,length37);
-    Rec89->RecAoqOne(tof811,length811);
-    Rec911->RecAoqOne(tof811,length811);
-    
+    Rec35->RecAoqOneFold(tof37,length37);
+    Rec57->RecAoqOneFold(tof37,length37);
+    Rec37->SetBrho1(Rec35->GetBrho());
+    Rec37->SetBrho2(Rec57->GetBrho());
+    Rec37->RecAoqTwoFold(tof37,length35,length57,2);
+    //
+    Rec89->RecAoqOneFold(tof811,length811);
+    Rec911->RecAoqOneFold(tof811,length811);
+    Rec811->SetBrho1(Rec89->GetBrho());
+    Rec811->SetBrho2(Rec911->GetBrho());
+    Rec811->RecAoqTwoFold(tof811,length89,length911,2);
+
+
     ///////////////////////////////////////////////
     /// STEP4: Z reco. from dE in IC and Beta   ///
     ///////////////////////////////////////////////
@@ -221,11 +215,37 @@ void Analysis::TreatEvent() {
     dE_ICF7 = IC_dE["F7IC"];
     Rec35->RecZet(dE_ICF7,IC_Ionpair["F7IC"],IC_Zcoef["F7IC"]);
     Rec57->RecZet(dE_ICF7,IC_Ionpair["F7IC"],IC_Zcoef["F7IC"]);
+    Rec37->RecZet(dE_ICF7,IC_Ionpair["F7IC"],IC_Zcoef["F7IC"]);
 
     dE_ICF11 = IC_dE["F11IC"];
     Rec89->RecZet(dE_ICF11,IC_Ionpair["F11IC"],IC_Zcoef["F11IC"]);
     Rec911->RecZet(dE_ICF11,IC_Ionpair["F11IC"],IC_Zcoef["F11IC"]);
+    Rec811->RecZet(dE_ICF11,IC_Ionpair["F11IC"],IC_Zcoef["F11IC"]);
 
+    ///////////////////////////////////////////////
+    /// STEP5: Higher order AoQ optical corr.   ///
+    ///////////////////////////////////////////////
+    
+    double x[8];
+    if(Rec37->GetAoq()>0){
+        x[0] = RecFP[5][0]; x[1] = RecFP[5][2]; x[2] = RecFP[5][1]; x[3] = RecFP[5][3];
+        x[4] = RecFP[7][0]; x[5] = RecFP[7][2]; x[6] = RecFP[7][1]; x[7] = RecFP[7][3];
+        aoqc37 = Rec37->GetAoq() - BR_OptCorr_Ga(x); 
+    }
+    if(Rec811->GetAoq()>0){
+        x[0] = RecFP[9][0]; x[1] = RecFP[9][2]; x[2] = RecFP[9][1]; x[3] = RecFP[9][3];
+        x[4] = RecFP[11][0]; x[5] = RecFP[11][2]; x[6] = RecFP[11][1]; x[7] = RecFP[11][3];
+        aoqc811 = Rec811->GetAoq() - ZD_OptCorr_Ga(x); 
+    }
+/*
+    for(int i=0; i<8; i++){
+        std::cout << "x["<<i<<"]:"<<x[i]<< std::endl;
+    }
+    std::cout << "aoq:"<<Rec811->GetAoq() << std::endl;
+    std::cout << "corr:"<<ZD_OptCorr_Ga(x) << std::endl;
+    std::cout << "aoqc:"<<aoqc811 << std::endl;
+    std::cout << "________________"<< std::endl;
+*/
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -349,6 +369,75 @@ std::vector<double> Analysis::RecFPposition(std::vector<TVector2> HitList,std::v
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
+double Analysis::ZD_OptCorr_Ga(double *x) {
+    //double returnValue = gGaZDDMean;
+    double returnValue = 0;
+    int    i = 0, j = 0, k = 0;
+    for (i = 0; i < gGaZDNCoefficients ; i++) {
+        // Evaluate the ith term in the expansion
+        double term = gGaZDCoefficient[i];
+        for (j = 0; j < gGaZDNVariables; j++) {
+            // Evaluate the polynomial in the jth variable.
+            int power = gGaZDPower[gGaZDNVariables * i + j]; 
+            double p1 = 1, p2 = 0, p3 = 0, r = 0;
+            double v =  1 + 2. / (gGaZDXMax[j] - gGaZDXMin[j]) * (x[j] - gGaZDXMax[j]);
+            // what is the power to use!
+            switch(power) {
+                case 1: r = 1; break; 
+                case 2: r = v; break; 
+                default: 
+                        p2 = v; 
+                        for (k = 3; k <= power; k++) { 
+                            p3 = p2 * v;
+                            p1 = p2; p2 = p3; 
+                        }
+                        r = p3;
+            }
+            // multiply this term by the poly in the jth var
+            term *= r; 
+        }
+        // Add this term to the final result
+        returnValue += term;
+    }
+    return returnValue;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+double Analysis::BR_OptCorr_Ga(double *x) {
+  //double returnValue = gGaBRDMean;
+  double returnValue = 0;
+  int    i = 0, j = 0, k = 0;
+  for (i = 0; i < gGaBRNCoefficients ; i++) {
+    // Evaluate the ith term in the expansion
+    double term = gGaBRCoefficient[i];
+    for (j = 0; j < gGaBRNVariables; j++) {
+      // Evaluate the polynomial in the jth variable.
+      int power = gGaBRPower[gGaBRNVariables * i + j]; 
+      double p1 = 1, p2 = 0, p3 = 0, r = 0;
+      double v =  1 + 2. / (gGaBRXMax[j] - gGaBRXMin[j]) * (x[j] - gGaBRXMax[j]);
+      // what is the power to use!
+      switch(power) {
+      case 1: r = 1; break; 
+      case 2: r = v; break; 
+      default: 
+        p2 = v; 
+        for (k = 3; k <= power; k++) { 
+          p3 = p2 * v;
+          p1 = p2; p2 = p3; 
+        }
+        r = p3;
+      }
+      // multiply this term by the poly in the jth var
+      term *= r; 
+    }
+    // Add this term to the final result
+    returnValue += term;
+  }
+  return returnValue;
+}
+////////////////////////////////////////////////////////////////////////////////
 void Analysis::End(){
 }
 ////////////////////////////////////////////////////////////////////////////////
@@ -359,11 +448,12 @@ void Analysis::InitOutputBranch() {
   RootOutput::getInstance()->GetTree()->Branch("Trigger",&Trigger,"Trigger/I");
   RootOutput::getInstance()->GetTree()->Branch("TimeStamp",&TimeStamp,"TimeStamp/I");
   RootOutput::getInstance()->GetTree()->Branch("RecFP",&RecFP);
-  //RootOutput::getInstance()->GetTree()->Branch("FP","TBigRIPSFocal",&FP);
   RootOutput::getInstance()->GetTree()->Branch("Rec35","TBigRIPSReco",&Rec35);
   RootOutput::getInstance()->GetTree()->Branch("Rec57","TBigRIPSReco",&Rec57);
+  RootOutput::getInstance()->GetTree()->Branch("Rec37","TBigRIPSReco",&Rec37);
   RootOutput::getInstance()->GetTree()->Branch("Rec89","TBigRIPSReco",&Rec89);
   RootOutput::getInstance()->GetTree()->Branch("Rec911","TBigRIPSReco",&Rec911);
+  RootOutput::getInstance()->GetTree()->Branch("Rec811","TBigRIPSReco",&Rec811);
   RootOutput::getInstance()->GetTree()->Branch("tof37",&tof37,"tof37/D");
   RootOutput::getInstance()->GetTree()->Branch("tof811",&tof811,"tof811/D");
   RootOutput::getInstance()->GetTree()->Branch("tf7",&tf7,"tf7/D");
@@ -371,6 +461,8 @@ void Analysis::InitOutputBranch() {
   RootOutput::getInstance()->GetTree()->Branch("tf11",&tf11,"tf11/D");
   RootOutput::getInstance()->GetTree()->Branch("dE_ICF7",&dE_ICF7,"dE_ICF7/D");
   RootOutput::getInstance()->GetTree()->Branch("dE_ICF11",&dE_ICF11,"dE_ICF11/D");
+  RootOutput::getInstance()->GetTree()->Branch("aoqc37",&aoqc37,"aoqc37/D");
+  RootOutput::getInstance()->GetTree()->Branch("aoqc811",&aoqc811,"aoqc811/D");
 }
 
 
@@ -391,8 +483,12 @@ void Analysis::ReInitValue(){
   //FP->Init(NmaxFP+1);
   Rec35->Init();
   Rec57->Init();
+  Rec37->Init();
   Rec89->Init();
   Rec911->Init();
+  Rec811->Init();
+  aoqc37 =-9999;
+  aoqc811 =-9999;
   tf3 =-9999;
   tf7 =-9999;
   tof37 = -9999 ;
