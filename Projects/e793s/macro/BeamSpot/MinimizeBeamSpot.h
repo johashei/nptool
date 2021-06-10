@@ -1,10 +1,18 @@
+////////////////////////////////////////////////////////////////////////////////
 #include "Math/Minimizer.h"
 #include "Math/Factory.h"
 #include "Math/Functor.h"
 #include "TRandom2.h"
 #include "TError.h"
 #include <iostream>
+#include <chrono>
 
+using namespace std;
+using namespace std::chrono;
+
+////////////////////////////////////////////////////////////////////////////////
+/*   Global   */
+//Various numbers and objects
 double refE = 0.143; // the energy of the selected states
 vector<TVector3*> pos;
 vector<double> energy;
@@ -12,17 +20,14 @@ vector<int> detnum;
 unsigned int mgSelect = 10;
 NPL::EnergyLoss CD2("proton_CD2.G4table","G4Table",100);
 NPL::EnergyLoss Al("proton_Al.G4table","G4Table",100);
-using namespace std;
-
 bool flagDraw = 0;
 
-//double FitResultMatrix[7][5];
-// 7 => Sum in 0 and them MG's in 1-6
-// 5 => Mean, MeanErr, StdDev, StdDevErr, Chi2/NDF
+//Output files
+TFile *histfile = new TFile("./gridHistograms.root", "RECREATE");
+ofstream file;
+int writeCount = 0;
 
-
-//TCanvas *canv = new TCanvas("canv","Ex Histograms",20,20,1600,800);
-
+//Histograms
 static auto h = new TH1D("h","All MG#'s", 80,-1.,1.);
 static auto h1 = new TH1D("h1","Individual MG#'s", 40,-1.,1.);
 static auto h2 = new TH1D("h2","h2", 40,-1.,1.);
@@ -34,7 +39,7 @@ static auto h7 = new TH1D("h7","h7", 40,-1.,1.);
 ////////////////////////////////////////////////////////////////////////////////
 void LoadFile(){
   // Open XYZE gamma-gated file
-  ifstream file("XYZE_Full_02June.txt");
+  ifstream file("XYZE_Full_09June_MG3.txt");
   if(!file.is_open()){
     cout << "fail to load file" << endl;
     exit(1);
@@ -94,7 +99,7 @@ void DetectorSwitch(int MG, TVector3& Normal ){
       default:
 	cout << "ERROR:: Invalid DetNum " << MG << endl;
         return 1; // Exit code
-    }
+  }
 }
 ////////////////////////////////////////////////////////////////////////////////
 //Overloaded function definiton; this is for filling individual Ex histograms
@@ -121,7 +126,42 @@ void DetectorSwitch(int MG, double Ex){
       default:
         cout << "ERROR:: Invalid DetNum " << MG << endl;
         return 1; // Exit code
-    }
+  }
+}
+////////////////////////////////////////////////////////////////////////////////
+void WriteToCout(double* result, double thick, double metric){
+  cout 
+    << "Mean: " 
+    << result[0] 
+    << " +/- " 
+    << result[1] 
+    << "    StdDev: " 
+    << result[2] 
+    << " +/- " 
+    << result[3] 
+    << "    Thick: " 
+    << thick 
+    << " um" 
+    << "    Chi2/NDF = " 
+    << result[4]
+    << "    Metric: " 
+    << metric 
+    << endl;
+}
+////////////////////////////////////////////////////////////////////////////////
+void WriteToFile(double* result, const double* parameter, double metric){
+  file 
+    << parameter[0] << "\t"
+    << parameter[1] << "\t"
+    << parameter[2] << "\t"
+    << parameter[3] << "\t"
+    << metric << "\t"
+    << result[0] << "\t" 
+    << result[1] << "\t"
+    << result[2] << "\t"
+    << result[3] << "\t"
+    << result[4] 
+    << endl;
 }
 ////////////////////////////////////////////////////////////////////////////////
 void DrawOneHistogram(TH1D* hist, int mg, int colour, int fill, double *FitResultMatrixMG){
@@ -178,7 +218,14 @@ void InitiliseCanvas(double FitResultMatrix[7][5]){
   DrawOneHistogram(h4, 4, 840, 3444, FitResultMatrix[4]);
   DrawOneHistogram(h5, 5, 600, 3544, FitResultMatrix[5]);
   DrawOneHistogram(h7, 6, 880, 3644, FitResultMatrix[6]);
-   
+
+  canv->Update();
+
+  TLine *line=new TLine(0.143,0.0,0.143,75.0);
+  line->SetLineColor(kBlack);
+  line->SetLineStyle(7);
+  line->Draw();
+
   //Format legend
   auto legend = new TLegend(0.15,0.7,0.35,0.9);
   legend->AddEntry(h1,"MUGAST 1","f");
@@ -200,7 +247,14 @@ void InitiliseCanvas(double FitResultMatrix[7][5]){
   //Refresh
   gPad->Update();
 
-  if(!flagDraw){delete canv;}
+  if(flagDraw){
+    //writeCount++;
+    histfile->cd();
+    canv->Write("Minimum#");
+  }
+  else { 
+    delete canv;
+  }
 }
 ////////////////////////////////////////////////////////////////////////////////
 
