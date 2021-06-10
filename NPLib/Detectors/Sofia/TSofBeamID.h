@@ -34,15 +34,15 @@ class TSofBeamID : public TObject {
   // data members are hold into vectors in order 
   // to allow multiplicity treatment
   private:
-    double Zbeam; 
-    double Qmax;
-    double AoQ;
-    double Abeam;
-    double Beta;
-    double Gamma;
-    double Brho;
-    double XS2;
-    double XCC;
+    double fBeam_Z; 
+    double fBeam_Qmax;
+    double fBeam_AoQ;
+    double fBeam_A;
+    double fBeam_Beta;
+    double fBeam_Gamma;
+    double fBeam_Brho;
+    double fBeam_XS2;
+    double fBeam_XCC;
 
   //////////////////////////////////////////////////////////////
   // Constructor and destructor
@@ -66,26 +66,26 @@ class TSofBeamID : public TObject {
   // add //! to avoid ROOT creating dictionnary for the methods
   public:
     //////////////////////    SETTERS    ////////////////////////
-    inline void SetZbeam(double val){Zbeam = val;};//!
-    inline void SetQmax(double val){Qmax = val;};//!
-    inline void SetAoQ(double val){AoQ = val;};//!
-    inline void SetAbeam(double val){Abeam = val;};//!
-    inline void SetBeta(double val){Beta = val;};//!
-    inline void SetGamma(double val){Gamma = val;};//!
-    inline void SetBrho(double val){Brho = val;};//!
-    inline void SetXS2(double val){XS2 = val;};//!
-    inline void SetXCC(double val){XCC = val;};//!
+    inline void SetZbeam(double val){fBeam_Z = val;};//!
+    inline void SetQmax(double val){fBeam_Qmax = val;};//!
+    inline void SetAoQ(double val){fBeam_AoQ = val;};//!
+    inline void SetAbeam(double val){fBeam_A = val;};//!
+    inline void SetBeta(double val){fBeam_Beta = val;};//!
+    inline void SetGamma(double val){fBeam_Gamma = val;};//!
+    inline void SetBrho(double val){fBeam_Brho = val;};//!
+    inline void SetXS2(double val){fBeam_XS2 = val;};//!
+    inline void SetXCC(double val){fBeam_XCC = val;};//!
 
     //////////////////////    GETTERS    ////////////////////////
-    inline double GetZbeam() const {return Zbeam;}//! 
-    inline double GetQmax() const {return Qmax;}//! 
-    inline double GetAoQ() const {return AoQ;}//! 
-    inline double GetAbeam() const {return Abeam;}//! 
-    inline double GetBeta() const {return Beta;}//! 
-    inline double GetGamma() const {return Gamma;}//! 
-    inline double GetBrho() const {return Brho;}//! 
-    inline double GetXS2() const {return XS2;}//! 
-    inline double GetXCC() const {return XCC;}//! 
+    inline double GetZbeam() const {return fBeam_Z;}//! 
+    inline double GetQmax() const {return fBeam_Qmax;}//! 
+    inline double GetAoQ() const {return fBeam_AoQ;}//! 
+    inline double GetAbeam() const {return fBeam_A;}//! 
+    inline double GetBeta() const {return fBeam_Beta;}//! 
+    inline double GetGamma() const {return fBeam_Gamma;}//! 
+    inline double GetBrho() const {return fBeam_Brho;}//! 
+    inline double GetXS2() const {return fBeam_XS2;}//! 
+    inline double GetXCC() const {return fBeam_XCC;}//! 
 
   //////////////////////////////////////////////////////////////
   // Required for ROOT dictionnary

@@ -48,7 +48,7 @@ TSofTrimPhysics::TSofTrimPhysics()
   m_PreTreatedData(new TSofTrimData),
   m_EventPhysics(this),
   m_NumberOfDetectors(0), 
-  m_Beta(0.838), 
+  m_Beta(-1), 
   m_BetaNorm(0.838), 
   m_NumberOfSections(3), 
   m_NumberOfAnodesPaired(3),
@@ -74,22 +74,32 @@ void TSofTrimPhysics::AddDetector(double R, double Theta, double Phi){
 
 ///////////////////////////////////////////////////////////////////////////
 void TSofTrimPhysics::BuildSimplePhysicalEvent() {
-  BuildPhysicalEvent();
+  if(m_Beta>0)
+    BuildPhysicalEvent();
 }
 
 
 
 ///////////////////////////////////////////////////////////////////////////
 void TSofTrimPhysics::BuildPhysicalEvent() {
+
+  if(m_Beta<0)
+    return;
+
   // apply thresholds and calibration
   PreTreat();
-  if(m_PreTreatedData->GetMultiplicity() != 18)
+  if(m_PreTreatedData->GetMultiplicity() != 18){
+    m_Beta = -1;
     return;
+  }
 
   double Ep1[3], DTp1[3];
   double Ep2[3], DTp2[3];
   double Ep3[3], DTp3[3];
   double Esec[3];
+  int mult_p1[3];
+  int mult_p2[3];
+  int mult_p3[3];
   for(int i=0; i<m_NumberOfSections; i++){
     Ep1[i] = 0;
     Ep2[i] = 0;
@@ -98,6 +108,9 @@ void TSofTrimPhysics::BuildPhysicalEvent() {
     DTp2[i] = 0;
     DTp3[i] = 0;
     Esec[i] = 0;
+    mult_p1[i] = 0;
+    mult_p2[i] = 0;
+    mult_p3[i] = 0;
   }
 
   unsigned int mysizeE = m_PreTreatedData->GetMultiplicity();
@@ -107,42 +120,64 @@ void TSofTrimPhysics::BuildPhysicalEvent() {
     double Energy  = m_PreTreatedData->GetEnergy(e);
     double DT      = m_PreTreatedData->GetDriftTime(e);
 
+    //cout << SectionNbr << " " << AnodeNbr << " " << Energy << " " << m_Beta << endl;
+
     if(AnodeNbr==1 || AnodeNbr==2){ 
       Ep1[SectionNbr-1] += Energy;
       DTp1[SectionNbr-1] += DT;
+      mult_p1[SectionNbr-1]++;
     }
     if(AnodeNbr==3 || AnodeNbr==4){
       Ep2[SectionNbr-1] += Energy;
       DTp2[SectionNbr-1] += DT;
+      mult_p2[SectionNbr-1]++;
     }
     if(AnodeNbr==5 || AnodeNbr==6){ 
       Ep3[SectionNbr-1] += Energy;
       DTp3[SectionNbr-1] += DT;
+      mult_p3[SectionNbr-1]++;
     }
   }
 
-
+  static CalibrationManager* Cal = CalibrationManager::getInstance();
   for(int i=0; i<m_NumberOfSections; i++){
-    DTp1[i] = 0.5*DTp1[i];
-    DTp2[i] = 0.5*DTp2[i];
-    DTp3[i] = 0.5*DTp3[i];
+    if(mult_p1[i] == 2){
+      Ep1[i]  = 0.5*Ep1[i];
+      DTp1[i] = 0.5*DTp1[i];
+    }
+    else{
+      Ep1[i]  = -1;
+      DTp1[i] = -1e5;
+    }
+    if(mult_p2[i] == 2){
+      Ep2[i]  = 0.5*Ep2[i];
+      DTp2[i] = 0.5*DTp2[i];
+    }
+    else{
+      Ep2[i]  = -1;
+      DTp2[i] = -1e5;
+    }
+    if(mult_p3[i] == 2){
+      Ep3[i]  = 0.5*Ep3[i];
+      DTp3[i] = 0.5*DTp3[i];
+    }
+    else{
+      Ep3[i]  = -1;
+      DTp3[i] = -1e5;
+    }
 
-    Ep1[i] = 0.5*Ep1[i];
-    Ep2[i] = 0.5*Ep2[i];
-    Ep3[i] = 0.5*Ep3[i];
   }
 
-  static CalibrationManager* Cal = CalibrationManager::getInstance();
   double Ddt = DTp2[2] - DTp2[0];
   double p0_1[3], p0_2[3], p0_3[3];
   double p1_1[3], p1_2[3], p1_3[3];
-  
+
   for(int i=0; i<m_NumberOfSections; i++){
     // Energy Alignement of pairs per section 
     Ep1[i] = Cal->ApplyCalibration("SofTrim/SEC"+NPL::itoa(i+1)+"_ANODE1_ALIGN",Ep1[i]);
     Ep2[i] = Cal->ApplyCalibration("SofTrim/SEC"+NPL::itoa(i+1)+"_ANODE2_ALIGN",Ep2[i]);
     Ep3[i] = Cal->ApplyCalibration("SofTrim/SEC"+NPL::itoa(i+1)+"_ANODE3_ALIGN",Ep3[i]);
-   
+
     // Beta correction per pair: DE = [0] + [1]*pow(Beta, -5./3);
     p0_1[i] = Cal->GetValue("SofTrim/SEC"+NPL::itoa(i+1)+"_ANODE1_BETA",0);
     p0_2[i] = Cal->GetValue("SofTrim/SEC"+NPL::itoa(i+1)+"_ANODE2_BETA",0);
@@ -150,7 +185,7 @@ void TSofTrimPhysics::BuildPhysicalEvent() {
     p1_1[i] = Cal->GetValue("SofTrim/SEC"+NPL::itoa(i+1)+"_ANODE1_BETA",1);
     p1_2[i] = Cal->GetValue("SofTrim/SEC"+NPL::itoa(i+1)+"_ANODE2_BETA",1);
     p1_3[i] = Cal->GetValue("SofTrim/SEC"+NPL::itoa(i+1)+"_ANODE3_BETA",1);
-   
+
     double norm1 = p0_1[i] + p1_1[i]*TMath::Power(m_BetaNorm, -5./3.);
     double norm2 = p0_2[i] + p1_2[i]*TMath::Power(m_BetaNorm, -5./3.);
     double norm3 = p0_3[i] + p1_3[i]*TMath::Power(m_BetaNorm, -5./3.);
@@ -167,9 +202,8 @@ void TSofTrimPhysics::BuildPhysicalEvent() {
     Ep1[i] = Ep1[i] / fcorr_EvsDT[i][0]->Eval(DTp1[i]) * fcorr_EvsDT[i][0]->Eval(3000);
     Ep2[i] = Ep2[i] / fcorr_EvsDT[i][1]->Eval(DTp2[i]) * fcorr_EvsDT[i][1]->Eval(3000);
     Ep3[i] = Ep3[i] / fcorr_EvsDT[i][2]->Eval(DTp3[i]) * fcorr_EvsDT[i][2]->Eval(3000);
-  }
 
-  for(int i=0; i<m_NumberOfSections; i++){
+    // Summing up Anode Energy per section 
     Esec[i] = (Ep1[i] + Ep2[i] + Ep3[i])/3;
 
     // 2nd DT correction per section: spline
@@ -177,12 +211,8 @@ void TSofTrimPhysics::BuildPhysicalEvent() {
 
     // Section ALignement
     Esec[i] = Cal->ApplyCalibration("SofTrim/SEC"+NPL::itoa(i+1)+"_ALIGN",Esec[i]);
-  }
 
-
-
-  // Filling output Tree //
-  for(int i=0; i<m_NumberOfSections; i++){
+    // Filling Output Tree //
     if(DTp2[i]!=0){
       SectionNbr.push_back(i+1);
       EnergyPair1.push_back(Ep1[i]);
@@ -195,7 +225,7 @@ void TSofTrimPhysics::BuildPhysicalEvent() {
       Theta.push_back(DTp2[2]-DTp2[0]);
     }
   }
-
+  m_Beta = -1;
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -211,9 +241,9 @@ void TSofTrimPhysics::PreTreat() {
 
   unsigned int mysize = m_EventData->GetMultiplicity();
   for (unsigned int i = 0; i < mysize ; ++i) {
-    Double_t Energy = Cal->ApplyCalibration("SofTrim/SEC"+NPL::itoa(m_EventData->GetSectionNbr(i))+"_ANODE"+NPL::itoa(m_EventData->GetAnodeNbr(i))+"_ENERGY",m_EventData->GetEnergy(i));
-    Double_t DT = Cal->ApplyCalibration("SofTrim/SEC"+NPL::itoa(m_EventData->GetSectionNbr(i))+"_ANODE"+NPL::itoa(m_EventData->GetAnodeNbr(i))+"_TIME",m_EventData->GetDriftTime(i));
-   
+    double Energy = Cal->ApplyCalibration("SofTrim/SEC"+NPL::itoa(m_EventData->GetSectionNbr(i))+"_ANODE"+NPL::itoa(m_EventData->GetAnodeNbr(i))+"_ENERGY",m_EventData->GetEnergy(i));
+    double DT = Cal->ApplyCalibration("SofTrim/SEC"+NPL::itoa(m_EventData->GetSectionNbr(i))+"_ANODE"+NPL::itoa(m_EventData->GetAnodeNbr(i))+"_TIME",m_EventData->GetDriftTime(i));
+
     m_PreTreatedData->SetSectionNbr(m_EventData->GetSectionNbr(i));
     m_PreTreatedData->SetAnodeNbr(m_EventData->GetAnodeNbr(i));
     m_PreTreatedData->SetEnergy(Energy);
@@ -439,7 +469,7 @@ void TSofTrimPhysics::AddParameterToCalibrationManager() {
   }
   for(int sec = 0; sec < m_NumberOfSections; sec++){
     Cal->AddParameter("SofTrim","SEC"+NPL::itoa(sec+1)+"_ALIGN","SofTrim_SEC"+NPL::itoa(sec+1)+"_ALIGN");
-    
+
     for(int anode = 0; anode < m_NumberOfAnodesPaired; anode++){ 
       Cal->AddParameter("SofTrim","SEC"+NPL::itoa(sec+1)+"_ANODE"+NPL::itoa(anode+1)+"_ALIGN","SofTrim_SEC"+NPL::itoa(sec+1)+"_ANODE"+NPL::itoa(anode+1)+"_ALIGN");
       Cal->AddParameter("SofTrim","SEC"+NPL::itoa(sec+1)+"_ANODE"+NPL::itoa(anode+1)+"_BETA","SofTrim_SEC"+NPL::itoa(sec+1)+"_ANODE"+NPL::itoa(anode+1)+"_BETA");
