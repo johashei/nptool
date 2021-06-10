@@ -9,9 +9,14 @@
 #include "Garfield/ViewMedium.hh"
 		 
 double GARFDRIFT(double energy, double t_start, G4ThreeVector start, G4ThreeVector delta_pos, double R, int Pad_start, double ID,
-	       double ScoLength, double SegLength, double event) {
+		 double ScoLength, double SegLength, double event, double raw_energy_check) {
 
-
+  ofstream file;
+  /*        
+  file.open("garf_E_check.dat", std::ios::app);
+  file << raw_energy_check << "\t" << R << endl;
+  file.close();
+  */
   const double rWire = 1.2;
   const double rTube = 5.;
   const double lTube = 25.19;
@@ -24,17 +29,22 @@ double GARFDRIFT(double energy, double t_start, G4ThreeVector start, G4ThreeVect
   //const double vWire =  -681.0312; //For V_total = 1400V
   //const double vWire = -730.; 
   const double vWire = -1000.;
+  //const double vWire = -584.7139; // ND run 4230 (2008)
   const double vTube = 0.;
   double x_start, y_start, z_start;
-  ofstream file;
+  //double production_bias = 0.01;
   double production_bias = 0.001;
   double t_end, x_end, y_end, z_end;
+  int status;
   double Pad_end;
   //double w_value = 35.; //for HeCO2 --guess
   //double w_value = 26.31; //for argon
   double w_value = 41.1;// for He
-  int electrons  = (int)(energy/w_value*production_bias);//*production_bias; //Need to carry excess energy over later.
+  energy = energy*production_bias;
+  //int electrons  = (int)(energy/w_value*production_bias);
+  int electrons = (int)(energy/w_value);
   double energy_excess = 0.;
+  int sector;
   vector<double> pad_vec, time_vec; 
   
   Garfield::MediumMagboltz* gas = new Garfield::MediumMagboltz();
@@ -45,20 +55,28 @@ double GARFDRIFT(double energy, double t_start, G4ThreeVector start, G4ThreeVect
   Garfield::Sensor* sensor = new Garfield::Sensor();
   Garfield::AvalancheMC* drift = new Garfield::AvalancheMC();
   
-  cout << "\n" << electrons << "\n" << endl;
+  //cout << "\n" << electrons << "\n" << endl;
+  
+  energy_excess = (energy - electrons*w_value)/production_bias;
+  
+  //  if(R>rWire) {
+
+    //    energy_excess = (energy/w_value*production_bias - electrons)*w_value/production_bias;
+
+    //    energy_excess = (energy/w_value - electrons)*w_value;
   
   if(R>rWire && electrons>0) {
     
-    energy_excess = (energy/w_value*production_bias - electrons)*w_value/production_bias;
-    
-    //gas->LoadGasFile("he_90_co2_10_200mbar.gas");
-    //gas->LoadGasFile("ar_90_ch4_10.gas"); //atomic fraction in this case (P10).
-    //gas->LoadGasFile("he_90_co2_10_500mbar.gas"); //mass fraction in this case
-    //gas->LoadGasFile("he_90_co2_10_1bar.gas");
+      //gas->LoadGasFile("he_90_co2_10_200mbar.gas");
+      //gas->LoadGasFile("ar_90_ch4_10.gas"); //atomic fraction in this case (P10).
+      //gas->LoadGasFile("he_90_co2_10_500mbar.gas"); //mass fraction in this case
+      //gas->LoadGasFile("he_90_co2_10_1bar.gas");
+
     gas->LoadGasFile("he_90_co2_10_100mbar.gas");
+    //gas->LoadGasFile("he_90_co2_10_600mbar.gas");
     
     gas->Initialise(true);
-    
+      
     mediumView->SetMedium(gas);
     geo->AddSolid(tube, gas);
     cmp->SetGeometry(geo);
@@ -66,32 +84,62 @@ double GARFDRIFT(double energy, double t_start, G4ThreeVector start, G4ThreeVect
     cmp->AddTube(rTube, vTube, 0, "a");
     sensor->AddComponent(cmp);
     drift->SetSensor(sensor);
-      
+
+      //drift->DisableAttachment();
+    
     for(int e=0;e<electrons;e++) {
       
       double randomize = (double)std::rand() / (double)RAND_MAX;
-
+	
       x_start = start.x() + delta_pos.x()*randomize;
       y_start = start.y() + delta_pos.y()*randomize;
       z_start = start.z() + delta_pos.z()*randomize;
-
+      /*
+	file.open("garf_electrons_start_RZ.dat", std::ios::app);
+	file <<  pow(pow(x_start,2)+pow(y_start,2),0.5) << "\t" << z_start <<  endl;	  
+	file.close();
+      */
       drift->DriftElectron(x_start, y_start, z_start, t_start);
+      
       int np = drift->GetNumberOfDriftLinePoints();
+      //drift->GetEndPoint(x_end, y_end, z_end, t_end, status);
       drift->GetDriftLinePoint(np-1, x_end, y_end, z_end, t_end); //np-1 is last DriftLineEndPoint
+      //int np = drift->GetNuberOfElectronEndPoints();
+      //drift->GetElectronEndPoint(np-1, x_end, y_end, z_end, t_end); 
       
       Pad_end = (int)((z_end + ScoLength / 2.) / SegLength ) + 1; //new Pad number 
-
-      if(pow(pow(x_end,2)+pow(y_end,2),0.5)>4.9) { //reached the anode
-	file.open("signal.dat", std::ios::app);
-	file << event << "\t" << ID << "\t" << Pad_start << "\t" <<  Pad_end << "\t" << t_end << endl;
-	file.close();
+      
+      if(x_end > 0 and y_end > 0) {
+	if(abs(x_end) > abs(y_end)) sector = 0;
+	if(abs(x_end) < abs(y_end)) sector = 1;
       }
-    
+      if(x_end < 0 and y_end > 0) {
+	if(abs(x_end) < abs(y_end)) sector = 2;
+	if(abs(x_end) > abs(y_end)) sector = 3;
+      }
+      if(x_end < 0 and y_end < 0) {
+	if(abs(x_end) > abs(y_end)) sector = 4;
+	if(abs(x_end) < abs(y_end)) sector = 5;
+      }
+      if(x_end > 0 and y_end < 0) {
+	if(abs(x_end) < abs(y_end)) sector = 6;
+	if(abs(x_end) > abs(y_end)) sector = 7;
+      }
+      
+      
+      //if(pow(pow(x_end,2)+pow(y_end,2),0.5)>4.9) { //reached the anode
+      file.open("signal.dat", std::ios::app);
+      file << event << "\t" << ID << "\t" << sector << "\t" <<  Pad_end << "\t" << t_end << "\t" << pow(pow(x_start,2)+pow(y_start,2),0.5) << "\t" << pow(pow(x_end,2)+pow(y_end,2),0.5) << endl;	  
+      //file << event << "\t" << ID << "\t" << sector << "\t" <<  Pad_end << "\t" << t_end
+      file.close();
+      //}
+      
     }
   }
-  
-  delete gas; delete mediumView; delete geo; delete tube; delete cmp; delete sensor; delete drift; //otherwise these are held in memory and cause a killed: 9 crash.
+  //}
+
+delete gas; delete mediumView; delete geo; delete tube; delete cmp; delete sensor; delete drift; //otherwise these are held in memory and cause a killed: 9 crash.
 
   return energy_excess;
-  
+
 }
