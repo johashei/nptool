@@ -28,6 +28,7 @@
 #include"NPVAnalysis.h"
 #include"TSofTofWPhysics.h"
 #include"TSofTrimPhysics.h"
+#include"TSofTwimPhysics.h"
 #include"TSofSciPhysics.h"
 #include"TSofBeamID.h"
 
@@ -54,6 +55,7 @@ class Analysis: public NPL::VAnalysis{
   private:
     TSofSciPhysics* SofSci;
     TSofTrimPhysics* SofTrim;
+    TSofTwimPhysics* SofTwim;
     TSofTofWPhysics* SofTofW;
     TSofBeamID* SofBeamID;
 

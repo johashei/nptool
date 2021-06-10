@@ -25,6 +25,8 @@ using namespace std;
 #include"Analysis.h"
 #include"NPAnalysisFactory.h"
 #include"NPDetectorManager.h"
+#include"NPPhysicalConstants.h"
+#include"NPGlobalSystemOfUnits.h"
 ////////////////////////////////////////////////////////////////////////////////
 Analysis::Analysis(){
 }
@@ -37,6 +39,7 @@ void Analysis::Init(){
   SofBeamID = new TSofBeamID();
   SofSci= (TSofSciPhysics*) m_DetectorManager->GetDetector("SofSci");
   SofTrim= (TSofTrimPhysics*) m_DetectorManager->GetDetector("SofTrim");
+  SofTwim= (TSofTwimPhysics*) m_DetectorManager->GetDetector("SofTwim");
   //SofTofW= (TSofTofWPhysics*) m_DetectorManager->GetDetector("SofTofW");
 
   InitParameter();
@@ -67,33 +70,34 @@ void Analysis::BeamAnalysis(){
       Zbeam = SofTrim->GetMaxEnergySection();
       Qmax = DetermineQmax();
       Theta = SofTrim->Theta[0];
+
+      double TofFromS2    = SofSci->CalTof[0];
+      double velocity_mns = SofSci->VelocityMNs[0];
+      double Beta         = SofSci->Beta[0];
+      double XS2          = SofSci->PosMm[0];
+      double XCC          = SofSci->PosMm[1];
+      double LS2;
+
+      LS2 = fLS2_0*(1 + fK_LS2*Theta);
+      velocity_mns = LS2/TofFromS2;
+      Beta = velocity_mns * m/ns / NPUNITS::c_light;
+      double Gamma        = 1./(TMath::Sqrt(1 - TMath::Power(Beta,2)));
+      double Brho = fBrho0 * (1 - XS2/fDS2 - XCC/fDCC);
+      double AoQ  = Brho / (3.10716*Gamma*Beta);
+      double A    = AoQ * Qmax;
+
+      // Filling Beam tree
+      SofBeamID->SetZbeam(Zbeam);
+      SofBeamID->SetQmax(rand.Gaus(Qmax,0.15));
+      SofBeamID->SetAoQ(AoQ);
+      SofBeamID->SetAbeam(A);
+      SofBeamID->SetBeta(Beta);
+      SofBeamID->SetGamma(Gamma);
+      SofBeamID->SetBrho(Brho);
+      SofBeamID->SetXS2(XS2);
+      SofBeamID->SetXCC(XCC);
     }
-
-    double TofFromS2    = SofSci->CalTof[0];
-    double velocity_mns = SofSci->VelocityMNs[0];
-    double Beta         = SofSci->Beta[0];
-    double Gamma        = 1./(TMath::Sqrt(1 - TMath::Power(Beta,2)));
-    double XS2          = SofSci->PosMm[0];
-    double XCC          = SofSci->PosMm[1];
-    double LS2;
-    LS2 = fLS2_0*(1 + fK_LS2*Theta);
-    velocity_mns = LS2/TofFromS2;
-    double Brho = fBrho0 * (1 - XS2/fDS2 - XCC/fDCC);
-    double AoQ  = Brho / (3.10716*Gamma*Beta);
-    double A    = AoQ * Qmax;
-
-    // Filling Beam tree
-    SofBeamID->SetZbeam(Zbeam);
-    SofBeamID->SetQmax(rand.Gaus(Qmax,0.15));
-    SofBeamID->SetAoQ(AoQ);
-    SofBeamID->SetAbeam(A);
-    SofBeamID->SetBeta(Beta);
-    SofBeamID->SetGamma(Gamma);
-    SofBeamID->SetBrho(Brho);
-    SofBeamID->SetXS2(XS2);
-    SofBeamID->SetXCC(XCC);
   }
-
 }
 
 ////////////////////////////////////////////////////////////////////////////////

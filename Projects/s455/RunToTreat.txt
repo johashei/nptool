@@ -1,4 +1,0 @@
-TTreeName
-  RawTree
-RootFileName 
-  /media/pierre/proton/s455/raw/run_raw_0401.root
