@@ -1,0 +1,14 @@
+CalibrationFilePath
+./calibration/SofTrim/SofTrim_Energy.cal
+./calibration/SofTrim/SofTrim_Time.cal
+./calibration/SofTrim/SofTrim_Beta.cal
+./calibration/SofTrim/SofTrim_PairAlign.cal
+./calibration/SofTrim/SofTrim_SectionAlign.cal
+./calibration/SofSci/VFTX_DET1_SIGNAL1.cal
+./calibration/SofSci/VFTX_DET1_SIGNAL2.cal
+./calibration/SofSci/VFTX_DET1_SIGNAL3.cal
+./calibration/SofSci/VFTX_DET2_SIGNAL1.cal
+./calibration/SofSci/VFTX_DET2_SIGNAL2.cal
+./calibration/SofSci/VFTX_DET2_SIGNAL3.cal
+./calibration/SofSci/ClockOffset.cal
+./calibration/SofSci/SofSci_physics.cal

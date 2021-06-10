@@ -1,0 +1,4 @@
+ConfigSofTrim
+SPLINE_PAIR_ANGLE_PATH  ./calibration/SofTrim/spline/EvsA_spline.root
+SPLINE_PAIR_DT_PATH ./calibration/SofTrim/spline/EvsDT_spline.root
+SPLINE_SECTION_DT_PATH ./calibration/SofTrim/spline/spline_section.root
