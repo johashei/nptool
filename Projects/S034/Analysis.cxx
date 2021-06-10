@@ -80,13 +80,13 @@ void Analysis::TreatEvent(){
   double TF13=-1;
   double TF7=-1;
   double TOF_F5F13=-1;
-  double TOF_F5F7=-1;
+  double TOF_F7F13=-1;
   unsigned int sizeP = Plastic->FP.size();
   for(unsigned int i = 0 ; i < sizeP ; i++){
     if(Plastic->FP[i]==5){
       TF5=Plastic->TSlew[i];
     }
-    else if(Plastic->FP[i]==13){
+    else if(Plastic->FP[i]==13&&Plastic->ID[i]==4){// two plastic at F13 taking only one
       TF13=Plastic->TSlew[i];
     }
     else if(Plastic->FP[i]==7){
@@ -94,23 +94,26 @@ void Analysis::TreatEvent(){
     }
   }
 
-  if(TF5>0 && TF13>0){
-    TOF_F5F13=TF13-TF5;
-    double l = 117915-54917;
-    Beta_b=(l/TOF_F5F13)/NPUNITS::c_light;
+  if(TF7>0 && TF13>0){
+    // offset is adjusted to give the expected beta
+    TOF_F7F13=TF13-TF7+6.71626e+02;
+    static double LengthF7F13 = 117915-66409;
+    Beta_b=(LengthF7F13/TOF_F7F13)/NPUNITS::c_light;
+    // to find offset:
+    //Beta_b=TOF_F7F13-LengthF7F13/He8.GetVelocity();
   }
-
-  // Samurai
-  if( FDC2->PosX>-1500 && FDC2->PosX<1000 
+  // Samurai-Minos
+  if( Beta_b>0.5140  && Beta_b < 0.5165 // Correct Beta
+      && Hodo->Charge.size()==1 && Hodo->Charge[0]>28 && Hodo->Charge[0]<42 && Hodo->Time[0]>58 && Hodo->Time[0]<68 // 6He in Hodo->cope
+      && FDC2->PosX>-1500 && FDC2->PosX<1000 
       && FDC2->PosY>-500 && FDC2->PosY<500 
       && FDC0->PosX>-80 && FDC0->PosX<80 
       && FDC0->PosY>-80 && FDC0->PosY<80 // both FDC ok
-      && Minos->Tracks_P0.size()>0     ) {  // p,pn or p,2p
+      && Minos->Tracks_P0.size()==1     ) {  // p,pn only
     // Compute ThetaX and PhiY using Minos vertex and FDC0 X
     // Check if both BDC are reconstructed
     TVector3 BDC1=BDC->GetPos(1);
     TVector3 BDC2=BDC->GetPos(2);
-
     if( BDC1.Z()!=-10000 && BDC2.Z()!=-10000){
       TVector3 Vertex,delta;
       TVector3 P1 = Minos->Tracks_P0[0]+Minos->Tracks_Dir[0];
@@ -156,8 +159,8 @@ void Analysis::TreatEvent(){
         unsigned int first = Nebula->GetFirstHit();
         TVector3 Pfirst = (Nebula->GetPos(first)-Vertex);
         double L = Pfirst.Mag();
-        double TSBT= (Vertex.Z()+7377.56)/He8.GetVelocity();
-        TOF_n = Nebula->TOF[first]-TSBT;
+        double TSBT= (Vertex.Z()+7377.56)/(Beta_b*c_light);
+        TOF_n = Nebula->TOF[first]-TSBT-TF13;
         Beta_n = (L/TOF_n)/NPUNITS::c_light;
         LVn.SetVectM(TVector3(0,0,0),mn);
         LVn.Boost(Beta_n*Pfirst.Unit());
@@ -209,6 +212,7 @@ void Analysis::Clear(){
   Beta_b=-1000;
   X=Y=Z=-1000;
   TOF_n=-1000;
+  Erel=-1000;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -158,21 +158,24 @@ void TNebulaPhysics::BuildPhysicalEvent() {
       }
       // Got everything, do the math
       if(rawTup>0){
+        // cal Q Up and Down
         calQup=aQu[ID]*(rawQup-bQu[ID]);
         calQdown=aQd[ID]*(rawQdown-bQd[ID]);
-        // cal T 
+        
+        // average value of Up and Down
+        calQ=sqrt(calQup*calQdown); 
+
+        // cal T  Up
         calTup=aTu[ID]*rawTup+bTu[ID];
         // slew correction
         calTup -= slwTu[ID]/sqrt(rawQup-bQu[ID]);
 
-        // cal T
+        // cal T Down
         calTdown=aTd[ID]*rawTdown+bTd[ID];
-
         // slew correction
         calTdown -= slwTd[ID]/sqrt(rawQdown-bQd[ID]);
 
-        // average value of Up and Down
-        calQ=sqrt(calQup*calQdown); 
+        
         if(calQ>threshold){
           calT= (calTdown+calTup)*0.5+avgT0[ID]+Cal->GetPedestal("NEBULA_T_ID"+NPL::itoa(ID)); 
           Y=(calTdown-calTup)*DTa[ID]+DTb[ID]+Cal->GetPedestal("NEBULA_Y_ID"+NPL::itoa(ID));
@@ -184,7 +187,7 @@ void TNebulaPhysics::BuildPhysicalEvent() {
           PosX.push_back(PositionX[ID]);
           PosZ.push_back(PositionZ[ID]);
 
-          if(ID<120)
+          if(ID<121)
             IsVeto.push_back(0);
           else
             IsVeto.push_back(1);
@@ -297,9 +300,11 @@ void TNebulaPhysics::WriteSpectra() {
 ///////////////////////////////////////////////////////////////////////////
 void TNebulaPhysics::AddParameterToCalibrationManager() {
   CalibrationManager* Cal = CalibrationManager::getInstance();
+
+  vector<double> standardO={0};
   for (int i = 0; i < m_NumberOfBars; ++i) {
-    Cal->AddParameter("NEBULA_T_ID"+ NPL::itoa(i+1));
-    Cal->AddParameter("NEBULA_Y_ID"+ NPL::itoa(i+1));
+    Cal->AddParameter("NEBULA_T_ID"+ NPL::itoa(i+1),standardO);
+    Cal->AddParameter("NEBULA_Y_ID"+ NPL::itoa(i+1),standardO);
   }
 }
 
