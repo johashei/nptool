@@ -43,15 +43,15 @@ TSofBeamID::~TSofBeamID() {
 
 //////////////////////////////////////////////////////////////////////
 void TSofBeamID::Clear() {
-  Zbeam = -1;
-  Qmax  = -1;
-  AoQ   = -1;
-  Abeam = -1;
-  Beta  = -1;
-  Gamma = -1;
-  Brho  = -1;
-  XS2   = -1000;
-  XCC   = -1000;
+  fBeam_Z     = -1;
+  fBeam_Qmax  = -1;
+  fBeam_AoQ   = -1;
+  fBeam_A     = -1;
+  fBeam_Beta  = -1;
+  fBeam_Gamma = -1;
+  fBeam_Brho  = -1;
+  fBeam_XS2   = -1000;
+  fBeam_XCC   = -1000;
 
 }
 
@@ -62,13 +62,13 @@ void TSofBeamID::Dump() const {
   // This method is very useful for debuging and worth the dev.
   cout << "XXXXXXXXXXXXXXXXXXXXXXXX New Event [TSofBeamID::Dump()] XXXXXXXXXXXXXXXXX" << endl;
 
-  cout << "Zbeam: " << Zbeam << endl;
-  cout << "AoQ: " << AoQ << endl;
-  cout << "Abeam: " << Abeam << endl;
-  cout << "Beta: " << Beta << endl;
-  cout << "Gamma: " << Gamma << endl;
-  cout << "Brho: " << Brho << endl;
-  cout << "XS2: " << XS2 << endl;
-  cout << "XCC: " << XCC << endl;
+  cout << "fBeam_Z: " << fBeam_Z << endl;
+  cout << "fBeam_AoQ: " << fBeam_AoQ << endl;
+  cout << "fBeam_A: " << fBeam_A << endl;
+  cout << "fBeam_Beta: " << fBeam_Beta << endl;
+  cout << "fBeam_Gamma: " << fBeam_Gamma << endl;
+  cout << "fBeam_Brho: " << fBeam_Brho << endl;
+  cout << "fBeam_XS2: " << fBeam_XS2 << endl;
+  cout << "fBeam_XCC: " << fBeam_XCC << endl;
  
 }
