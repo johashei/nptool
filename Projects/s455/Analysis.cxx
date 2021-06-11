@@ -40,7 +40,7 @@ void Analysis::Init(){
   SofSci= (TSofSciPhysics*) m_DetectorManager->GetDetector("SofSci");
   SofTrim= (TSofTrimPhysics*) m_DetectorManager->GetDetector("SofTrim");
   SofTwim= (TSofTwimPhysics*) m_DetectorManager->GetDetector("SofTwim");
-  //SofTofW= (TSofTofWPhysics*) m_DetectorManager->GetDetector("SofTofW");
+  SofTofW= (TSofTofWPhysics*) m_DetectorManager->GetDetector("SofTofW");
 
   InitParameter();
   InitOutputBranch();
@@ -54,7 +54,13 @@ void Analysis::TreatEvent(){
   ReInitValue();
   //cout << "************" << endl;
   BeamAnalysis();
-
+  unsigned int sofsci_size = SofSci->DetectorNbr.size();
+  if(sofsci_size==2){
+    double start_time = SofSci->TimeNs[1];
+    SofTofW->SetTofAlignedValue(36);
+    SofTofW->SetStartTime(start_time);
+    SofTofW->BuildPhysicalEvent();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -165,8 +171,10 @@ void Analysis::End(){
 ////////////////////////////////////////////////////////////////////////////////
 void Analysis::InitParameter(){
   fLS2_0 = 136.3706933;
-  fDS2   = 9500;
-  fDCC   = -30000;
+  //fDS2   = 9500;
+  fDS2   = 10000;
+  //fDCC   = -30000;
+  fDCC   = -40000;
   fK_LS2 = -2.5e-8;
   fBrho0 = 10.8183; // run401 -> 182Hg
 

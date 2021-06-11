@@ -32,6 +32,7 @@ using namespace std;
 #include "TObject.h"
 #include "TH1.h"
 #include "TVector3.h"
+#include "TRandom3.h"
 // NPTool headers
 #include "TSofTofWData.h"
 #include "NPCalibrationManager.h"
@@ -59,10 +60,12 @@ class TSofTofWPhysics : public TObject, public NPL::VDetector {
   // data obtained after BuildPhysicalEvent() and stored in
   // output ROOT file
   public:
-    vector<int>      PlasticNumber;
-    vector<double>   Energy;
-    vector<double>   Time;
-    vector<double>   PosY;
+    vector<int>      PlasticNbr;
+    vector<double>   TimeNs;
+    vector<double>   RawPosY;
+    vector<double>   CalPosY;
+    vector<double>   RawTof;
+    vector<double>   CalTof;
 
   /// A usefull method to bundle all operation to add a detector
   void AddDetector(TVector3 POS); 
@@ -105,6 +108,11 @@ class TSofTofWPhysics : public TObject, public NPL::VDetector {
     void ClearEventPhysics() {Clear();}      
     void ClearEventData()    {m_EventData->Clear();}   
 
+    double CalculateTimeNs(int, int, int, int);
+    double GetStartTime() {return m_StartTime;}
+    double GetTofAlignedValue() {return m_TofAlignedValue;}
+    void SetStartTime(double val) {m_StartTime = val;}
+    void SetTofAlignedValue(double val) {m_TofAlignedValue = val;}
 
   //////////////////////////////////////////////////////////////
   // specific methods to SofTofW array
@@ -135,10 +143,13 @@ class TSofTofWPhysics : public TObject, public NPL::VDetector {
 
   // parameters used in the analysis
   private:
-    // thresholds
+    double m_StartTime; //!
+    double m_TofAlignedValue; //!
+    int m_NumberOfPlastics; //!
     double m_E_RAW_Threshold; //!
     double m_E_Threshold;     //!
 
+    TRandom3 rand; //!
   // number of detectors
   private:
     int m_NumberOfDetectors;  //!

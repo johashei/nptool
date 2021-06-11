@@ -49,6 +49,9 @@ TSofTofWPhysics::TSofTofWPhysics()
      m_EventPhysics(this),
      m_E_RAW_Threshold(0), // adc channels
      m_E_Threshold(0),     // MeV
+     m_NumberOfPlastics(28),
+     m_StartTime(-1),
+     m_TofAlignedValue(0), // ns
      m_NumberOfDetectors(0) {
 }
 
@@ -79,14 +82,88 @@ void TSofTofWPhysics::BuildSimplePhysicalEvent() {
 ///////////////////////////////////////////////////////////////////////////
 void TSofTofWPhysics::BuildPhysicalEvent() {
   // apply thresholds and calibration
+  if(m_StartTime == -1)
+    return;
+
   PreTreat();
 
-  // match energy and time together
-  unsigned int mysizeE = m_PreTreatedData->GetMultiplicity();
-  for (UShort_t e = 0; e < mysizeE ; e++) {
-    PlasticNumber.push_back(m_PreTreatedData->GetPlasticNbr(e));
-    Energy.push_back(m_PreTreatedData->GetEnergy(e));
+  double T1[28][10], T2[28][10];
+  int mult1[28], mult2[28];
+  for(int i=0; i<28; i++){
+    mult1[i] = 0;
+    mult2[i] = 0;
+    for(int j=0; j<10; j++){
+      T1[i][j] = 0;
+      T2[i][j] = 0;
+    }
   }
+
+  unsigned int mysizeE = m_PreTreatedData->GetMultiplicity();
+  for (UShort_t i = 0; i < mysizeE ; i++) {
+    int plastic = m_PreTreatedData->GetPlasticNbr(i);
+    int pmt     = m_PreTreatedData->GetPmt(i);
+    int FT      = m_PreTreatedData->GetFineTime(i);
+    int CT      = m_PreTreatedData->GetCoarseTime(i);
+    
+    double T = CalculateTimeNs(plastic, pmt, FT, CT);
+
+    if(pmt==1){
+      T1[plastic-1][mult1[plastic-1]] = T;
+      mult1[plastic-1]++;
+    }
+    else if(pmt==2){
+      T2[plastic-1][mult2[plastic-1]] = T;    
+      mult2[plastic-1]++;
+    }
+  }
+  
+  static CalibrationManager* Cal = CalibrationManager::getInstance();
+  for(int p=0; p<m_NumberOfPlastics; p++){
+    if(mult1[p]==1 && mult2[p]==1){
+      for(int i=0; i<mult1[p]; i++){
+        for(int j=0; j<mult2[p]; j++){
+          double time_ns = 0.5*(T1[p][i] + T2[p][j]);
+          double rawpos = T1[p][i] - T2[p][j];
+          double calpos = Cal->ApplyCalibration("SofTofW/TOFW"+NPL::itoa(p+1)+"_POSPAR",rawpos);
+          double rawtof = time_ns - m_StartTime;
+          double caltof = Cal->ApplyCalibration("SofTofW/TOFW"+NPL::itoa(p+1)+"_TOFPAR",rawtof) + m_TofAlignedValue;
+    
+          PlasticNbr.push_back(p+1);
+          TimeNs.push_back(time_ns);
+          RawPosY.push_back(rawpos);
+          CalPosY.push_back(calpos);
+          RawTof.push_back(rawtof);
+          CalTof.push_back(caltof);
+        }
+      }
+    }
+  }
+  m_StartTime = -1;
+}
+
+///////////////////////////////////////////////////////////////////////////
+double TSofTofWPhysics::CalculateTimeNs(int det, int pmt, int ft, int ct){
+
+  static CalibrationManager* Cal = CalibrationManager::getInstance();
+  double par = Cal->GetValue("SofTofW/TOFW"+NPL::itoa(det)+"_PMT"+NPL::itoa(pmt)+"_TIME",ft);
+  double r = (double)rand.Rndm()-0.5;
+  double ClockOffset = Cal->GetValue("SofTofW/TOFW"+NPL::itoa(det)+"_PMT"+NPL::itoa(pmt)+"_CLOCKOFFSET",0);
+  double ict_ns = ((double)ct - ClockOffset) * 5.; 
+  double ift_ns;
+
+  if(r<0){
+    double par_prev = Cal->GetValue("SofTofW/TOFW"+NPL::itoa(det)+"_PMT"+NPL::itoa(pmt)+"_TIME",ft-1);
+    ift_ns = par + r*(par - par_prev);
+  }
+
+  else{
+    double par_next = Cal->GetValue("SofSci/TOFW"+NPL::itoa(det)+"_PMT"+NPL::itoa(pmt)+"_TIME",ft+1);
+    ift_ns = par + r*(par_next - par);
+  }
+
+  double time_ns = (double)ict_ns - ift_ns;
+
+  return time_ns;
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -103,13 +180,11 @@ void TSofTofWPhysics::PreTreat() {
   // Energy
   unsigned int mysize = m_EventData->GetMultiplicity();
   for (UShort_t i = 0; i < mysize ; ++i) {
-    if (m_EventData->GetEnergy(i) > m_E_RAW_Threshold) {
-      Double_t Energy = Cal->ApplyCalibration("SofTofW/ENERGY"+NPL::itoa(m_EventData->GetPlasticNbr(i)),m_EventData->GetEnergy(i));
-      if (Energy > m_E_Threshold) {
-        m_PreTreatedData->SetPlasticNbr(m_EventData->GetPlasticNbr(i));
-        m_PreTreatedData->SetEnergy(Energy);
-      }
-    }
+    m_PreTreatedData->SetPlasticNbr(m_EventData->GetPlasticNbr(i));
+    m_PreTreatedData->SetPmt(m_EventData->GetPmt(i));
+    m_PreTreatedData->SetCoarseTime(m_EventData->GetCoarseTime(i));
+    m_PreTreatedData->SetFineTime(m_EventData->GetFineTime(i));
+    m_PreTreatedData->SetWhichFlag(m_EventData->GetWhichFlag(i));
   }
 }
 
@@ -181,10 +256,12 @@ void TSofTofWPhysics::ReadAnalysisConfig() {
 
 ///////////////////////////////////////////////////////////////////////////
 void TSofTofWPhysics::Clear() {
-  PlasticNumber.clear();
-  Energy.clear();
-  Time.clear();
-  PosY.clear();
+  PlasticNbr.clear();
+  TimeNs.clear();
+  RawPosY.clear();
+  CalPosY.clear();
+  RawTof.clear();
+  CalTof.clear();
 }
 
 
@@ -225,9 +302,14 @@ void TSofTofWPhysics::ReadConfiguration(NPL::InputParser parser) {
 ///////////////////////////////////////////////////////////////////////////
 void TSofTofWPhysics::AddParameterToCalibrationManager() {
   CalibrationManager* Cal = CalibrationManager::getInstance();
-  for (int i = 0; i < m_NumberOfDetectors; ++i) {
-    Cal->AddParameter("SofTofW", "D"+ NPL::itoa(i+1)+"_ENERGY","SofTofW_D"+ NPL::itoa(i+1)+"_ENERGY");
-    Cal->AddParameter("SofTofW", "D"+ NPL::itoa(i+1)+"_TIME","SofTofW_D"+ NPL::itoa(i+1)+"_TIME");
+  for (int i = 0; i < m_NumberOfPlastics; ++i) {
+    Cal->AddParameter("SofTofW", "TOFW"+ NPL::itoa(i+1)+"_POSPAR","SofTofW_TOFW"+ NPL::itoa(i+1)+"_POSPAR");
+    Cal->AddParameter("SofTofW", "TOFW"+ NPL::itoa(i+1)+"_TOFPAR","SofTofW_TOFW"+ NPL::itoa(i+1)+"_TOFPAR");
+    
+    for(int j = 0; j < 2; j++){
+      Cal->AddParameter("SofTofW", "TOFW"+ NPL::itoa(i+1)+"_PMT"+NPL::itoa(j+1)+"_TIME","SofTofW_TOFW"+ NPL::itoa(i+1)+"_PMT"+NPL::itoa(j+1)+"_TIME");
+      Cal->AddParameter("SofTofW", "TOFW"+ NPL::itoa(i+1)+"_PMT"+NPL::itoa(j+1)+"_CLOCKOFFSET","SofTofW_TOFW"+ NPL::itoa(i+1)+"_PMT"+NPL::itoa(j+1)+"_CLOCKOFFSET");
+    }
   }
 }
 

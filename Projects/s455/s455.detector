@@ -20,10 +20,9 @@ SofTrim
 SofTwim
  POS= 0 0 2 m
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-%SofTofW
-% R= 8 m
-% THETA= -9.5 deg
-% PHI= 0 deg
+SofTofW
+ R= 8 m
+ THETA= -9.5 deg
+ PHI= 0 deg
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
