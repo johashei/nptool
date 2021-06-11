@@ -1,5 +1,5 @@
-#ifndef TSofTofWPHYSICS_H
-#define TSofTofWPHYSICS_H
+#ifndef TSofTwimPHYSICS_H
+#define TSofTwimPHYSICS_H
 /*****************************************************************************
  * Copyright (C) 2009-2020   this file is part of the NPTool Project       *
  *                                                                           *
@@ -14,7 +14,7 @@
  * Last update    :                                                          *
  *---------------------------------------------------------------------------*
  * Decription:                                                               *
- *  This class hold TofTofW Treated data                                *
+ *  This class hold SofTwim Treated data                                *
  *                                                                           *
  *---------------------------------------------------------------------------*
  * Comment:                                                                  *
@@ -32,21 +32,21 @@ using namespace std;
 #include "TObject.h"
 #include "TH1.h"
 #include "TVector3.h"
-#include "TRandom3.h"
+#include "TSpline.h"
 // NPTool headers
-#include "TSofTofWData.h"
+#include "TSofTwimData.h"
 #include "NPCalibrationManager.h"
 #include "NPVDetector.h"
 #include "NPInputParser.h"
 
 
 
-class TSofTofWPhysics : public TObject, public NPL::VDetector {
+class TSofTwimPhysics : public TObject, public NPL::VDetector {
   //////////////////////////////////////////////////////////////
   // constructor and destructor
   public:
-    TSofTofWPhysics();
-    ~TSofTofWPhysics() {};
+    TSofTwimPhysics();
+    ~TSofTwimPhysics() {};
 
 
   //////////////////////////////////////////////////////////////
@@ -60,12 +60,9 @@ class TSofTofWPhysics : public TObject, public NPL::VDetector {
   // data obtained after BuildPhysicalEvent() and stored in
   // output ROOT file
   public:
-    vector<int>      PlasticNbr;
-    vector<double>   TimeNs;
-    vector<double>   RawPosY;
-    vector<double>   CalPosY;
-    vector<double>   RawTof;
-    vector<double>   CalTof;
+    vector<int>      SectionNbr;
+    vector<double>   EnergySection;
+    vector<double>   DriftTime;
 
   /// A usefull method to bundle all operation to add a detector
   void AddDetector(TVector3 POS); 
@@ -108,14 +105,9 @@ class TSofTofWPhysics : public TObject, public NPL::VDetector {
     void ClearEventPhysics() {Clear();}      
     void ClearEventData()    {m_EventData->Clear();}   
 
-    double CalculateTimeNs(int, int, int, int);
-    double GetStartTime() {return m_StartTime;}
-    double GetTofAlignedValue() {return m_TofAlignedValue;}
-    void SetStartTime(double val) {m_StartTime = val;}
-    void SetTofAlignedValue(double val) {m_TofAlignedValue = val;}
 
   //////////////////////////////////////////////////////////////
-  // specific methods to SofTofW array
+  // specific methods to SofTwim array
   public:
     // remove bad channels, calibrate the data and apply thresholds
     void PreTreat();
@@ -126,38 +118,47 @@ class TSofTofWPhysics : public TObject, public NPL::VDetector {
     // read the user configuration file. If no file is found, load standard one
     void ReadAnalysisConfig();
 
-    // give and external TSofTofWData object to TSofTofWPhysics. 
+    // give and external TSofTwimData object to TSofTwimPhysics. 
     // needed for online analysis for example
-    void SetRawDataPointer(TSofTofWData* rawDataPointer) {m_EventData = rawDataPointer;}
-    
+    void SetRawDataPointer(TSofTwimData* rawDataPointer) {m_EventData = rawDataPointer;}
+   
+    void LoadSplineBeta();
+
+    void SetBeta(double beta) {m_Beta = beta;}
+    double GetBeta() {return m_Beta;}
+
+
   // objects are not written in the TTree
   private:
-    TSofTofWData*         m_EventData;        //!
-    TSofTofWData*         m_PreTreatedData;   //!
-    TSofTofWPhysics*      m_EventPhysics;     //!
+    TSofTwimData*         m_EventData;        //!
+    TSofTwimData*         m_PreTreatedData;   //!
+    TSofTwimPhysics*      m_EventPhysics;     //!
 
   // getters for raw and pre-treated data object
   public:
-    TSofTofWData* GetRawData()        const {return m_EventData;}
-    TSofTofWData* GetPreTreatedData() const {return m_PreTreatedData;}
+    TSofTwimData* GetRawData()        const {return m_EventData;}
+    TSofTwimData* GetPreTreatedData() const {return m_PreTreatedData;}
 
   // parameters used in the analysis
   private:
-    double m_StartTime; //!
-    double m_TofAlignedValue; //!
-    int m_NumberOfPlastics; //!
-    double m_E_RAW_Threshold; //!
     double m_E_Threshold;     //!
+    double m_Beta;     //!
+    double m_BetaNorm;     //!
+    string m_SPLINE_SECTION_BETA_PATH;     //!
 
-    TRandom3 rand; //!
+  private:
+    TSpline3* fcorr_beta_sec[4]; //!
+
   // number of detectors
   private:
     int m_NumberOfDetectors;  //!
+    int m_NumberOfSections;  //!
+    int m_NumberOfAnodesPerSection;  //!
 
   // Static constructor to be passed to the Detector Factory
   public:
     static NPL::VDetector* Construct();
 
-    ClassDef(TSofTofWPhysics,1)  // SofTofWPhysics structure
+    ClassDef(TSofTwimPhysics,1)  // SofTwimPhysics structure
 };
 #endif

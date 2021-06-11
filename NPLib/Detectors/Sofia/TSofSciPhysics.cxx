@@ -235,7 +235,7 @@ double TSofSciPhysics::CalculateTimeNs(int det, int pmt, int ft, int ct){
   double par = Cal->GetValue("SofSci/DET"+NPL::itoa(det)+"_SIGNAL"+NPL::itoa(pmt)+"_TIME",ft);
   double r = (double)rand.Rndm()-0.5;
   double ClockOffset = Cal->GetValue("SofSci/DET"+NPL::itoa(det)+"_SIGNAL"+NPL::itoa(pmt)+"_CLOCKOFFSET",0);
-  double ict_ns = ((double)ct - ClockOffset) * 5.; // to do... take care of the clock offset
+  double ict_ns = ((double)ct - ClockOffset) * 5.; 
   double ift_ns;
 
   if(r<0){

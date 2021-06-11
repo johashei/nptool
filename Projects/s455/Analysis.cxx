@@ -25,6 +25,8 @@ using namespace std;
 #include"Analysis.h"
 #include"NPAnalysisFactory.h"
 #include"NPDetectorManager.h"
+#include"NPPhysicalConstants.h"
+#include"NPGlobalSystemOfUnits.h"
 ////////////////////////////////////////////////////////////////////////////////
 Analysis::Analysis(){
 }
@@ -37,7 +39,8 @@ void Analysis::Init(){
   SofBeamID = new TSofBeamID();
   SofSci= (TSofSciPhysics*) m_DetectorManager->GetDetector("SofSci");
   SofTrim= (TSofTrimPhysics*) m_DetectorManager->GetDetector("SofTrim");
-  //SofTofW= (TSofTofWPhysics*) m_DetectorManager->GetDetector("SofTofW");
+  SofTwim= (TSofTwimPhysics*) m_DetectorManager->GetDetector("SofTwim");
+  SofTofW= (TSofTofWPhysics*) m_DetectorManager->GetDetector("SofTofW");
 
   InitParameter();
   InitOutputBranch();
@@ -51,7 +54,13 @@ void Analysis::TreatEvent(){
   ReInitValue();
   //cout << "************" << endl;
   BeamAnalysis();
-
+  unsigned int sofsci_size = SofSci->DetectorNbr.size();
+  if(sofsci_size==2){
+    double start_time = SofSci->TimeNs[1];
+    SofTofW->SetTofAlignedValue(36);
+    SofTofW->SetStartTime(start_time);
+    SofTofW->BuildPhysicalEvent();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -67,33 +76,34 @@ void Analysis::BeamAnalysis(){
       Zbeam = SofTrim->GetMaxEnergySection();
       Qmax = DetermineQmax();
       Theta = SofTrim->Theta[0];
+
+      double TofFromS2    = SofSci->CalTof[0];
+      double velocity_mns = SofSci->VelocityMNs[0];
+      double Beta         = SofSci->Beta[0];
+      double XS2          = SofSci->PosMm[0];
+      double XCC          = SofSci->PosMm[1];
+      double LS2;
+
+      LS2 = fLS2_0*(1 + fK_LS2*Theta);
+      velocity_mns = LS2/TofFromS2;
+      Beta = velocity_mns * m/ns / NPUNITS::c_light;
+      double Gamma        = 1./(TMath::Sqrt(1 - TMath::Power(Beta,2)));
+      double Brho = fBrho0 * (1 - XS2/fDS2 - XCC/fDCC);
+      double AoQ  = Brho / (3.10716*Gamma*Beta);
+      double A    = AoQ * Qmax;
+
+      // Filling Beam tree
+      SofBeamID->SetZbeam(Zbeam);
+      SofBeamID->SetQmax(rand.Gaus(Qmax,0.15));
+      SofBeamID->SetAoQ(AoQ);
+      SofBeamID->SetAbeam(A);
+      SofBeamID->SetBeta(Beta);
+      SofBeamID->SetGamma(Gamma);
+      SofBeamID->SetBrho(Brho);
+      SofBeamID->SetXS2(XS2);
+      SofBeamID->SetXCC(XCC);
     }
-
-    double TofFromS2    = SofSci->CalTof[0];
-    double velocity_mns = SofSci->VelocityMNs[0];
-    double Beta         = SofSci->Beta[0];
-    double Gamma        = 1./(TMath::Sqrt(1 - TMath::Power(Beta,2)));
-    double XS2          = SofSci->PosMm[0];
-    double XCC          = SofSci->PosMm[1];
-    double LS2;
-    LS2 = fLS2_0*(1 + fK_LS2*Theta);
-    velocity_mns = LS2/TofFromS2;
-    double Brho = fBrho0 * (1 - XS2/fDS2 - XCC/fDCC);
-    double AoQ  = Brho / (3.10716*Gamma*Beta);
-    double A    = AoQ * Qmax;
-
-    // Filling Beam tree
-    SofBeamID->SetZbeam(Zbeam);
-    SofBeamID->SetQmax(rand.Gaus(Qmax,0.15));
-    SofBeamID->SetAoQ(AoQ);
-    SofBeamID->SetAbeam(A);
-    SofBeamID->SetBeta(Beta);
-    SofBeamID->SetGamma(Gamma);
-    SofBeamID->SetBrho(Brho);
-    SofBeamID->SetXS2(XS2);
-    SofBeamID->SetXCC(XCC);
   }
-
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -161,8 +171,10 @@ void Analysis::End(){
 ////////////////////////////////////////////////////////////////////////////////
 void Analysis::InitParameter(){
   fLS2_0 = 136.3706933;
-  fDS2   = 9500;
-  fDCC   = -30000;
+  //fDS2   = 9500;
+  fDS2   = 10000;
+  //fDCC   = -30000;
+  fDCC   = -40000;
   fK_LS2 = -2.5e-8;
   fBrho0 = 10.8183; // run401 -> 182Hg
 

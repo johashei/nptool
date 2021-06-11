@@ -12,7 +12,7 @@ endif()
 add_library(NPSTACTIC SHARED  TACTIC.cc TACTICScorer.cc)
 
 if(WITH_GARFIELD)
-target_link_libraries(NPSTACTIC NPSCore ${ROOT_LIBRARIES} ${Geant4_LIBRARIES} ${NPLib_LIBRARIES} -lNPTACTIC /Users/warren/Garfield/install/lib/libGarfield.0.3.0.dylib /Users/warren/Garfield/install/lib/libGarfield.dylib) 
+target_link_libraries(NPSTACTIC NPSCore ${ROOT_LIBRARIES} ${Geant4_LIBRARIES} ${NPLib_LIBRARIES} -lNPTACTIC /Users/warren/garfieldpp/install/lib/libGarfield.0.3.0.dylib /Users/warren/garfieldpp/install/lib/libGarfield.dylib) 
 else()
 target_link_libraries(NPSTACTIC NPSCore ${ROOT_LIBRARIES} ${Geant4_LIBRARIES} ${NPLib_LIBRARIES} -lNPTACTIC)
 endif()
