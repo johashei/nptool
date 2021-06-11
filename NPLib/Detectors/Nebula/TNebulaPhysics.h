@@ -193,6 +193,9 @@ class TNebulaPhysics : public TObject, public NPL::VDetector {
     double m_Q_Threshold;     //!
     double m_V_Threshold;     //!
 
+  public: 
+    void SetQThreshold(double t) {m_Q_Threshold=t;};
+    void SetVThreshold(double t) {m_V_Threshold=t;};
     // number of detectors
   private:
     int m_NumberOfBars;  //!
@@ -237,7 +240,7 @@ class TNebulaPhysics : public TObject, public NPL::VDetector {
     // spectra getter
   public:
     map<string, TH1*>   GetSpectra(); 
-
+  
     // Static constructor to be passed to the Detector Factory
   public:
     static NPL::VDetector* Construct();
