@@ -107,6 +107,7 @@ void NPOptionManager::ReadTheInputArgument(int argc, char** argv){
   fRunToReadFileName          = fDefaultRunToReadFileName;
   fCalibrationFileName        = fDefaultCalibrationFileName;
   fG4MacroPath                = fDefaultG4MacroPath;
+  fIsSplit = false;
   fLastSimFile = false; 
   fLastPhyFile = false;
   fLastResFile = false;
