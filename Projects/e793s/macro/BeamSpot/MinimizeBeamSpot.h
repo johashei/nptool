@@ -212,12 +212,17 @@ void InitiliseCanvas(double FitResultMatrix[7][5]){
   h1->GetYaxis()->SetTitle("Counts");
   
   //Histogram draw - Individual
-  DrawOneHistogram(h1, 1, 632, 3244, FitResultMatrix[1]);
-  DrawOneHistogram(h2, 2, 800, 3244, FitResultMatrix[2]);
-  DrawOneHistogram(h3, 3, 416, 3344, FitResultMatrix[3]);
+  //DrawOneHistogram(h1, 1, 632, 3244, FitResultMatrix[1]);
+  DrawOneHistogram(h1, 1, 632, 0, FitResultMatrix[1]);
+  //DrawOneHistogram(h2, 2, 800, 3244, FitResultMatrix[2]);
+  DrawOneHistogram(h2, 2, 800, 0, FitResultMatrix[2]);
+  //DrawOneHistogram(h3, 3, 416, 3344, FitResultMatrix[3]);
+  DrawOneHistogram(h3, 3, 416, 0, FitResultMatrix[3]);
   DrawOneHistogram(h4, 4, 840, 3444, FitResultMatrix[4]);
-  DrawOneHistogram(h5, 5, 600, 3544, FitResultMatrix[5]);
-  DrawOneHistogram(h7, 6, 880, 3644, FitResultMatrix[6]);
+  //DrawOneHistogram(h5, 5, 600, 3544, FitResultMatrix[5]);
+  DrawOneHistogram(h5, 5, 600, 0, FitResultMatrix[5]);
+  //DrawOneHistogram(h7, 6, 880, 3644, FitResultMatrix[6]);
+  DrawOneHistogram(h7, 6, 880, 0, FitResultMatrix[6]);
 
   canv->Update();
 

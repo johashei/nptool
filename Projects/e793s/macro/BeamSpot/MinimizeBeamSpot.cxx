@@ -41,18 +41,18 @@ double devE(const double * parameter) {
     double Energy = energy[i];
 
     //Energy loss in Al
-    Energy = Al.EvaluateInitialEnergy(
-      Energy,           //energy after Al 
-      0.4 * micrometer, //thickness of Al
-      ThetaMugast       //angle impinging on MUGAST
-    );
+//    Energy = Al.EvaluateInitialEnergy(
+//      Energy,           //energy after Al 
+//      0.4 * micrometer, //thickness of Al
+//      ThetaMugast       //angle impinging on MUGAST
+//    );
 
     //Energy loss in target
-    Energy = CD2.EvaluateInitialEnergy(
-      Energy,                          //energy after leaving target
-      0.5 * parameter[3] * micrometer, //pass through half target
-      ThetaTarget                      //angle leaving target
-    );
+//    Energy = CD2.EvaluateInitialEnergy(
+//      Energy,                          //energy after leaving target
+//      0.5 * parameter[3] * micrometer, //pass through half target
+//      ThetaTarget                      //angle leaving target
+//    );
 
     //Final value of Ex
     double Ex = reaction.ReconstructRelativistic(Energy, ThetaTarget);
@@ -71,7 +71,7 @@ double devE(const double * parameter) {
   }
 
   //Adapt the metric as needed
-  double multiplier = 0.07; //0.1;
+  double multiplier = 0.10; //0.07;
   double metric = sqrt(pow(FitResultMatrix[mgSelect][0] - refE, 2) 
 		     + pow(multiplier * FitResultMatrix[mgSelect][2], 2));
 
@@ -125,18 +125,18 @@ void MinimizeBeamSpot() {
   auto start = high_resolution_clock::now();
 
   //TESTING: Grid method of avoiding local minima
-  for (int x = 0; x < 2; x++) {
-    for (int y = 0; y < 2; y++) {
-      for (int z = 0; z < 2; z++) {
-        for (int t = 0; t < 5; t++) {
+//  for (int x = 0; x < 3; x++) { //7; x++) {
+//    for (int y = 0; y < 3; y++){ //7; y++) {
+      for (int z = 0; z < 3; z++){ //7; z++) {
+        for (int t = 0; t < 9; t++) {
 
           //Start with beam (0,0,0) and 4.76um 0.5mg/c2 target
           //double parameter[4] = {0.0, 0.0, 0.0, 4.76};   
           double parameter[4] = {
-            9.0 - (9.0 * x),
-            9.0 - (9.0 * y),
-            9.0 - (9.0 * z),
-            (1.5 - (0.25 * t)) * 4.75
+            0.0, //9.0 - (x * 9.0), //3.0),
+            0.0, //9.0 - (y * 9.0), //3.0),
+            9.0 - (z * 9.0), //3.0),
+	    (1.5 - (0.125 * t)) * 4.75
           };
 
           //Don't draw iterations of minimizer
@@ -160,8 +160,11 @@ void MinimizeBeamSpot() {
           minim -> SetFunction(func);
 
           //Assign variable limits
-          minim -> SetLimitedVariable(0, "X", parameter[0], 0.01, -10, 10);
-          minim -> SetLimitedVariable(1, "Y", parameter[1], 0.01, -10, 10);
+          minim -> SetLimitedVariable(0, "X", parameter[0], 0.01, -0.5, 0.5);
+          minim -> SetLimitedVariable(1, "Y", parameter[1], 0.01, -0.5, 0.5);
+          //minim -> SetLimitedVariable(2, "Z", parameter[2], 0.01, -0.5, 0.5);
+          //minim -> SetLimitedVariable(0, "X", parameter[0], 0.01, -10, 10);
+          //minim -> SetLimitedVariable(1, "Y", parameter[1], 0.01, -10, 10);
           minim -> SetLimitedVariable(2, "Z", parameter[2], 0.01, -5, 5);
           minim -> SetLimitedVariable(3, "T", parameter[3], 0.01, 4.76 * 0.5, 4.76 * 1.5);
 
@@ -194,8 +197,8 @@ void MinimizeBeamSpot() {
           cout << "==================================================" << endl;
         }
       }
-    }
-  }
+//    }
+//  }
 
   //Stop timer
   auto stop = high_resolution_clock::now();
