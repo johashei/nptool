@@ -48,27 +48,27 @@ execute_process(COMMAND ${CMAKE_CXX_COMPILER} -dumpversion
   endif()
 endif()
 
-# Adjust the compiler language flag
-set(NOCPPFLAGS true)
-if(${CMAKE_CXX_FLAGS} MATCHES ".*std=.*11")
-  set(NOCPPFLAGS false)
-elseif(${CMAKE_CXX_FLAGS} MATCHES ".*std=.*0x")
-  set(NOCPPFLAGS false) 
-endif()
-
-include(CheckCXXCompilerFlag)
-
-if(NOCPPFLAGS)
-  CHECK_CXX_COMPILER_FLAG("-std=c++11" COMPILER_SUPPORTS_CXX11)
-  if(COMPILER_SUPPORTS_CXX11 AND NOT nocpp11)
-	    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-  else()
-    CHECK_CXX_COMPILER_FLAG("-std=c++0x" COMPILER_SUPPORTS_CXX0X)
-  endif()
-
-  if(COMPILER_SUPPORTS_CXX0X AND NOT nocpp11)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
-  endif()
-endif()
-
-
+## Adjust the compiler language flag
+#set(NOCPPFLAGS true)
+#if(${CMAKE_CXX_FLAGS} MATCHES ".*std=.*11")
+#  set(NOCPPFLAGS false)
+#elseif(${CMAKE_CXX_FLAGS} MATCHES ".*std=.*0x")
+#  set(NOCPPFLAGS false) 
+#endif()
+#
+#include(CheckCXXCompilerFlag)
+#
+#if(NOCPPFLAGS)
+#  CHECK_CXX_COMPILER_FLAG("-std=c++11" COMPILER_SUPPORTS_CXX11)
+#  if(COMPILER_SUPPORTS_CXX11 AND NOT nocpp11)
+#	    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+#  else()
+#    CHECK_CXX_COMPILER_FLAG("-std=c++0x" COMPILER_SUPPORTS_CXX0X)
+#  endif()
+#
+#  if(COMPILER_SUPPORTS_CXX0X AND NOT nocpp11)
+#    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
+#  endif()
+#endif()
+#
+#
