@@ -102,7 +102,7 @@ void GateOnGamma(double gamma, double width){
   string gating = "abs(T_MUGAST_VAMOS-2777)<600 && abs(AddBack_EDC-" 
       + to_string(gamma)
       + ")<"
-      + to_string(sigma);
+      + to_string(width);
 
   TCanvas *cEx_Gate = new TCanvas("cEx_Gate","cEx_Gate",1000,1000);
   chain->Draw("Ex>>ExGate(220,-1,10)",gating.c_str(),"colz");
@@ -116,7 +116,7 @@ void GateOnParticle(double particle, double width){
   string gating = "abs(T_MUGAST_VAMOS-2777)<600 && abs(Ex-" 
       + to_string(particle)
       + ")<"
-      + to_string(sigma);
+      + to_string(width);
 
   TCanvas *cEg_Gate = new TCanvas("cEg_Gate","cEg_Gate",1000,1000);
   chain->Draw("AddBack_EDC>>EgGate(10000,0,10)",gating.c_str(),"colz");
@@ -163,6 +163,34 @@ void CompareExsAt4MeV(){
   cout << " 4.3 - Violet" << endl;
 }
 
+
+void CompareSimExp(){
+
+  TCanvas *cSimExp = new TCanvas("cSimExp","cSimExp",1000,1000);
+  gStyle->SetOptStat(0);
+  
+  chain->Draw("Ex>>hexp(70,-1,6)","abs(T_MUGAST_VAMOS-2777)<600","");
+  TH1F* hexp = (TH1F*) gDirectory->Get("hexp");
+  hexp->SetTitle("Comparing Simulation to Experiment");
+  hexp->GetXaxis()->SetTitle("Ex [MeV]");
+  hexp->GetYaxis()->SetTitle("Counts / 0.1 MeV");
+  hexp->SetLineColor(kRed);
+
+  TFile* simfile = new TFile("../../../Outputs/Analysis/SimTest_18June.root", "READ");
+  TTree* simtree = (TTree*) simfile->FindObjectAny("PhysicsTree");
+
+  simtree->Draw("Ex>>hsim(70,-1,6)","","same");
+  TH1F* hsim = (TH1F*) gDirectory->Get("hsim");
+  hsim->SetLineColor(kBlue);
+
+  auto legend = new TLegend(0.7,0.8,0.9,0.9);
+  legend->AddEntry(hexp,"Experiment","l");
+  legend->AddEntry(hsim,"Simulation","l");
+  legend->Draw();
+}
+
+
+
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
@@ -185,13 +213,18 @@ void DrawPlots(){
 
 
 
+  cout << "==========================================" << endl;
   cout << " AVAILABLE FUNCTIONS:: " << endl;
-  cout << "\t\t- Draw_2DParticleGamma() "<< endl;
-  cout << "\t\t- Draw_1DGamma() "<< endl;
-  cout << "\t\t- Draw_1DParticle() "<< endl;
-  cout << "\t\t- GateOnGamma(gamma, width) "<< endl;
-  cout << "\t\t- GateOnParticle(particle, width) "<< endl;
-  cout << "\t\t- CompareExsAt4MeV() "<< endl;
+  cout << "\t- Draw_2DParticleGamma() "<< endl;
+  cout << "\t- Draw_1DGamma() "<< endl;
+  cout << "\t- Draw_1DParticle() "<< endl;
+  cout << ""<< endl;
+  cout << "\t- GateOnGamma(gamma, width) "<< endl;
+  cout << "\t- GateOnParticle(particle, width) "<< endl;
+  cout << ""<< endl;
+  cout << "\t- CompareExsAt4MeV() "<< endl;
+  cout << "\t- CompareSimExp() "<< endl;
+  cout << "==========================================" << endl;
 
 
 
