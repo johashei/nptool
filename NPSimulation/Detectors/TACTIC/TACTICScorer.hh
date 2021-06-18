@@ -21,7 +21,8 @@ namespace TACTICScorer {
 	       G4double p0 = 0,
 	       G4double p1 = 0,
 	       G4double p2 = 0,
-	       G4double p3 = 0
+	       G4double p3 = 0,
+	       string Shape = "default"
 	       );
     
     ~Gas_Scorer();
@@ -47,6 +48,7 @@ namespace TACTICScorer {
     G4double m_p1;
     G4double m_p2;
     G4double m_p3;
+    string m_Shape; 
     ofstream file;
 
     //    G4double excess;

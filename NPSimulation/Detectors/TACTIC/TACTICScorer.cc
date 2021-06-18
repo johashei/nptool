@@ -13,7 +13,7 @@ double excess;
 
 using namespace TACTICScorer;
 
-Gas_Scorer::Gas_Scorer(G4String name,G4int Level,G4double ScorerLength,G4int NumberOfSegments, G4int depth, G4double p0, G4double p1, G4double p2, G4double p3) //what do level and depth do?       
+Gas_Scorer::Gas_Scorer(G4String name,G4int Level,G4double ScorerLength,G4int NumberOfSegments, G4int depth, G4double p0, G4double p1, G4double p2, G4double p3,string Shape) //what do level and depth do?       
 :G4VPrimitiveScorer(name, depth),HCID(-1){
   m_ScorerLength = ScorerLength;
   m_NumberOfSegments = NumberOfSegments;
@@ -26,6 +26,7 @@ Gas_Scorer::Gas_Scorer(G4String name,G4int Level,G4double ScorerLength,G4int Num
   m_p1 = p1;
   m_p2 = p2;
   m_p3 = p3;
+  m_Shape = Shape;
 }
 
 Gas_Scorer::~Gas_Scorer(){}
@@ -35,7 +36,7 @@ G4bool Gas_Scorer::ProcessHits(G4Step* aStep, G4TouchableHistory*){
   G4double* Infos = new G4double[15];
   //bool first_step = true;
   m_Position  = aStep->GetPreStepPoint()->GetPosition();
-
+  
   Infos[0] = G4RunManager::GetRunManager()->GetCurrentEvent()->GetEventID();
 
   Infos[1] = aStep->GetTrack()->GetTrackID();
@@ -50,7 +51,8 @@ G4bool Gas_Scorer::ProcessHits(G4Step* aStep, G4TouchableHistory*){
   Infos[6] = m_SegmentNumber;
   //prepad = Infos[6]; 
   Infos[7] = m_Position.z();
-  Infos[8] = pow(pow(m_Position.x(),2) + pow(m_Position.y(),2),0.5); //R
+  if(m_Shape == "Cylindrical") Infos[8] = pow(pow(m_Position.x(),2) + pow(m_Position.y(),2),0.5); //R
+  if(m_Shape == "Long_Chamber") Infos[8] = m_Position.y();
   Infos[9] = aStep->GetTrack()->GetVertexPosition()[2];
   Infos[10] = aStep->GetTrack()->GetVertexKineticEnergy();
   G4ThreeVector p_vec = aStep->GetTrack()->GetVertexMomentumDirection();
@@ -82,7 +84,7 @@ G4bool Gas_Scorer::ProcessHits(G4Step* aStep, G4TouchableHistory*){
     
 #ifdef USE_Garfield
 
-  Infos[14] = GARFDRIFT(((aStep->GetTotalEnergyDeposit() - aStep->GetNonIonizingEnergyDeposit())/eV+excess), Infos[3], m_Position/cm, delta_Position/cm, Infos[8]/cm, Infos[6], Infos[2], m_ScorerLength/cm, m_SegmentLength/cm, Infos[0], (aStep->GetTotalEnergyDeposit() - aStep->GetNonIonizingEnergyDeposit())/eV)*eV;
+  Infos[14] = GARFDRIFT(((aStep->GetTotalEnergyDeposit() - aStep->GetNonIonizingEnergyDeposit())/eV+excess), Infos[3], m_Position/cm, delta_Position/cm, Infos[8]/cm, Infos[6], Infos[2], m_ScorerLength/cm, m_SegmentLength/cm, Infos[0], (aStep->GetTotalEnergyDeposit() - aStep->GetNonIonizingEnergyDeposit())/eV, m_Shape)*eV;
   /*  
   file.open("excess_test.dat",std::ios::app);
   file << Infos[6] << "\t"  << "\t" <<  aStep->IsFirstStepInVolume() << "\t" << excess  << "\t" << Infos[14]/eV << "\t" << (int)((((aStep->GetTotalEnergyDeposit() - aStep->GetNonIonizingEnergyDeposit())/eV+excess) / 41.1)*0.01) << "\t" <<  Infos[8] <<  endl;
