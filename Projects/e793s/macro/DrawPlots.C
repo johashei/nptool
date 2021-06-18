@@ -157,10 +157,11 @@ void CompareExsAt4MeV(){
     gate4p3->SetLineColor(kViolet);
     gate4p3->GetXaxis()->SetRangeUser(0.,5.);
 
-  cout << " 3.0 - Red" << endl;
-  cout << " 3.5 - Blue" << endl;
-  cout << " 3.9 - Green" << endl;
-  cout << " 4.3 - Violet" << endl;
+  cout << " 3.0 - Red\n"
+       << " 3.5 - Blue\n"
+       << " 3.9 - Green\n"
+       << " 4.3 - Violet"
+       << endl;
 }
 
 
@@ -176,20 +177,18 @@ void CompareSimExp(){
   hexp->GetYaxis()->SetTitle("Counts / 0.1 MeV");
   hexp->SetLineColor(kRed);
 
-  TFile* simfile = new TFile("../../../Outputs/Analysis/SimTest_18June.root", "READ");
+  TFile* simfile = new TFile("../../../Outputs/Analysis/SimTest_18June_30mill.root", "READ");
   TTree* simtree = (TTree*) simfile->FindObjectAny("PhysicsTree");
 
-  simtree->Draw("Ex>>hsim(70,-1,6)","","same");
+  simtree->Draw("Ex>>hsim(70,-1,6)","Mugast.TelescopeNumber>0 && Mugast.TelescopeNumber<8","same");
   TH1F* hsim = (TH1F*) gDirectory->Get("hsim");
   hsim->SetLineColor(kBlue);
-
+  
   auto legend = new TLegend(0.7,0.8,0.9,0.9);
   legend->AddEntry(hexp,"Experiment","l");
   legend->AddEntry(hsim,"Simulation","l");
   legend->Draw();
 }
-
-
 
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
