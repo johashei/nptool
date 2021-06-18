@@ -50,12 +50,16 @@ void process1bar(int b){
   f->SetParameter(2,50);
   h1->Fit(f,"R");
   
-    // V = R/(TOF-off) -> (TOF-off)/R = 1/V 
-  // off = TOF-R/V
-  double offset=f->GetParameter(1)-R/c_light ;
+    // Vbad = R/(TOF) -> TOF/R = 1/Vbad
+    // c= R/(TOF+X)   -> (TOF+X)/R = 1/c -> TOF/R+X/R=1/c
+    // 1/Vbad +X/R = 1/c
+    // X=R*(1/c-1/Vbad)
+    
+  double offset=R*(1/c_light-1/f->GetParameter(1)) ;
+
   cout <<f->GetParameter(1) << " " <<  offset << " " << R/(f->GetParameter(1)-offset) << endl;
   if(offset>0)
-    output << "NEBULA_T_ID"  << b << " " << -offset << endl; 
+    output << "NEBULA_T_ID"  << b << " " << offset << endl; 
 }
 ////////////////////////////////////////////////////////////////////////////////
 TH2F* GetTH2(){
