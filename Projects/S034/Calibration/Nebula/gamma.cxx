@@ -42,6 +42,7 @@ void process1bar(int b){
   double R =  r1->GetBinCenter(r1->GetMaximumBin());
 
   auto h1 = h->ProjectionY(Form("h%d",b),b,b+1);
+  h1->Rebin(4);
   double max = h1->GetBinCenter(h1->GetMaximumBin());
   h1->Draw();
   auto f = new TF1("f","gaus(0)",max-50,max+50);
