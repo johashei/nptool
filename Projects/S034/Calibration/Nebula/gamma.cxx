@@ -3,6 +3,7 @@ TChain* MakeChain2();
 TChain* MakeChain();
 TH2F*   MakeTH2();
 TH2F*   GetTH2();
+TGraph* graph = new TGraph(200);
 double off;
 double c_light=299.792458;//mm/ns
 auto chain = MakeChain();
@@ -33,6 +34,8 @@ void gamma(){
     process1bar(i); 
   }
   output.close();
+  new TCanvas();
+  graph->Draw("ap");
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -43,13 +46,16 @@ void process1bar(int b){
   double R =  r1->GetBinCenter(r1->GetMaximumBin());
 
   auto h1 = h->ProjectionY(Form("h%d",b),b,b+1);
-  h1->Rebin(10);
+  h1->Rebin(8);
   double max = h1->GetBinCenter(h1->GetMaximumBin());
   //h1->Draw();
-  auto f = new TF1("f","gaus(0)+pol0(3)",max-50,max+50);
+  auto f = new TF1("f","crystalball",max-50,max+50);
   f->SetParameter(0,h1->GetMaximum());
   f->SetParameter(1,max);
-  f->SetParameter(2,50);
+  f->SetParameter(2,35);
+  f->SetParameter(3,0.1);
+  f->SetParameter(4,1);
+
   h1->Fit(f,"R");
   
     // Vbad = R/(TOF) -> TOF/R = 1/Vbad
@@ -58,10 +64,13 @@ void process1bar(int b){
     // X=R*(1/c-1/Vbad)
     
   double offset=R*(1/c_light-1/f->GetParameter(1)) ;
-
+ // double offset=R*(1/c_light-1/max) ;
+  
   cout <<f->GetParameter(1) << " " <<  offset << " " << R/(f->GetParameter(1)-offset) << endl;
-  if(offset>0)
+  if(offset>0){
     output << "NEBULA_T_ID"  << b << " " << offset << endl; 
+    graph->SetPoint(b,b,offset);
+    }
 }
 ////////////////////////////////////////////////////////////////////////////////
 TH2F* GetTH2(){
