@@ -31,8 +31,11 @@ void gamma(){
   h->Draw("colz");
   new TCanvas();
   for(unsigned int i = 0 ; i < 160 ; i++){
+    if(i!=60)
     process1bar(i); 
   }
+
+  process1bar(60); 
   output.close();
   new TCanvas();
   graph->Draw("ap");
@@ -46,7 +49,7 @@ void process1bar(int b){
   double R =  r1->GetBinCenter(r1->GetMaximumBin());
 
   auto h1 = h->ProjectionY(Form("h%d",b),b,b+1);
-  h1->Rebin(8);
+  //h1->Rebin(4);
   double max = h1->GetBinCenter(h1->GetMaximumBin());
   //h1->Draw();
   auto f = new TF1("f","crystalball(0)+pol1(5)",max-50,max+50);
@@ -56,7 +59,7 @@ void process1bar(int b){
   f->SetParameter(3,0.1);
   f->SetParameter(4,1);
 
-  h1->Fit(f,"R");
+  h1->Fit(f,"W");
   
     // Vbad = R/(TOF) -> TOF/R = 1/Vbad
     // c= R/(TOF+X)   -> (TOF+X)/R = 1/c -> TOF/R+X/R=1/c
