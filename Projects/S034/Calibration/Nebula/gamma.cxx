@@ -28,6 +28,7 @@ void gamma(){
   chain->SetAlias("R","sqrt(Nebula.PosX*Nebula.PosX+Nebula.PosY*Nebula.PosY+(Nebula.PosZ+3774.7)*(Nebula.PosZ+3774.7))");
   h=GetTH2();
   h->Draw("colz");
+  new TCanvas();
   for(unsigned int i = 0 ; i < 160 ; i++){
     process1bar(i); 
   }
@@ -36,15 +37,15 @@ void gamma(){
 
 ////////////////////////////////////////////////////////////////////////////////
 void process1bar(int b){
-  new TCanvas();
+  //new TCanvas();
   // Get the Radius for the distance to this barre
   auto r1 = r->ProjectionY(Form("h%d",b),b,b+1);  
   double R =  r1->GetBinCenter(r1->GetMaximumBin());
 
   auto h1 = h->ProjectionY(Form("h%d",b),b,b+1);
-  h1->Rebin(4);
+  h1->Rebin(10);
   double max = h1->GetBinCenter(h1->GetMaximumBin());
-  h1->Draw();
+  //h1->Draw();
   auto f = new TF1("f","gaus(0)",max-50,max+50);
   f->SetParameter(0,h1->GetMaximum());
   f->SetParameter(1,max);
