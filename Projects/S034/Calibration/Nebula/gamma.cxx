@@ -46,7 +46,7 @@ void process1bar(int b){
   h1->Rebin(10);
   double max = h1->GetBinCenter(h1->GetMaximumBin());
   //h1->Draw();
-  auto f = new TF1("f","gaus(0)",max-50,max+50);
+  auto f = new TF1("f","gaus(0)+pol0(3)",max-50,max+50);
   f->SetParameter(0,h1->GetMaximum());
   f->SetParameter(1,max);
   f->SetParameter(2,50);
