@@ -48,6 +48,9 @@ void Analysis::Init(){
   FDC2 = (TSamuraiFDC2Physics*) m_DetectorManager->GetDetector("SAMURAIFDC2");
   Hodo = (TSamuraiHodoscopePhysics*) m_DetectorManager->GetDetector("SAMURAIHOD");
 
+  Nebula->SetQThreshold(0);
+  Nebula->SetVThreshold(0);
+
   FragmentTarget = NPL::EnergyLoss("He6_LH2.G4table","G4Table",1000 );
   m_field.LoadMap(30*deg,"field_map/180702-2,40T-3000.table.bin",10);
   m_field.SetFDC2Angle((59.930-90.0)*deg);
