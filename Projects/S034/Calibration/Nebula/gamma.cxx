@@ -3,13 +3,14 @@ TChain* MakeChain2();
 TChain* MakeChain();
 TH2F*   MakeTH2();
 TH2F*   GetTH2();
-TGraph* graph = new TGraph(200);
+TGraph* graph = new TGraph();
+unsigned int point = 1;
 double off;
 double c_light=299.792458;//mm/ns
 auto chain = MakeChain();
 void process1bar(int b);
-auto h = new TH2F("h","h",200,0,200,500,0,1000);
-auto r = new TH2F("r","r",200,0,200,10000,17000,20000);
+auto h = new TH2F("h","h",200,0,201,500,0,1000);
+auto r = new TH2F("r","r",200,0,201,10000,17000,20000);
 ofstream output("Calibration/Nebula/offset_gamma.txt");
 ////////////////////////////////////////////////////////////////////////////////
 void gamma(){
@@ -30,12 +31,13 @@ void gamma(){
   h=GetTH2();
   h->Draw("colz");
   new TCanvas();
-  for(unsigned int i = 0 ; i < 160 ; i++){
-    if(i!=61)
+  unsigned int select =60;
+  for(unsigned int i = 0 ; i < 150 ; i++){
+    if(i!=select)
     process1bar(i); 
   }
 
-  process1bar(61); 
+  process1bar(select); 
   output.close();
   new TCanvas();
   graph->Draw("ap");
@@ -46,33 +48,36 @@ void process1bar(int b){
   //new TCanvas();
   // Get the Radius for the distance to this barre
   auto r1 = r->ProjectionY(Form("h%d",b),b,b+1);  
+  r1->Rebin(4);
   double R =  r1->GetBinCenter(r1->GetMaximumBin());
 
   auto h1 = h->ProjectionY(Form("h%d",b),b,b+1);
-  h1->Rebin(4);
+  h1->Rebin(8);
   double max = h1->GetBinCenter(h1->GetMaximumBin());
   //h1->Draw();
-  auto f = new TF1("f","crystalball(0)+pol1(5)",max-50,max+50);
+  auto f = new TF1("f","gaus(0)+pol0(3)",max-100,max+100);
   f->SetParameter(0,h1->GetMaximum());
   f->SetParameter(1,max);
-  f->SetParameter(2,35);
-  f->SetParameter(3,0.1);
-  f->SetParameter(4,1);
+  f->SetParameter(2,5);
+  f->SetParameter(3,5);
 
-  h1->Fit(f,"W");
+  h1->Fit(f,"R");
   
     // Vbad = R/(TOF) -> TOF/R = 1/Vbad
     // c= R/(TOF+X)   -> (TOF+X)/R = 1/c -> TOF/R+X/R=1/c
     // 1/Vbad +X/R = 1/c
     // X=R*(1/c-1/Vbad)
     
-  //double offset=R*(1/c_light-1/f->GetParameter(1)) ;
-  double offset=R*(1/c_light-1/h1->GetMean()) ;
+  double offset=R*(1/c_light-1/f->GetParameter(1)) ;
+  cout << "hello " << max-f->GetParameter(1) << endl; 
+  //double offset=R*(1/c_light-1/max) ;
   
-  cout <<f->GetParameter(1) << " " <<  offset << " " << R/(f->GetParameter(1)-offset) << endl;
+  cout <<f->GetParameter(1) << " " <<  offset << " " << R/(offset+R/f->GetParameter(1)) << endl;
   if(offset>0){
     output << "NEBULA_T_ID"  << b << " " << offset << endl; 
-    graph->SetPoint(b,b,offset);
+    graph->Set(graph->GetN()+1);
+    cout << point <<" " << b << " " << offset <<  endl;
+    graph->SetPoint(graph->GetN()-1,b,offset);
     }
 }
 ////////////////////////////////////////////////////////////////////////////////
