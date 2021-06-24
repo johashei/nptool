@@ -1,5 +1,5 @@
-#ifndef TSofTwimPHYSICS_H
-#define TSofTwimPHYSICS_H
+#ifndef TSofAtPHYSICS_H
+#define TSofAtPHYSICS_H
 /*****************************************************************************
  * Copyright (C) 2009-2020   this file is part of the NPTool Project       *
  *                                                                           *
@@ -14,7 +14,7 @@
  * Last update    :                                                          *
  *---------------------------------------------------------------------------*
  * Decription:                                                               *
- *  This class hold SofTwim Treated data                                *
+ *  This class hold SofAt Treated data                                *
  *                                                                           *
  *---------------------------------------------------------------------------*
  * Comment:                                                                  *
@@ -34,19 +34,19 @@ using namespace std;
 #include "TVector3.h"
 #include "TSpline.h"
 // NPTool headers
-#include "TSofTwimData.h"
+#include "TSofAtData.h"
 #include "NPCalibrationManager.h"
 #include "NPVDetector.h"
 #include "NPInputParser.h"
 
 
 
-class TSofTwimPhysics : public TObject, public NPL::VDetector {
+class TSofAtPhysics : public TObject, public NPL::VDetector {
   //////////////////////////////////////////////////////////////
   // constructor and destructor
   public:
-    TSofTwimPhysics();
-    ~TSofTwimPhysics() {};
+    TSofAtPhysics();
+    ~TSofAtPhysics() {};
 
 
   //////////////////////////////////////////////////////////////
@@ -60,12 +60,8 @@ class TSofTwimPhysics : public TObject, public NPL::VDetector {
   // data obtained after BuildPhysicalEvent() and stored in
   // output ROOT file
   public:
-    vector<int>      SectionNbr;
-    vector<double>   EnergySection;
-    vector<double>   DriftTime;
     vector<int>      AnodeNbr;
-    vector<int>      AnodeSecNbr;
-    vector<double>   AnodeEnergy;
+    vector<double>   Energy;
 
   /// A usefull method to bundle all operation to add a detector
   void AddDetector(TVector3 POS); 
@@ -110,7 +106,7 @@ class TSofTwimPhysics : public TObject, public NPL::VDetector {
 
 
   //////////////////////////////////////////////////////////////
-  // specific methods to SofTwim array
+  // specific methods to SofAt array
   public:
     // remove bad channels, calibrate the data and apply thresholds
     void PreTreat();
@@ -121,47 +117,33 @@ class TSofTwimPhysics : public TObject, public NPL::VDetector {
     // read the user configuration file. If no file is found, load standard one
     void ReadAnalysisConfig();
 
-    // give and external TSofTwimData object to TSofTwimPhysics. 
+    // give and external TSofAtData object to TSofAtPhysics. 
     // needed for online analysis for example
-    void SetRawDataPointer(TSofTwimData* rawDataPointer) {m_EventData = rawDataPointer;}
-   
-    void LoadSplineBeta();
-
-    void SetBeta(double beta) {m_Beta = beta;}
-    double GetBeta() {return m_Beta;}
-
+    void SetRawDataPointer(TSofAtData* rawDataPointer) {m_EventData = rawDataPointer;}
 
   // objects are not written in the TTree
   private:
-    TSofTwimData*         m_EventData;        //!
-    TSofTwimData*         m_PreTreatedData;   //!
-    TSofTwimPhysics*      m_EventPhysics;     //!
+    TSofAtData*         m_EventData;        //!
+    TSofAtData*         m_PreTreatedData;   //!
+    TSofAtPhysics*      m_EventPhysics;     //!
 
   // getters for raw and pre-treated data object
   public:
-    TSofTwimData* GetRawData()        const {return m_EventData;}
-    TSofTwimData* GetPreTreatedData() const {return m_PreTreatedData;}
+    TSofAtData* GetRawData()        const {return m_EventData;}
+    TSofAtData* GetPreTreatedData() const {return m_PreTreatedData;}
 
   // parameters used in the analysis
   private:
     double m_E_Threshold;     //!
-    double m_Beta;     //!
-    double m_BetaNorm;     //!
-    string m_SPLINE_SECTION_BETA_PATH;     //!
-
-  private:
-    TSpline3* fcorr_beta_sec[4]; //!
 
   // number of detectors
   private:
     int m_NumberOfDetectors;  //!
-    int m_NumberOfSections;  //!
-    int m_NumberOfAnodesPerSection;  //!
 
   // Static constructor to be passed to the Detector Factory
   public:
     static NPL::VDetector* Construct();
 
-    ClassDef(TSofTwimPhysics,1)  // SofTwimPhysics structure
+    ClassDef(TSofAtPhysics,1)  // SofAtPhysics structure
 };
 #endif

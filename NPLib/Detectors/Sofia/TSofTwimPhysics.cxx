@@ -103,10 +103,14 @@ void TSofTwimPhysics::BuildPhysicalEvent() {
 
   unsigned int mysizeE = m_PreTreatedData->GetMultiplicity();
   for (UShort_t e = 0; e < mysizeE ; e++) {
-    int SectionNbr = m_PreTreatedData->GetSectionNbr(e);
-    int AnodeNbr   = m_PreTreatedData->GetAnodeNbr(e);
-    double Energy  = m_PreTreatedData->GetEnergy(e);
-    double DT      = m_PreTreatedData->GetDriftTime(e);
+    int SectionNbr  = m_PreTreatedData->GetSectionNbr(e);
+    int AnodeNumber = m_PreTreatedData->GetAnodeNbr(e);
+    double Energy   = m_PreTreatedData->GetEnergy(e);
+    double DT       = m_PreTreatedData->GetDriftTime(e);
+    
+    AnodeSecNbr.push_back(SectionNbr);
+    AnodeNbr.push_back(AnodeNumber);
+    AnodeEnergy.push_back(Energy);
 
     if(SectionNbr==1){
       anode_energy_sec1.push_back(Energy);
@@ -126,6 +130,7 @@ void TSofTwimPhysics::BuildPhysicalEvent() {
     }
   }
 
+  static CalibrationManager* Cal = CalibrationManager::getInstance();
   double Esec1=0;
   double Esec2=0;
   double Esec3=0;
@@ -153,6 +158,8 @@ void TSofTwimPhysics::BuildPhysicalEvent() {
 
   if(Esec1>0){
     Esec1 = Esec1 / anode_energy_sec1.size();
+    Esec1 = Cal->ApplyCalibration("SofTwim/SEC1_ALIGN",Esec1);
+
     DTsec1 = DTsec1 / anode_dt_sec1.size();
     EnergySection.push_back(Esec1);
     DriftTime.push_back(DTsec1);
@@ -160,6 +167,8 @@ void TSofTwimPhysics::BuildPhysicalEvent() {
   }
   if(Esec2>0){
     Esec2 = Esec2 / anode_energy_sec2.size();
+    Esec2 = Cal->ApplyCalibration("SofTwim/SEC2_ALIGN",Esec2);
+
     DTsec2 = DTsec2 / anode_dt_sec2.size();
     EnergySection.push_back(Esec2);
     DriftTime.push_back(DTsec2);
@@ -167,6 +176,8 @@ void TSofTwimPhysics::BuildPhysicalEvent() {
   }
   if(Esec3>0){
     Esec3 = Esec3 / anode_energy_sec3.size();
+    Esec3 = Cal->ApplyCalibration("SofTwim/SEC3_ALIGN",Esec3);
+    
     DTsec3 = DTsec3 / anode_dt_sec3.size();
     EnergySection.push_back(Esec3);
     DriftTime.push_back(DTsec3);
@@ -174,6 +185,8 @@ void TSofTwimPhysics::BuildPhysicalEvent() {
   }
   if(Esec4>0){
     Esec4 = Esec4 / anode_energy_sec4.size();
+    Esec4 = Cal->ApplyCalibration("SofTwim/SEC4_ALIGN",Esec4);
+    
     DTsec4 = DTsec4 / anode_dt_sec4.size();
     EnergySection.push_back(Esec4);
     DriftTime.push_back(DTsec4);
@@ -199,15 +212,17 @@ void TSofTwimPhysics::PreTreat() {
 
   unsigned int mysize = m_EventData->GetMultiplicity();
   for (unsigned int i = 0; i < mysize ; ++i) {
-    double Energy = Cal->ApplyCalibration("SofTwim/SEC"+NPL::itoa(m_EventData->GetSectionNbr(i))+"_ANODE"+NPL::itoa(m_EventData->GetAnodeNbr(i))+"_ENERGY",m_EventData->GetEnergy(i));
-    double DT = Cal->ApplyCalibration("SofTwim/SEC"+NPL::itoa(m_EventData->GetSectionNbr(i))+"_ANODE"+NPL::itoa(m_EventData->GetAnodeNbr(i))+"_TIME",m_EventData->GetDriftTime(i));
+    if(m_EventData->GetPileUp(i) != 1 && m_EventData->GetOverflow(i) != 1){
+      double Energy = Cal->ApplyCalibration("SofTwim/SEC"+NPL::itoa(m_EventData->GetSectionNbr(i))+"_ANODE"+NPL::itoa(m_EventData->GetAnodeNbr(i))+"_ENERGY",m_EventData->GetEnergy(i));
+      double DT = Cal->ApplyCalibration("SofTwim/SEC"+NPL::itoa(m_EventData->GetSectionNbr(i))+"_ANODE"+NPL::itoa(m_EventData->GetAnodeNbr(i))+"_TIME",m_EventData->GetDriftTime(i));
   
-    m_PreTreatedData->SetSectionNbr(m_EventData->GetSectionNbr(i));
-    m_PreTreatedData->SetAnodeNbr(m_EventData->GetAnodeNbr(i));
-    m_PreTreatedData->SetEnergy(Energy);
-    m_PreTreatedData->SetDriftTime(DT);
-    m_PreTreatedData->SetPileUp(m_EventData->GetPileUp(i));
-    m_PreTreatedData->SetOverflow(m_EventData->GetOverflow(i));
+      m_PreTreatedData->SetSectionNbr(m_EventData->GetSectionNbr(i));
+      m_PreTreatedData->SetAnodeNbr(m_EventData->GetAnodeNbr(i));
+      m_PreTreatedData->SetEnergy(Energy);
+      m_PreTreatedData->SetDriftTime(DT);
+      m_PreTreatedData->SetPileUp(m_EventData->GetPileUp(i));
+      m_PreTreatedData->SetOverflow(m_EventData->GetOverflow(i));
+    }
   }
 }
 
@@ -301,6 +316,9 @@ void TSofTwimPhysics::Clear() {
   SectionNbr.clear();
   EnergySection.clear();
   DriftTime.clear();
+  AnodeNbr.clear();
+  AnodeSecNbr.clear();
+  AnodeEnergy.clear();
 }
 
 

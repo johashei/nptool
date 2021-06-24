@@ -14,6 +14,7 @@ CalibrationFilePath
 ./calibration/SofSci/SofSci_physics.cal
 ./calibration/SofTwim/SofTwim_Energy.cal
 ./calibration/SofTwim/SofTwim_Time.cal
+./calibration/SofTwim/SofTwim_Align.cal
 ./calibration/SofTofW/ClockOffset.cal
 ./calibration/SofTofW/SofTofW_physics.cal
 ./calibration/SofTofW/VFTX_TOFW1_PMT1.cal
