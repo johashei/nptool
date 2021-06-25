@@ -39,6 +39,7 @@ class TSofFissionFragment : public TObject {
     vector<double> fFF_AoQ;
     vector<double> fFF_A;
     vector<double> fFF_Beta;
+    vector<double> fFF_TOF;
     vector<double> fFF_Gamma;
     vector<double> fFF_Brho;
     double fFF_Zsum;
@@ -71,6 +72,7 @@ class TSofFissionFragment : public TObject {
     inline void SetAoQ(double val){fFF_AoQ.push_back(val);};//!
     inline void SetA(double val){fFF_A.push_back(val);};//!
     inline void SetBeta(double val){fFF_Beta.push_back(val);};//!
+    inline void SetTOF(double val){fFF_TOF.push_back(val);};//!
     inline void SetGamma(double val){fFF_Gamma.push_back(val);};//!
     inline void SetBrho(double val){fFF_Brho.push_back(val);};//!
 
@@ -81,6 +83,7 @@ class TSofFissionFragment : public TObject {
     inline double GetAoQ(int i) const {return fFF_AoQ[i];}//! 
     inline double GetA(int i) const {return fFF_A[i];}//! 
     inline double GetBeta(int i) const {return fFF_Beta[i];}//! 
+    inline double GetTOF(int i) const {return fFF_TOF[i];}//! 
     inline double GetGamma(int i) const {return fFF_Gamma[i];}//! 
     inline double GetBrho(int i) const {return fFF_Brho[i];}//! 
 

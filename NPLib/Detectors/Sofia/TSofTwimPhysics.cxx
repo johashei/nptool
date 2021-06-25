@@ -111,6 +111,7 @@ void TSofTwimPhysics::BuildPhysicalEvent() {
     AnodeSecNbr.push_back(SectionNbr);
     AnodeNbr.push_back(AnodeNumber);
     AnodeEnergy.push_back(Energy);
+    AnodeDT.push_back(DT);
 
     if(SectionNbr==1){
       anode_energy_sec1.push_back(Energy);
@@ -156,45 +157,50 @@ void TSofTwimPhysics::BuildPhysicalEvent() {
     DTsec4 += anode_dt_sec4[i];
   }
 
-  if(Esec1>0){
-    Esec1 = Esec1 / anode_energy_sec1.size();
-    Esec1 = Cal->ApplyCalibration("SofTwim/SEC1_ALIGN",Esec1);
+  if(Esec1>0 && anode_energy_sec1.size()==16){
+    if(abs(anode_energy_sec1[0] - anode_energy_sec1[15])<3000){
+      Esec1 = Esec1 / anode_energy_sec1.size();
+      Esec1 = Cal->ApplyCalibration("SofTwim/SEC1_ALIGN",Esec1);
 
-    DTsec1 = DTsec1 / anode_dt_sec1.size();
-    EnergySection.push_back(Esec1);
-    DriftTime.push_back(DTsec1);
-    SectionNbr.push_back(1);
+      DTsec1 = DTsec1 / anode_dt_sec1.size();
+      EnergySection.push_back(Esec1);
+      DriftTime.push_back(DTsec1);
+      SectionNbr.push_back(1);
+    }
   }
-  if(Esec2>0){
-    Esec2 = Esec2 / anode_energy_sec2.size();
-    Esec2 = Cal->ApplyCalibration("SofTwim/SEC2_ALIGN",Esec2);
+  if(Esec2>0 && anode_energy_sec2.size()==16){
+    if(abs(anode_energy_sec2[0] - anode_energy_sec2[15])<3000){
+      Esec2 = Esec2 / anode_energy_sec2.size();
+      Esec2 = Cal->ApplyCalibration("SofTwim/SEC2_ALIGN",Esec2);
 
-    DTsec2 = DTsec2 / anode_dt_sec2.size();
-    EnergySection.push_back(Esec2);
-    DriftTime.push_back(DTsec2);
-    SectionNbr.push_back(2);
+      DTsec2 = DTsec2 / anode_dt_sec2.size();
+      EnergySection.push_back(Esec2);
+      DriftTime.push_back(DTsec2);
+      SectionNbr.push_back(2);
+    }
   }
-  if(Esec3>0){
-    Esec3 = Esec3 / anode_energy_sec3.size();
-    Esec3 = Cal->ApplyCalibration("SofTwim/SEC3_ALIGN",Esec3);
+  if(Esec3>0 && anode_energy_sec3.size()==16){
+    if(abs(anode_energy_sec3[0] - anode_energy_sec3[15])<3000){
+      Esec3 = Esec3 / anode_energy_sec3.size();
+      Esec3 = Cal->ApplyCalibration("SofTwim/SEC3_ALIGN",Esec3);
     
-    DTsec3 = DTsec3 / anode_dt_sec3.size();
-    EnergySection.push_back(Esec3);
-    DriftTime.push_back(DTsec3);
-    SectionNbr.push_back(3);
+      DTsec3 = DTsec3 / anode_dt_sec3.size();
+      EnergySection.push_back(Esec3);
+      DriftTime.push_back(DTsec3);
+      SectionNbr.push_back(3);
+    }
   }
-  if(Esec4>0){
-    Esec4 = Esec4 / anode_energy_sec4.size();
-    Esec4 = Cal->ApplyCalibration("SofTwim/SEC4_ALIGN",Esec4);
+  if(Esec4>0 && anode_energy_sec4.size()==16){
+    if(abs(anode_energy_sec4[0] - anode_energy_sec4[15])<3000){
+      Esec4 = Esec4 / anode_energy_sec4.size();
+      Esec4 = Cal->ApplyCalibration("SofTwim/SEC4_ALIGN",Esec4);
     
-    DTsec4 = DTsec4 / anode_dt_sec4.size();
-    EnergySection.push_back(Esec4);
-    DriftTime.push_back(DTsec4);
-    SectionNbr.push_back(4);
+      DTsec4 = DTsec4 / anode_dt_sec4.size();
+      EnergySection.push_back(Esec4);
+      DriftTime.push_back(DTsec4);
+      SectionNbr.push_back(4);
+    }
   }
-
-
-
 
   m_Beta = -1;
 }
@@ -319,6 +325,7 @@ void TSofTwimPhysics::Clear() {
   AnodeNbr.clear();
   AnodeSecNbr.clear();
   AnodeEnergy.clear();
+  AnodeDT.clear();
 }
 
 

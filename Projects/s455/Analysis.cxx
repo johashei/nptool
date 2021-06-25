@@ -54,7 +54,7 @@ void Analysis::Init(){
 ////////////////////////////////////////////////////////////////////////////////
 void Analysis::TreatEvent(){
   ReInitValue();
-  //cout << "************" << endl;
+  cout << "************" << endl;
   BeamAnalysis();
 
   unsigned int sofsci_size = SofSci->DetectorNbr.size();
@@ -63,9 +63,10 @@ void Analysis::TreatEvent(){
     SofTofW->SetTofAlignedValue(36);
     SofTofW->SetStartTime(start_time);
     SofTofW->BuildPhysicalEvent();
+
+    FissionFragmentAnalysis();
   }
 
-  FissionFragmentAnalysis();
 
 }
 
@@ -73,9 +74,12 @@ void Analysis::TreatEvent(){
 void Analysis::FissionFragmentAnalysis(){
   unsigned int softofw_size = SofTofW->PlasticNbr.size();
   unsigned int softwim_size = SofTwim->SectionNbr.size();
+  unsigned int sofat_size   = SofAt->Energy.size();
 
   double TOF_CC[2];
   double Plastic[2];
+  double Plastic_left = -1;
+  double Plastic_right = -1;
   double TOF_left = -1;
   double TOF_right = -1;
   double Esec[2];
@@ -86,9 +90,9 @@ void Analysis::FissionFragmentAnalysis(){
   double E2 = -1;
   double E3 = -1;
   double E4 = -1;
-  double L_CC = 8.;
-  double Beta_left;
-  double Beta_right;
+  double L_CC = 8.45;
+  double Beta_left = -1;
+  double Beta_right = -1;
   double Beta_norm = 0.7;
 
   for(int i = 0; i<2; i++){
@@ -99,7 +103,7 @@ void Analysis::FissionFragmentAnalysis(){
   }
 
 
-  if(softofw_size==2 && softwim_size==2){ 
+  if(softofw_size==2 && softwim_size==2 && sofat_size==4){ 
     for(unsigned int i=0; i< softofw_size; i++){
       TOF_CC[i] = SofTofW->CalTof[i];
       Plastic[i] = SofTofW->PlasticNbr[i];
@@ -120,35 +124,58 @@ void Analysis::FissionFragmentAnalysis(){
   }
 
   if(Plastic[0]<Plastic[1]){
+    Plastic_left = Plastic[0];
+    Plastic_right = Plastic[1];
     TOF_left = TOF_CC[0];
     TOF_right = TOF_CC[1];
   }
   else{
+    Plastic_left = Plastic[1];
+    Plastic_right = Plastic[0];
     TOF_left = TOF_CC[1];
     TOF_right = TOF_CC[0];
   }
 
-  if(TOF_left != -1 && TOF_right != -1 && abs(Plastic[0]-Plastic[1]) != 1){
+  if(TOF_left != -1 && TOF_right != -1){
     double velocity_left = L_CC/TOF_left;
     double velocity_right = L_CC/TOF_right;
 
     Beta_left = velocity_left * m/ns / NPUNITS::c_light;
     Beta_right = velocity_right * m/ns / NPUNITS::c_light;
 
-    /*E1 = E1 / fcorr_z_beta[0]->Eval(Beta_left) * fcorr_z_beta[0]->Eval(Beta_norm);
-    E2 = E2 / fcorr_z_beta[1]->Eval(Beta_left) * fcorr_z_beta[1]->Eval(Beta_norm);
-    E3 = E3 / fcorr_z_beta[2]->Eval(Beta_right) * fcorr_z_beta[2]->Eval(Beta_norm);
-    E4 = E4 / fcorr_z_beta[3]->Eval(Beta_right) * fcorr_z_beta[3]->Eval(Beta_norm);
+    /*if(E1 != -1)
+      E1 = E1 / fcorr_z_beta[0]->Eval(Beta_left) * fcorr_z_beta[0]->Eval(Beta_norm);
+    if(E2 != -1)
+      E2 = E2 / fcorr_z_beta[1]->Eval(Beta_left) * fcorr_z_beta[1]->Eval(Beta_norm);
+    if(E3 != -1)
+      E3 = E3 / fcorr_z_beta[2]->Eval(Beta_right) * fcorr_z_beta[2]->Eval(Beta_norm);
+    if(E4 != -1)
+      E4 = E4 / fcorr_z_beta[3]->Eval(Beta_right) * fcorr_z_beta[3]->Eval(Beta_norm);
 */
-    double Zsum = E_left + E_right;
+    if(E1>0 && E2==-1)
+      E_left = E1;
+    if(E1==-1 && E2>0)
+      E_left = E2;
+    if(E3>0 && E4==-1)
+      E_right = E3;
+    if(E3==-1 && E4>0)
+      E_right = E4;
 
-    SofFF->SetBeta(Beta_left);
-    SofFF->SetBeta(Beta_right);
-    SofFF->SetZ(E1);
-    SofFF->SetZ(E2);
-    SofFF->SetZ(E3);
-    SofFF->SetZ(E4);
-    SofFF->SetZsum(Zsum);
+    double Zsum = E_left + E_right;
+  
+    if(E_left != -1 && E_right != -1){
+      SofFF->SetTOF(TOF_left);
+      SofFF->SetTOF(TOF_right);
+      SofFF->SetBeta(Beta_left);
+      SofFF->SetBeta(Beta_right);
+      //SofFF->SetZ(E_left);
+      //SofFF->SetZ(E_right);
+      SofFF->SetZ(E1);
+      SofFF->SetZ(E2);
+      SofFF->SetZ(E3);
+      SofFF->SetZ(E4);
+      SofFF->SetZsum(Zsum);
+    }
   }
 }
 
@@ -285,7 +312,8 @@ void Analysis::InitParameter(){
   //fDCC   = -30000;
   fDCC   = -10000;
   fK_LS2 = -2.5e-8;
-  fBrho0 = 10.8183; // run401 -> 182Hg
+  fBrho0 = 10.8183; // 182Hg
+  //fBrho0 = 10.6814; // 180Hg
 }
 
 ////////////////////////////////////////////////////////////////////////////////

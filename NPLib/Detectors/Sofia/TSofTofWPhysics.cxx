@@ -127,7 +127,7 @@ void TSofTofWPhysics::BuildPhysicalEvent() {
           double calpos = Cal->ApplyCalibration("SofTofW/TOFW"+NPL::itoa(p+1)+"_POSPAR",rawpos);
           double rawtof = time_ns - m_StartTime;
           double caltof = Cal->ApplyCalibration("SofTofW/TOFW"+NPL::itoa(p+1)+"_TOFPAR",rawtof) + m_TofAlignedValue;
-    
+  
           PlasticNbr.push_back(p+1);
           TimeNs.push_back(time_ns);
           RawPosY.push_back(rawpos);
@@ -180,11 +180,13 @@ void TSofTofWPhysics::PreTreat() {
   // Energy
   unsigned int mysize = m_EventData->GetMultiplicity();
   for (UShort_t i = 0; i < mysize ; ++i) {
-    m_PreTreatedData->SetPlasticNbr(m_EventData->GetPlasticNbr(i));
-    m_PreTreatedData->SetPmt(m_EventData->GetPmt(i));
-    m_PreTreatedData->SetCoarseTime(m_EventData->GetCoarseTime(i));
-    m_PreTreatedData->SetFineTime(m_EventData->GetFineTime(i));
-    m_PreTreatedData->SetWhichFlag(m_EventData->GetWhichFlag(i));
+    if(m_EventData->GetWhichFlag(i)==1){
+      m_PreTreatedData->SetPlasticNbr(m_EventData->GetPlasticNbr(i));
+      m_PreTreatedData->SetPmt(m_EventData->GetPmt(i));
+      m_PreTreatedData->SetCoarseTime(m_EventData->GetCoarseTime(i));
+      m_PreTreatedData->SetFineTime(m_EventData->GetFineTime(i));
+      m_PreTreatedData->SetWhichFlag(m_EventData->GetWhichFlag(i));
+    }
   }
 }
 
