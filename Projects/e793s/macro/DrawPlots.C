@@ -1,196 +1,11 @@
-//void AddTiStates(double E);
-#include "NPReaction.h"
-#include <string>
-#include <sstream>
-
-using namespace std;
-
-//TCutG* ETOF=NULL;
-//TCutG* EDE=NULL;
-TChain* chain=NULL ;
-
-char cond[1000];
+#include "DrawPlots.h"
 
 
-////////////////////////////////////////////////////////////////////////////////
-TChain* Chain(std::string TreeName, std::vector<std::string>& file, bool EventList){
-  TChain*  chain = new TChain(TreeName.c_str());
-  unsigned int size =file.size(); 
-    for(unsigned int i = 0 ; i < size ; i++){
-      cout << "Adding " << file[i] << endl;
-      chain->Add(file[i].c_str());
-     /* TFile* file = new TFile(file[i].c_str(),"READ");
-      if(EventList){
-        TEventList* current = (TEventList*) file->Get("GoodEntries");
-        if(!EL)
-          EL=current;
-        else{
-          
-          EL->Add(current);
-        }
-      }*/
-    } 
-  //chain->SetEntryListFile("$.root/"); 
-  return chain;
-}
-////////////////////////////////////////////////////////////////////////////////
-void LoadChainNP(){
-  vector<string> files;
-  files.push_back("../../../Outputs/Analysis/47K_Full_09June_MG3_Target.root");
-  chain = Chain("PhysicsTree",files,true);
-}
-
-void plot_kine(NPL::Reaction r, double Ex,Color_t c,int w, int s){
-  r.SetExcitation4(Ex);
-  TGraph* g= r.GetKinematicLine3();
-  g->SetLineColor(c) ;
-  g->SetLineStyle(s) ;
-  g->SetLineWidth(w) ;
-  g->Draw("c");
-}
-
-void plot_state(double Ex,double max,Color_t c,int w, int s){
-  TLine* line = new TLine(Ex,0,Ex,max) ; 
-  line->SetLineColor(c) ;
-  line->SetLineStyle(s) ;
-  line->SetLineWidth(w) ;
-  line->Draw();
-}
-
-void AddTiStates(double E){
- NPL::Reaction Ti("47Ti(d,p)48Ti@362");
- Ti.SetExcitationHeavy(E);
- auto g = Ti.GetKinematicLine3();
- g->SetLineWidth(1);
- g->SetLineStyle(2);
- g->Draw("c");
-}
-////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
-void Draw_1DGamma(){
-  TCanvas *cEg = new TCanvas("cEg","cEg",1000,1000);
-  chain->Draw("AddBack_EDC>>Eg(2500,0,5)","abs(T_MUGAST_VAMOS-2777)<600");
-  TH1F* Eg = (TH1F*) gDirectory->Get("Eg");
-  Eg->SetTitle("Egamma (using 09Jun Full run)");
-  Eg->GetXaxis()->SetTitle("Eg [MeV]");
-}
-/////////////////////////////////////
-void Draw_1DParticle(){
-  TCanvas *cEx = new TCanvas("cEx","cEx",1000,1000);
-  chain->Draw("Ex>>Ep(220,-1,10)","abs(T_MUGAST_VAMOS-2777)<600");
-  TH1F* Ep = (TH1F*) gDirectory->Get("Ep");
-  Ep->SetTitle("Ex (using 09Jun Full run)");
-  Ep->GetXaxis()->SetTitle("Ex [MeV]");
-}
-/////////////////////////////////////
-void Draw_2DParticleGamma(){
-  TCanvas *cExEg = new TCanvas("cExEg","cExEg",1000,1000);
-  chain->Draw("AddBack_EDC:Ex>>ExEg(100,-1,5,2500,0,5)","abs(T_MUGAST_VAMOS-2777)<600","colz");
-  TH1F* ExEg = (TH1F*) gDirectory->Get("ExEg");
-  ExEg->SetTitle("Ex-Egamma (using 09Jun Full run)");
-  ExEg->GetXaxis()->SetTitle("Ex [MeV]");
-  ExEg->GetYaxis()->SetTitle("Eg [MeV]");
-  TLine *XeqY = new TLine(0,0,9,9);
-  XeqY->SetLineColor(kRed);
-  XeqY->Draw();
-}
-///////////////////////////////////
-void GateOnGamma(double gamma, double width){
-  string gating = "abs(T_MUGAST_VAMOS-2777)<600 && abs(AddBack_EDC-" 
-      + to_string(gamma)
-      + ")<"
-      + to_string(width);
-
-  TCanvas *cEx_Gate = new TCanvas("cEx_Gate","cEx_Gate",1000,1000);
-  chain->Draw("Ex>>ExGate(220,-1,10)",gating.c_str(),"colz");
-  TH1F* ExGate = (TH1F*) gDirectory->Get("ExGate");
-  //ExGate->SetTitle("Ex gated on (using 09Jun Full run)");
-  ExGate->GetXaxis()->SetTitle("Ex [MeV]");
-  ExGate->GetYaxis()->SetTitle("Counts / 0.05 MeV");
-}
-///////////////////////////////////
-void GateOnParticle(double particle, double width){
-  string gating = "abs(T_MUGAST_VAMOS-2777)<600 && abs(Ex-" 
-      + to_string(particle)
-      + ")<"
-      + to_string(width);
-
-  TCanvas *cEg_Gate = new TCanvas("cEg_Gate","cEg_Gate",1000,1000);
-  chain->Draw("AddBack_EDC>>EgGate(10000,0,10)",gating.c_str(),"colz");
-  TH1F* EgGate = (TH1F*) gDirectory->Get("EgGate");
-  //ExGate->SetTitle("Ex gated on (using 09Jun Full run)");
-  EgGate->GetXaxis()->SetTitle("Eg [MeV]");
-  EgGate->GetYaxis()->SetTitle("Counts / 1 keV");
-}
-void CompareExsAt4MeV(){
-  TCanvas *cExCompare = new TCanvas("cExCompare","cExCompare",1000,1000);
-  chain->Draw("AddBack_EDC>>gate3p0(1000,0,10)",
-		  "abs(T_MUGAST_VAMOS-2777)<600 && abs(Ex-3.0)<0.1","same");
-  chain->Draw("AddBack_EDC>>gate3p5(1000,0,10)",
-		  "abs(T_MUGAST_VAMOS-2777)<600 && abs(Ex-3.5)<0.1","same");
-  chain->Draw("AddBack_EDC>>gate3p9(1000,0,10)",
-		  "abs(T_MUGAST_VAMOS-2777)<600 && abs(Ex-3.9)<0.1","same");
-  chain->Draw("AddBack_EDC>>gate4p3(1000,0,10)",
-		  "abs(T_MUGAST_VAMOS-2777)<600 && abs(Ex-4.3)<0.1","same");
- 
-  //cExCompare->Divide(4,1);
-
-  //cExCompare->cd(1);
-  TH1F* gate3p0 = (TH1F*) gDirectory->Get("gate3p0");
-    gate3p0->GetXaxis()->SetTitle("Egamma [MeV]");
-    gate3p0->GetYaxis()->SetTitle("Counts");
-    gate3p0->SetLineColor(kRed);
-  
-  //cExCompare->cd(2);
-  TH1F* gate3p5 = (TH1F*) gDirectory->Get("gate3p5");
-    gate3p5->SetLineColor(kBlue);
-
-  //cExCompare->cd(3);
-  TH1F* gate3p9 = (TH1F*) gDirectory->Get("gate3p9");
-    gate3p9->SetLineColor(kGreen);
-
-  //cExCompare->cd(4);
-  TH1F* gate4p3 = (TH1F*) gDirectory->Get("gate4p3");
-    gate4p3->SetLineColor(kViolet);
-    gate4p3->GetXaxis()->SetRangeUser(0.,5.);
-
-  cout << " 3.0 - Red\n"
-       << " 3.5 - Blue\n"
-       << " 3.9 - Green\n"
-       << " 4.3 - Violet"
-       << endl;
-}
+/* USE THIS SPACE TO TEST NEW FEATURES */
+/* ONCE HAPPY, MOVE TO HEADER          */
 
 
-void CompareSimExp(){
-
-  TCanvas *cSimExp = new TCanvas("cSimExp","cSimExp",1000,1000);
-  gStyle->SetOptStat(0);
-  
-  chain->Draw("Ex>>hexp(70,-1,6)","abs(T_MUGAST_VAMOS-2777)<600","");
-  TH1F* hexp = (TH1F*) gDirectory->Get("hexp");
-  hexp->SetTitle("Comparing Simulation to Experiment");
-  hexp->GetXaxis()->SetTitle("Ex [MeV]");
-  hexp->GetYaxis()->SetTitle("Counts / 0.1 MeV");
-  hexp->SetLineColor(kRed);
-
-  TFile* simfile = new TFile("../../../Outputs/Analysis/SimTest_18June_30mill.root", "READ");
-  TTree* simtree = (TTree*) simfile->FindObjectAny("PhysicsTree");
-
-  simtree->Draw("Ex>>hsim(70,-1,6)","Mugast.TelescopeNumber>0 && Mugast.TelescopeNumber<8","same");
-  TH1F* hsim = (TH1F*) gDirectory->Get("hsim");
-  hsim->SetLineColor(kBlue);
-  
-  auto legend = new TLegend(0.7,0.8,0.9,0.9);
-  legend->AddEntry(hexp,"Experiment","l");
-  legend->AddEntry(hsim,"Simulation","l");
-  legend->Draw();
-}
-
-////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
@@ -200,27 +15,27 @@ void DrawPlots(){
   gStyle->SetOptStat("nei");
   LoadChainNP();
   
-  NPL::Reaction Kdp("47K(d,p)48K@362");
-  NPL::Reaction Kdt("47K(d,t)46K@362");
-  NPL::Reaction Kdd("47K(d,d)47K@362");
-  NPL::Reaction Kpp("47K(p,p)47K@362");
-  NPL::Reaction K12C12C("47K(12C,12C)47K@362");
-  NPL::Reaction Tidp("47Ti(d,p)48Ti@362");
-  NPL::Reaction Tidt("47Ti(d,t)46Ti@362");
-  NPL::Reaction Tidd("47Ti(d,d)47Ti@362");
-  NPL::Reaction Ti12C12C("47Ti(12C,12C)47Ti@362");
-
-
-
   cout << "==========================================" << endl;
-  cout << " AVAILABLE FUNCTIONS:: " << endl;
+  cout << "========== AVAILABLE FUNCTIONS ===========" << endl;
+  cout << " 2D Matrices " << endl;
   cout << "\t- Draw_2DParticleGamma() "<< endl;
-  cout << "\t- Draw_1DGamma() "<< endl;
+  cout << "\t- Draw_2DGammaGamma() "<< endl;
+  cout << ""<< endl;
+  cout << " Ungated histograms " << endl;
   cout << "\t- Draw_1DParticle() "<< endl;
+  cout << "\t- Draw_1DGamma() "<< endl;
   cout << ""<< endl;
-  cout << "\t- GateOnGamma(gamma, width) "<< endl;
-  cout << "\t- GateOnParticle(particle, width) "<< endl;
+  cout << " Gated histograms " << endl;
+  cout << "\t- GateParticle_SeeGamma(particle, width) "<< endl;
+  cout << "\t- GateGamma_SeeParticle(gamma, width) "<< endl;
+  cout << "\t- GateGamma_SeeGamma(gamma, width) "<< endl;
   cout << ""<< endl;
+  cout << " Gated histograms w/ background selection" << endl;
+  cout << "\t- GateParticle_SeeGamma_WithBG(particle, width, bgrnd) "<< endl;
+  cout << "\t- GateGamma_SeeParticle_WithBG(gamma, width, bgrnd) "<< endl;
+  cout << "\t- GateGamma_SeeGamma_WithBG(gamma, width, bgrnd) "<< endl;
+  cout << ""<< endl;
+  cout << " Specific functions" << endl;
   cout << "\t- CompareExsAt4MeV() "<< endl;
   cout << "\t- CompareSimExp() "<< endl;
   cout << "==========================================" << endl;
@@ -228,17 +43,7 @@ void DrawPlots(){
 
 
 
-  /*** Functions for drawing ***/
-  
-    //Draw_1DGamma();
-    //Draw_2DParticleGamma();
-    
-    //GateOnGamma(0.1426, 0.0015);
-    //GateOnGamma(1.2680, 0.0193);
-    //GateOnGamma(1.8382, 0.0062);
-    //GateOnGamma(3.5179, 0.0109);
-
-  /*****************************/
+  /************** OLD STUFF! Make these into functions, eventually ***************/
 
   /*
   TCanvas *cF = new TCanvas("cF","cF",1000,1000);
