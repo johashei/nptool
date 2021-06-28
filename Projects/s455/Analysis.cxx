@@ -54,7 +54,7 @@ void Analysis::Init(){
 ////////////////////////////////////////////////////////////////////////////////
 void Analysis::TreatEvent(){
   ReInitValue();
-  cout << "************" << endl;
+  //cout << "************" << endl;
   BeamAnalysis();
 
   unsigned int sofsci_size = SofSci->DetectorNbr.size();
@@ -93,7 +93,7 @@ void Analysis::FissionFragmentAnalysis(){
   double L_CC = 8.45;
   double Beta_left = -1;
   double Beta_right = -1;
-  double Beta_norm = 0.7;
+  double Beta_norm = 0.745;
 
   for(int i = 0; i<2; i++){
     TOF_CC[i] = -1;
@@ -129,7 +129,7 @@ void Analysis::FissionFragmentAnalysis(){
     TOF_left = TOF_CC[0];
     TOF_right = TOF_CC[1];
   }
-  else{
+  else if(Plastic[0]>Plastic[1]){
     Plastic_left = Plastic[1];
     Plastic_right = Plastic[0];
     TOF_left = TOF_CC[1];
@@ -143,7 +143,7 @@ void Analysis::FissionFragmentAnalysis(){
     Beta_left = velocity_left * m/ns / NPUNITS::c_light;
     Beta_right = velocity_right * m/ns / NPUNITS::c_light;
 
-    /*if(E1 != -1)
+    if(E1 != -1)
       E1 = E1 / fcorr_z_beta[0]->Eval(Beta_left) * fcorr_z_beta[0]->Eval(Beta_norm);
     if(E2 != -1)
       E2 = E2 / fcorr_z_beta[1]->Eval(Beta_left) * fcorr_z_beta[1]->Eval(Beta_norm);
@@ -151,14 +151,14 @@ void Analysis::FissionFragmentAnalysis(){
       E3 = E3 / fcorr_z_beta[2]->Eval(Beta_right) * fcorr_z_beta[2]->Eval(Beta_norm);
     if(E4 != -1)
       E4 = E4 / fcorr_z_beta[3]->Eval(Beta_right) * fcorr_z_beta[3]->Eval(Beta_norm);
-*/
+
     if(E1>0 && E2==-1)
       E_left = E1;
-    if(E1==-1 && E2>0)
+    else if(E1==-1 && E2>0)
       E_left = E2;
     if(E3>0 && E4==-1)
       E_right = E3;
-    if(E3==-1 && E4>0)
+    else if(E3==-1 && E4>0)
       E_right = E4;
 
     double Zsum = E_left + E_right;

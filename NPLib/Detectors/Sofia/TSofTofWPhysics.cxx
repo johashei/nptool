@@ -42,18 +42,18 @@ using namespace std;
 ClassImp(TSofTofWPhysics)
 
 
-///////////////////////////////////////////////////////////////////////////
+  ///////////////////////////////////////////////////////////////////////////
 TSofTofWPhysics::TSofTofWPhysics()
-   : m_EventData(new TSofTofWData),
-     m_PreTreatedData(new TSofTofWData),
-     m_EventPhysics(this),
-     m_E_RAW_Threshold(0), // adc channels
-     m_E_Threshold(0),     // MeV
-     m_NumberOfPlastics(28),
-     m_StartTime(-1),
-     m_TofAlignedValue(0), // ns
-     m_NumberOfDetectors(0) {
-}
+  : m_EventData(new TSofTofWData),
+  m_PreTreatedData(new TSofTofWData),
+  m_EventPhysics(this),
+  m_E_RAW_Threshold(0), // adc channels
+  m_E_Threshold(0),     // MeV
+  m_NumberOfPlastics(28),
+  m_StartTime(-1),
+  m_TofAlignedValue(0), // ns
+  m_NumberOfDetectors(0) {
+  }
 
 ///////////////////////////////////////////////////////////////////////////
 /// A usefull method to bundle all operation to add a detector
@@ -71,7 +71,7 @@ void TSofTofWPhysics::AddDetector(double R, double Theta, double Phi){
   // Call the cartesian method
   AddDetector(Pos);
 } 
-  
+
 ///////////////////////////////////////////////////////////////////////////
 void TSofTofWPhysics::BuildSimplePhysicalEvent() {
   BuildPhysicalEvent();
@@ -104,7 +104,7 @@ void TSofTofWPhysics::BuildPhysicalEvent() {
     int pmt     = m_PreTreatedData->GetPmt(i);
     int FT      = m_PreTreatedData->GetFineTime(i);
     int CT      = m_PreTreatedData->GetCoarseTime(i);
-    
+
     double T = CalculateTimeNs(plastic, pmt, FT, CT);
 
     if(pmt==1){
@@ -116,26 +116,22 @@ void TSofTofWPhysics::BuildPhysicalEvent() {
       mult2[plastic-1]++;
     }
   }
-  
+
   static CalibrationManager* Cal = CalibrationManager::getInstance();
   for(int p=0; p<m_NumberOfPlastics; p++){
     if(mult1[p]==1 && mult2[p]==1){
-      for(int i=0; i<mult1[p]; i++){
-        for(int j=0; j<mult2[p]; j++){
-          double time_ns = 0.5*(T1[p][i] + T2[p][j]);
-          double rawpos = T1[p][i] - T2[p][j];
-          double calpos = Cal->ApplyCalibration("SofTofW/TOFW"+NPL::itoa(p+1)+"_POSPAR",rawpos);
-          double rawtof = time_ns - m_StartTime;
-          double caltof = Cal->ApplyCalibration("SofTofW/TOFW"+NPL::itoa(p+1)+"_TOFPAR",rawtof) + m_TofAlignedValue;
-  
-          PlasticNbr.push_back(p+1);
-          TimeNs.push_back(time_ns);
-          RawPosY.push_back(rawpos);
-          CalPosY.push_back(calpos);
-          RawTof.push_back(rawtof);
-          CalTof.push_back(caltof);
-        }
-      }
+      double time_ns = 0.5*(T1[p][0] + T2[p][0]);
+      double rawpos = T1[p][0] - T2[p][0];
+      double calpos = Cal->ApplyCalibration("SofTofW/TOFW"+NPL::itoa(p+1)+"_POSPAR",rawpos);
+      double rawtof = time_ns - m_StartTime;
+      double caltof = Cal->ApplyCalibration("SofTofW/TOFW"+NPL::itoa(p+1)+"_TOFPAR",rawtof) + m_TofAlignedValue;
+
+      PlasticNbr.push_back(p+1);
+      TimeNs.push_back(time_ns);
+      RawPosY.push_back(rawpos);
+      CalPosY.push_back(calpos);
+      RawTof.push_back(rawtof);
+      CalTof.push_back(caltof);
     }
   }
   m_StartTime = -1;
@@ -157,7 +153,7 @@ double TSofTofWPhysics::CalculateTimeNs(int det, int pmt, int ft, int ct){
   }
 
   else{
-    double par_next = Cal->GetValue("SofSci/TOFW"+NPL::itoa(det)+"_PMT"+NPL::itoa(pmt)+"_TIME",ft+1);
+    double par_next = Cal->GetValue("SofTofW/TOFW"+NPL::itoa(det)+"_PMT"+NPL::itoa(pmt)+"_TIME",ft+1);
     ift_ns = par + r*(par_next - par);
   }
 
@@ -281,7 +277,7 @@ void TSofTofWPhysics::ReadConfiguration(NPL::InputParser parser) {
     if(blocks[i]->HasTokenList(cart)){
       if(NPOptionManager::getInstance()->GetVerboseLevel())
         cout << endl << "////  SofTofW " << i+1 <<  endl;
-    
+
       TVector3 Pos = blocks[i]->GetTVector3("POS","mm");
       AddDetector(Pos);
     }
@@ -307,7 +303,7 @@ void TSofTofWPhysics::AddParameterToCalibrationManager() {
   for (int i = 0; i < m_NumberOfPlastics; ++i) {
     Cal->AddParameter("SofTofW", "TOFW"+ NPL::itoa(i+1)+"_POSPAR","SofTofW_TOFW"+ NPL::itoa(i+1)+"_POSPAR");
     Cal->AddParameter("SofTofW", "TOFW"+ NPL::itoa(i+1)+"_TOFPAR","SofTofW_TOFW"+ NPL::itoa(i+1)+"_TOFPAR");
-    
+
     for(int j = 0; j < 2; j++){
       Cal->AddParameter("SofTofW", "TOFW"+ NPL::itoa(i+1)+"_PMT"+NPL::itoa(j+1)+"_TIME","SofTofW_TOFW"+ NPL::itoa(i+1)+"_PMT"+NPL::itoa(j+1)+"_TIME");
       Cal->AddParameter("SofTofW", "TOFW"+ NPL::itoa(i+1)+"_PMT"+NPL::itoa(j+1)+"_CLOCKOFFSET","SofTofW_TOFW"+ NPL::itoa(i+1)+"_PMT"+NPL::itoa(j+1)+"_CLOCKOFFSET");
@@ -355,14 +351,14 @@ NPL::VDetector* TSofTofWPhysics::Construct() {
 //            Registering the construct method to the factory                 //
 ////////////////////////////////////////////////////////////////////////////////
 extern "C"{
-class proxy_SofTofW{
-  public:
-    proxy_SofTofW(){
-      NPL::DetectorFactory::getInstance()->AddToken("SofTofW","SofTofW");
-      NPL::DetectorFactory::getInstance()->AddDetector("SofTofW",TSofTofWPhysics::Construct);
-    }
-};
+  class proxy_SofTofW{
+    public:
+      proxy_SofTofW(){
+        NPL::DetectorFactory::getInstance()->AddToken("SofTofW","SofTofW");
+        NPL::DetectorFactory::getInstance()->AddDetector("SofTofW",TSofTofWPhysics::Construct);
+      }
+  };
 
-proxy_SofTofW p_SofTofW;
+  proxy_SofTofW p_SofTofW;
 }
 

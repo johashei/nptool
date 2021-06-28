@@ -77,6 +77,7 @@ class TSofFissionFragment : public TObject {
     inline void SetBrho(double val){fFF_Brho.push_back(val);};//!
 
     //////////////////////    GETTERS    ////////////////////////
+    int GetMult() {return fFF_Z.size();}//!
     inline double GetZsum() const {return fFF_Zsum;}//! 
     inline double GetZ(int i) const {return fFF_Z[i];}//! 
     inline double GetQmax(int i) const {return fFF_Qmax[i];}//! 
