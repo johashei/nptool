@@ -28,7 +28,7 @@ void gamma(){
 
   chain->SetAlias("R","sqrt(Nebula.PosX*Nebula.PosX+Nebula.PosY*Nebula.PosY+(Nebula.PosZ+3774.7)*(Nebula.PosZ+3774.7))");
   new TCanvas();
-  unsigned int select =60;
+  unsigned int select =91;
   for(unsigned int i = 0 ; i < 150 ; i++){
     if(i!=select)
     process1bar(i); 
@@ -49,16 +49,18 @@ void process1bar(int b){
   double R =  r1->GetBinCenter(r1->GetMaximumBin());
 
   auto h1 = GetV(b);
-  if(h1->GetEntries()<10)
+  if(h1->GetEntries()<1)
     return;
   //h1->Rebin(8);
   double max = h1->GetBinCenter(h1->GetMaximumBin());
   //h1->Draw();
-  auto f = new TF1("f","gaus(0)+pol0(3)",max-100,max+100);
+  auto f = new TF1("f","crystalball(0)+pol0(5)",max-100,max+100);
   f->SetParameter(0,h1->GetMaximum());
   f->SetParameter(1,max);
-  f->SetParameter(2,5);
-  f->SetParameter(3,5);
+  f->SetParameter(2,10);
+  f->SetParameter(3,1);
+  f->SetParameter(4,5);
+  f->SetParameter(5,5);
 
   h1->Fit(f,"R");
   
@@ -68,10 +70,12 @@ void process1bar(int b){
     // X=R*(1/c-1/Vbad)
     
   double offset=R*(1/c_light-1/f->GetParameter(1)) ;
+  
   cout << "hello " << max-f->GetParameter(1) << endl; 
   //double offset=R*(1/c_light-1/max) ;
   
   cout <<f->GetParameter(1) << " " <<  offset << " " << R/(offset+R/f->GetParameter(1)) << endl;
+  
   if(offset>0){
     output << "NEBULA_T_ID"  << b << " " << offset << endl; 
     graph->Set(graph->GetN()+1);
