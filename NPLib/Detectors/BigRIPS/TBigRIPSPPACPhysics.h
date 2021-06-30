@@ -81,19 +81,25 @@ class TBigRIPSPPACPhysics : public TObject, public NPL::VDetector{
     map<int,double> RawUpperLimit;//! Upper Value of TDC range considered for a PPAC
     map<int,double> RawLowerLimit;//! Lower Value of TDC range considered for a PPAC 
     map<int,int>  IDtoFP;//! Focal plane where the PPAC is located
-    map<int,double> ch2ns_TX1; 
-    map<int,double> ch2ns_TX2; 
-    map<int,double> ch2ns_TY1; 
-    map<int,double> ch2ns_TY2; 
-    map<int,double> ch2ns_TA;
-    map<int,double> xns_off;
-    map<int,double> yns_off;
-    map<int,double> x_offset;
-    map<int,double> xpos_offset;
-    map<int,double> x_ns2mm;
-    map<int,double> y_offset;
-    map<int,double> ypos_offset;
-    map<int,double> y_ns2mm;
+    map<int,double> ch2ns_TX1;//! 
+    map<int,double> ch2ns_TX2;//!
+    map<int,double> ch2ns_TY1;//!
+    map<int,double> ch2ns_TY2;//!
+    map<int,double> ch2ns_TA;//!
+    map<int,double> xns_off;//!
+    map<int,double> yns_off;//!
+    map<int,double> x_offset;//!
+    map<int,double> xpos_offset;//!
+    map<int,double> x_ns2mm;//!
+    map<int,bool> ignore_txsum_cut;//!
+    map<int,double> txsum_min;//!
+    map<int,double> txsum_max;//!
+    map<int,double> y_offset;//!
+    map<int,double> ypos_offset;//!
+    map<int,double> y_ns2mm;//!
+    map<int,bool> ignore_tysum_cut;//!
+    map<int,double> tysum_min;//!
+    map<int,double> tysum_max;//!
   
   public: //   Innherited from VDetector Class
 
@@ -141,7 +147,7 @@ class TBigRIPSPPACPhysics : public TObject, public NPL::VDetector{
     // Write Spectra to file
     void WriteSpectra();
 
-  public:      //   Specific to SamuraiFDC2 Array
+  public:      //   Specific
 
     //   Clear The PreTeated object
     void ClearPreTreatedData()   {m_PreTreatedData->Clear();}

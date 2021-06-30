@@ -167,13 +167,20 @@ void TBigRIPSPPACPhysics::PreTreat(){
     multiHit.push_back(Nmulti);
 
     //Calculate TSum, TDiff and X/Y
+     double TSumX_tmp, TSumY_tmp;
      double TDiffX_tmp, TDiffY_tmp;
      double X_tmp, Y_tmp;
     
-    if(tmp.HasTXs() && tmp.HasTA()){TSumX.push_back(TX1[0]+TX2[0]-2*TA[0]);}
-    else {TSumX.push_back(-99999);}
+    if(tmp.HasTXs() && tmp.HasTA()){
+        TSumX_tmp = TX1[0]+TX2[0]-2*TA[0];
+        TSumX.push_back(TSumX_tmp);
+    }else {
+        TSumX_tmp = -99999;
+        TSumX.push_back(TSumX_tmp);
+    }
 
-    if(tmp.HasTXs()){
+    if(tmp.HasTXs() && ( ignore_txsum_cut[id] || 
+            (TSumX_tmp >= txsum_min[id] && TSumX_tmp <= txsum_max[id]) ) ){
         TDiffX_tmp = (TX1[0] - TX2[0] - xns_off[id]);
         TDiffX.push_back(TDiffX_tmp);
         X_tmp = -1*((TDiffX_tmp * x_ns2mm[id])/2. - x_offset[id] - xpos_offset[id]);
@@ -183,10 +190,16 @@ void TBigRIPSPPACPhysics::PreTreat(){
         X.push_back(-99999);
     }
 
-    if(tmp.HasTYs() && tmp.HasTA()) {TSumY.push_back(TY1[0]+TY2[0]-2*TA[0]);}
-    else {TSumY.push_back(-99999);}
+    if(tmp.HasTYs() && tmp.HasTA()) {
+        TSumY_tmp = TY1[0]+TY2[0]-2*TA[0];
+        TSumY.push_back(TSumY_tmp);
+    } else {
+        TSumY_tmp = -99999;
+        TSumY.push_back(TSumY_tmp);
+    }
 
-    if(tmp.HasTYs()) {
+    if(tmp.HasTYs() && (ignore_tysum_cut[id] || 
+         (TSumY_tmp >= tysum_min[id] && TSumY_tmp <= tysum_max[id])) ){
         TDiffY_tmp = (TY1[0] - TY2[0] - yns_off[id]);
         TDiffY.push_back(TDiffY_tmp);
         Y_tmp = ((TDiffY_tmp * y_ns2mm[id])/2. - y_offset[id] - ypos_offset[id]);
@@ -302,6 +315,14 @@ void TBigRIPSPPACPhysics::AddPPACs(string name, NPL::XmlParser& xml){
       y_offset[ID] = b[i]->AsDouble("yoffset"); 
       xpos_offset[ID] = b[i]->AsDouble("xpos_off"); 
       ypos_offset[ID] = b[i]->AsDouble("ypos_off"); 
+      txsum_min[ID] = b[i]->AsDouble("txsum_min"); 
+      txsum_max[ID] = b[i]->AsDouble("txsum_max"); 
+      tysum_min[ID] = b[i]->AsDouble("tysum_min"); 
+      tysum_max[ID] = b[i]->AsDouble("tysum_max"); 
+      ignore_txsum_cut[ID] = false; 
+      if(txsum_min[ID] >= txsum_max[ID]) ignore_txsum_cut[ID] = true; 
+      ignore_tysum_cut[ID] = false; 
+      if(tysum_min[ID] >= tysum_max[ID]) ignore_tysum_cut[ID] = true; 
     }
   }
 }
