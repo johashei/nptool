@@ -80,13 +80,20 @@ void TSofAtPhysics::BuildPhysicalEvent() {
   PreTreat();
 
   unsigned int mysizeE = m_PreTreatedData->GetMultiplicity();
+  if(mysizeE != 4)
+    return;
+
+  double E[4]={-1,-1,-1,-1};
   for (UShort_t e = 0; e < mysizeE ; e++) {
-    if(m_PreTreatedData->GetPileUp(e) != 1 && m_PreTreatedData->GetOverflow(e) != 1){
-      AnodeNbr.push_back(m_PreTreatedData->GetAnodeNbr(e));
-      Energy.push_back(m_PreTreatedData->GetEnergy(e));
-    }
+    E[m_PreTreatedData->GetAnodeNbr(e)-1] = m_PreTreatedData->GetEnergy(e);
   }
 
+  if(E[0]>0 && E[1]>0 && E[2]>0 && E[3]>0){
+    for(int i=0; i<4; i++){
+      AnodeNbr.push_back(i+1);
+      Energy.push_back(E[i]);
+    }
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -102,12 +109,12 @@ void TSofAtPhysics::PreTreat() {
 
   unsigned int mysize = m_EventData->GetMultiplicity();
   for (unsigned int i = 0; i < mysize ; ++i) {
-    //double Energy = Cal->ApplyCalibration("SofAt/SEC"+NPL::itoa(m_EventData->GetSectionNbr(i))+"_ANODE"+NPL::itoa(m_EventData->GetAnodeNbr(i))+"_ENERGY",m_EventData->GetEnergy(i));
-  
-    m_PreTreatedData->SetAnodeNbr(m_EventData->GetAnodeNbr(i));
-    m_PreTreatedData->SetEnergy(m_EventData->GetEnergy(i));
-    m_PreTreatedData->SetPileUp(m_EventData->GetPileUp(i));
-    m_PreTreatedData->SetOverflow(m_EventData->GetOverflow(i));
+    if(m_EventData->GetPileUp(i)==0 && m_EventData->GetOverflow(i)==0){ 
+      m_PreTreatedData->SetAnodeNbr(m_EventData->GetAnodeNbr(i));
+      m_PreTreatedData->SetEnergy(m_EventData->GetEnergy(i));
+      m_PreTreatedData->SetPileUp(m_EventData->GetPileUp(i));
+      m_PreTreatedData->SetOverflow(m_EventData->GetOverflow(i));
+    }
   }
 }
 

@@ -78,10 +78,13 @@ void Analysis::FissionFragmentAnalysis(){
 
   double TOF_CC[2];
   double Plastic[2];
+  double PosY[2];
   double Plastic_left = -1;
   double Plastic_right = -1;
   double TOF_left = -1;
   double TOF_right = -1;
+  double TOF_up = -1;
+  double TOF_down = -1;
   double Esec[2];
   double Section[2];
   double E_left = -1;
@@ -90,9 +93,13 @@ void Analysis::FissionFragmentAnalysis(){
   double E2 = -1;
   double E3 = -1;
   double E4 = -1;
+  double E_up = -1;
+  double E_down = -1;
   double L_CC = 8.45;
   double Beta_left = -1;
   double Beta_right = -1;
+  double Beta_up = -1;
+  double Beta_down = -1;
   double Beta_norm = 0.745;
 
   for(int i = 0; i<2; i++){
@@ -100,6 +107,7 @@ void Analysis::FissionFragmentAnalysis(){
     Plastic[i] = -1;
     Esec[i] = -1;
     Section[i] = -1;
+    PosY[i] = -1;
   }
 
 
@@ -107,6 +115,7 @@ void Analysis::FissionFragmentAnalysis(){
     for(unsigned int i=0; i< softofw_size; i++){
       TOF_CC[i] = SofTofW->CalTof[i];
       Plastic[i] = SofTofW->PlasticNbr[i];
+      PosY[i] = SofTofW->CalPosY[i];
 
       Esec[i] = SofTwim->EnergySection[i];
       int sec = SofTwim->SectionNbr[i];
@@ -136,6 +145,15 @@ void Analysis::FissionFragmentAnalysis(){
     TOF_right = TOF_CC[0];
   }
 
+  if(PosY[0]>PosY[1]){
+    TOF_up = TOF_CC[0];
+    TOF_down = TOF_CC[1];
+  }
+  else if(PosY[0]<PosY[1]){
+    TOF_up = TOF_CC[1];
+    TOF_down = TOF_CC[0];
+  }
+
   if(TOF_left != -1 && TOF_right != -1){
     double velocity_left = L_CC/TOF_left;
     double velocity_right = L_CC/TOF_right;
@@ -143,39 +161,86 @@ void Analysis::FissionFragmentAnalysis(){
     Beta_left = velocity_left * m/ns / NPUNITS::c_light;
     Beta_right = velocity_right * m/ns / NPUNITS::c_light;
 
-    if(E1 != -1)
+    if(E1 != -1 && E2==-1){
       E1 = E1 / fcorr_z_beta[0]->Eval(Beta_left) * fcorr_z_beta[0]->Eval(Beta_norm);
-    if(E2 != -1)
-      E2 = E2 / fcorr_z_beta[1]->Eval(Beta_left) * fcorr_z_beta[1]->Eval(Beta_norm);
-    if(E3 != -1)
-      E3 = E3 / fcorr_z_beta[2]->Eval(Beta_right) * fcorr_z_beta[2]->Eval(Beta_norm);
-    if(E4 != -1)
-      E4 = E4 / fcorr_z_beta[3]->Eval(Beta_right) * fcorr_z_beta[3]->Eval(Beta_norm);
-
-    if(E1>0 && E2==-1)
       E_left = E1;
-    else if(E1==-1 && E2>0)
-      E_left = E2;
-    if(E3>0 && E4==-1)
-      E_right = E3;
-    else if(E3==-1 && E4>0)
-      E_right = E4;
-
-    double Zsum = E_left + E_right;
-  
-    if(E_left != -1 && E_right != -1){
-      SofFF->SetTOF(TOF_left);
-      SofFF->SetTOF(TOF_right);
-      SofFF->SetBeta(Beta_left);
-      SofFF->SetBeta(Beta_right);
-      //SofFF->SetZ(E_left);
-      //SofFF->SetZ(E_right);
-      SofFF->SetZ(E1);
-      SofFF->SetZ(E2);
-      SofFF->SetZ(E3);
-      SofFF->SetZ(E4);
-      SofFF->SetZsum(Zsum);
     }
+    if(E2 != -1 && E1==-1){
+      E2 = E2 / fcorr_z_beta[1]->Eval(Beta_left) * fcorr_z_beta[1]->Eval(Beta_norm);
+      E_left = E2;
+    }
+    if(E3 != -1 && E4==-1){
+      E3 = E3 / fcorr_z_beta[2]->Eval(Beta_right) * fcorr_z_beta[2]->Eval(Beta_norm);
+      E_right = E3;
+    }
+    if(E4 != -1 && E3==-1){
+      E4 = E4 / fcorr_z_beta[3]->Eval(Beta_right) * fcorr_z_beta[3]->Eval(Beta_norm);
+      E_right = E4;
+    }
+  }
+  
+  if(TOF_up != -1 && TOF_down != -1){
+    double velocity_down = L_CC/TOF_down;
+    double velocity_up = L_CC/TOF_up;
+
+    Beta_down = velocity_down * m/ns / NPUNITS::c_light;
+    Beta_up = velocity_up * m/ns / NPUNITS::c_light;
+
+    if(E1>0 && E2>0 && E3==-1 && E4==-1){
+      E1 = E1 / fcorr_z_beta[0]->Eval(Beta_down) * fcorr_z_beta[0]->Eval(Beta_norm);
+      E2 = E2 / fcorr_z_beta[1]->Eval(Beta_up) * fcorr_z_beta[1]->Eval(Beta_norm);
+      
+      E_up = E2;
+      E_down = E1;
+    }
+    else if(E1==-1 && E2==-1 && E3>0 && E4>0){
+      E3 = E3 / fcorr_z_beta[2]->Eval(Beta_up) * fcorr_z_beta[2]->Eval(Beta_norm);
+      E4 = E4 / fcorr_z_beta[3]->Eval(Beta_down) * fcorr_z_beta[3]->Eval(Beta_norm);
+      
+      E_up = E4;
+      E_down = E3;
+    }
+  }
+
+
+  // Z calibration //
+  double p0 = -1.1072;
+  double p1 = 0.27517;
+  double Z1=-1;
+  double Z2=-1;
+  double Zsum=-1;
+  if(E_left!=-1 && E_right!=-1){
+    Z1 = p0 + p1*sqrt(E_left);
+    Z2 = p0 + p1*sqrt(E_right);
+    Zsum = Z1+Z2;
+  }
+  if(E_up!=-1 && E_down!=-1){
+    double Z1 = p0 + p1*sqrt(E_down);
+    double Z2 = p0 + p1*sqrt(E_up);
+    Zsum = Z1+Z2;
+  }
+
+  if(E_left != -1 && E_right != -1){
+    SofFF->SetTOF(TOF_left);
+    SofFF->SetTOF(TOF_right);
+    SofFF->SetBeta(Beta_left);
+    SofFF->SetBeta(Beta_right);
+    SofFF->SetZ(p0+p1*sqrt(E1));
+    SofFF->SetZ(p0+p1*sqrt(E2));
+    SofFF->SetZ(p0+p1*sqrt(E3));
+    SofFF->SetZ(p0+p1*sqrt(E4));
+    SofFF->SetZsum(Zsum);
+  }
+  if(E_up!=-1 && E_down!=-1){
+    SofFF->SetTOF(TOF_down);
+    SofFF->SetTOF(TOF_up);
+    SofFF->SetBeta(Beta_down);
+    SofFF->SetBeta(Beta_up);
+    SofFF->SetZ(p0+p1*sqrt(E1));
+    SofFF->SetZ(p0+p1*sqrt(E2));
+    SofFF->SetZ(p0+p1*sqrt(E3));
+    SofFF->SetZ(p0+p1*sqrt(E4));
+    SofFF->SetZsum(Zsum);
   }
 }
 
@@ -312,8 +377,13 @@ void Analysis::InitParameter(){
   //fDCC   = -30000;
   fDCC   = -10000;
   fK_LS2 = -2.5e-8;
+  //fBrho0 = 12.3255; // 238U run 369
   fBrho0 = 10.8183; // 182Hg
   //fBrho0 = 10.6814; // 180Hg
+  //fBrho0 = 10.8138; // 187Pb
+  //fBrho0 = 11.3418; // 216Th
+  //fBrho0 = 11.2712; // 207Fr
+  //fBrho0 = 10.6814; // 175Pt
 }
 
 ////////////////////////////////////////////////////////////////////////////////
