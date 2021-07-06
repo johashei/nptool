@@ -802,6 +802,8 @@ void Strasse::ReadConfiguration(NPL::InputParser parser){
     "Inner_PCB_DownstreamWidth",
     "Inner_PCB_MidWidth",       
     "Inner_PCB_Thickness",      
+    "Inner_PCB_Ledge",      
+    "Inner_PCB_Step",      
     "Inner_Wafer_TransverseStrips",
     "Inner_Wafer_LongitudinalStrips",
     "Outer_Wafer_Length",       
@@ -818,6 +820,8 @@ void Strasse::ReadConfiguration(NPL::InputParser parser){
     "Outer_PCB_DownstreamWidth",
     "Outer_PCB_MidWidth",       
     "Outer_PCB_Thickness",      
+    "Outer_PCB_Ledge",      
+    "Outer_PCB_Step",      
     "Outer_Wafer_TransverseStrips",
     "Outer_Wafer_LongitudinalStrips",
     "Chamber_Thickness",
@@ -848,6 +852,8 @@ void Strasse::ReadConfiguration(NPL::InputParser parser){
     Inner_PCB_DownstreamWidth = blocks_info[0]->GetDouble("Inner_PCB_DownstreamWidth","mm"); 
     Inner_PCB_MidWidth = blocks_info[0]->GetDouble("Inner_PCB_MidWidth","mm");        
     Inner_PCB_Thickness = blocks_info[0]->GetDouble("Inner_PCB_Thickness","mm");       
+    Inner_PCB_Ledge = blocks_info[0]->GetDouble("Inner_PCB_Ledge","mm");       
+    Inner_PCB_Step = blocks_info[0]->GetDouble("Inner_PCB_Step","mm");       
     Outer_Wafer_Length = blocks_info[0]->GetDouble("Outer_Wafer_Length","mm");        
     Outer_Wafer_Width = blocks_info[0]->GetDouble("Outer_Wafer_Width","mm");         
     Outer_Wafer_Thickness = blocks_info[0]->GetDouble("Outer_Wafer_Thickness","mm");     
@@ -864,6 +870,8 @@ void Strasse::ReadConfiguration(NPL::InputParser parser){
     Outer_PCB_DownstreamWidth = blocks_info[0]->GetDouble("Outer_PCB_DownstreamWidth","mm"); 
     Outer_PCB_MidWidth = blocks_info[0]->GetDouble("Outer_PCB_MidWidth","mm");        
     Outer_PCB_Thickness = blocks_info[0]->GetDouble("Outer_PCB_Thickness","mm");       
+    Outer_PCB_Ledge = blocks_info[0]->GetDouble("Outer_PCB_Ledge","mm");       
+    Outer_PCB_Step = blocks_info[0]->GetDouble("Outer_PCB_Step","mm");       
     Chamber_Thickness= blocks_info[0]->GetDouble("Chamber_Thickness","mm"); 
     Chamber_Cylinder_Length= blocks_info[0]->GetDouble("Chamber_Cylinder_Length","mm");        
     Chamber_Radius= blocks_info[0]->GetDouble("Chamber_Radius","mm");       

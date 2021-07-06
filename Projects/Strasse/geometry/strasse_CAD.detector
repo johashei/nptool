@@ -88,10 +88,10 @@ Strasse Outer
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 Strasse InactiveMaterial
-  Chamber= /Users/flavigny/LPCCloud/home/Documents/STRASSE/Meca_CAD/STEP/STRASSE_Chamber.stl
-  Stars= /Users/flavigny/LPCCloud/home/Documents/STRASSE/Meca_CAD/STEP/STRASSE_StarSupports.stl
-  Base= /Users/flavigny/LPCCloud/home/Documents/STRASSE/Meca_CAD/STEP/STRASSE_Base.stl
-  Blades= /Users/flavigny/LPCCloud/home/Documents/STRASSE/Meca_CAD/STEP/Groupe_6_Blade3.stl
+  Chamber= ./geometry/STRASSE_Chamber.stl
+  Stars= ./geometry/STRASSE_StarSupports.stl
+  Base= ./geometry/STRASSE_Base.stl
+  Blades= ./geometry/STRASSE_Blades.stl
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%1
 %Catana CSV
 % Path= geometry/Catana.csv 
