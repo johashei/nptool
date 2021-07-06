@@ -1,15 +1,14 @@
 TChain* MakeChain1();
 TChain* MakeChain2();
 TChain* MakeChain();
-TH2F*   MakeTH2();
-TH2F*   GetTH2();
+TH1F*   GetV(unsigned int b);
+TH1F*   GetR(unsigned int b);
 TGraph* graph = new TGraph();
 unsigned int point = 1;
 double off;
 double c_light=299.792458;//mm/ns
 auto chain = MakeChain();
 void process1bar(int b);
-auto h = new TH2F("h","h",200,0,201,500,0,1000);
 auto r = new TH2F("r","r",200,0,201,10000,17000,20000);
 ofstream output("Calibration/Nebula/offset_gamma.txt");
 ////////////////////////////////////////////////////////////////////////////////
@@ -28,10 +27,8 @@ void gamma(){
   auto c = new TCanvas("tof","tof");
 
   chain->SetAlias("R","sqrt(Nebula.PosX*Nebula.PosX+Nebula.PosY*Nebula.PosY+(Nebula.PosZ+3774.7)*(Nebula.PosZ+3774.7))");
-  h=GetTH2();
-  h->Draw("colz");
   new TCanvas();
-  unsigned int select =60;
+  unsigned int select =91;
   for(unsigned int i = 0 ; i < 150 ; i++){
     if(i!=select)
     process1bar(i); 
@@ -46,20 +43,24 @@ void gamma(){
 ////////////////////////////////////////////////////////////////////////////////
 void process1bar(int b){
   //new TCanvas();
-  // Get the Radius for the distance to this barre
-  auto r1 = r->ProjectionY(Form("h%d",b),b,b+1);  
-  r1->Rebin(4);
+  // Get the Radius for the distance to this bar
+  auto r1 = GetR(b);  
+  //r1->Rebin(4);
   double R =  r1->GetBinCenter(r1->GetMaximumBin());
 
-  auto h1 = h->ProjectionY(Form("h%d",b),b,b+1);
-  h1->Rebin(8);
+  auto h1 = GetV(b);
+  if(h1->GetEntries()<1)
+    return;
+  //h1->Rebin(8);
   double max = h1->GetBinCenter(h1->GetMaximumBin());
   //h1->Draw();
-  auto f = new TF1("f","gaus(0)+pol0(3)",max-100,max+100);
+  auto f = new TF1("f","crystalball(0)+pol0(5)",max-100,max+100);
   f->SetParameter(0,h1->GetMaximum());
   f->SetParameter(1,max);
-  f->SetParameter(2,5);
-  f->SetParameter(3,5);
+  f->SetParameter(2,10);
+  f->SetParameter(3,1);
+  f->SetParameter(4,5);
+  f->SetParameter(5,5);
 
   h1->Fit(f,"R");
   
@@ -69,10 +70,12 @@ void process1bar(int b){
     // X=R*(1/c-1/Vbad)
     
   double offset=R*(1/c_light-1/f->GetParameter(1)) ;
+  
   cout << "hello " << max-f->GetParameter(1) << endl; 
   //double offset=R*(1/c_light-1/max) ;
   
   cout <<f->GetParameter(1) << " " <<  offset << " " << R/(offset+R/f->GetParameter(1)) << endl;
+  
   if(offset>0){
     output << "NEBULA_T_ID"  << b << " " << offset << endl; 
     graph->Set(graph->GetN()+1);
@@ -81,27 +84,22 @@ void process1bar(int b){
     }
 }
 ////////////////////////////////////////////////////////////////////////////////
-TH2F* GetTH2(){
-  auto File= new TFile("Calibration/Nebula/hist_v.root");
-  h = (TH2F*) File->FindObjectAny("h");
-
-  File= new TFile("Calibration/Nebula/hist_r.root");
-  r = (TH2F*) File->FindObjectAny("r");
+TH1F* GetV(unsigned int b){
+  auto File= new TFile("Calibration/Nebula/hist_gamma.root");
+  auto h = (TH1F*) File->FindObjectAny(Form("h%d",b));
+  h->Rebin(4);
+  h->GetXaxis()->SetRangeUser(500,800);
+//  File= new TFile("Calibration/Nebula/hist_r.root");
+//  r = (TH2F*) File->FindObjectAny("r");
   return h;
   }
-
 ////////////////////////////////////////////////////////////////////////////////
-TH2F* MakeTH2(){
-  TString cond=Form("(Nebula.TOF-%f)>20&&(Nebula.TOF-%f)<38",off,off);
-  TString draw=Form("R/(Nebula.TOF-%f):Nebula.DetectorNumber>>h",off); 
-  chain->Draw(draw,cond,"colz");
-  h->SaveAs("Calibration/Nebula/hist_v.root");
-
-  chain->Draw("R:Nebula.DetectorNumber>>r","","colz");
-  r->SaveAs("Calibration/Nebula/hist_r.root");
-
+TH1F* GetR(unsigned int b){
+  auto File= new TFile("Calibration/Nebula/hist_gamma.root");
+  auto h = (TH1F*) File->FindObjectAny(Form("r%d",b));
   return h;
   }
+
 
 ////////////////////////////////////////////////////////////////////////////////
 TChain* MakeChain(){

@@ -37,15 +37,17 @@ Analysis::~Analysis(){
 ////////////////////////////////////////////////////////////////////////////////
 void Analysis::Init(){
   SofBeamID = new TSofBeamID();
+  SofFF = new TSofFissionFragment();
   SofSci= (TSofSciPhysics*) m_DetectorManager->GetDetector("SofSci");
   SofTrim= (TSofTrimPhysics*) m_DetectorManager->GetDetector("SofTrim");
   SofTwim= (TSofTwimPhysics*) m_DetectorManager->GetDetector("SofTwim");
   SofTofW= (TSofTofWPhysics*) m_DetectorManager->GetDetector("SofTofW");
+  SofAt= (TSofAtPhysics*) m_DetectorManager->GetDetector("SofAt");
 
   InitParameter();
   InitOutputBranch();
   LoadCut();
-
+  LoadSpline();
 
 }
 
@@ -54,12 +56,191 @@ void Analysis::TreatEvent(){
   ReInitValue();
   //cout << "************" << endl;
   BeamAnalysis();
+
   unsigned int sofsci_size = SofSci->DetectorNbr.size();
   if(sofsci_size==2){
     double start_time = SofSci->TimeNs[1];
     SofTofW->SetTofAlignedValue(36);
     SofTofW->SetStartTime(start_time);
     SofTofW->BuildPhysicalEvent();
+
+    FissionFragmentAnalysis();
+  }
+
+
+}
+
+////////////////////////////////////////////////////////////////////////////////
+void Analysis::FissionFragmentAnalysis(){
+  unsigned int softofw_size = SofTofW->PlasticNbr.size();
+  unsigned int softwim_size = SofTwim->SectionNbr.size();
+  unsigned int sofat_size   = SofAt->Energy.size();
+
+  double TOF_CC[2];
+  double Plastic[2];
+  double PosY[2];
+  double Plastic_left = -1;
+  double Plastic_right = -1;
+  double TOF_left = -1;
+  double TOF_right = -1;
+  double TOF_up = -1;
+  double TOF_down = -1;
+  double Esec[2];
+  double Section[2];
+  double E_left = -1;
+  double E_right = -1;
+  double E1 = -1;
+  double E2 = -1;
+  double E3 = -1;
+  double E4 = -1;
+  double E_up = -1;
+  double E_down = -1;
+  double L_CC = 8.45;
+  double Beta_left = -1;
+  double Beta_right = -1;
+  double Beta_up = -1;
+  double Beta_down = -1;
+  double Beta_norm = 0.745;
+
+  for(int i = 0; i<2; i++){
+    TOF_CC[i] = -1;
+    Plastic[i] = -1;
+    Esec[i] = -1;
+    Section[i] = -1;
+    PosY[i] = -1;
+  }
+
+
+  if(softofw_size==2 && softwim_size==2 && sofat_size==4){ 
+    for(unsigned int i=0; i< softofw_size; i++){
+      TOF_CC[i] = SofTofW->CalTof[i];
+      Plastic[i] = SofTofW->PlasticNbr[i];
+      PosY[i] = SofTofW->CalPosY[i];
+
+      Esec[i] = SofTwim->EnergySection[i];
+      int sec = SofTwim->SectionNbr[i];
+      Section[i] = sec;
+
+      if(sec==1)
+        E1 = SofTwim->EnergySection[i];
+      else if(sec==2)
+        E2 = SofTwim->EnergySection[i];
+      else if(sec==3)
+        E3 = SofTwim->EnergySection[i]; 
+      else if(sec==4)
+        E4 = SofTwim->EnergySection[i];     
+    }
+  }
+
+  if(Plastic[0]<Plastic[1]){
+    Plastic_left = Plastic[0];
+    Plastic_right = Plastic[1];
+    TOF_left = TOF_CC[0];
+    TOF_right = TOF_CC[1];
+  }
+  else if(Plastic[0]>Plastic[1]){
+    Plastic_left = Plastic[1];
+    Plastic_right = Plastic[0];
+    TOF_left = TOF_CC[1];
+    TOF_right = TOF_CC[0];
+  }
+
+  if(PosY[0]>PosY[1]){
+    TOF_up = TOF_CC[0];
+    TOF_down = TOF_CC[1];
+  }
+  else if(PosY[0]<PosY[1]){
+    TOF_up = TOF_CC[1];
+    TOF_down = TOF_CC[0];
+  }
+
+  if(TOF_left != -1 && TOF_right != -1){
+    double velocity_left = L_CC/TOF_left;
+    double velocity_right = L_CC/TOF_right;
+
+    Beta_left = velocity_left * m/ns / NPUNITS::c_light;
+    Beta_right = velocity_right * m/ns / NPUNITS::c_light;
+
+    if(E1 != -1 && E2==-1){
+      E1 = E1 / fcorr_z_beta[0]->Eval(Beta_left) * fcorr_z_beta[0]->Eval(Beta_norm);
+      E_left = E1;
+    }
+    if(E2 != -1 && E1==-1){
+      E2 = E2 / fcorr_z_beta[1]->Eval(Beta_left) * fcorr_z_beta[1]->Eval(Beta_norm);
+      E_left = E2;
+    }
+    if(E3 != -1 && E4==-1){
+      E3 = E3 / fcorr_z_beta[2]->Eval(Beta_right) * fcorr_z_beta[2]->Eval(Beta_norm);
+      E_right = E3;
+    }
+    if(E4 != -1 && E3==-1){
+      E4 = E4 / fcorr_z_beta[3]->Eval(Beta_right) * fcorr_z_beta[3]->Eval(Beta_norm);
+      E_right = E4;
+    }
+  }
+  
+  if(TOF_up != -1 && TOF_down != -1){
+    double velocity_down = L_CC/TOF_down;
+    double velocity_up = L_CC/TOF_up;
+
+    Beta_down = velocity_down * m/ns / NPUNITS::c_light;
+    Beta_up = velocity_up * m/ns / NPUNITS::c_light;
+
+    if(E1>0 && E2>0 && E3==-1 && E4==-1){
+      E1 = E1 / fcorr_z_beta[0]->Eval(Beta_down) * fcorr_z_beta[0]->Eval(Beta_norm);
+      E2 = E2 / fcorr_z_beta[1]->Eval(Beta_up) * fcorr_z_beta[1]->Eval(Beta_norm);
+      
+      E_up = E2;
+      E_down = E1;
+    }
+    else if(E1==-1 && E2==-1 && E3>0 && E4>0){
+      E3 = E3 / fcorr_z_beta[2]->Eval(Beta_up) * fcorr_z_beta[2]->Eval(Beta_norm);
+      E4 = E4 / fcorr_z_beta[3]->Eval(Beta_down) * fcorr_z_beta[3]->Eval(Beta_norm);
+      
+      E_up = E4;
+      E_down = E3;
+    }
+  }
+
+
+  // Z calibration //
+  double p0 = -1.1072;
+  double p1 = 0.27517;
+  double Z1=-1;
+  double Z2=-1;
+  double Zsum=-1;
+  if(E_left!=-1 && E_right!=-1){
+    Z1 = p0 + p1*sqrt(E_left);
+    Z2 = p0 + p1*sqrt(E_right);
+    Zsum = Z1+Z2;
+  }
+  if(E_up!=-1 && E_down!=-1){
+    double Z1 = p0 + p1*sqrt(E_down);
+    double Z2 = p0 + p1*sqrt(E_up);
+    Zsum = Z1+Z2;
+  }
+
+  if(E_left != -1 && E_right != -1){
+    SofFF->SetTOF(TOF_left);
+    SofFF->SetTOF(TOF_right);
+    SofFF->SetBeta(Beta_left);
+    SofFF->SetBeta(Beta_right);
+    SofFF->SetZ(p0+p1*sqrt(E1));
+    SofFF->SetZ(p0+p1*sqrt(E2));
+    SofFF->SetZ(p0+p1*sqrt(E3));
+    SofFF->SetZ(p0+p1*sqrt(E4));
+    SofFF->SetZsum(Zsum);
+  }
+  if(E_up!=-1 && E_down!=-1){
+    SofFF->SetTOF(TOF_down);
+    SofFF->SetTOF(TOF_up);
+    SofFF->SetBeta(Beta_down);
+    SofFF->SetBeta(Beta_up);
+    SofFF->SetZ(p0+p1*sqrt(E1));
+    SofFF->SetZ(p0+p1*sqrt(E2));
+    SofFF->SetZ(p0+p1*sqrt(E3));
+    SofFF->SetZ(p0+p1*sqrt(E4));
+    SofFF->SetZsum(Zsum);
   }
 }
 
@@ -137,6 +318,27 @@ void Analysis::LoadCut(){
   }
 }
 
+
+////////////////////////////////////////////////////////////////////////////////
+void Analysis::LoadSpline(){
+  TString input_path = "./calibration/SofTwim/spline/";
+
+  TString rootfile = input_path + "spline_beta.root";
+  TFile* ifile = new TFile(rootfile,"read");
+
+  TString splinename;
+  if(ifile->IsOpen()){
+    cout << "Loading Beta spline for fission fragment analysis..." << endl;
+    for(int i=0; i<4; i++){
+      splinename = Form("spline_beta_sec%i",i+1);
+      fcorr_z_beta[i] = (TSpline3*) ifile->FindObjectAny(splinename);
+    }
+    ifile->Close();
+  }
+  else
+    cout << "File " << rootfile << " not found!" << endl;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 int Analysis::DetermineQmax(){
   int Qmax;
@@ -171,23 +373,29 @@ void Analysis::End(){
 ////////////////////////////////////////////////////////////////////////////////
 void Analysis::InitParameter(){
   fLS2_0 = 136.3706933;
-  //fDS2   = 9500;
-  fDS2   = 10000;
+  fDS2   = 9500;
   //fDCC   = -30000;
-  fDCC   = -40000;
+  fDCC   = -10000;
   fK_LS2 = -2.5e-8;
-  fBrho0 = 10.8183; // run401 -> 182Hg
-
+  //fBrho0 = 12.3255; // 238U run 369
+  fBrho0 = 10.8183; // 182Hg
+  //fBrho0 = 10.6814; // 180Hg
+  //fBrho0 = 10.8138; // 187Pb
+  //fBrho0 = 11.3418; // 216Th
+  //fBrho0 = 11.2712; // 207Fr
+  //fBrho0 = 10.6814; // 175Pt
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 void Analysis::ReInitValue(){
   SofBeamID->Clear();
+  SofFF->Clear();
 }
 ////////////////////////////////////////////////////////////////////////////////
 void Analysis::InitOutputBranch(){
   //RootOutput::getInstance()->GetTree()->Branch("Zbeam",&Zbeam,"Zbeam/D");
   RootOutput::getInstance()->GetTree()->Branch("SofBeamID","TSofBeamID",&SofBeamID);
+  RootOutput::getInstance()->GetTree()->Branch("SofFissionFragment","TSofFissionFragment",&SofFF);
 
 }
 ////////////////////////////////////////////////////////////////////////////////

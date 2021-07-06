@@ -23,14 +23,17 @@
 // Root
 #include "TCutG.h"
 #include "TRandom3.h"
+#include "TSpline.h"
 
 // NPTool
 #include"NPVAnalysis.h"
 #include"TSofTofWPhysics.h"
 #include"TSofTrimPhysics.h"
+#include"TSofAtPhysics.h"
 #include"TSofTwimPhysics.h"
 #include"TSofSciPhysics.h"
 #include"TSofBeamID.h"
+#include"TSofFissionFragment.h"
 
 class Analysis: public NPL::VAnalysis{
   public:
@@ -45,19 +48,23 @@ class Analysis: public NPL::VAnalysis{
     void InitParameter();
     void ReInitValue();
     void BeamAnalysis();
+    void FissionFragmentAnalysis();
 
     static NPL::VAnalysis* Construct();
 
   public:
     void LoadCut();
+    void LoadSpline();
     int DetermineQmax();
 
   private:
     TSofSciPhysics* SofSci;
     TSofTrimPhysics* SofTrim;
+    TSofAtPhysics* SofAt;
     TSofTwimPhysics* SofTwim;
     TSofTofWPhysics* SofTofW;
     TSofBeamID* SofBeamID;
+    TSofFissionFragment* SofFF;
 
   private:
     double fLS2_0; 
@@ -71,5 +78,8 @@ class Analysis: public NPL::VAnalysis{
     TCutG* cutQ79[3];
     TCutG* cutQ80[3];
     TCutG* cutQ81[3];
+    
+    TSpline3* fcorr_z_beta[4];
+
 };
 #endif
