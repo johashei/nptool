@@ -66,7 +66,7 @@ G4bool PS_Interactions::ProcessHits(G4Step* aStep, G4TouchableHistory*){
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 void PS_Interactions::Initialize(G4HCofThisEvent*){
  // Clear is called by EventAction
-
+  clear();
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -76,7 +76,6 @@ void PS_Interactions::EndOfEvent(G4HCofThisEvent*){
   for(unsigned int i = 0 ; i < size ; i++)
      m_InterractionCoordinates->SetInteraction(m_DataVector[i]->GetEnergy(),m_DataVector[i]->GetTime(),m_DataVector[i]->GetPositionX(),m_DataVector[i]->GetPositionY(),m_DataVector[i]->GetPositionZ(),m_DataVector[i]->GetTheta()/deg,m_DataVector[i]->GetPhi()/deg);
 
-  clear();
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
