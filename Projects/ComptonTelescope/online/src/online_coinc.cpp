@@ -16,6 +16,10 @@
 #include "DecodeD.h"
 #include "DecodeT.h"
 
+#define __RUN__ 3
+
+#define __1DET__
+
 #define __TEST_ZONE__
 #undef __TEST_ZONE__
 
@@ -105,15 +109,47 @@ int main(int argc, char** argv)
   auto ccamPhys = (TComptonTelescopePhysics*) m_NPDetectorManager->GetDetector("ComptonTelescope");
   ccamPhys->SetRawDataPointer(ccamData);
 
+#ifdef __1DET__
+  ifstream is;
+  is.open("/disk/proto-data/data/20210510_Bi207/mfm_rdd_rosmap_04_mfm_rosmap_04_2021-05-10_07_41_50.raw");
+  is.seekg(0, ios::end);
+  int len = is.tellg();
+  is.seekg(0, ios::beg);
+  char* buff = new char[len];
+  is.read(buff, len);
+  is.close();
+  DecodeR* DR = new DecodeR(false, buff);
+  while(DR -> getCursor() < len) {
+    DR -> decodeBlobMFM();
+    m_NPDetectorManager->ClearEventPhysics();
+    m_NPDetectorManager->ClearEventData();
+    ccamData -> SetCTCalorimeter(1, 4, DR->getPixelNumber(), DR->getTime(), DR->getData(), 64);
+    m_NPDetectorManager->BuildPhysicalEvent();
+    m_OutputTree->Fill();
+    m_NPDetectorManager->CheckSpectraServer();
+  }
+  delete DR;
+  delete [] buff;
+  m_NPDetectorManager -> WriteSpectra();
+#else
+
   // read data file/flux and fill ccamData object
   std::cout << "Reading data\n";
   DecodeR* DR = new DecodeR(false); // Instantiates DecodeR object reading calorimeter data flux
   DecodeT* DT = new DecodeT(false); // Instantiates DecodeT object reading trigger data flux
   DecodeD* DD = new DecodeD(false); // Instantiates DecodeD object reading DSSSD(s) data flux
 //  newframe_t* event;
-  //DD -> setTree("/disk/proto-data/data/20210304_run2/bb7_3309-7_cs137_20210304_14h35_conv.root");
+  #if __RUN__ == 0
+  DD -> setTree("../data/20210210_run1/bb7_3309-7_cs137-20210210_11h05_coinc_run1_conv.root");
+  #elif __RUN__ == 1
+  DD -> setTree("/disk/proto-data/data/20210210_run1/bb7_3309-7_cs137-20210210_11h05_coinc_run1_conv.root");
+  #elif __RUN__ == 2
+  DD -> setTree("/disk/proto-data/data/20210304_run2/bb7_3309-7_cs137_20210304_14h35_conv.root");
+  #elif __RUN__ == 3
   DD -> setTree("/disk/proto-data/data/20210305_run3/bb7_3309-7_cs137_20210305_14h53_conv.root");
-  //DD -> setTree("../data/20210210_run1/bb7_3309-7_cs137-20210210_11h05_coinc_run1_conv.root");
+  #elif __RUN__ == 4
+  DD -> setTree("/disk/proto-data/data/20210407_run4/bb7_3309-7_cs137_20210407_14h53_conv.root");
+  #endif
   int dlen = DD -> getLength();
 
   int i = 0;// ROSMAP files loop counter
@@ -126,8 +162,16 @@ int main(int argc, char** argv)
   ifstream iros, itrig;
   cout << "Loading data files " << std::flush;
 
+  #if __RUN__ == 0
+  itrig.open("../data/20210210_run1/mfm_trigger_202102101104.raw", ios::binary);
+  #elif __RUN__ == 1
+  itrig.open("/disk/proto-data/data/20210210_run1/mfm_trigger_202102101104.raw", ios::binary);
+  #elif __RUN__ == 2
+  #elif __RUN__ == 3
   itrig.open("/disk/proto-data/data/20210305_run3/mfm_trigger_20210305_run3.raw", ios::binary);
-  //itrig.open("../data/20210210_run1/mfm_trigger_202102101104.raw", ios::binary);
+  #elif __RUN__ == 4
+  itrig.open("/disk/proto-data/data/20210407_run4/mfm_trigger_20210407_run4.raw", ios::binary);
+  #endif
   itrig.seekg(0, ios::end);
   int tlen = itrig.tellg();
   itrig.seekg(0, ios::beg);
@@ -136,8 +180,16 @@ int main(int argc, char** argv)
   itrig.close();
   cout << "... " << std::flush;
 
+  #if __RUN__ == 0
+  iros.open("../data/20210210_run1/mfm_rdd_rosmap_04_mfm_rosmap_04_2021-02-10_10_04_59.raw.0001", ios::binary);
+  #elif __RUN__ == 1
+  iros.open("/disk/proto-data/data/20210210_run1/mfm_rdd_rosmap_04_mfm_rosmap_04_2021-02-10_10_04_59.raw.0001", ios::binary);
+  #elif __RUN__ == 2
+  #elif __RUN__ == 3
   iros.open("/disk/proto-data/data/20210305_run3/mfm_rosmap_20210305_run3.raw", ios::binary);
-  //iros.open("../data/20210210_run1/mfm_rdd_rosmap_04_mfm_rosmap_04_2021-02-10_10_04_59.raw.0001", ios::binary);
+  #elif __RUN__ == 4
+  iros.open("/disk/proto-data/data/20210407_run4/mfm_rosmap_20210407_run4.raw", ios::binary);
+  #endif
   iros.seekg(0, ios::end);
   int rlen = iros.tellg();
   iros.seekg(0, ios::beg);
@@ -157,6 +209,22 @@ int main(int argc, char** argv)
   resetCount = DT->getResetCount() - resetCount;
   resetCount = -resetCount; // T B C !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   cout << "Found reset count: " << resetCount << endl;
+
+  if (resetCount == 0) {
+    string ans;
+    cout << "reset count is 0. Continue ? y/[n]";
+    cin >> ans;
+    if (ans != "y" and ans != "Y") {
+      DT -> setRaw(tbuff);
+      DT -> decodeBlobMFM();
+      resetCount = DT -> getResetCount();
+      while (not(DT->hasTrigged(2))) {
+        DT -> decodeBlobMFM();
+      }
+      resetCount = DT->getResetCount() - resetCount;
+      cout << "Found reset count: " << resetCount << endl;
+    }
+  }
   int cr, cd, tr, td;
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -261,7 +329,7 @@ int main(int argc, char** argv)
     DR -> decodeBlobMFM();
 
 //#ifdef __TEST_ZONE__
-  cout << "Entering test zone." << endl;
+//  cout << "Entering test zone." << endl;
 
 //#else
     DD -> rewind();
@@ -271,7 +339,7 @@ int main(int argc, char** argv)
     tr = DR -> getTime();
     td = DD -> getTime();
 
-    while(DR -> getCursor() < rlen and DD -> getCursor() < dlen)
+    while(DR -> getCursor() < rlen and DD -> getCursor() < dlen and c < 10000)
     {
       if (cr == cd) {
   #ifndef __TEST_ZONE__
@@ -283,7 +351,6 @@ int main(int argc, char** argv)
           //DR -> Dump();
           //DD -> Dump();
           c++;
-          cout << cc << " " << c /*<< "(" << cr << ", " << cd << ") : " << tr << " " << td*/ << "\n";
           // Clear raw and physics data
           m_NPDetectorManager->ClearEventPhysics();
           m_NPDetectorManager->ClearEventData();
@@ -307,6 +374,7 @@ int main(int argc, char** argv)
             m_OutputTree->Fill();
             cc++;
   #endif
+            cout << cc << " " << c /*<< "(" << cr << ", " << cd << ") : " << tr << " " << td*/ << " |\t";
           }
   
           // check spectra
@@ -353,7 +421,7 @@ int main(int argc, char** argv)
     deltaT->Write();
   } 
   fout->Close();
-
+#endif
   // Essential
 #if __cplusplus > 199711L && NPMULTITHREADING
   m_NPDetectorManager->StopThread();

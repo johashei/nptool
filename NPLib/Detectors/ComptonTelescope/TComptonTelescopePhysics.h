@@ -57,18 +57,18 @@ class TComptonTelescopePhysics : public TObject, public NPL::VDetector
       //   DSSD
       int EventMultiplicity;
       vector<int> EventType;
-      //vector<int> TowerNumber;
+      vector<int> TowerNumber;//
       vector<int> DetectorNumber;
       vector<int>    Strip_Front;
       vector<int>    Strip_Back;
-      //vector<double> Strip_E;
+      vector<double> Strip_E;//
       vector<double> Strip_T;
       vector<double> Front_Energy;
       vector<double> Back_Energy;
-      //vector<double> Half_Energy;
+      vector<double> Half_Energy;//
       vector<double> Front_Time;
       vector<double> Back_Time;
-      //vector<bool> Same_FBTime; 
+      vector<bool> Same_FBTime;//
       // Calorimeter
       vector<double> Calor_E;
       vector<double> Calor_T;
@@ -240,8 +240,8 @@ class TComptonTelescopePhysics : public TObject, public NPL::VDetector
       Int_t m_CounterEvt[50]; //!
       Int_t m_CounterHit[50]; //!
       // physical events
-      vector<int> TowerNumber;
-      vector<double> Half_Energy;
+      //vector<int> TowerNumber;
+      //vector<double> Half_Energy;
       //vector<bool> Same_FBTime; 
 
 };

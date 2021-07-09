@@ -100,7 +100,7 @@ __EVENTTYPE__* DecodeD::getEvent()
 
 void DecodeD::decodeEvent()
 {
-  this -> Clear();
+  /*this -> */Clear();
   switch (datatype) {
     case D_ROOT:
       if (cursor < length) {

@@ -268,7 +268,7 @@ void NPL::DetectorManager::BuildPhysicalEvent(){
     (it->second->*m_ClearEventPhysicsPtr)();
     (it->second->*m_BuildPhysicalPtr)();
       (it->second->*m_FillSpectra)();
-      if(m_CheckSpectra)
+      if(m_CheckSpectra) {
         (it->second->*m_CheckSpectra)();
     }
   }
