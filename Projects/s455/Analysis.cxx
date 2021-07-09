@@ -43,6 +43,7 @@ void Analysis::Init(){
   SofTwim= (TSofTwimPhysics*) m_DetectorManager->GetDetector("SofTwim");
   SofTofW= (TSofTofWPhysics*) m_DetectorManager->GetDetector("SofTofW");
   SofAt= (TSofAtPhysics*) m_DetectorManager->GetDetector("SofAt");
+  SofMwpc= (TSofMwpcPhysics*) m_DetectorManager->GetDetector("SofMwpc");
 
   InitParameter();
   InitOutputBranch();
@@ -74,7 +75,6 @@ void Analysis::TreatEvent(){
 void Analysis::FissionFragmentAnalysis(){
   unsigned int softofw_size = SofTofW->PlasticNbr.size();
   unsigned int softwim_size = SofTwim->SectionNbr.size();
-  unsigned int sofat_size   = SofAt->Energy.size();
 
   double TOF_CC[2];
   double Plastic[2];
@@ -111,7 +111,7 @@ void Analysis::FissionFragmentAnalysis(){
   }
 
 
-  if(softofw_size==2 && softwim_size==2 && sofat_size==4){ 
+  if(softofw_size==2 && softwim_size==2){ 
     for(unsigned int i=0; i< softofw_size; i++){
       TOF_CC[i] = SofTofW->CalTof[i];
       Plastic[i] = SofTofW->PlasticNbr[i];
@@ -205,7 +205,7 @@ void Analysis::FissionFragmentAnalysis(){
 
   // Z calibration //
   double p0 = -1.1072;
-  double p1 = 0.27517;
+  double p1 = 0.27517*1.001;
   double Z1=-1;
   double Z2=-1;
   double Zsum=-1;
@@ -247,6 +247,11 @@ void Analysis::FissionFragmentAnalysis(){
 ////////////////////////////////////////////////////////////////////////////////
 void Analysis::BeamAnalysis(){
   unsigned int sofsci_size = SofSci->DetectorNbr.size();
+  double Z_p0 = -8.57894;
+  double Z_p1 = 0.560421;
+  double Y_p0 = 78.0711;
+  double Y_p1 = 0.022669;
+
   if(sofsci_size==2){
     double beta = SofSci->Beta[0];
     //cout << "Set beta to " << beta << endl;
@@ -262,10 +267,18 @@ void Analysis::BeamAnalysis(){
       double velocity_mns = SofSci->VelocityMNs[0];
       double Beta         = SofSci->Beta[0];
       double XS2          = SofSci->PosMm[0];
-      double XCC          = SofSci->PosMm[1];
+      //double XCC          = SofSci->PosMm[1];
+      double XCC=0;
+      double YCC=0;
+      for(unsigned int i=0; i<SofMwpc->DetectorNbr.size(); i++){
+        if(SofMwpc->DetectorNbr[i]==1){
+          XCC = SofMwpc->PositionX1[i];
+          YCC = SofMwpc->PositionY[i];
+        }
+      }
       double LS2;
 
-      LS2 = fLS2_0*(1 + fK_LS2*Theta);
+      LS2 = fLS2_0;//*(1 + fK_LS2*Theta);
       velocity_mns = LS2/TofFromS2;
       Beta = velocity_mns * m/ns / NPUNITS::c_light;
       double Gamma        = 1./(TMath::Sqrt(1 - TMath::Power(Beta,2)));
@@ -273,6 +286,8 @@ void Analysis::BeamAnalysis(){
       double AoQ  = Brho / (3.10716*Gamma*Beta);
       double A    = AoQ * Qmax;
 
+      Zbeam = Z_p0 + Z_p1*sqrt(Zbeam);
+      Zbeam = Zbeam/(Y_p0 + Y_p1*YCC)*Y_p0;
       // Filling Beam tree
       SofBeamID->SetZbeam(Zbeam);
       SofBeamID->SetQmax(rand.Gaus(Qmax,0.15));
@@ -283,6 +298,7 @@ void Analysis::BeamAnalysis(){
       SofBeamID->SetBrho(Brho);
       SofBeamID->SetXS2(XS2);
       SofBeamID->SetXCC(XCC);
+      SofBeamID->SetYCC(YCC);
     }
   }
 }
@@ -295,6 +311,11 @@ void Analysis::LoadCut(){
   TString cutfile;
   TFile* file;
   for(int i=0; i<3; i++){
+    // Q=77
+    rootfile = Form("cutsec%iQ77.root",i+1);
+    cutfile = input_path + rootfile;
+    file = new TFile(cutfile);
+    cutQ77[i] = (TCutG*) file->Get(Form("cutsec%iQ77",i+1));
     // Q=78
     rootfile = Form("cutsec%iQ78.root",i+1);
     cutfile = input_path + rootfile;
@@ -310,11 +331,6 @@ void Analysis::LoadCut(){
     cutfile = input_path + rootfile;
     file = new TFile(cutfile);
     cutQ80[i] = (TCutG*) file->Get(Form("cutsec%iQ80",i+1));
-    // Q=81
-    rootfile = Form("cutsec%iQ81.root",i+1);
-    cutfile = input_path + rootfile;
-    file = new TFile(cutfile);
-    cutQ81[i] = (TCutG*) file->Get(Form("cutsec%iQ81",i+1));
   }
 }
 
@@ -350,14 +366,17 @@ int Analysis::DetermineQmax(){
     double Theta = SofTrim->Theta[i];
     double Esec  = SofTrim->EnergySection[i];
 
-    if(cutQ78[SecNbr-1]->IsInside(Theta,Esec))
+
+    if(cutQ77[SecNbr-1]->IsInside(Theta,Esec))
+      Qsec[SecNbr-1] = 77;
+    else if(cutQ78[SecNbr-1]->IsInside(Theta,Esec))
       Qsec[SecNbr-1] = 78;
     else if(cutQ79[SecNbr-1]->IsInside(Theta,Esec))
       Qsec[SecNbr-1] = 79;
     else if(cutQ80[SecNbr-1]->IsInside(Theta,Esec))
       Qsec[SecNbr-1] = 80;
-    else if(cutQ81[SecNbr-1]->IsInside(Theta,Esec))
-      Qsec[SecNbr-1] = 81;
+    //else if(cutQ81[SecNbr-1]->IsInside(Theta,Esec))
+      //Qsec[SecNbr-1] = 81;
   }
 
   Qmax = max(Qsec[0],Qsec[1]);
@@ -372,18 +391,24 @@ void Analysis::End(){
 
 ////////////////////////////////////////////////////////////////////////////////
 void Analysis::InitParameter(){
-  fLS2_0 = 136.3706933;
-  fDS2   = 9500;
-  //fDCC   = -30000;
+  fLS2_0 = 135.614;
+  fDS2   = 8000;
   fDCC   = -10000;
-  fK_LS2 = -2.5e-8;
+  fK_LS2 = -30e-8;
+  
+
+  //fBrho0 = 14.1008; // 238U run 367
+  //fBrho0 = 12.8719; // 238U run 368
   //fBrho0 = 12.3255; // 238U run 369
-  fBrho0 = 10.8183; // 182Hg
-  //fBrho0 = 10.6814; // 180Hg
+  //fBrho0 = 12.3352; // 238U run 419
+  //fBrho0 = 10.9476; // 189Pb
+  //fBrho0 = 10.8183; // 182Hg
+  fBrho0 = 10.6814; // 180Hg
   //fBrho0 = 10.8138; // 187Pb
   //fBrho0 = 11.3418; // 216Th
   //fBrho0 = 11.2712; // 207Fr
   //fBrho0 = 10.6814; // 175Pt
+  //fBrho0 = 10.9970; // 199At
 }
 
 ////////////////////////////////////////////////////////////////////////////////
