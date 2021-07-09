@@ -48,7 +48,9 @@ TSofTrimPhysics::TSofTrimPhysics()
   m_PreTreatedData(new TSofTrimData),
   m_EventPhysics(this),
   m_NumberOfDetectors(0), 
-  m_Beta(-1), 
+  m_Beta(-1),
+  m_IsSplineSectionDriftTime(false),
+  m_IsSplineSectionAngle(false),
   m_BetaNorm(0.838), 
   m_NumberOfSections(3), 
   m_NumberOfAnodesPaired(3),
@@ -194,7 +196,7 @@ void TSofTrimPhysics::BuildPhysicalEvent() {
     Ep3[i] = norm3 * Ep3[i] / (p0_3[i] + p1_3[i]*TMath::Power(m_Beta, -5./3.));
 
     // Angle correction per pair: spline
-    Ep1[i] = Ep1[i] / fcorr_EvsA[i][0]->Eval(Ddt) * fcorr_EvsA[i][0]->Eval(0);
+    /*Ep1[i] = Ep1[i] / fcorr_EvsA[i][0]->Eval(Ddt) * fcorr_EvsA[i][0]->Eval(0);
     Ep2[i] = Ep2[i] / fcorr_EvsA[i][1]->Eval(Ddt) * fcorr_EvsA[i][1]->Eval(0);
     Ep3[i] = Ep3[i] / fcorr_EvsA[i][2]->Eval(Ddt) * fcorr_EvsA[i][2]->Eval(0);
 
@@ -202,12 +204,17 @@ void TSofTrimPhysics::BuildPhysicalEvent() {
     Ep1[i] = Ep1[i] / fcorr_EvsDT[i][0]->Eval(DTp1[i]) * fcorr_EvsDT[i][0]->Eval(3000);
     Ep2[i] = Ep2[i] / fcorr_EvsDT[i][1]->Eval(DTp2[i]) * fcorr_EvsDT[i][1]->Eval(3000);
     Ep3[i] = Ep3[i] / fcorr_EvsDT[i][2]->Eval(DTp3[i]) * fcorr_EvsDT[i][2]->Eval(3000);
-
+*/
     // Summing up Anode Energy per section 
     Esec[i] = (Ep1[i] + Ep2[i] + Ep3[i])/3;
 
+    // Angle correction per section: spline   
+    if(m_IsSplineSectionAngle)
+      Esec[i] = Esec[i] / fcorr_sec_angle[i]->Eval(Ddt) * fcorr_sec_angle[i]->Eval(0);
+
     // 2nd DT correction per section: spline
-    Esec[i] = Esec[i] / fcorr_sec[i]->Eval(DTp2[i]) * fcorr_sec[i]->Eval(0);
+    if(m_IsSplineSectionDriftTime)
+      Esec[i] = Esec[i] / fcorr_sec_dt[i]->Eval(DTp2[i]) * fcorr_sec_dt[i]->Eval(0);
 
     // Section ALignement
     Esec[i] = Cal->ApplyCalibration("SofTrim/SEC"+NPL::itoa(i+1)+"_ALIGN",Esec[i]);
@@ -308,16 +315,24 @@ void TSofTrimPhysics::ReadAnalysisConfig() {
       else if (whatToDo=="SPLINE_PAIR_DT_PATH") {
         AnalysisConfigFile >> DataBuffer;
         m_SPLINE_PAIR_DT_PATH = DataBuffer;
-        cout << "*** Loading Spline for Dritf Time correction per pair ***" << endl;
+        cout << "*** Loading Spline for Drtft Time correction per pair ***" << endl;
         LoadSplinePairDriftTime();
       }
 
       else if (whatToDo=="SPLINE_SECTION_DT_PATH") {
         AnalysisConfigFile >> DataBuffer;
         m_SPLINE_SECTION_DT_PATH = DataBuffer;
-        cout << "*** Loading Spline for Dritf Time correction per section ***" << endl;
+        cout << "*** Loading Spline for Drift Time correction per section ***" << endl;
         LoadSplineSectionDriftTime();
       }
+
+      else if (whatToDo=="SPLINE_SECTION_ANGLE_PATH") {
+        AnalysisConfigFile >> DataBuffer;
+        m_SPLINE_SECTION_ANGLE_PATH = DataBuffer;
+        cout << "*** Loading Spline for Angle correction per section ***" << endl;
+        LoadSplineSectionAngle();
+      }
+
 
 
       else if (whatToDo=="E_THRESHOLD") {
@@ -389,22 +404,42 @@ void TSofTrimPhysics::LoadSplinePairDriftTime(){
 
 ///////////////////////////////////////////////////////////////////////////
 void TSofTrimPhysics::LoadSplineSectionDriftTime(){
-  TString filename = m_SPLINE_SECTION_DT_PATH;
-  TFile* ifile = new TFile(filename,"read");
+  TString filename    = m_SPLINE_SECTION_DT_PATH;
+  TFile* ifile    = new TFile(filename,"read");
 
   if(ifile->IsOpen()){
     cout << "Loading splines..." << endl;
     for(int s=0; s<m_NumberOfSections; s++){
       TString splinename = Form("spline_sec%i",s+1);
-      fcorr_sec[s] = (TSpline3*) ifile->FindObjectAny(splinename);
-      cout << fcorr_sec[s]->GetName() << endl;
+      fcorr_sec_dt[s] = (TSpline3*) ifile->FindObjectAny(splinename);
+      cout << fcorr_sec_dt[s]->GetName() << endl;
     }
+    m_IsSplineSectionDriftTime = true;
   }
   else
     cout << "File " << filename << " not found!" << endl;
   ifile->Close();
 }
 
+///////////////////////////////////////////////////////////////////////////
+void TSofTrimPhysics::LoadSplineSectionAngle(){
+  TString filename = m_SPLINE_SECTION_ANGLE_PATH;
+  TFile* ifile = new TFile(filename,"read");
+
+  if(ifile->IsOpen()){
+    cout << "Loading splines..." << endl;
+    for(int s=0; s<m_NumberOfSections; s++){
+      TString splinename = Form("spline_sec%i",s+1);
+      
+      fcorr_sec_angle[s] = (TSpline3*) ifile->FindObjectAny(splinename);
+      cout << fcorr_sec_angle[s]->GetName() << endl;
+    }
+    m_IsSplineSectionAngle = true;
+  }
+  else
+    cout << "File " << filename << " not found!" << endl;
+  ifile->Close();
+}
 
 ///////////////////////////////////////////////////////////////////////////
 void TSofTrimPhysics::Clear() {
