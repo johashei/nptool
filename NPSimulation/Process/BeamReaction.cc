@@ -28,8 +28,6 @@
 #include "G4EmCalculator.hh"
 #include "G4VPhysicalVolume.hh"
 #include "G4IonTable.hh"
-#include "G4RunManager.hh"
-#include "G4EventManager.hh"
 #include "G4UserLimits.hh"
 #include "NPFunction.h"
 #include "NPInputParser.h"
