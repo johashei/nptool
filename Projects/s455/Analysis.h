@@ -32,6 +32,7 @@
 #include"TSofAtPhysics.h"
 #include"TSofTwimPhysics.h"
 #include"TSofSciPhysics.h"
+#include"TSofMwpcPhysics.h"
 #include"TSofBeamID.h"
 #include"TSofFissionFragment.h"
 
@@ -59,6 +60,7 @@ class Analysis: public NPL::VAnalysis{
 
   private:
     TSofSciPhysics* SofSci;
+    TSofMwpcPhysics* SofMwpc;
     TSofTrimPhysics* SofTrim;
     TSofAtPhysics* SofAt;
     TSofTwimPhysics* SofTwim;
@@ -74,6 +76,7 @@ class Analysis: public NPL::VAnalysis{
     double fK_LS2;
 
     TRandom3 rand;
+    TCutG* cutQ77[3];
     TCutG* cutQ78[3];
     TCutG* cutQ79[3];
     TCutG* cutQ80[3];

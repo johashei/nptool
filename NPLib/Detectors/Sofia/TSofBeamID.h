@@ -43,6 +43,7 @@ class TSofBeamID : public TObject {
     double fBeam_Brho;
     double fBeam_XS2;
     double fBeam_XCC;
+    double fBeam_YCC;
 
   //////////////////////////////////////////////////////////////
   // Constructor and destructor
@@ -75,6 +76,7 @@ class TSofBeamID : public TObject {
     inline void SetBrho(double val){fBeam_Brho = val;};//!
     inline void SetXS2(double val){fBeam_XS2 = val;};//!
     inline void SetXCC(double val){fBeam_XCC = val;};//!
+    inline void SetYCC(double val){fBeam_YCC = val;};//!
 
     //////////////////////    GETTERS    ////////////////////////
     inline double GetZbeam() const {return fBeam_Z;}//! 
@@ -86,6 +88,7 @@ class TSofBeamID : public TObject {
     inline double GetBrho() const {return fBeam_Brho;}//! 
     inline double GetXS2() const {return fBeam_XS2;}//! 
     inline double GetXCC() const {return fBeam_XCC;}//! 
+    inline double GetYCC() const {return fBeam_YCC;}//! 
 
   //////////////////////////////////////////////////////////////
   // Required for ROOT dictionnary

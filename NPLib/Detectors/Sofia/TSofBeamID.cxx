@@ -52,6 +52,7 @@ void TSofBeamID::Clear() {
   fBeam_Brho  = -1;
   fBeam_XS2   = -1000;
   fBeam_XCC   = -1000;
+  fBeam_YCC   = -1000;
 
 }
 
@@ -70,5 +71,6 @@ void TSofBeamID::Dump() const {
   cout << "fBeam_Brho: " << fBeam_Brho << endl;
   cout << "fBeam_XS2: " << fBeam_XS2 << endl;
   cout << "fBeam_XCC: " << fBeam_XCC << endl;
+  cout << "fBeam_YCC: " << fBeam_YCC << endl;
  
 }
