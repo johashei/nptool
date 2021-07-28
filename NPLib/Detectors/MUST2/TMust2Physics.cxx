@@ -9,7 +9,7 @@
  * Original Author: Adrien MATTA  contact address: a.matta@surrey.ac.uk      *
  *                                                                           *
  * Creation Date  : febuary 2009                                             *
- * Last update    : october 2010                                             *
+ * Last update    : July 2021
  *---------------------------------------------------------------------------*
  * Decription:                                                               *
  *  This class hold must2 treated data                                       *
@@ -55,15 +55,15 @@ ClassImp(TMust2Physics)
   m_StripEnergyMatchingSigma         = 0.020;
   m_StripEnergyMatchingNumberOfSigma = 3;
   // Raw Threshold
-  m_Si_X_E_RAW_Threshold = 8200;
-  m_Si_Y_E_RAW_Threshold = 8200;
-  m_SiLi_E_RAW_Threshold = 8200;
-  m_CsI_E_RAW_Threshold  = 8200;
+  m_Si_X_E_RAW_Threshold = 8192;
+  m_Si_Y_E_RAW_Threshold = 8192;
+  m_SiLi_E_RAW_Threshold = 8192;
+  m_CsI_E_RAW_Threshold  = 8192;
   // Calibrated Threshold
-  m_Si_X_E_Threshold = 0*keV;
-  m_Si_Y_E_Threshold = 0*keV;
-  m_SiLi_E_Threshold = 0*keV;
-  m_CsI_E_Threshold  = 0*keV;
+  m_Si_X_E_Threshold = 0;
+  m_Si_Y_E_Threshold = 0;
+  m_SiLi_E_Threshold = 0;
+  m_CsI_E_Threshold  = 0;
 
   m_Ignore_not_matching_SiLi = false;
   m_Ignore_not_matching_CsI  = false;
@@ -180,6 +180,9 @@ ClassImp(TMust2Physics)
   m_CsI_MatchingX[14] = 16;
   m_CsI_MatchingY[14] = 80;
 
+  m_CsI_MatchingX[15] = 16;
+  m_CsI_MatchingY[15] = 112;
+
   m_CsI_MatchingX[0] = 112;
   m_CsI_MatchingY[0] = 112;
 
@@ -225,8 +228,89 @@ ClassImp(TMust2Physics)
   m_CsI_MatchingX[14] = 16;
   m_CsI_MatchingY[14] = 80;
 
-  m_CsI_MatchingX[15] = 16;
-  m_CsI_MatchingY[15] = 112;
+  // FIXME: Temporary fix... for zero degree
+  // Particular strip matching required for zero degree telescope...
+  // Might be a geometrical problem, only relevant if a telescope is placed at
+  // zero degree
+  // m_ZeroDegree_CsI_MatchingX[0].first  = 103;
+  // m_ZeroDegree_CsI_MatchingX[0].second = 128;
+  // m_ZeroDegree_CsI_MatchingY[0].first  = 103;
+  // m_ZeroDegree_CsI_MatchingY[0].second = 128;
+
+  // m_ZeroDegree_CsI_MatchingX[1].first  = 103;
+  // m_ZeroDegree_CsI_MatchingX[1].second = 128;
+  // m_ZeroDegree_CsI_MatchingY[1].first  = 65;
+  // m_ZeroDegree_CsI_MatchingY[1].second = 102;
+
+  // m_ZeroDegree_CsI_MatchingX[2].first  = 103;
+  // m_ZeroDegree_CsI_MatchingX[2].second = 128;
+  // m_ZeroDegree_CsI_MatchingY[2].first  = 27;
+  // m_ZeroDegree_CsI_MatchingY[2].second = 64;
+
+  // m_ZeroDegree_CsI_MatchingX[3].first  = 103;
+  // m_ZeroDegree_CsI_MatchingX[3].second = 128;
+  // m_ZeroDegree_CsI_MatchingY[3].first  = 1;
+  // m_ZeroDegree_CsI_MatchingY[3].second = 26;
+
+  // m_ZeroDegree_CsI_MatchingX[4].first  = 65;
+  // m_ZeroDegree_CsI_MatchingX[4].second = 102;
+  // m_ZeroDegree_CsI_MatchingY[4].first  = 1;
+  // m_ZeroDegree_CsI_MatchingY[4].second = 26;
+
+  // m_ZeroDegree_CsI_MatchingX[5].first  = 65;
+  // m_ZeroDegree_CsI_MatchingX[5].second = 102;
+  // m_ZeroDegree_CsI_MatchingY[5].first  = 27;
+  // m_ZeroDegree_CsI_MatchingY[5].second = 64;
+
+  // m_ZeroDegree_CsI_MatchingX[6].first  = 65;
+  // m_ZeroDegree_CsI_MatchingX[6].second = 102;
+  // m_ZeroDegree_CsI_MatchingY[6].first  = 65;
+  // m_ZeroDegree_CsI_MatchingY[6].second = 102;
+
+  // m_ZeroDegree_CsI_MatchingX[7].first  = 65;
+  // m_ZeroDegree_CsI_MatchingX[7].second = 102;
+  // m_ZeroDegree_CsI_MatchingY[7].first  = 103;
+  // m_ZeroDegree_CsI_MatchingY[7].second = 128;
+
+  // m_ZeroDegree_CsI_MatchingX[8].first  = 27;
+  // m_ZeroDegree_CsI_MatchingX[8].second = 64;
+  // m_ZeroDegree_CsI_MatchingY[8].first  = 1;
+  // m_ZeroDegree_CsI_MatchingY[8].second = 26;
+
+  // m_ZeroDegree_CsI_MatchingX[9].first  = 27;
+  // m_ZeroDegree_CsI_MatchingX[9].second = 64;
+  // m_ZeroDegree_CsI_MatchingY[9].first  = 27;
+  // m_ZeroDegree_CsI_MatchingY[9].second = 64;
+
+  // m_ZeroDegree_CsI_MatchingX[10].first  = 27;
+  // m_ZeroDegree_CsI_MatchingX[10].second = 64;
+  // m_ZeroDegree_CsI_MatchingY[10].first  = 65;
+  // m_ZeroDegree_CsI_MatchingY[10].second = 102;
+
+  // m_ZeroDegree_CsI_MatchingX[11].first  = 27;
+  // m_ZeroDegree_CsI_MatchingX[11].second = 64;
+  // m_ZeroDegree_CsI_MatchingY[11].first  = 103;
+  // m_ZeroDegree_CsI_MatchingY[11].second = 128;
+
+  // m_ZeroDegree_CsI_MatchingX[12].first  = 1;
+  // m_ZeroDegree_CsI_MatchingX[12].second = 26;
+  // m_ZeroDegree_CsI_MatchingY[12].first  = 1;
+  // m_ZeroDegree_CsI_MatchingY[12].second = 26;
+
+  // m_ZeroDegree_CsI_MatchingX[13].first  = 1;
+  // m_ZeroDegree_CsI_MatchingX[13].second = 26;
+  // m_ZeroDegree_CsI_MatchingY[13].first  = 27;
+  // m_ZeroDegree_CsI_MatchingY[13].second = 64;
+
+  // m_ZeroDegree_CsI_MatchingX[14].first  = 1;
+  // m_ZeroDegree_CsI_MatchingX[14].second = 26;
+  // m_ZeroDegree_CsI_MatchingY[14].first  = 65;
+  // m_ZeroDegree_CsI_MatchingY[14].second = 102;
+
+  // m_ZeroDegree_CsI_MatchingX[15].first  = 1;
+  // m_ZeroDegree_CsI_MatchingX[15].second = 26;
+  // m_ZeroDegree_CsI_MatchingY[15].first  = 103;
+  // m_ZeroDegree_CsI_MatchingY[15].second = 128;
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -268,22 +352,25 @@ void TMust2Physics::BuildPhysicalEvent() {
 
   for (unsigned int i = 0; i < couple_size; ++i) {
 
-    if (m_match_type[i] == 1 || m_multimatch) {
+    // if (m_match_type[i] == 1 || m_multimatch) {
+    if (m_match_type[i] == 1) {
       check_SILI = false;
       check_CSI  = false;
 
-      int N = m_PreTreatedData->GetMMStripXEDetectorNbr(couple[i].X());
+      int couple_X = couple[i].X() + 0.5;
+      int couple_Y = couple[i].Y() + 0.5;
+      int N        = m_PreTreatedData->GetMMStripXEDetectorNbr(couple_X);
 
-      int X = m_PreTreatedData->GetMMStripXEStripNbr(couple[i].X());
-      int Y = m_PreTreatedData->GetMMStripYEStripNbr(couple[i].Y());
+      int X = m_PreTreatedData->GetMMStripXEStripNbr(couple_X);
+      int Y = m_PreTreatedData->GetMMStripYEStripNbr(couple_Y);
 
-      double Si_X_E = m_PreTreatedData->GetMMStripXEEnergy(couple[i].X());
-      double Si_Y_E = m_PreTreatedData->GetMMStripYEEnergy(couple[i].Y());
+      double Si_X_E = m_PreTreatedData->GetMMStripXEEnergy(couple_X);
+      double Si_Y_E = m_PreTreatedData->GetMMStripYEEnergy(couple_Y);
 
       //  Search for associate Time
       double Si_X_T = -1000;
       for (unsigned int t = 0; t < m_StripXTMult; ++t) {
-        if (m_PreTreatedData->GetMMStripXTStripNbr(couple[i].X())
+        if (m_PreTreatedData->GetMMStripXTStripNbr(couple_X)
             == m_PreTreatedData->GetMMStripXTStripNbr(t)) {
           Si_X_T = m_PreTreatedData->GetMMStripXTTime(t);
           break;
@@ -292,7 +379,7 @@ void TMust2Physics::BuildPhysicalEvent() {
 
       double Si_Y_T = -1000;
       for (unsigned int t = 0; t < m_StripYTMult; ++t) {
-        if (m_PreTreatedData->GetMMStripYTStripNbr(couple[i].Y())
+        if (m_PreTreatedData->GetMMStripYTStripNbr(couple_Y)
             == m_PreTreatedData->GetMMStripYTStripNbr(t)) {
           Si_Y_T = m_PreTreatedData->GetMMStripYTTime(t);
           break;
@@ -322,7 +409,8 @@ void TMust2Physics::BuildPhysicalEvent() {
 
       for (unsigned int j = 0; j < m_CsIEMult; ++j) {
         if (m_PreTreatedData->GetMMCsIEDetectorNbr(j) == N) {
-          if (Match_Si_CsI(X, Y, m_PreTreatedData->GetMMCsIECristalNbr(j))) {
+          if (Match_Si_CsI(X, Y, m_PreTreatedData->GetMMCsIECristalNbr(j),
+                           m_PreTreatedData->GetMMCsIEDetectorNbr(j))) {
             CsI_N.push_back(m_PreTreatedData->GetMMCsIECristalNbr(j));
             CsI_E.push_back(m_PreTreatedData->GetMMCsIEEnergy(j));
             CsI_T.push_back(-1000);
@@ -378,7 +466,7 @@ void TMust2Physics::BuildPhysicalEvent() {
       EventType.push_back(m_match_type[i]);
     }
   } // loop on event multiplicity
-  EventMultiplicity=TelescopeNumber.size();
+  EventMultiplicity = TelescopeNumber.size();
 
   return;
 }
@@ -520,7 +608,6 @@ vector<TVector2> TMust2Physics::Match_X_Y() {
     int N = m_PreTreatedData->GetMMStripYEDetectorNbr(j);
     m_StripYMultDet[N] += 1;
   }
-
   for (unsigned int i = 0; i < m_StripXEMult; i++) {
     for (unsigned int j = 0; j < m_StripYEMult; j++) {
 
@@ -541,10 +628,6 @@ vector<TVector2> TMust2Physics::Match_X_Y() {
         double StripYNbr    = m_PreTreatedData->GetMMStripYEStripNbr(j);
 
         //   Look if energy match
-        // FIXME Should be proportional to the energy loss in the DSSDs
-        // if (abs(StripXEnergy - StripYEnergy)
-        // < 0.09 * (std::max(StripXEnergy, StripYEnergy))) {
-        // negligible correction according to Adrien
         if (abs((StripXEnergy - StripYEnergy) / 2.)
             < NmatchSigma * matchSigma) {
 
@@ -553,7 +636,7 @@ vector<TVector2> TMust2Physics::Match_X_Y() {
           if (m_Ignore_not_matching_CsI) {
             bool check_validity = false;
             for (unsigned int hh = 0; hh < 16; ++hh) {
-              if (Match_Si_CsI(StripXNbr, StripYNbr, hh + 1)) {
+              if (Match_Si_CsI(StripXNbr, StripYNbr, hh + 1, DetNbr)) {
                 check_validity = true;
               }
             }
@@ -572,10 +655,12 @@ vector<TVector2> TMust2Physics::Match_X_Y() {
             }
             if (check_validity)
               ArrayOfGoodCouple.push_back(TVector2(i, j));
-          }
-          // Regular case, keep the event
-          else {
+          } else {
+            // Regular case, keep the event
             ArrayOfGoodCouple.push_back(TVector2(i, j));
+            m_NMatchX[i] += 1;
+            m_NMatchY[j] += 1;
+
             m_NMatchDet[DetNbr] += 1;
           }
         }
@@ -584,10 +669,15 @@ vector<TVector2> TMust2Physics::Match_X_Y() {
   } // loop on StripX Mult
 
   unsigned int couple_size = ArrayOfGoodCouple.size();
-
   for (unsigned int i = 0; i < couple_size; ++i) {
     int N = m_PreTreatedData->GetMMStripXEDetectorNbr(ArrayOfGoodCouple[i].X());
-    m_match_type.push_back(CheckEvent(N));
+    int Xi = ArrayOfGoodCouple[i].X();
+    int Yj = ArrayOfGoodCouple[i].Y();
+    if (m_NMatchX[Xi] > 1 || m_NMatchY[Yj] > 1) {
+      m_match_type.push_back(2);
+    } else {
+      m_match_type.push_back(CheckEvent(N));
+    }
   }
 
   return ArrayOfGoodCouple;
@@ -595,13 +685,12 @@ vector<TVector2> TMust2Physics::Match_X_Y() {
 
 ////////////////////////////////////////////////////////////////////////////
 int TMust2Physics::CheckEvent(int N) {
-  // Bad event
   if (m_NMatchDet[N] > m_StripXMultDet[N]
       || m_NMatchDet[N] > m_StripYMultDet[N]) {
-    return  2;
-  } 
-  // Good event
-  else {
+    // Bad event
+    return 2;
+  } else {
+    // Good event
     return 1;
   }
 }
@@ -674,7 +763,7 @@ void TMust2Physics::ReadAnalysisConfig() {
       else if (whatToDo == "MAX_STRIP_MULTIPLICITY") {
         AnalysisConfigFile >> DataBuffer;
         m_MaximumStripMultiplicityAllowed = atoi(DataBuffer.c_str());
-        cout << "MAXIMUM STRIP MULTIPLICITY "
+        cout << "MAXIMUN STRIP MULTIPLICITY "
              << m_MaximumStripMultiplicityAllowed << endl;
       }
 
@@ -803,30 +892,31 @@ void TMust2Physics::ReadAnalysisConfig() {
 
       else if (whatToDo == "SI_X_E_THRESHOLD") {
         AnalysisConfigFile >> DataBuffer;
-        m_Si_X_E_Threshold = atof(DataBuffer.c_str()) *keV ;
-        cout << whatToDo << " " << m_Si_X_E_Threshold << " MeV"  << endl;
+        m_Si_X_E_Threshold = atof(DataBuffer.c_str());
+        cout << whatToDo << " " << m_Si_X_E_Threshold << endl;
       }
 
       else if (whatToDo == "SI_Y_E_THRESHOLD") {
         AnalysisConfigFile >> DataBuffer;
-        m_Si_Y_E_Threshold = atof(DataBuffer.c_str()) *keV;
-        cout << whatToDo << " " << m_Si_Y_E_Threshold << " MeV"  << endl;
+        m_Si_Y_E_Threshold = atof(DataBuffer.c_str());
+        cout << whatToDo << " " << m_Si_Y_E_Threshold << endl;
       }
 
       else if (whatToDo == "SILI_E_THRESHOLD") {
         AnalysisConfigFile >> DataBuffer;
-        m_SiLi_E_Threshold = atof(DataBuffer.c_str()) *keV;
-        cout << whatToDo << " " << m_SiLi_E_Threshold << " MeV"  << endl;
+        m_SiLi_E_Threshold = atof(DataBuffer.c_str());
+        cout << whatToDo << " " << m_SiLi_E_Threshold << endl;
       }
 
       else if (whatToDo == "CSI_E_THRESHOLD") {
         AnalysisConfigFile >> DataBuffer;
-        m_CsI_E_Threshold = atof(DataBuffer.c_str()) *keV;
-        cout << whatToDo << " " << m_CsI_E_Threshold << " MeV"  << endl;
+        m_CsI_E_Threshold = atof(DataBuffer.c_str());
+        cout << whatToDo << " " << m_CsI_E_Threshold << endl;
       }
 
-      else if (AnalysisConfigFile.eof()) ReadingStatus = false;
-      
+      else {
+        ReadingStatus = false;
+      }
     }
   }
 }
@@ -847,15 +937,31 @@ bool TMust2Physics::Match_Si_SiLi(int X, int Y, int PadNbr) {
 }
 
 ///////////////////////////////////////////////////////////////////////////
-bool TMust2Physics::Match_Si_CsI(int X, int Y, int CristalNbr) {
+bool TMust2Physics::Match_Si_CsI(int X, int Y, int CristalNbr,
+                                 int TelescopeNumber) {
 
-  if (abs(m_CsI_MatchingX[CristalNbr - 1] - X) < (double)m_CsI_Size / 2.
-      && abs(m_CsI_MatchingY[CristalNbr - 1] - Y) < (double)m_CsI_Size / 2.) {
+  // FIXME: Temporary fix... for zero degree
+  // Added to correct visible gaps at zero degree. This seem to be a geometrical
+  // issue, this is not required in most cases (ZeroDegreeTelescopeNumber should
+  // be added to TMust2Physics.h or to the input file if more experiment use a
+  // telescope at zero degree
+  // if (TelescopeNumber == ZeroDegreeTelescopeNumber) {
+  //   if ((X >= m_ZeroDegree_CsI_MatchingX[CristalNbr - 1].first - 1
+  //        && X <= m_ZeroDegree_CsI_MatchingX[CristalNbr - 1].second + 1)
+  //       && (Y >= m_ZeroDegree_CsI_MatchingY[CristalNbr - 1].first - 1
+  //           && Y <= m_ZeroDegree_CsI_MatchingY[CristalNbr - 1].second + 1)) {
+  //     return true;
+  //   } else {
+  //     return false;
+  //   }
+  // } else {
+  if (abs(m_CsI_MatchingX[CristalNbr - 1] - X) <= (double)m_CsI_Size / 2.
+      && abs(m_CsI_MatchingY[CristalNbr - 1] - Y) <= (double)m_CsI_Size / 2.) {
     return true;
-  }
-
-  else
+  } else {
     return false;
+  }
+  // }
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -867,6 +973,8 @@ void TMust2Physics::Clear() {
   m_StripXMultDet.clear();
   m_StripYMultDet.clear();
   m_NMatchDet.clear();
+  m_NMatchX.clear();
+  m_NMatchY.clear();
 
   TelescopeNumber.clear();
   EventType.clear();
@@ -983,6 +1091,7 @@ void TMust2Physics::ReadConfiguration(NPL::InputParser parser) {
       double         Phi   = blocks[i]->GetDouble("PHI", "deg");
       double         R     = blocks[i]->GetDouble("R", "mm");
       vector<double> beta  = blocks[i]->GetVectorDouble("BETA", "deg");
+      cout << Theta << " " << Phi << endl;
       AddTelescope(Theta, Phi, R, beta[0], beta[1], beta[2]);
 
       m_CsIPresent[i + 1]  = blocks[i]->GetInt("CSI");
@@ -997,7 +1106,6 @@ void TMust2Physics::ReadConfiguration(NPL::InputParser parser) {
       exit(1);
     }
   }
-
   // m_MultEvt = new TMust2MultTelescope[m_NumberOfTelescope];
 
   InitializeStandardParameter();
@@ -1229,9 +1337,10 @@ void TMust2Physics::AddTelescope(double theta, double phi, double distance,
 
   double Pi = 3.141592654;
 
+  cout << theta << " " << phi << endl;
   // convert from degree to radian:
-  theta = theta * Pi / 180.;
-  phi   = phi * Pi / 180.;
+  // theta = theta * Pi / 180.;
+  // phi   = phi * Pi / 180.;
 
   // Vector U on Telescope Face (paralelle to Y Strip) (NB: remember that Y
   // strip are allong X axis)
@@ -1246,15 +1355,33 @@ void TMust2Physics::AddTelescope(double theta, double phi, double distance,
   C = TVector3(distance * sin(theta) * cos(phi),
                distance * sin(theta) * sin(phi), distance * cos(theta));
 
+  //   std::cout << C.Theta() * 180. / Pi << " " << C.Phi() * 180. / Pi << " "
+  //             << C.Mag() << std::endl;
+
+  std::cout << C.X() << " " << C.Y() << std::endl;
+
   TVector3 P
       = TVector3(cos(theta) * cos(phi), cos(theta) * sin(phi), -sin(theta));
+  // = TVector3(1, 1, 1);
 
   W = C.Unit();
-  U = W.Cross(P);
-  V = W.Cross(U);
+  // U = W.Cross(P);
+  V = W.Cross(P);
+  // U = TVector3(0, -1, 0);
+  // V = W.Cross(U);
+  U = W.Cross(V);
+  // V = TVector3(-1, 0, 0);
 
   U = U.Unit();
+  // U.Rotate(90. * Pi / 180.,W);
   V = V.Unit();
+  // V.Rotate(90. * Pi / 180.,W);
+
+  std::cout << "U: " << U.X() << " " << U.Y() << " " << U.Z() << " "
+            << "V: " << V.X() << " " << V.Y() << " " << V.Z() << " "
+            << "W: " << W.X() << " " << W.Y() << " " << W.Z() << std::endl;
+
+  // exit(1);
 
   U.Rotate(beta_u * Pi / 180., U);
   V.Rotate(beta_u * Pi / 180., U);
@@ -1352,7 +1479,7 @@ double fSi_X_E(const TMust2Data* m_EventData, const int& i) {
   name += NPL::itoa(m_EventData->GetMMStripXEStripNbr(i));
   name += "_E";
   return CalibrationManager::getInstance()->ApplyCalibration(
-      name, m_EventData->GetMMStripXEEnergy(i),1);
+      name, m_EventData->GetMMStripXEEnergy(i));
 }
 
 double fSi_X_T(const TMust2Data* m_EventData, const int& i) {
@@ -1363,7 +1490,7 @@ double fSi_X_T(const TMust2Data* m_EventData, const int& i) {
   name += NPL::itoa(m_EventData->GetMMStripXTStripNbr(i));
   name += "_T";
   return CalibrationManager::getInstance()->ApplyCalibration(
-      name, m_EventData->GetMMStripXTTime(i),1);
+      name, m_EventData->GetMMStripXTTime(i));
 }
 
 //   Y
@@ -1375,7 +1502,7 @@ double fSi_Y_E(const TMust2Data* m_EventData, const int& i) {
   name += NPL::itoa(m_EventData->GetMMStripYEStripNbr(i));
   name += "_E";
   return CalibrationManager::getInstance()->ApplyCalibration(
-      name, m_EventData->GetMMStripYEEnergy(i),1);
+      name, m_EventData->GetMMStripYEEnergy(i));
 }
 
 double fSi_Y_T(const TMust2Data* m_EventData, const int& i) {
@@ -1386,7 +1513,7 @@ double fSi_Y_T(const TMust2Data* m_EventData, const int& i) {
   name += NPL::itoa(m_EventData->GetMMStripYTStripNbr(i));
   name += "_T";
   return CalibrationManager::getInstance()->ApplyCalibration(
-      name, m_EventData->GetMMStripYTTime(i),1);
+      name, m_EventData->GetMMStripYTTime(i));
 }
 
 //   SiLi
@@ -1397,8 +1524,9 @@ double fSiLi_E(const TMust2Data* m_EventData, const int& i) {
   name += "_SiLi";
   name += NPL::itoa(m_EventData->GetMMSiLiEPadNbr(i));
   name += "_E";
+
   return CalibrationManager::getInstance()->ApplyCalibration(
-      name, m_EventData->GetMMSiLiEEnergy(i),1);
+      name, m_EventData->GetMMSiLiEEnergy(i));
 }
 
 double fSiLi_T(const TMust2Data* m_EventData, const int& i) {
@@ -1409,7 +1537,7 @@ double fSiLi_T(const TMust2Data* m_EventData, const int& i) {
   name += NPL::itoa(m_EventData->GetMMSiLiTPadNbr(i));
   name += "_T";
   return CalibrationManager::getInstance()->ApplyCalibration(
-      name, m_EventData->GetMMSiLiTTime(i),1);
+      name, m_EventData->GetMMSiLiTTime(i));
 }
 
 //   CsI
@@ -1421,7 +1549,7 @@ double fCsI_E(const TMust2Data* m_EventData, const int& i) {
   name += NPL::itoa(m_EventData->GetMMCsIECristalNbr(i));
   name += "_E";
   return CalibrationManager::getInstance()->ApplyCalibration(
-      name, m_EventData->GetMMCsIEEnergy(i),1);
+      name, m_EventData->GetMMCsIEEnergy(i));
 }
 
 double fCsI_T(const TMust2Data* m_EventData, const int& i) {
@@ -1432,7 +1560,7 @@ double fCsI_T(const TMust2Data* m_EventData, const int& i) {
   name += NPL::itoa(m_EventData->GetMMCsITCristalNbr(i));
   name += "_T";
   return CalibrationManager::getInstance()->ApplyCalibration(
-      name, m_EventData->GetMMCsITTime(i),1);
+      name, m_EventData->GetMMCsITTime(i));
 }
 } // namespace MUST2_LOCAL
 
