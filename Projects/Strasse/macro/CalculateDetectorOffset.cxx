@@ -12,7 +12,7 @@ using namespace std;
 using namespace NPL;
 
 
-void CalculateDetectorOffset(const char * fname = "strasse_optimized"){
+void CalculateDetectorOffset(const char * fname = "./geometry/strasse_July2021"){
 
   // Open output ROOT file from NPTool simulation run
   string path = "";
@@ -214,9 +214,9 @@ double InnerTotalLength =
 double d_TargetCenter_InnerCenter = 
                     - TargetThickness/2. 
                     + d_TargetFront_InnerActive
-                    + InnerTotalLength/2.
                     - Inner_Wafer_GuardRing
-                    - Inner_PCB_UpstreamWidth;
+                    - Inner_PCB_UpstreamWidth
+                    + InnerTotalLength/2.;
 
 double OuterTotalLength = 
                       Outer_PCB_UpstreamWidth

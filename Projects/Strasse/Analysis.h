@@ -50,11 +50,15 @@ class Analysis: public NPL::VAnalysis{
     void ReInitValue();
     static NPL::VAnalysis* Construct();
     TVector3 InterpolateInPlaneZ(TVector3,TVector3,double);
+    double ApplyCATANAResoGamma(double);
+    double ApplyCATANAResoProton(double);
 
   private:
     double Ex;
     double E1;
     double E2;
+    double E1s;
+    double E2s;
     double Theta12;
     double ThetaCM;
     double VertexX;
@@ -75,7 +79,11 @@ class Analysis: public NPL::VAnalysis{
     double Phi1s=-1000;
     double Theta2s=-1000;
     double Phi2s=-1000;
+    double TA;
+    double TAcalc;
 
+
+    TRandom3 *rand;
 
     TLorentzVector LV_A;
     TLorentzVector LV_T;

@@ -28,6 +28,8 @@ using namespace std;
 #include"NPFunction.h"
 #include"NPTrackingUtility.h"
 #include"NPPhysicalConstants.h"
+#include"TRandom3.h"
+
 ////////////////////////////////////////////////////////////////////////////////
 Analysis::Analysis(){
 }
@@ -45,7 +47,7 @@ void Analysis::Init(){
   InitInputBranch();
   
   Strasse = (TStrassePhysics*)  m_DetectorManager -> GetDetector("Strasse");
-  Catana = (TCatanaPhysics*)  m_DetectorManager -> GetDetector("Catana");
+//  Catana = (TCatanaPhysics*)  m_DetectorManager -> GetDetector("Catana");
   // reaction properties
   m_QFS = new NPL::QFS();
   m_QFS->ReadConfigurationFile(NPOptionManager::getInstance()->GetReactionFile());
@@ -63,14 +65,27 @@ void Analysis::Init(){
   protonAl = NPL::EnergyLoss("proton_Al.G4table","G4Table",100);
   protonSi = NPL::EnergyLoss("proton_Si.G4table","G4Table",100);
   LV_T.SetVectM(TVector3(0,0,0),NPUNITS::proton_mass_c2);
+
+  rand= new TRandom3();
 } 
 
 ////////////////////////////////////////////////////////////////////////////////
 void Analysis::TreatEvent(){
   // Reinitiate calculated variable
   ReInitValue();
+
+  bool perfectBeamEnergy=false;
+  bool perfectBeamTracking=false;
+  bool perfectProtonTracking=false;
+  bool perfectProtonEnergy=false;
+  bool CATANAEnergyReco=false;
+
   unsigned int size = Strasse->GetEventMultiplicity();
   if(size==2){ // 2 proton detected
+
+    ////////////////////////////////////////////////
+    ////////////Protons (E,P) Reconstruction ///////
+    ////////////////////////////////////////////////
     // Proton 1
     TVector3 InnerPos1 = Strasse->GetInnerPositionOfInteraction(0);
     TVector3 OuterPos1 = Strasse->GetOuterPositionOfInteraction(0);
@@ -86,11 +101,6 @@ void Analysis::TreatEvent(){
     sumTheta = Proton1.Theta()/deg+Proton2.Theta()/deg;
     Theta12  = Proton1.Angle(Proton2)/deg;
 
-    // reject event that make no physical sense
-    /*if(deltaPhi<170 && sumTheta<80){
-      return;
-      }
-    */
     // computing minimum distance of the two lines
     TVector3 Vertex;
     TVector3 delta;
@@ -101,12 +111,79 @@ void Analysis::TreatEvent(){
     deltaX=delta.X();
     deltaY=delta.Y();
     deltaZ=delta.Z();
-    
+
+    if(perfectProtonTracking){
+        // From Reaction Conditions
+        VertexX=RC->GetVertexPositionX();
+        VertexY=RC->GetVertexPositionY();
+        VertexZ=RC->GetVertexPositionZ();
+        Proton2=RC->GetParticleMomentum(0).Unit();
+        Proton1=RC->GetParticleMomentum(1).Unit();
+        deltaX=0;
+        deltaY=0;
+        deltaZ=0;
+    }
+    if(perfectProtonEnergy){ 
+        E1 = RC->GetKineticEnergy(1); 
+        E2 = RC->GetKineticEnergy(0); 
+    }
+    else {
+        //General CATANA resolution for proton (1.4 % FWHM)
+        // simply applied to E, crude approximation (no CATANA reco.)
+        E1 = ApplyCATANAResoProton(RC->GetKineticEnergy(1));
+        E2 = ApplyCATANAResoProton(RC->GetKineticEnergy(0));
+    }
+    if(CATANAEnergyReco){
+        //if true, bypass previous proton energy calc. and use full CATANA Reco.
+        ///////////
+        // TO DO //
+        ///////////
+    }
+    double P1= sqrt(E1*(E1+2*NPUNITS::proton_mass_c2));
+    double P2= sqrt(E2*(E2+2*NPUNITS::proton_mass_c2));
+
+    ///////////////////////////////////////
+    //////Beam (E,P) Reconstruction ///////
+    ///////////////////////////////////////
+
+    TVector3 BeamDirection;
+    if(perfectBeamTracking)   BeamDirection = RC->GetBeamDirection();
+    else                      BeamDirection = TVector3(0,0,1);
+    //Beam Energy at vertex
+    TA = RC->GetBeamEnergy();
+    if(perfectBeamEnergy)   TAcalc = TA;
+    else TAcalc = BeamTarget.Slow(InitialBeamEnergy,abs(VertexZ+75), BeamDirection.Angle(TVector3(0,0,1)));
+    double beam_mom=sqrt(TAcalc*(TAcalc+2*m_QFS->GetParticleA()->Mass()));
+    TVector3 PA=beam_mom*BeamDirection.Unit();
+
+    //////////////////////////////////////////////
+    ///// Missing mass using Lorentz Vector //////
+    //////////////////////////////////////////////
+
+    LV_A.SetVectM(PA,m_QFS->GetParticleA()->Mass());
+    LV_p1.SetVectM(Proton1.Unit()*P1,NPUNITS::proton_mass_c2); 
+    LV_p2.SetVectM(Proton2.Unit()*P2,NPUNITS::proton_mass_c2); 
+    // computing Ex from Missing Mass
+    LV_B = LV_A + LV_T - LV_p1 - LV_p2;
+    //LV_B = RC->GetParticleMomentum(2);
+    Ex = LV_B.M() - m_QFS->GetParticleB()->Mass();
+
+  }//endif size==2
+}
+
+/*   ///////////////////////////////////
+ *   //OLD Tentative CATANA treatment///
+ *   ///////////////////////////////////
+ *
     // Look for associated Catana event
     double d1,d2;
     unsigned int i1,i2;
     i1 = Catana->FindClosestHitToLine(InnerPos1,OuterPos1,d1);
     i2 = Catana->FindClosestHitToLine(InnerPos2,OuterPos2,d2);
+cout<<"------------------------"<<endl;
+cout<<"d1="<<d1<<endl;
+cout<<"d2="<<d2<<endl;
+cout<<"Catana mult="<<Catana->GetEventMultiplicity()<<endl;
     //if(i1!=i2){
     if(true){
       double TA = BeamTarget.Slow(InitialBeamEnergy,abs(VertexZ-75),RC->GetBeamDirection().Angle(TVector3(0,0,1)));
@@ -118,6 +195,7 @@ void Analysis::TreatEvent(){
       TVector3 Proton1s=RC->GetParticleMomentum(0).Unit();
       TVector3 Proton2s=RC->GetParticleMomentum(1).Unit();
       // Matching the right energy with the right proton
+      
       if((Proton1s-Proton1).Mag()<(Proton1s-Proton2).Mag()){
         E1=E1s;
         E2=E2s;
@@ -145,43 +223,28 @@ void Analysis::TreatEvent(){
         Theta2s=Proton1s.Theta()/deg;
         Phi2s=Proton1s.Phi()/deg;
         }
+
       // From detectors
       E1 = ReconstructProtonEnergy(Vertex,Proton1,Catana->Energy[i1]); 
       E2 = ReconstructProtonEnergy(Vertex,Proton2,Catana->Energy[i2]);
+      //E1 = Catana->Energy[i1]; 
+      //E2 = Catana->Energy[i2];
+      cout<<"------------------------"<<endl;
 
-     // Vertex = RC->GetVertexPosition();  
-      //TA = RC->GetBeamEnergy();
-      //////////////////////////////////// 
-      
-     // setting up Lorentz Vector from measured trajectories and energies
-     // TVector3 PA(0,0,sqrt(TA*(TA+2*m_QFS->GetParticleA()->Mass()))); // for like there is no BDC
-     double beam_mom=sqrt(TA*(TA+2*m_QFS->GetParticleA()->Mass()));
-    // TVector3 PA(0,0,beam_mom); // for like there is no BDC
-       TVector3 PA=beam_mom*RC->GetBeamDirection().Unit();
-
-      LV_A.SetVectM(PA,m_QFS->GetParticleA()->Mass());
-      double P1= sqrt(E1*(E1+2*NPUNITS::proton_mass_c2));
-      double P2= sqrt(E2*(E2+2*NPUNITS::proton_mass_c2));
-
-      LV_p1.SetVectM(Proton1.Unit()*P1,NPUNITS::proton_mass_c2); 
-      LV_p2.SetVectM(Proton2.Unit()*P2,NPUNITS::proton_mass_c2); 
-      // computing Ex from Missing Mass
-      LV_B = LV_A + LV_T - LV_p1 - LV_p2;
-      //LV_B = RC->GetParticleMomentum(2);
-      Ex = LV_B.M() - m_QFS->GetParticleB()->Mass();
-    }
-  }
-}
+*/
 
 ////////////////////////////////////////////////////////////////////////////////
 double Analysis::ReconstructProtonEnergy(const TVector3& x0, const TVector3& dir,const double& Ecatana){
+
     TVector3 Normal = TVector3(0,1,0);
     Normal.SetPhi(dir.Phi());
     double Theta = dir.Angle(Normal);  
     // Catana Al housing 
     double E = protonAl.EvaluateInitialEnergy(Ecatana,0.5*mm,Theta);
+    cout<<"Ecatana="<<Ecatana<<endl;
+    cout<<"Erec0="<<E<<endl;
     // Strasse Chamber
-    E = protonAl.EvaluateInitialEnergy(E,3*mm,Theta);
+    //E = protonAl.EvaluateInitialEnergy(E,3*mm,Theta);
     // Outer Barrel
     E = protonSi.EvaluateInitialEnergy(E,300*micrometer,Theta);
     // Inner Barrel
@@ -193,11 +256,40 @@ double Analysis::ReconstructProtonEnergy(const TVector3& x0, const TVector3& dir
     TVector3 T2(0,15,1);
     T1.SetPhi(dir.Phi());
     T2.SetPhi(dir.Phi());
-    double d = NPL::MinimumDistancePointLine(T1,T2,x0);
+    //    double d = NPL::MinimumDistancePointLine(T1,T2,x0);
+    double d = 0;
+
+    cout<<"d="<<d<<endl;
+    cout<<"Theta="<<Theta<<endl;
     E = protonTarget.EvaluateInitialEnergy(E,d,Theta);
-  }
+    cout<<"Erec="<<E<<endl;
+    return E;
+
+    //return 0;
+}
 
 
+////////////////////////////////////////////////////////////////////////////////
+double Analysis::ApplyCATANAResoProton(double Ein){
+    // Function applying overall CATANA crystal resolution
+    // For protons (1.4% FWHM)
+    double FWHM = 1.4/100 * Ein; 
+    double sigma = FWHM/2.35;
+    double Eout = rand->Gaus(Ein,sigma);   
+    return Eout;
+}
+////////////////////////////////////////////////////////////////////////////////
+double Analysis::ApplyCATANAResoGamma(double Ein){
+    // Function applying overall CATANA crystal resolution
+    // For gammas defined in smsimulator package
+    double a = 0.686569; 
+    double b = 0.564352;
+    // Ein from MeV to keV
+    Ein = Ein * 1000;
+    double SigmaE = a * pow(Ein,b); 
+    double Eout = rand->Gaus(Ein,SigmaE);   
+    return Eout/1000.;
+}
 ////////////////////////////////////////////////////////////////////////////////
 TVector3 Analysis::InterpolateInPlaneZ(TVector3 V0, TVector3 V1, double Zproj){
     TVector3 Vproj(-999,-999,-999);
@@ -207,7 +299,6 @@ TVector3 Analysis::InterpolateInPlaneZ(TVector3 V0, TVector3 V1, double Zproj){
     Vproj.SetXYZ(Xproj,Yproj,Zproj);
     return Vproj;
 }
-
 ////////////////////////////////////////////////////////////////////////////////
 void Analysis::End(){
 }
@@ -237,6 +328,8 @@ void Analysis::InitOutputBranch() {
   RootOutput::getInstance()->GetTree()->Branch("Phi1s",&Phi1s,"Phi1s/D");
   RootOutput::getInstance()->GetTree()->Branch("Theta2s",&Theta2s,"Theta2s/D");
   RootOutput::getInstance()->GetTree()->Branch("Phi2s",&Phi2s,"Phi2s/D");
+  RootOutput::getInstance()->GetTree()->Branch("TA",&TA,"TA/D");
+  RootOutput::getInstance()->GetTree()->Branch("TAcalc",&TAcalc,"TAcalc/D");
 
 
   RootOutput::getInstance()->GetTree()->Branch("Distance",&Distance,"Distance/D");
@@ -274,6 +367,8 @@ void Analysis::ReInitValue(){
   Phi1s=-1000;
   Theta2s=-1000;
   Phi2s=-1000;
+  TA=-1000;
+  TAcalc=-1000;
 }
 
 

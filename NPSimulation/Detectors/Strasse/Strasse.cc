@@ -369,7 +369,8 @@ G4LogicalVolume* Strasse::BuildInnerDetector(){
           -0.5*Inner_PCB_Thickness
           -offsetPCB2-0.05,0);
 
-    G4ThreeVector WaferShiftZ = G4ThreeVector(0,0,-Inner_PCB_UpstreamWidth-Inner_PCB_MidWidth);
+    //G4ThreeVector WaferShiftZ = G4ThreeVector(0,0,-Inner_PCB_UpstreamWidth-Inner_PCB_MidWidth);
+    G4ThreeVector WaferShiftZ = G4ThreeVector(0,0,CentralZOffset);
 
     new G4PVPlacement(new G4RotationMatrix(0,0,0),
         WaferShiftY+WaferShiftZ // Shift along Y
@@ -504,6 +505,7 @@ G4LogicalVolume* Strasse::BuildOuterDetector(){
     PCB2CrossSection.push_back(G4TwoVector(-Outer_PCB2_Width*0.5,Outer_PCB2_Thickness*0.5));
     PCB2CrossSection.push_back(G4TwoVector(-Outer_PCB2_Width*0.5,-Outer_PCB2_Thickness*0.5));
 
+
     double Outer_PCB2_Length= 2*Outer_Wafer_Length + Outer_PCB_MidWidth;
 
     G4ExtrudedSolid* PCB2Full =
@@ -513,14 +515,9 @@ G4LogicalVolume* Strasse::BuildOuterDetector(){
           G4TwoVector(0,0),1,// offset, scale
           G4TwoVector(0,0),1);// offset, scale
 
-    // Offset along beam axis between PCB middle and (2*Wafer+MiddleBar) volume center
-    double CentralZOffset = - Outer_PCB_Length*0.5
-                    + Outer_PCB_UpstreamWidth
-                    + Outer_Wafer_Length
-                    + Outer_PCB_MidWidth*0.5;
 
     double Length_Shift21 = -0.5*Outer_PCB_Length  // Flush to border
-                           + 0.5*(Outer_PCB_UpstreamWidth+Outer_PCB_DownstreamWidth) // add Upstream side shift
+                           + 0.5*(Outer_PCB_UpstreamWidth+Outer_PCB_DownstreamWidth) 
                            + 0.5*Outer_Wafer_Length;
     double Length_Shift22 = Length_Shift21 // overlap detector 1
       + Outer_Wafer_Length // at opposing edge
@@ -546,7 +543,6 @@ G4LogicalVolume* Strasse::BuildOuterDetector(){
         Outer_PCB2_Thickness,
         Outer_PCB2_MidWidth*0.5);
 
-    // Substracting the hole Shape from the Stock PCB
     G4SubtractionSolid* PCB2_3 = new G4SubtractionSolid("PCB2_3", PCB2_2, HoleShapeCenterBar,
         new G4RotationMatrix,HoleCenterBar);
 
@@ -555,13 +551,19 @@ G4LogicalVolume* Strasse::BuildOuterDetector(){
       new G4LogicalVolume(PCB2_3,m_MaterialPCB,"logicPCB2", 0, 0, 0);
     logicPCB2->SetVisAttributes(PADVisAtt);
 
+    // Offset along beam axis between PCB middle and (2*Wafer+MiddleBar) volume center
+    double CentralZOffset = - Outer_PCB_Length*0.5
+                    + Outer_PCB_UpstreamWidth
+                    + Outer_Wafer_Length
+                    + Outer_PCB_MidWidth*0.5;
+
     new G4PVPlacement(new G4RotationMatrix(0,0,0),
-        //G4ThreeVector(0,-0.5*offsetPCB2,Outer_PCB_UpstreamWidth-Outer_PCB_MidWidth),
         G4ThreeVector(0,-0.5*offsetPCB2,CentralZOffset),
         logicPCB2,"Strasse_Outer_PCB2",m_OuterDetector,
         false,0);
 
     //////////////////////////////////////////////////////////////////
+    // Build the Wafer
     // Sub volume Wafer
     G4Box*  WaferShape = new G4Box("WaferShape",
         Outer_Wafer_Width*0.5,
@@ -576,19 +578,24 @@ G4LogicalVolume* Strasse::BuildOuterDetector(){
       new G4LogicalVolume(WaferShape,m_MaterialSilicon,"logicWafer2", 0, 0, 0);
     logicWafer2->SetVisAttributes(GuardRingVisAtt);
 
+    // Shift along Y to flush the wafer to the pcb ledge on one side
+    G4ThreeVector WaferShiftY = G4ThreeVector(0,-0.5*Outer_Wafer_Thickness
+                    -Outer_Wafer_AlThickness
+                    -0.5*Outer_PCB_Thickness
+                    -offsetPCB2-0.05,0);
+
+    //G4ThreeVector WaferShiftZ = G4ThreeVector(0,0,-Outer_PCB_UpstreamWidth-Outer_PCB_MidWidth);
+    G4ThreeVector WaferShiftZ = G4ThreeVector(0,0,CentralZOffset);
+
     new G4PVPlacement(new G4RotationMatrix(0,0,0),
-        G4ThreeVector(0,0.5*Outer_Wafer_Thickness
-          +Outer_Wafer_AlThickness
-          -0.5*Outer_PCB_Thickness,0)// flush the wafer to the pcb on one side
-        +HoleShift1, // Shift wafer in the hole 
+        WaferShiftY+WaferShiftZ
+        +HoleShift21, // Shift along Z to put wafer in the 1st hole 
         logicWafer1,"Strasse_Outer_Wafer1",m_OuterDetector,
         false,0);
 
     new G4PVPlacement(new G4RotationMatrix(0,0,0),
-        G4ThreeVector(0,0.5*Outer_Wafer_Thickness
-          +Outer_Wafer_AlThickness
-          -0.5*Outer_PCB_Thickness,0)// flush the wafer to the pcb on one side
-        +HoleShift2, // Shift wafer in the hole 
+        WaferShiftY+WaferShiftZ
+        +HoleShift22, // Shift along Z to put wafer in the 1st hole 
         logicWafer2,"Strasse_Outer_Wafer2",m_OuterDetector,
         false,0);
 
@@ -608,14 +615,13 @@ G4LogicalVolume* Strasse::BuildOuterDetector(){
     logicActiveWafer2->SetVisAttributes(SiliconVisAtt);
     logicActiveWafer2->SetSensitiveDetector(m_OuterScorer2);
 
-
     new G4PVPlacement(new G4RotationMatrix(0,0,0),
-        G4ThreeVector(0,0,0.5*(Outer_Wafer_PADExternal-Outer_Wafer_PADInternal)), // assymetric pading for bounding
+        G4ThreeVector(0,0,0.5*(Outer_Wafer_PADExternal-Outer_Wafer_PADInternal)),
         logicActiveWafer1,"Strasse_Outer_ActiveWafer1",logicWafer1,
         false,1);
 
     new G4PVPlacement(new G4RotationMatrix(0,0,0),
-        G4ThreeVector(0,0,-0.5*(Outer_Wafer_PADExternal-Outer_Wafer_PADInternal)), // assymetric pading for bounding
+        G4ThreeVector(0,0,-0.5*(Outer_Wafer_PADExternal-Outer_Wafer_PADInternal)),
         logicActiveWafer2,"Strasse_Outer_ActiveWafer2",logicWafer2,
         false,2);
 
