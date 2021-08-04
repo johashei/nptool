@@ -83,6 +83,7 @@ class Analysis: public NPL::VAnalysis{
     TCutG* cutQ81[3];
     
     TSpline3* fcorr_z_beta[4];
+    TSpline3* fcorr_z_dt[4];
 
 };
 #endif

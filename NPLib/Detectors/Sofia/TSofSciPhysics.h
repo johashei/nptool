@@ -69,6 +69,10 @@ class TSofSciPhysics : public TObject, public NPL::VDetector {
     vector<double>   CalTof;
     vector<double>   VelocityMNs;
     vector<double>   Beta;
+    int multS2_R;
+    int multS2_L;
+    int multCC_R;
+    int multCC_L;
 
   /// A usefull method to bundle all operation to add a detector
   void AddDetector(TVector3 POS); 
