@@ -28,6 +28,7 @@
 #include "G4EmCalculator.hh"
 #include "G4VPhysicalVolume.hh"
 #include "G4IonTable.hh"
+#include "G4UserLimits.hh"
 #include "NPFunction.h"
 #include "NPInputParser.h"
 #include "NPOptionManager.h"
@@ -146,12 +147,17 @@ G4bool NPS::BeamReaction::ModelTrigger(const G4FastTrack& fastTrack) {
   bool is_first = (to_entrance==0);
 
   if(is_first && m_shoot){
-    /*   std::cout << "Something went wrong in beam reaction, m_shoot cannot be true at beginning of event" << std::endl;
+         /* Does occur rarely when event is tangent to the target surface and scatters out
+         std::cout << "Something went wrong in beam reaction, m_shoot and is_first variables cannot be true simultaneously" << std::endl;
+         std::cout << "m_shoot: " << m_shoot << std::endl;
          std::cout << "rand: " << m_rand << std::endl;
+         std::cout << "to_entrance: " << to_entrance << std::endl;
+         std::cout << "to_exit: " << to_exit << std::endl;
          std::cout << "length: " << m_length << std::endl;
          std::cout << "step: " << m_StepSize << std::endl;
          std::cout << "Z: " << m_Z << std::endl;
-         std::cout << "S: " << m_S << std::endl;*/
+         std::cout << "S: " << m_S << std::endl;
+         */
     m_shoot = false;
   }
 
@@ -168,7 +174,8 @@ G4bool NPS::BeamReaction::ModelTrigger(const G4FastTrack& fastTrack) {
   m_S = to_entrance - 0.5*(to_exit+to_entrance); 
   m_length = m_Z-m_S;
 
-  m_StepSize = PrimaryTrack->GetStepLength();
+  m_StepSize = PrimaryTrack->GetVolume()->GetLogicalVolume()->GetUserLimits()->GetMaxAllowedStep(*PrimaryTrack);
+
   // If the condition is met, the event is generated
   if (m_shoot && m_length < m_StepSize) {
     if(m_ReactionType==QFS){

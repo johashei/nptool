@@ -259,6 +259,8 @@ class TStrassePhysics : public TObject, public NPL::VDetector {
   double Inner_PCB_DownstreamWidth;
   double Inner_PCB_MidWidth;
   double Inner_PCB_Thickness;
+  double Inner_PCB_Ledge;
+  double Inner_PCB_Step;
   double Inner_Wafer_TransverseStrips;
   double Inner_Wafer_LongitudinalStrips;
 
@@ -282,6 +284,8 @@ class TStrassePhysics : public TObject, public NPL::VDetector {
   double Outer_PCB_DownstreamWidth;
   double Outer_PCB_MidWidth;
   double Outer_PCB_Thickness;
+  double Outer_PCB_Ledge;
+  double Outer_PCB_Step;
   double Outer_Wafer_TransverseStrips;
   double Outer_Wafer_LongitudinalStrips;
 

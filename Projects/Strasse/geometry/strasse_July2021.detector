@@ -61,26 +61,26 @@ Strasse Info
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 Alias InnerPhi
   Action= Copy
-%  Value= 116
-  Value= -4 56 116 176 236 296
+  %Value= 0
+  Value= -5.5 54.5 114.5 174.5 234.5 294.5
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 Strasse Inner
-  Radius= 27.6 mm
+  Radius= 28.7 mm
   Z= 76.5 mm
   Phi= @InnerPhi deg
-  Shift= 3 mm
+  Shift= 3.5 mm
   Ref= 0 0 0 mm
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 Alias OuterPhi
   Action= Copy
-%  Value= 0
+  %Value= 0 
   Value= 0 60 120 180 240 300
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 Strasse Outer
-  Radius= 58.5 mm
+  Radius= 60.7 mm
   Z= 76.5 mm
   Phi= @OuterPhi deg
   Shift= 0 mm

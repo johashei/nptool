@@ -75,8 +75,10 @@ ClassImp(TStrassePhysics)
     Inner_PCB_BevelAngle= 60*deg;
     Inner_PCB_UpstreamWidth=1*cm;
     Inner_PCB_DownstreamWidth=2*mm;
-    Inner_PCB_MidWidth=2*mm;
+    Inner_PCB_MidWidth=1*mm;
     Inner_PCB_Thickness=3*mm;
+    Inner_PCB_Ledge = 1*mm ;
+    Inner_PCB_Step = 2*mm ;
     Inner_Wafer_TransverseStrips= 128;
     Inner_Wafer_LongitudinalStrips= 128;
 
@@ -98,8 +100,10 @@ ClassImp(TStrassePhysics)
     Outer_PCB_BevelAngle= 60*deg;
     Outer_PCB_UpstreamWidth=1*cm;
     Outer_PCB_DownstreamWidth=2*mm;
-    Outer_PCB_MidWidth=2*mm;
+    Outer_PCB_MidWidth=1*mm;
     Outer_PCB_Thickness=3*mm;
+    Outer_PCB_Ledge = 1*mm ;
+    Outer_PCB_Step = 2*mm ;
     Outer_Wafer_TransverseStrips= 128;
     Outer_Wafer_LongitudinalStrips= 128;
 
@@ -116,7 +120,8 @@ void TStrassePhysics::AddInnerDetector(double R, double Z, double Phi, double Sh
 //cout << ActiveWidth << " " << ActiveLength << " " << LongitudinalPitch << " " << TransversePitch << endl;
 
   // Vector C position of detector face center
-  TVector3 C(Shift,R,Z);// center of the whole detector, including PCB
+  double Recess = (Inner_PCB_Thickness-Inner_PCB_Step-Inner_Wafer_Thickness);
+  TVector3 C(Shift,R+Recess,Z);// center of the whole detector, including PCB
   C.RotateZ(-Phi);
 
   // Vector W normal to detector face (pointing to the back)
@@ -212,7 +217,8 @@ void TStrassePhysics::AddOuterDetector(double R, double Z, double Phi, double Sh
 //cout << ActiveWidth << " " << ActiveLength << " " << LongitudinalPitch << " " << TransversePitch << endl;
 
   // Vector C position of detector face center
-  TVector3 C(Shift,R,Z);// center of the whole detector, including PCB
+  double Recess = (Inner_PCB_Thickness-Inner_PCB_Step-Inner_Wafer_Thickness);
+  TVector3 C(Shift,R+Recess,Z);// center of the whole detector, including PCB
   C.RotateZ(-Phi);
 
   // Vector W normal to detector face (pointing to the back)
@@ -659,6 +665,8 @@ void TStrassePhysics::ReadConfiguration(NPL::InputParser parser) {
     "Inner_PCB_DownstreamWidth",
     "Inner_PCB_MidWidth",       
     "Inner_PCB_Thickness",      
+    "Inner_PCB_Ledge",      
+    "Inner_PCB_Step",      
     "Inner_Wafer_TransverseStrips",
     "Inner_Wafer_LongitudinalStrips",
     "Outer_Wafer_Length",       
@@ -675,8 +683,10 @@ void TStrassePhysics::ReadConfiguration(NPL::InputParser parser) {
     "Outer_PCB_DownstreamWidth",
     "Outer_PCB_MidWidth",       
     "Outer_PCB_Thickness",      
+    "Outer_PCB_Ledge",      
+    "Outer_PCB_Step",      
     "Outer_Wafer_TransverseStrips",
-    "Outer_Wafer_LongitudinalStrips"
+    "Outer_Wafer_LongitudinalStrips",
   };
 
   if(blocks_info[0]->HasTokenList(info)){
@@ -697,6 +707,8 @@ void TStrassePhysics::ReadConfiguration(NPL::InputParser parser) {
     Inner_PCB_DownstreamWidth = blocks_info[0]->GetDouble("Inner_PCB_DownstreamWidth","mm"); 
     Inner_PCB_MidWidth = blocks_info[0]->GetDouble("Inner_PCB_MidWidth","mm");        
     Inner_PCB_Thickness = blocks_info[0]->GetDouble("Inner_PCB_Thickness","mm");       
+    Inner_PCB_Ledge = blocks_info[0]->GetDouble("Inner_PCB_Ledge","mm");       
+    Inner_PCB_Step = blocks_info[0]->GetDouble("Inner_PCB_Step","mm");       
     Outer_Wafer_Length = blocks_info[0]->GetDouble("Outer_Wafer_Length","mm");        
     Outer_Wafer_Width = blocks_info[0]->GetDouble("Outer_Wafer_Width","mm");         
     Outer_Wafer_Thickness = blocks_info[0]->GetDouble("Outer_Wafer_Thickness","mm");     
@@ -713,7 +725,8 @@ void TStrassePhysics::ReadConfiguration(NPL::InputParser parser) {
     Outer_PCB_DownstreamWidth = blocks_info[0]->GetDouble("Outer_PCB_DownstreamWidth","mm"); 
     Outer_PCB_MidWidth = blocks_info[0]->GetDouble("Outer_PCB_MidWidth","mm");        
     Outer_PCB_Thickness = blocks_info[0]->GetDouble("Outer_PCB_Thickness","mm");       
-
+    Outer_PCB_Ledge = blocks_info[0]->GetDouble("Outer_PCB_Ledge","mm");       
+    Outer_PCB_Step = blocks_info[0]->GetDouble("Outer_PCB_Step","mm");       
   }
 
   else{
