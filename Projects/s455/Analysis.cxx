@@ -85,14 +85,16 @@ void Analysis::FissionFragmentAnalysis(){
   double TOF_right = -1;
   double TOF_up = -1;
   double TOF_down = -1;
-  double Esec[2];
-  double Section[2];
   double E_left = -1;
   double E_right = -1;
   double E1 = -1;
   double E2 = -1;
   double E3 = -1;
   double E4 = -1;
+  double DT1 = -1;
+  double DT2 = -1;
+  double DT3 = -1;
+  double DT4 = -1;
   double E_up = -1;
   double E_down = -1;
   double L_CC = 8.45;
@@ -105,31 +107,53 @@ void Analysis::FissionFragmentAnalysis(){
   for(int i = 0; i<2; i++){
     TOF_CC[i] = -1;
     Plastic[i] = -1;
-    Esec[i] = -1;
-    Section[i] = -1;
     PosY[i] = -1;
   }
 
-
-  if(softofw_size==2 && softwim_size==2){ 
-    for(unsigned int i=0; i< softofw_size; i++){
+  if(softofw_size==2){
+    for(unsigned int i=0; i<softofw_size; i++){
       TOF_CC[i] = SofTofW->CalTof[i];
       Plastic[i] = SofTofW->PlasticNbr[i];
       PosY[i] = SofTofW->CalPosY[i];
-
-      Esec[i] = SofTwim->EnergySection[i];
-      int sec = SofTwim->SectionNbr[i];
-      Section[i] = sec;
-
-      if(sec==1)
-        E1 = SofTwim->EnergySection[i];
-      else if(sec==2)
-        E2 = SofTwim->EnergySection[i];
-      else if(sec==3)
-        E3 = SofTwim->EnergySection[i]; 
-      else if(sec==4)
-        E4 = SofTwim->EnergySection[i];     
     }
+  }
+
+  if(softwim_size>1){
+    for(unsigned int i=0; i< softwim_size; i++){
+      int sec = SofTwim->SectionNbr[i];
+
+      if(sec==1){
+        E1 = SofTwim->EnergySection[i];
+        DT1 = SofTwim->DriftTime[i];
+      }
+      else if(sec==2){
+        E2 = SofTwim->EnergySection[i];
+        DT2 = SofTwim->DriftTime[i];
+      }
+      else if(sec==3){
+        E3 = SofTwim->EnergySection[i]; 
+        DT3 = SofTwim->DriftTime[i];
+      }
+      else if(sec==4){
+        E4 = SofTwim->EnergySection[i];     
+        DT4 = SofTwim->DriftTime[i];
+      }
+    }
+  }
+
+  if(E1>0 && E2>0 && E3>0 && E4>0){
+    E1 = (E1+E2)/2;
+    E2 = -1;
+    E3 = (E3+E4)/2;
+    E4 = -1;
+  }
+  if(E1>0 && E2>0 && (E3>0||E4>0)){
+    E1 = (E1+E2)/2;
+    E2 = -1;
+  }
+  if(E3>0 && E4>0 && (E1>0||E2>0)){
+    E3 = (E3+E4)/2;
+    E4 = -1;
   }
 
   if(Plastic[0]<Plastic[1]){
@@ -163,18 +187,22 @@ void Analysis::FissionFragmentAnalysis(){
 
     if(E1 != -1 && E2==-1){
       E1 = E1 / fcorr_z_beta[0]->Eval(Beta_left) * fcorr_z_beta[0]->Eval(Beta_norm);
+      E1 = E1 / fcorr_z_dt[0]->Eval(DT1) * fcorr_z_dt[0]->Eval(0);
       E_left = E1;
     }
     if(E2 != -1 && E1==-1){
       E2 = E2 / fcorr_z_beta[1]->Eval(Beta_left) * fcorr_z_beta[1]->Eval(Beta_norm);
+      E2 = E2 / fcorr_z_dt[1]->Eval(DT2) * fcorr_z_dt[1]->Eval(0);
       E_left = E2;
     }
     if(E3 != -1 && E4==-1){
       E3 = E3 / fcorr_z_beta[2]->Eval(Beta_right) * fcorr_z_beta[2]->Eval(Beta_norm);
+      E3 = E3 / fcorr_z_dt[2]->Eval(DT3) * fcorr_z_dt[2]->Eval(0);
       E_right = E3;
     }
     if(E4 != -1 && E3==-1){
       E4 = E4 / fcorr_z_beta[3]->Eval(Beta_right) * fcorr_z_beta[3]->Eval(Beta_norm);
+      E4 = E4 / fcorr_z_dt[3]->Eval(DT4) * fcorr_z_dt[3]->Eval(0);
       E_right = E4;
     }
   }
@@ -185,7 +213,6 @@ void Analysis::FissionFragmentAnalysis(){
 
     Beta_down = velocity_down * m/ns / NPUNITS::c_light;
     Beta_up = velocity_up * m/ns / NPUNITS::c_light;
-
     if(E1>0 && E2>0 && E3==-1 && E4==-1){
       E1 = E1 / fcorr_z_beta[0]->Eval(Beta_down) * fcorr_z_beta[0]->Eval(Beta_norm);
       E2 = E2 / fcorr_z_beta[1]->Eval(Beta_up) * fcorr_z_beta[1]->Eval(Beta_norm);
@@ -197,15 +224,15 @@ void Analysis::FissionFragmentAnalysis(){
       E3 = E3 / fcorr_z_beta[2]->Eval(Beta_up) * fcorr_z_beta[2]->Eval(Beta_norm);
       E4 = E4 / fcorr_z_beta[3]->Eval(Beta_down) * fcorr_z_beta[3]->Eval(Beta_norm);
       
-      E_up = E4;
-      E_down = E3;
+      E_up = E3;
+      E_down = E4;
     }
   }
 
 
   // Z calibration //
-  double p0 = -1.1072;
-  double p1 = 0.27517*1.001;
+  double p0 = -0.787072;
+  double p1 = 0.273064;
   double Z1=-1;
   double Z2=-1;
   double Zsum=-1;
@@ -247,11 +274,12 @@ void Analysis::FissionFragmentAnalysis(){
 ////////////////////////////////////////////////////////////////////////////////
 void Analysis::BeamAnalysis(){
   unsigned int sofsci_size = SofSci->DetectorNbr.size();
-  double Z_p0 = -8.57894;
-  double Z_p1 = 0.560421;
-  double Y_p0 = 78.0711;
-  double Y_p1 = 0.022669;
+  double Y_p0 = 23943.8;
+  double Y_p1 = 12.362;
 
+  double Z_p0 = -9.31873;
+  double Z_p1 = 0.564459;
+  
   if(sofsci_size==2){
     double beta = SofSci->Beta[0];
     //cout << "Set beta to " << beta << endl;
@@ -276,8 +304,8 @@ void Analysis::BeamAnalysis(){
           YCC = SofMwpc->PositionY[i];
         }
       }
+  
       double LS2;
-
       LS2 = fLS2_0;//*(1 + fK_LS2*Theta);
       velocity_mns = LS2/TofFromS2;
       Beta = velocity_mns * m/ns / NPUNITS::c_light;
@@ -286,8 +314,12 @@ void Analysis::BeamAnalysis(){
       double AoQ  = Brho / (3.10716*Gamma*Beta);
       double A    = AoQ * Qmax;
 
-      Zbeam = Z_p0 + Z_p1*sqrt(Zbeam);
+      // Y dependence correction //
       Zbeam = Zbeam/(Y_p0 + Y_p1*YCC)*Y_p0;
+      
+      // Z calibration //
+      Zbeam = Z_p0 + Z_p1*sqrt(Zbeam);
+
       // Filling Beam tree
       SofBeamID->SetZbeam(Zbeam);
       SofBeamID->SetQmax(rand.Gaus(Qmax,0.15));
@@ -353,6 +385,22 @@ void Analysis::LoadSpline(){
   }
   else
     cout << "File " << rootfile << " not found!" << endl;
+
+  //*** ***//
+  rootfile = input_path + "spline_dt.root";
+  ifile = new TFile(rootfile,"read");
+
+  if(ifile->IsOpen()){
+    cout << "Loading DT spline for fission fragment analysis..." << endl;
+    for(int i=0; i<4; i++){
+      splinename = Form("spline_dt_sec%i",i+1);
+      fcorr_z_dt[i] = (TSpline3*) ifile->FindObjectAny(splinename);
+    }
+    ifile->Close();
+  }
+  else
+    cout << "File " << rootfile << " not found!" << endl;
+
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -402,13 +450,18 @@ void Analysis::InitParameter(){
   //fBrho0 = 12.3255; // 238U run 369
   //fBrho0 = 12.3352; // 238U run 419
   //fBrho0 = 10.9476; // 189Pb
+  //fBrho0 = 10.9558; // 184Hg
   //fBrho0 = 10.8183; // 182Hg
-  fBrho0 = 10.6814; // 180Hg
+  //fBrho0 = 10.6814; // 180Hg
   //fBrho0 = 10.8138; // 187Pb
   //fBrho0 = 11.3418; // 216Th
-  //fBrho0 = 11.2712; // 207Fr
+  //fBrho0 = 11.0864; // 204Fr
+  fBrho0 = 11.2712; // 207Fr
   //fBrho0 = 10.6814; // 175Pt
-  //fBrho0 = 10.9970; // 199At
+  //fBrho0 = 11.5067; // 221Pa
+  //fBrho0 = 11.0955; // 199At run 423 & 424
+  //fBrho0 = 10.9970; // 199At run 425 & 426
+  //fBrho0 = 10.8697; //197At
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -11,7 +11,7 @@
  * Original Author: Adrien MATTA  contact address: a.matta@surrey.ac.uk      *
  *                                                                           *
  * Creation Date  : febuary 2009                                             *
- * Last update    :                                                          *
+ * Last update    : July 2021
  *---------------------------------------------------------------------------*
  * Decription:                                                               *
  *  This class hold must2 treated data                                       *
@@ -54,10 +54,10 @@ public:
 
 public:
   vector<TVector2> Match_X_Y();
-  int  CheckEvent(int N);
-  bool Match_Si_CsI(int X, int Y, int CristalNbr);
-  bool Match_Si_SiLi(int X, int Y, int PadNbr);
-  bool ResolvePseudoEvent();
+  int              CheckEvent(int N);
+  bool             Match_Si_CsI(int X, int Y, int CristalNbr, int DetectorNbr);
+  bool             Match_Si_SiLi(int X, int Y, int PadNbr);
+  bool             ResolvePseudoEvent();
 
 public:
   //   Provide Physical Multiplicity
@@ -258,9 +258,11 @@ private: //   Parameter used in the analysis
   // size in strip of a cristal
   int m_CsI_Size; //!
   // center position of the cristal on X
-  vector<int> m_CsI_MatchingX; //!
+  vector<int>                        m_CsI_MatchingX; //!
+  std::map<int, std::pair<int, int>> m_ZeroDegree_CsI_MatchingX; //!
   // center position of the cristal on X
-  vector<int> m_CsI_MatchingY; //!
+  vector<int>                        m_CsI_MatchingY; //!
+  std::map<int, std::pair<int, int>> m_ZeroDegree_CsI_MatchingY; //!
 
   // If set to true, all event that do not come in front of a cristal will be
   // ignore all time (crossing or not),
@@ -295,6 +297,8 @@ public:
   map<int, int> m_NMatchDet; //!
   map<int, int> m_StripXMultDet; //!
   map<int, int> m_StripYMultDet; //!
+  map<int, int> m_NMatchX; //!
+  map<int, int> m_NMatchY; //!
 
 private:
   map<int, bool> m_CsIPresent; //!

@@ -87,10 +87,10 @@ void TSofTwimPhysics::BuildPhysicalEvent() {
 
   // apply thresholds and calibration
   PreTreat();
-  if(m_PreTreatedData->GetMultiplicity() != 32){
-    //m_Beta = -1;
-    return;
-  }
+  /*if(m_PreTreatedData->GetMultiplicity() != 32){
+  //m_Beta = -1;
+  return;
+  }*/
 
   vector<double> anode_energy_sec1;
   vector<double> anode_energy_sec2;
@@ -107,7 +107,7 @@ void TSofTwimPhysics::BuildPhysicalEvent() {
     int AnodeNumber = m_PreTreatedData->GetAnodeNbr(e);
     double Energy   = m_PreTreatedData->GetEnergy(e);
     double DT       = m_PreTreatedData->GetDriftTime(e);
-    
+
     AnodeSecNbr.push_back(SectionNbr);
     AnodeNbr.push_back(AnodeNumber);
     AnodeEnergy.push_back(Energy);
@@ -157,49 +157,41 @@ void TSofTwimPhysics::BuildPhysicalEvent() {
     DTsec4 += anode_dt_sec4[i];
   }
 
-  if(Esec1>0 && anode_energy_sec1.size()==16){
-    if(abs(anode_energy_sec1[0] - anode_energy_sec1[15])<3000){
-      Esec1 = Esec1 / anode_energy_sec1.size();
-      Esec1 = Cal->ApplyCalibration("SofTwim/SEC1_ALIGN",Esec1);
+  if(Esec1>0 && anode_energy_sec1.size()>2){
+    Esec1 = Esec1 / anode_energy_sec1.size();
+    Esec1 = Cal->ApplyCalibration("SofTwim/SEC1_ALIGN",Esec1);
 
-      DTsec1 = DTsec1 / anode_dt_sec1.size();
-      EnergySection.push_back(Esec1);
-      DriftTime.push_back(DTsec1);
-      SectionNbr.push_back(1);
-    }
+    DTsec1 = DTsec1 / anode_dt_sec1.size();
+    EnergySection.push_back(Esec1);
+    DriftTime.push_back(DTsec1);
+    SectionNbr.push_back(1);
   }
-  if(Esec2>0 && anode_energy_sec2.size()==16){
-    if(abs(anode_energy_sec2[0] - anode_energy_sec2[15])<3000){
-      Esec2 = Esec2 / anode_energy_sec2.size();
-      Esec2 = Cal->ApplyCalibration("SofTwim/SEC2_ALIGN",Esec2);
+  if(Esec2>0 && anode_energy_sec2.size()>2){
+    Esec2 = Esec2 / anode_energy_sec2.size();
+    Esec2 = Cal->ApplyCalibration("SofTwim/SEC2_ALIGN",Esec2);
 
-      DTsec2 = DTsec2 / anode_dt_sec2.size();
-      EnergySection.push_back(Esec2);
-      DriftTime.push_back(DTsec2);
-      SectionNbr.push_back(2);
-    }
+    DTsec2 = DTsec2 / anode_dt_sec2.size();
+    EnergySection.push_back(Esec2);
+    DriftTime.push_back(DTsec2);
+    SectionNbr.push_back(2);
   }
-  if(Esec3>0 && anode_energy_sec3.size()==16){
-    if(abs(anode_energy_sec3[0] - anode_energy_sec3[15])<3000){
-      Esec3 = Esec3 / anode_energy_sec3.size();
-      Esec3 = Cal->ApplyCalibration("SofTwim/SEC3_ALIGN",Esec3);
-    
-      DTsec3 = DTsec3 / anode_dt_sec3.size();
-      EnergySection.push_back(Esec3);
-      DriftTime.push_back(DTsec3);
-      SectionNbr.push_back(3);
-    }
+  if(Esec3>0 && anode_energy_sec3.size()>2){
+    Esec3 = Esec3 / anode_energy_sec3.size();
+    Esec3 = Cal->ApplyCalibration("SofTwim/SEC3_ALIGN",Esec3);
+
+    DTsec3 = DTsec3 / anode_dt_sec3.size();
+    EnergySection.push_back(Esec3);
+    DriftTime.push_back(DTsec3);
+    SectionNbr.push_back(3);
   }
-  if(Esec4>0 && anode_energy_sec4.size()==16){
-    if(abs(anode_energy_sec4[0] - anode_energy_sec4[15])<3000){
-      Esec4 = Esec4 / anode_energy_sec4.size();
-      Esec4 = Cal->ApplyCalibration("SofTwim/SEC4_ALIGN",Esec4);
-    
-      DTsec4 = DTsec4 / anode_dt_sec4.size();
-      EnergySection.push_back(Esec4);
-      DriftTime.push_back(DTsec4);
-      SectionNbr.push_back(4);
-    }
+  if(Esec4>0 && anode_energy_sec4.size()>2){
+    Esec4 = Esec4 / anode_energy_sec4.size();
+    Esec4 = Cal->ApplyCalibration("SofTwim/SEC4_ALIGN",Esec4);
+
+    DTsec4 = DTsec4 / anode_dt_sec4.size();
+    EnergySection.push_back(Esec4);
+    DriftTime.push_back(DTsec4);
+    SectionNbr.push_back(4);
   }
 
   m_Beta = -1;
@@ -221,7 +213,7 @@ void TSofTwimPhysics::PreTreat() {
     if(m_EventData->GetPileUp(i) != 1 && m_EventData->GetOverflow(i) != 1){
       double Energy = Cal->ApplyCalibration("SofTwim/SEC"+NPL::itoa(m_EventData->GetSectionNbr(i))+"_ANODE"+NPL::itoa(m_EventData->GetAnodeNbr(i))+"_ENERGY",m_EventData->GetEnergy(i));
       double DT = Cal->ApplyCalibration("SofTwim/SEC"+NPL::itoa(m_EventData->GetSectionNbr(i))+"_ANODE"+NPL::itoa(m_EventData->GetAnodeNbr(i))+"_TIME",m_EventData->GetDriftTime(i));
-  
+
       m_PreTreatedData->SetSectionNbr(m_EventData->GetSectionNbr(i));
       m_PreTreatedData->SetAnodeNbr(m_EventData->GetAnodeNbr(i));
       m_PreTreatedData->SetEnergy(Energy);
@@ -371,7 +363,7 @@ void TSofTwimPhysics::AddParameterToCalibrationManager() {
 
   for(int sec = 0; sec < m_NumberOfSections; sec++){
     Cal->AddParameter("SofTwim","SEC"+NPL::itoa(sec+1)+"_ALIGN","SofTwim_SEC"+NPL::itoa(sec+1)+"_ALIGN");
-    
+
     for(int anode = 0; anode < m_NumberOfAnodesPerSection; anode++){
       Cal->AddParameter("SofTwim","SEC"+NPL::itoa(sec+1)+"_ANODE"+NPL::itoa(anode+1)+"_ENERGY","SofTwim_SEC"+NPL::itoa(sec+1)+"_ANODE"+NPL::itoa(anode+1)+"_ENERGY");
       Cal->AddParameter("SofTwim","SEC"+NPL::itoa(sec+1)+"_ANODE"+NPL::itoa(anode+1)+"_TIME","SofTwim_SEC"+NPL::itoa(sec+1)+"_ANODE"+NPL::itoa(anode+1)+"_TIME");

@@ -143,6 +143,12 @@ void TSofSciPhysics::BuildPhysicalEvent() {
     double S2_rawtime;
     double rawtof;
 
+    multS2_R = S2_pmtR.size();
+    multCC_R = CC_pmtR.size();
+    multS2_L = S2_pmtL.size();
+    multCC_L = CC_pmtL.size();
+
+
     static CalibrationManager* Cal = CalibrationManager::getInstance();
     if(S2_pmtTref.size()==1 && CC_pmtTref.size()==1){
       for(unsigned int i=0; i<CC_pmtR.size(); i++){
@@ -374,6 +380,11 @@ void TSofSciPhysics::Clear() {
   CalTof.clear();
   VelocityMNs.clear();
   Beta.clear();
+
+  multS2_R=0;
+  multS2_L=0;
+  multCC_R=0;
+  multCC_L=0;
 }
 
 
