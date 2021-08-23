@@ -52,6 +52,8 @@ class Analysis: public NPL::VAnalysis{
  
   private:
   double Ex;
+  double ExNoBeam;
+  double ExNoProton;
   double EDC;
   double ELab;
   double ThetaLab;

@@ -21,7 +21,7 @@ endif()
 
 if(libMinuit_FOUND)
 ## Link to Minuit library
-  add_library(NPMinos SHARED TMinosClust.cxx TMinosData.cxx TMinosPhysics.cxx TMinosResult oldTMinosPhysicsDict.cxx oldTMinosDataDict.cxx TMinosDataDict.cxx TMinosPhysicsDict.cxx TMinosClustDict.cxx TMinosResultDict.cxx MinosUtility.cxx) 
+  add_library(NPMinos SHARED TMinosClust.cxx TMinosData.cxx TMinosPhysics.cxx TMinosResult.cxx oldTMinosPhysicsDict.cxx oldTMinosDataDict.cxx TMinosDataDict.cxx TMinosPhysicsDict.cxx TMinosClustDict.cxx TMinosResultDict.cxx MinosUtility.cxx) 
   target_link_libraries(NPMinos ${ROOT_LIBRARIES} Minuit NPCore NPTrackReconstruction )
   install(FILES TMinosClust.h TMinosData.h TMinosPhysics.h TMinosResult.h MinosUtility.h DESTINATION ${CMAKE_INCLUDE_OUTPUT_DIRECTORY})
 else()

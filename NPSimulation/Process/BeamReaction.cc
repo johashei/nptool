@@ -37,6 +37,8 @@
 #include <Randomize.hh>
 #include <iostream>
 #include <string>
+#include "G4UserLimits.hh"
+
 ////////////////////////////////////////////////////////////////////////////////
 NPS::BeamReaction::BeamReaction(G4String modelName, G4Region* envelope)
   : G4VFastSimulationModel(modelName, envelope) {
