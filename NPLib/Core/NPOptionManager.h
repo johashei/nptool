@@ -114,6 +114,7 @@ class NPOptionManager{
       int    GetFirstEntryToAnalyse()      {return fFirstEntryToAnalyse;} 
       int    GetSpectraServerPort()        {return fSpectraServerPort;}
       int    GetRandomSeed()               {return fRandomSeed;}
+      int    GetRecordTrack()              {return fRecordTrack;}
       std::string GetSharedLibExtension()       {return fSharedLibExtension;}     
       std::string GetLastFile();                 
       std::string GetAnalysisOutputPath(){return m_AnalysisOutputPath;};
@@ -165,6 +166,7 @@ class NPOptionManager{
       int    fFirstEntryToAnalyse; // use to set the first event analysed in NPA (total: fFirstEntryToAnalyse -> fFirstEntryToAnalyse + fNumberOfEntryToAnalyse)
       int    fSpectraServerPort;
       int    fRandomSeed;
+      int    fRecordTrack;
       std::string fSharedLibExtension; // lib extension is platform dependent
       std::string fG4MacroPath; // Path to a geant4 macro to execute at start of nps
       bool fG4BatchMode; // Execute geant4 in batch mode, running the given macro

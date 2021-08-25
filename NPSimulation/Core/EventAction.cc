@@ -31,6 +31,7 @@
 #include "DetectorConstruction.hh"
 #include "RootOutput.h"
 #include "ParticleStack.hh"
+#include "NPOptionManager.h"
 
 #include<iostream>
 
@@ -44,7 +45,7 @@ EventAction::EventAction(){
     total=0;
     mean_rate=0;
     displayed=0;
-
+    m_record_track=NPOptionManager::getInstance()->GetRecordTrack();
      m_tree =  RootOutput::getInstance()->GetTree();
   //  m_tree->Branch("Geant4RandomState",&m_G4State );
  
@@ -64,15 +65,15 @@ void EventAction::BeginOfEventAction(const G4Event* event){
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 void EventAction::EndOfEventAction(const G4Event* event){
     m_detector->ReadAllSensitive(event) ;
+    if(m_record_track)
+      TrackRecording(event);
+
     m_tree->Fill();
     m_detector->ClearInteractionCoordinates();
 //    if(treated%10000==0){
 //        tree->AutoSave();
 //        RootOutput::getInstance()->GetFile()->SaveSelf(kTRUE);
 //    }
-
-    
-
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -91,6 +92,21 @@ void EventAction::SaveRandomGeneratorInitialState(){
     m_Geant4RandomFullState.clear();
 }
 
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+void EventAction::TrackRecording(const G4Event* event){
+// Clear the tracks class
+// m_Tracks->Clear();
+  TrajectoryVector* traj = event->GetTrajectoryContainer()->GetVector();
+  unsigned int size = traj->size();
+      for(unsigned int i = 0 ; i < size ; i++){
+       // FILL 
+       // Particle name
+       // Interaction points
+       // Initial Momentum
+       // Particles.insert( (*traj)[i]->GetParticleName());
+        }
+
+  }
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 void EventAction::ProgressDisplay(){
     if(treated==0){

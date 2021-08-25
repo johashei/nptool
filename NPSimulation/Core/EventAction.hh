@@ -47,6 +47,7 @@ class EventAction : public G4UserEventAction{
     void BeginOfEventAction(const G4Event*);
     void EndOfEventAction(const G4Event*);
     void SetDetector(DetectorConstruction* detector);
+    void TrackRecording(const G4Event* event);
     void ProgressDisplay();
     void SaveRandomGeneratorInitialState();
     void SetRunLength(int);
@@ -54,6 +55,9 @@ class EventAction : public G4UserEventAction{
   private: // tree
     TTree* m_tree;
   
+  private:
+    bool m_record_track;
+
   private: // Progress Display
     clock_t begin;
     clock_t end;
@@ -62,7 +66,7 @@ class EventAction : public G4UserEventAction{
     unsigned int total;
     double mean_rate;
     int displayed;
-
+    
   private: // Random state
     std::ostringstream m_Geant4RandomFullState; 
     std::string  m_G4State;  
