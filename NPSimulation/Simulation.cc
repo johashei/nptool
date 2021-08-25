@@ -29,6 +29,7 @@
 #include "TRandom.h"
 
 // NPS headers
+#include "SteppingAction.hh"
 #include "EventAction.hh"
 #include "RunAction.hh"
 #include "NPSimulationVersion.hh"
@@ -109,6 +110,12 @@ int main(int argc, char** argv){
     ///////////////////////////////////////////////////////////////
     primary->ReadEventGeneratorFile(EventGeneratorFileName);
     runManager->SetUserAction(primary);
+  
+    ///////////////////////////////////////////////////////////////
+    ///////////////// Starting the Stepping Action ////////////////
+    ///////////////////////////////////////////////////////////////
+    SteppingAction* stepping_action = new SteppingAction() ;
+    runManager->SetUserAction(stepping_action)       ;
     
     ///////////////////////////////////////////////////////////////
     ////////////////// Starting the Event Action //////////////////
