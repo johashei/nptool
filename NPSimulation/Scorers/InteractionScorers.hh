@@ -21,6 +21,7 @@
  *                                                                           *
  *****************************************************************************/
 #include "G4VPrimitiveScorer.hh"
+#include "G4RunManager.hh"
 #include "TInteractionCoordinates.h"
 #include "NPImage.h"
 #include <map>
@@ -44,6 +45,27 @@ namespace InteractionScorers {
         m_Phi = Phi;
       }
 
+      InteractionData(const unsigned int& Index ,const double& Energy, const double& Time , 
+          const double& PositionX, const double& PositionY, const double& PositionZ, 
+          const double& Theta, const double& Phi, const std::string &ParticleName, 
+          const int &A, const int &Z, const double &Mass, const int &Charge, const double &Brho){
+        m_Index = Index;
+        m_Energy = Energy;
+        m_Time = Time;
+        m_PositionX = PositionX;;
+        m_PositionY = PositionY;
+        m_PositionZ = PositionZ;
+        m_Theta = Theta;
+        m_Phi = Phi;
+        m_ParticleName = ParticleName;
+        m_A = A;
+        m_Z = Z;
+        m_Mass = Mass;
+        m_Charge = Charge;
+        m_Brho = Brho;
+
+      }
+
       ~InteractionData(){};
 
     private:
@@ -55,7 +77,12 @@ namespace InteractionScorers {
       double m_PositionZ;
       double m_Theta;
       double m_Phi;
-      
+      std::string m_ParticleName;
+      int m_A;
+      int m_Z;
+      double m_Mass;
+      int m_Charge;
+      double m_Brho;
 
     public:
       unsigned int GetIndex() const{return m_Index;};
@@ -66,10 +93,19 @@ namespace InteractionScorers {
       double GetPositionZ() const{return m_PositionZ;};
       double GetTheta() const{return m_Theta;};
       double GetPhi() const{return m_Phi;};
+      std::string GetParticleName() const{return m_ParticleName;};
+      int GetA() const{return m_A;};
+      int GetZ() const{return m_Z;};
+      double GetMass() const{return m_Mass;};
+      int GetCharge() const{return m_Charge;};
+      double GetBrho() const{return m_Brho;};
 
 
     public:
-      void Set(const unsigned int& Index, const double& Energy, const double& Time , const double& PositionX, const double& PositionY, const double& PositionZ, const double& Theta, const double& Phi){
+      void Set(const unsigned int& Index, const double& Energy, const double& Time ,
+          const double& PositionX, const double& PositionY, const double& PositionZ, 
+          const double& Theta, const double& Phi){
+
         m_Index = Index;
         m_Energy = Energy;
         m_Time = Time;
@@ -78,6 +114,28 @@ namespace InteractionScorers {
         m_PositionZ = PositionZ;
         m_Theta = Theta;
         m_Phi = Phi;
+      }
+
+      void Set(const unsigned int& Index, const double& Energy, const double& Time ,
+          const double& PositionX, const double& PositionY, const double& PositionZ, 
+          const double& Theta, const double& Phi, const std::string &ParticleName, 
+          const int &A, const int &Z, const double &Mass, const int &Charge, const double &Brho){
+
+        m_Index = Index;
+        m_Energy = Energy;
+        m_Time = Time;
+        m_PositionX = PositionX;;
+        m_PositionY = PositionY;
+        m_PositionZ = PositionZ;
+        m_Theta = Theta;
+        m_Phi = Phi;
+        m_ParticleName = ParticleName;
+        m_A = A;
+        m_Z = Z;
+        m_Mass = Mass;
+        m_Charge = Charge;
+        m_Brho = Brho;
+
       }
       void Add(const double& Energy){m_Energy+=Energy;};
       unsigned int GetIndex(){return m_Index;};
@@ -100,7 +158,22 @@ namespace InteractionScorers {
       vector<InteractionData>::iterator begin() {return m_Data.begin();};
       unsigned int size() {return m_Data.size();};
       void Add(const unsigned int& index,const double& Energy) {find(index)->Add(Energy);};
-      void Set(const unsigned int& index,const double& Energy, const double& Time , const double& PositionX, const double& PositionY, const double& PositionZ, const double& Theta, const double& Phi) {m_Data.push_back(InteractionData(index,Energy,Time,PositionX,PositionY,PositionZ,Theta,Phi));};
+
+      void Set(const unsigned int& index,const double& Energy, const double& Time , 
+          const double& PositionX, const double& PositionY, const double& PositionZ, 
+          const double& Theta, const double& Phi) {
+
+        m_Data.push_back(InteractionData(index,Energy,Time,PositionX,PositionY,PositionZ,Theta,Phi));
+
+      };
+
+      void Set(const unsigned int& index,const double& Energy, const double& Time ,
+          const double& PositionX, const double& PositionY, const double& PositionZ,
+          const double& Theta, const double& Phi, const std::string &ParticleName,
+          const int &A, const int &Z, const double &Mass, const int &Charge, const double &Brho){
+        m_Data.push_back(InteractionData(index,Energy,Time,PositionX,PositionY,PositionZ,Theta,Phi,ParticleName, A, Z, Mass, Charge, Brho));
+      };
+
       InteractionData* operator[](const unsigned int& i){return &m_Data[i];};
   };
 
@@ -132,6 +205,12 @@ namespace InteractionScorers {
       double t_Energy;
       double t_Time;
       G4ThreeVector t_Position;
+      std::string t_ParticleName;
+      int t_A;
+      int t_Z;
+      double t_Mass;
+      int t_Charge;
+      double t_Brho;
       //G4ThreeVector MOMENT;
   };
 

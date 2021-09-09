@@ -93,6 +93,7 @@ namespace NPL{
     bool fshoot1; // shoot light ejectile &
     bool fshoot2; // shoot light ejectile 2
     bool fUseExInGeant4; 
+    bool fDeexcitation;
     
     public:
     Particle GetParticle(string name, NPL::InputParser parser);
@@ -182,6 +183,7 @@ namespace NPL{
     bool     GetShoot1()         const        {return fshoot1;}
     bool     GetShoot2()         const        {return fshoot2;}
     bool     GetShootB()         const        {return fshootB;}
+    bool     GetDeexcitation()   const        {return fDeexcitation;}
     double   GetThetaCM()        const        {return fThetaCM;}
     double   GetPhiCM()          const        {return fPhiCM;}
     double   GetMomentumSigma()  const        {return fMomentumSigma;}

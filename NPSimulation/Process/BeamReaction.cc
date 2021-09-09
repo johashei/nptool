@@ -47,6 +47,8 @@ NPS::BeamReaction::BeamReaction(G4String modelName, G4Region* envelope)
     m_shoot=false;
     m_rand=0;
     m_Z=0;
+
+    ABLA = new G4AblaInterface();
   }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -149,17 +151,17 @@ G4bool NPS::BeamReaction::ModelTrigger(const G4FastTrack& fastTrack) {
   bool is_first = (to_entrance==0);
 
   if(is_first && m_shoot){
-         /* Does occur rarely when event is tangent to the target surface and scatters out
-         std::cout << "Something went wrong in beam reaction, m_shoot and is_first variables cannot be true simultaneously" << std::endl;
-         std::cout << "m_shoot: " << m_shoot << std::endl;
-         std::cout << "rand: " << m_rand << std::endl;
-         std::cout << "to_entrance: " << to_entrance << std::endl;
-         std::cout << "to_exit: " << to_exit << std::endl;
-         std::cout << "length: " << m_length << std::endl;
-         std::cout << "step: " << m_StepSize << std::endl;
-         std::cout << "Z: " << m_Z << std::endl;
-         std::cout << "S: " << m_S << std::endl;
-         */
+    /* Does occur rarely when event is tangent to the target surface and scatters out
+       std::cout << "Something went wrong in beam reaction, m_shoot and is_first variables cannot be true simultaneously" << std::endl;
+       std::cout << "m_shoot: " << m_shoot << std::endl;
+       std::cout << "rand: " << m_rand << std::endl;
+       std::cout << "to_entrance: " << to_entrance << std::endl;
+       std::cout << "to_exit: " << to_exit << std::endl;
+       std::cout << "length: " << m_length << std::endl;
+       std::cout << "step: " << m_StepSize << std::endl;
+       std::cout << "Z: " << m_Z << std::endl;
+       std::cout << "S: " << m_S << std::endl;
+       */
     m_shoot = false;
   }
 
@@ -556,8 +558,39 @@ void NPS::BeamReaction::DoIt(const G4FastTrack& fastTrack,
       fastStep.CreateSecondaryTrack(particle2, localPosition, time);
     }
     if (m_QFS.GetShootB()) {
-      G4DynamicParticle particleB(HeavyName, momentum_kineB_world, TKEB);
-      fastStep.CreateSecondaryTrack(particleB, localPosition, time);
+      if(m_QFS.GetDeexcitation()){
+        double P_B2 = P_B->Px()*P_B->Px() + P_B->Py()*P_B->Py() + P_B->Pz()*P_B->Pz();
+        double scaling = 1;
+        if(P_B2>0.0){
+          double P_Bnew2 = TKEB*TKEB + 2 * TKEB * m_QFS.GetParticleB()->Mass(); 
+          scaling = sqrt(P_Bnew2)/sqrt(P_B2);
+        }
+        G4LorentzVector G4HeavyMomentum;
+        G4HeavyMomentum.setE(P_B->Energy());
+        G4HeavyMomentum.setPx(P_B->X());
+        G4HeavyMomentum.setPy(P_B->Y());
+        G4HeavyMomentum.setPz(P_B->Z());
+        G4Fragment HeavyFragment(HeavyName->GetAtomicMass(), HeavyName->GetAtomicNumber(), G4HeavyMomentum);
+        G4ReactionProductVector* HeavyDeexcitation = ABLA->DeExcite(HeavyFragment);
+
+        unsigned int sizeFrag = HeavyDeexcitation->size();
+        G4ThreeVector Momsum(0,0,0);
+        for(unsigned int i = 0 ; i < sizeFrag ; i++){
+          const G4ParticleDefinition* HeavyFragName = HeavyDeexcitation->at(i)->GetDefinition();
+          G4ThreeVector HeavyFragMomentum = HeavyDeexcitation->at(i)->GetMomentum();
+          double TKEFrag = HeavyDeexcitation->at(i)->GetKineticEnergy();
+          double HeavyFragModule = sqrt(TKEFrag*TKEFrag + 2*TKEFrag*HeavyDeexcitation->at(i)->GetMass());
+          G4ThreeVector HeavyFragMomentumDirection(HeavyFragMomentum.x()/HeavyFragModule,
+              HeavyFragMomentum.y()/HeavyFragModule,
+              HeavyFragMomentum.z()/HeavyFragModule); 
+          G4DynamicParticle particleFrag(HeavyFragName, HeavyFragMomentumDirection, TKEFrag);
+          fastStep.CreateSecondaryTrack(particleFrag, localPosition, time);
+        }
+      }
+      else{
+        G4DynamicParticle particleB(HeavyName, momentum_kineB_world, TKEB);
+        fastStep.CreateSecondaryTrack(particleB, localPosition, time);
+      }
     }
 
     ///////////////////////////////////

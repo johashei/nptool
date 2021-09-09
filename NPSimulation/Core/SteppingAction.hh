@@ -24,27 +24,56 @@
 // G4 header defining G4 types
 #include "globals.hh"
 
+// NPL
+#include "TTrackInfo.h"
+
 // G4 header
+#include "G4RunManager.hh"
+#include "G4Track.hh"
 #include "G4UserSteppingAction.hh"
 
-//Root
+// Root
 #include "TTree.h"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-class SteppingAction : public G4UserSteppingAction{
-  public:
-    SteppingAction();
-    ~SteppingAction(){};
+class SteppingAction : public G4UserSteppingAction {
+public:
+  SteppingAction();
+  ~SteppingAction(){};
 
-  public:
-    void TrackRecording(const G4Step* step);
-    void UserSteppingAction (const G4Step* step);
+public:
+  void TrackRecording(const G4Step* step);
+  void UserSteppingAction(const G4Step* step);
 
-  private: // tree
-    TTree* m_tree;
-  
-  private:
-    bool m_record_track;
+  std::string   ParticleName;
+  double        KineticEnergy;
+  double        Theta;
+  double        Phi;
+  double        Mass;
+  double        Charge;
+  double        A;
+  double        Z;
+  G4ThreeVector Momentum;
+  G4ThreeVector Position;
+  std::string   VolumeName;
+  int           nClear;
+  int           eventID;
+  int           TrackID;
+
+private: // tree
+  TTree*       m_tree;
+  bool         m_First;
+  unsigned int LastStepNumber;
+
+  // Host the Initial conditions TObject
+  TTrackInfo* m_TrackInfo;
+
+private:
+  bool m_record_track;
+
+public:
+  // Attach the TrackInfo object to the tree
+  void AttachTrackInfo();
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

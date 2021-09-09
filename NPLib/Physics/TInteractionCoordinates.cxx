@@ -35,6 +35,7 @@ TInteractionCoordinates::~TInteractionCoordinates()
 {}
 
 void TInteractionCoordinates::Clear(){
+  fDetected_Index.clear();
   // Incident particle properties (before interactions in the target)
   // Energy and Time
   fDetected_Energy.clear();
@@ -46,6 +47,13 @@ void TInteractionCoordinates::Clear(){
   // Incident particle angles
   fDetected_Angle_Theta.clear();
   fDetected_Angle_Phi.clear();
+
+  fDetected_Particle_Name.clear();
+  fDetected_A.clear();
+  fDetected_Z.clear();
+  fDetected_Mass.clear();
+  fDetected_Charge.clear();
+  fDetected_Brho.clear();
 }
 
 
