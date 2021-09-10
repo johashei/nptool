@@ -24,6 +24,7 @@
 #include "TGraph2DErrors.h"
 #include "Math/Functor.h"
 #include <map>
+#include "TCutG.h"
 
 class TGraph;
 
@@ -36,14 +37,15 @@ namespace NPL{
 
     public:
 
-      void AddHitVector(const std::vector<double>& X, const std::vector<double>& Y,const std::vector<double>& Z, const std::vector<double>& dX, const std::vector<double>& dY, const std::vector<double>& dZ, const std::vector<double>& T);
+      void AddHitVector(const std::vector<double>& X, const std::vector<double>& Y,const std::vector<double>& Z, const std::vector<double>& Q, const std::vector<double>& dX, const std::vector<double>& dY, const std::vector<double>& dZ, const std::vector<double>& T);
 
-      std::vector<int> ComputeCrossTalk();
-      std::vector<int> ComputeCrossTalk_HyperSphere();
+      std::vector<int> ComputeCrossTalk(const double& Causality, const double& DistMin, const int& Option, TCutG*TCut1, TCutG* TCut2 );
       std::vector<int> GetSortedHits();
       std::vector<TGraph> GetClusters();
       TGraph2DErrors *Get3DClusters();
       std::vector<int> GetHeadClust();
+      std::vector<double> GetQtotClust();
+      std::vector<double> GetQtotNeut();
 
     private: // private member used by
       ROOT::Math::Functor    m_func;
@@ -54,10 +56,13 @@ namespace NPL{
       const std::vector<double>* HitdY;
       const std::vector<double>* HitdZ;
       const std::vector<double>* HitT;
+      const std::vector<double>* HitQ;
       
       std::vector<int> m_SortedID;
       std::map<unsigned int, std::vector<unsigned int>> mapOfClust;
       std::vector<int> m_HeadClust;
+      std::vector<double> m_QtotClust;
+      std::vector<double> m_QtotNeut;
       std::vector<TGraph> Clusters_2D;
       TGraph2DErrors *Clusters_3D = new TGraph2DErrors();
       std::vector<int> ClustHit;
