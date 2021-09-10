@@ -46,11 +46,9 @@ TDaliData::~TDaliData() {
 void TDaliData::Clear() {
   // Energy
   fDali_E_DetectorNbr.clear();
-  fDali_ADC.clear();
   fDali_Energy.clear();
   // Time
   fDali_T_DetectorNbr.clear();
-  fDali_TDC.clear();
   fDali_Time.clear();
   
   /* fDali_ParticleID.clear(); */
@@ -70,7 +68,6 @@ void TDaliData::Dump() const {
  
   for (size_t i = 0 ; i < mysize ; i++){
     cout << "DetNbr: " << fDali_E_DetectorNbr[i]
-         << " ADC: " << fDali_ADC[i]
          << " Energy: " << fDali_Energy[i];
   }
   
@@ -80,7 +77,6 @@ void TDaliData::Dump() const {
  
   for (size_t i = 0 ; i < mysize ; i++){
     cout << "DetNbr: " << fDali_T_DetectorNbr[i]
-         << " TDC: " << fDali_TDC[i]
          << " Time: " << fDali_Time[i];
   }
 }
