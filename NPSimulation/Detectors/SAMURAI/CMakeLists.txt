@@ -1,0 +1,2 @@
+add_library(NPSSAMURAI SHARED  SAMURAI.cc)
+target_link_libraries(NPSSAMURAI NPSCore ${ROOT_LIBRARIES} ${Geant4_LIBRARIES} ${NPLib_LIBRARIES} -lNPSAMURAI)
