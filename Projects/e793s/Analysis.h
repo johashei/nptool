@@ -31,6 +31,7 @@
 #include "TF1.h"
 #include "TInitialConditions.h"
 #include "TReactionConditions.h"
+#include "TInteractionCoordinates.h"
 #include "TMust2Physics.h"
 #include "TMugastPhysics.h"
 #include "TCATSPhysics.h"
@@ -231,10 +232,14 @@ class Analysis: public NPL::VAnalysis{
     //TCATSPhysics* CATS;
     TModularLeafPhysics* ML;
 
+    bool warning=true;
+    
+
     //Simulation Stuff
     bool isSim;
     bool writetoscreen;
     TInitialConditions* Initial;
+    TInteractionCoordinates* Interaction;
     TReactionConditions* ReactionConditions;
 
     // Beam object
