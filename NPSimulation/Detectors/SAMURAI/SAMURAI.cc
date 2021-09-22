@@ -1,18 +1,18 @@
 /*****************************************************************************
- * Copyright (C) 2009-2021   this file is part of the NPTool Project       *
+ * Copyright (C) 2009-2021   this file is part of the NPTool Project         *
  *                                                                           *
  * For the licensing terms see $NPTOOL/Licence/NPTool_Licence                *
  * For the list of contributors see $NPTOOL/Licence/Contributors             *
  *****************************************************************************/
 
 /*****************************************************************************
- * Original Author: Elia Pilotto  contact address: pilottoelia@gmail.com                        *
+ * Original Author: Elia Pilotto  contact address: pilottoelia@gmail.com     *
  *                                                                           *
  * Creation Date  : septembre 2021                                           *
- * Last update    :                                                          *
+ * Last update    : septembre 2021                                           *
  *---------------------------------------------------------------------------*
  * Decription:                                                               *
- *  This class describe  SAMURAI simulation                             *
+ *  This class describe  SAMURAI simulation                                 *
  *                                                                           *
  *---------------------------------------------------------------------------*
  * Comment:                                                                  *
@@ -37,9 +37,13 @@
 #include "G4PVPlacement.hh"
 #include "G4VisAttributes.hh"
 #include "G4Colour.hh"
+#include "G4RegionStore.hh"
+#include "G4FastSimulationManager.hh"
+#include "G4UserLimits.hh"
 
 // NPTool header
 #include "SAMURAI.hh"
+#include "SamuraiFieldPropagation.hh"
 #include "CalorimeterScorers.hh"
 #include "InteractionScorers.hh"
 #include "RootOutput.h"
@@ -56,14 +60,14 @@ using namespace CLHEP;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 namespace SAMURAI_NS{
-  // Energy and time Resolution
-  const double EnergyThreshold = 0.1*MeV;
-  const double ResoTime = 4.5*ns ;
-  const double ResoEnergy = 1.0*MeV ;
-  const double Radius = 50*mm ; 
-  const double Width = 100*mm ;
-  const double Thickness = 300*mm ;
-  const string Material = "BC400";
+  // SAMURAI magnet construction paramethers
+  const double Magnet_Width = 6700*mm;
+  const double Magnet_Height = 4640*mm;
+  const double Magnet_Depth = 3500*mm;
+  const string Magnet_Material = "G4_Galactic"; //where the main beam will travel
+  const double Yoke_Height = 1880*mm; //(4640-880)/2
+  const string Yoke_Material = "G4_Fe";
+  
 }
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -71,64 +75,75 @@ namespace SAMURAI_NS{
 // SAMURAI Specific Method
 SAMURAI::SAMURAI(){
   m_Event = new TSAMURAIData() ;
-  m_SAMURAIScorer = 0;
-  m_SquareDetector = 0;
-  m_CylindricalDetector = 0;
 
+  //Visualization attributes
+  m_VisMagnet = new G4VisAttributes(G4Colour(0,0,1,0.5));
+  m_VisYokes = new G4VisAttributes(G4Colour(0,1,0,0.5));
 
-  // RGB Color + Transparency
-  m_VisSquare = new G4VisAttributes(G4Colour(0, 1, 0, 0.5));   
-  m_VisCylinder = new G4VisAttributes(G4Colour(0, 0, 1, 0.5));   
+  //Logical volumes
+  m_Magnet = NULL;
+  m_Yoke = NULL;
 
+  //Propagation region
+  m_PropagationRegion = NULL;
 }
 
 SAMURAI::~SAMURAI(){
 }
+
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-void SAMURAI::AddDetector(G4ThreeVector POS, string  Shape){
+void SAMURAI::AddMagnet(G4ThreeVector POS, double Angle){
   // Convert the POS value to R theta Phi as Spherical coordinate is easier in G4 
-  m_R.push_back(POS.mag());
-  m_Theta.push_back(POS.theta());
-  m_Phi.push_back(POS.phi());
-  m_Shape.push_back(Shape);
-}
-
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-void SAMURAI::AddDetector(double  R, double  Theta, double  Phi, string  Shape){
-  m_R.push_back(R);
-  m_Theta.push_back(Theta);
-  m_Phi.push_back(Phi);
-  m_Shape.push_back(Shape);
+  m_R = POS.mag();
+  m_Theta = POS.theta();
+  m_Phi = POS.phi();
+  m_Angle = Angle;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-G4LogicalVolume* SAMURAI::BuildSquareDetector(){
-  if(!m_SquareDetector){
-    G4Box* box = new G4Box("SAMURAI_Box",SAMURAI_NS::Width*0.5,
-        SAMURAI_NS::Width*0.5,SAMURAI_NS::Thickness*0.5);
+void SAMURAI::AddMagnet(double R, double Theta, double Phi, double Angle){
+  m_R = R;
+  m_Theta = Theta;
+  m_Phi = Phi;
+  m_Angle = Angle;
+}
 
-    G4Material* DetectorMaterial = MaterialManager::getInstance()->GetMaterialFromLibrary(SAMURAI_NS::Material);
-    m_SquareDetector = new G4LogicalVolume(box,DetectorMaterial,"logic_SAMURAI_Box",0,0,0);
-    m_SquareDetector->SetVisAttributes(m_VisSquare);
-    m_SquareDetector->SetSensitiveDetector(m_SAMURAIScorer);
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+G4LogicalVolume* SAMURAI::BuildMagnet(){
+  if(!m_Magnet){
+    //Shape - G4Box
+    G4Box* box = new G4Box("SAMURAI_Box",SAMURAI_NS::Magnet_Width*0.5,
+			   SAMURAI_NS::Magnet_Height*0.5,SAMURAI_NS::Magnet_Depth*0.5);
+  
+    //Material - vacuum
+    G4Material* VacuumMaterial = MaterialManager::getInstance()
+      ->GetMaterialFromLibrary(SAMURAI_NS::Magnet_Material);
+
+    //Logical Volume
+    m_Magnet = new G4LogicalVolume(box, VacuumMaterial, "logic_SAMURAI_box",0,0,0);
+    m_Magnet->SetVisAttributes(m_VisMagnet);
   }
-  return m_SquareDetector;
+  return m_Magnet;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-G4LogicalVolume* SAMURAI::BuildCylindricalDetector(){
-  if(!m_CylindricalDetector){
-    G4Tubs* tub = new G4Tubs("SAMURAI_Cyl",0,SAMURAI_NS::Radius,SAMURAI_NS::Thickness*0.5,0,360*deg);
+G4LogicalVolume* SAMURAI::BuildYoke(){
+  if(!m_Yoke){
+    //Shape - G4Box
+    G4Box* yoke = new G4Box("SAMURAI_yoke_1",SAMURAI_NS::Magnet_Width*0.5,
+			    SAMURAI_NS::Yoke_Height*0.5,SAMURAI_NS::Magnet_Depth*0.5);
 
-    G4Material* DetectorMaterial = MaterialManager::getInstance()->GetMaterialFromLibrary(SAMURAI_NS::Material);
-    m_CylindricalDetector = new G4LogicalVolume(tub,DetectorMaterial,"logic_SAMURAI_tub",0,0,0);
-    m_CylindricalDetector->SetVisAttributes(m_VisSquare);
-    m_CylindricalDetector->SetSensitiveDetector(m_SAMURAIScorer);
+    //Material
+    G4Material* YokeMaterial = MaterialManager::getInstance()
+      ->GetMaterialFromLibrary(SAMURAI_NS::Yoke_Material);
 
+    //Logical Volume
+    m_Yoke = new G4LogicalVolume(yoke, YokeMaterial, "logic_SAMURAI_yoke",0,0,0);
+    m_Yoke->SetVisAttributes(m_VisYokes);
   }
-  return m_CylindricalDetector;
+  return m_Yoke;
 }
+
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -136,37 +151,34 @@ G4LogicalVolume* SAMURAI::BuildCylindricalDetector(){
 // Virtual Method of NPS::VDetector class
 
 // Read stream at Configfile to pick-up parameters of detector (Position,...)
-// Called in DetecorConstruction::ReadDetextorConfiguration Method
+// Called in DetecorConstruction::ReadDetectorConfiguration Method
 void SAMURAI::ReadConfiguration(NPL::InputParser parser){
+  
   vector<NPL::InputBlock*> blocks = parser.GetAllBlocksWithToken("SAMURAI");
-  if(NPOptionManager::getInstance()->GetVerboseLevel())
-    cout << "//// " << blocks.size() << " detectors found " << endl; 
 
-  vector<string> cart = {"POS","Shape"};
-  vector<string> sphe = {"R","Theta","Phi","Shape"};
+  if(blocks.size()==1){
+    if(NPOptionManager::getInstance()->GetVerboseLevel()) {
+      cout << "//// SAMURAI magnet found " << endl;
+    }
+    vector<string> cart = {"POS","ANGLE"};
+    vector<string> sphe = {"R","Theta","Phi","ANGLE"};
 
-  for(unsigned int i = 0 ; i < blocks.size() ; i++){
-    if(blocks[i]->HasTokenList(cart)){
-      if(NPOptionManager::getInstance()->GetVerboseLevel())
-        cout << endl << "////  SAMURAI " << i+1 <<  endl;
-    
-      G4ThreeVector Pos = NPS::ConvertVector(blocks[i]->GetTVector3("POS","mm"));
-      string Shape = blocks[i]->GetString("Shape");
-      AddDetector(Pos,Shape);
+    if(blocks[0]->HasTokenList(cart)){
+      G4ThreeVector Pos = NPS::ConvertVector(blocks[0]->GetTVector3("POS","mm"));
+      double Angle = blocks[0]->GetDouble("ANGLE","deg");
+      AddMagnet(Pos,Angle);
     }
-    else if(blocks[i]->HasTokenList(sphe)){
-      if(NPOptionManager::getInstance()->GetVerboseLevel())
-        cout << endl << "////  SAMURAI " << i+1 <<  endl;
-      double R = blocks[i]->GetDouble("R","mm");
-      double Theta = blocks[i]->GetDouble("Theta","deg");
-      double Phi = blocks[i]->GetDouble("Phi","deg");
-      string Shape = blocks[i]->GetString("Shape");
-      AddDetector(R,Theta,Phi,Shape);
+    else if(blocks[0]->HasTokenList(sphe)){
+      double R = blocks[0]->GetDouble("R","mm");
+      double Theta = blocks[0]->GetDouble("Theta","deg");
+      double Phi = blocks[0]->GetDouble("Phi","deg");
+      double Angle = blocks[0]->GetDouble("ANGLE","deg");
+      AddMagnet(R,Theta,Phi,Angle);
     }
-    else{
-      cout << "ERROR: check your input file formatting " << endl;
-      exit(1);
-    }
+  }
+  else{
+    cout << "ERROR: there should be only one SAMURAI magnet, check your input file" << endl;
+    exit(1);
   }
 }
 
@@ -174,45 +186,73 @@ void SAMURAI::ReadConfiguration(NPL::InputParser parser){
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 // Construct detector and inialise sensitive part.
-// Called After DetecorConstruction::AddDetector Method
+// Called After DetectorConstruction::AddDetector Method
 void SAMURAI::ConstructDetector(G4LogicalVolume* world){
-  for (unsigned short i = 0 ; i < m_R.size() ; i++) {
 
-    G4double wX = m_R[i] * sin(m_Theta[i] ) * cos(m_Phi[i] ) ;
-    G4double wY = m_R[i] * sin(m_Theta[i] ) * sin(m_Phi[i] ) ;
-    G4double wZ = m_R[i] * cos(m_Theta[i] ) ;
-    G4ThreeVector Det_pos = G4ThreeVector(wX, wY, wZ) ;
-    // So the face of the detector is at R instead of the middle
-    Det_pos+=Det_pos.unit()*SAMURAI_NS::Thickness*0.5;
-    // Building Detector reference frame
-    G4double ii = cos(m_Theta[i]) * cos(m_Phi[i]);
-    G4double jj = cos(m_Theta[i]) * sin(m_Phi[i]);
-    G4double kk = -sin(m_Theta[i]);
-    G4ThreeVector Y(ii,jj,kk);
-    G4ThreeVector w = Det_pos.unit();
-    G4ThreeVector u = w.cross(Y);
-    G4ThreeVector v = w.cross(u);
-    v = v.unit();
-    u = u.unit();
+  //Yokes placement
+  double distance = ( SAMURAI_NS::Magnet_Height - SAMURAI_NS::Yoke_Height ) * 0.5;
+  G4ThreeVector upper (0, distance,0);
+  G4ThreeVector lower (0,-distance,0);
+  
+  new G4PVPlacement(0, upper, BuildYoke(), "Upper_Yoke", BuildMagnet(), false, 0);
+  new G4PVPlacement(0, lower, BuildYoke(), "Lower_Yoke", BuildMagnet(), false, 0);
+  
 
-    G4RotationMatrix* Rot = new G4RotationMatrix(u,v,w);
+  //Magnet placement
+  G4double wX = m_R * sin(m_Theta) * cos(m_Phi);
+  G4double wY = m_R * sin(m_Theta) * sin(m_Phi);
+  G4double wZ = m_R * cos(m_Theta);
+  G4ThreeVector Mag_pos = G4ThreeVector(wX, wY, wZ);
+  G4ThreeVector u ( cos(m_Angle) , 0, -sin(m_Angle) );
+  G4ThreeVector v (0,1,0);
+  G4ThreeVector w ( sin(m_Angle) , 0,  cos(m_Angle) );
+  
+  G4RotationMatrix* Rot = new G4RotationMatrix(u,v,w);
+  
+  //new G4PVPlacement(G4Transform3D(*Rot,Mag_pos),
+  //        m_Magnet, "SAMURAI",world, false, 0);
+  new G4PVPlacement(Rot, Mag_pos,
+          BuildMagnet(), "SAMURAI", world, false, 0);
 
-    if(m_Shape[i] == "Cylindrical"){
-      new G4PVPlacement(G4Transform3D(*Rot,Det_pos),
-          BuildCylindricalDetector(),
-          "SAMURAI",world,false,i+1);
-    }
+  // Set region were magnetic field is active
+  SetPropagationRegion();
 
-    else if(m_Shape[i] == "Square"){
-      new G4PVPlacement(G4Transform3D(*Rot,Det_pos),
-          BuildSquareDetector(),
-          "SAMURAI",world,false,i+1);
-    }
-  }
+  return;
 }
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+// Set region were magnetic field is active
+// Called in SAMURAI::ConstructDetector
+void SAMURAI::SetPropagationRegion(){
+  
+  if(!m_PropagationRegion){
+    m_PropagationRegion= new G4Region("NPSamuraiFieldPropagation");
+    m_PropagationRegion -> AddRootLogicalVolume(m_Magnet);
+    //m_PropagationRegion->SetUserLimits(new G4UserLimits(1.2*mm));//FIXME
+  }
+  //FIXME
+  //m_PropagationRegion->SetUserLimits(new G4UserLimits(m_TargetThickness/m_TargetNbSlices));
+  
+  G4FastSimulationManager* mng = m_PropagationRegion->GetFastSimulationManager();
+  //To make sure no other models are present in the region
+  unsigned int size = m_PropagationModel.size();
+  for(unsigned int i = 0 ; i < size ; i++)
+      mng->RemoveFastSimulationModel(m_PropagationModel[i]);
+  m_PropagationModel.clear();
+ 
+  G4VFastSimulationModel* fsm;
+  fsm = new NPS::SamuraiFieldPropagation("SamuraiFieldPropagation", m_PropagationRegion);
+  //FIXME
+  //((NPS::SamuraiFieldPropagation*) fsm)->SetStepSize(m_TargetThickness/m_TargetNbSlices);
+  m_PropagationModel.push_back(fsm);
+  
+}
+
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 // Add Detector branch to the EventTree.
 // Called After DetecorConstruction::AddDetector Method
+//FIXME
+/*
 void SAMURAI::InitializeRootOutput(){
   RootOutput *pAnalysis = RootOutput::getInstance();
   TTree *pTree = pAnalysis->GetTree();
@@ -221,10 +261,17 @@ void SAMURAI::InitializeRootOutput(){
   }
   pTree->SetBranchAddress("SAMURAI", &m_Event) ;
 }
+*/
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 // Read sensitive part and fill the Root tree.
 // Called at in the EventAction::EndOfEventAvtion
+//FIXME
+void SAMURAI::ReadSensitive(const G4Event* ){
+}
+  
+/*
+//FIXME
 void SAMURAI::ReadSensitive(const G4Event* ){
   m_Event->Clear();
 
@@ -244,9 +291,12 @@ void SAMURAI::ReadSensitive(const G4Event* ){
     }
   }
 }
+*/
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 ////////////////////////////////////////////////////////////////   
+/*
+//FIXME
 void SAMURAI::InitializeScorers() { 
   // This check is necessary in case the geometry is reloaded
   bool already_exist = false; 
@@ -264,6 +314,7 @@ void SAMURAI::InitializeScorers() {
   m_SAMURAIScorer->RegisterPrimitive(Interaction);
   G4SDManager::GetSDMpointer()->AddNewDetector(m_SAMURAIScorer) ;
 }
+*/
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -287,6 +338,8 @@ extern"C" {
         NPS::DetectorFactory::getInstance()->AddDetector("SAMURAI",SAMURAI::Construct);
       }
   };
-
+  
   proxy_nps_SAMURAI p_nps_SAMURAI;
 }
+
+

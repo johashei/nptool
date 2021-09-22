@@ -8,13 +8,13 @@
  *****************************************************************************/
 
 /*****************************************************************************
- * Original Author: Elia Pilotto  contact address: pilottoelia@gmail.com                        *
+ * Original Author: Elia Pilotto  contact address: pilottoelia@gmail.com     *
  *                                                                           *
  * Creation Date  : septembre 2021                                           *
- * Last update    :                                                          *
+ * Last update    : septembre 2021                                           *
  *---------------------------------------------------------------------------*
  * Decription:                                                               *
- *  This class describe  SAMURAI simulation                             *
+ *  This class describe  SAMURAI simulation                                  *
  *                                                                           *
  *---------------------------------------------------------------------------*
  * Comment:                                                                  *
@@ -31,6 +31,7 @@ using namespace std;
 #include "G4RotationMatrix.hh"
 #include "G4LogicalVolume.hh"
 #include "G4MultiFunctionalDetector.hh"
+#include "G4VFastSimulationModel.hh"
 
 // NPTool header
 #include "NPSVDetector.hh"
@@ -50,24 +51,24 @@ class SAMURAI : public NPS::VDetector{
     ////////////////////////////////////////////////////
   public:
     // Cartesian
-    void AddDetector(G4ThreeVector POS, string Shape);
+    void AddMagnet(G4ThreeVector POS, double Angle);
     // Spherical
-    void AddDetector(double R,double Theta,double Phi,string Shape);  
+    void AddMagnet(double R, double Theta, double Phi, double Angle);
 
-
-    G4LogicalVolume* BuildSquareDetector();
-    G4LogicalVolume* BuildCylindricalDetector();
+    G4LogicalVolume* BuildMagnet();//FIXME
+    G4LogicalVolume* BuildYoke();//FIXME
   
   private:
-    G4LogicalVolume* m_SquareDetector;
-    G4LogicalVolume* m_CylindricalDetector;
+  
+    G4LogicalVolume* m_Magnet;
+    G4LogicalVolume* m_Yoke;
     
     ////////////////////////////////////////////////////
     //////  Inherite from NPS::VDetector class /////////
     ////////////////////////////////////////////////////
   public:
     // Read stream at Configfile to pick-up parameters of detector (Position,...)
-    // Called in DetecorConstruction::ReadDetextorConfiguration Method
+    // Called in DetecorConstruction::ReadDetectorConfiguration Method
     void ReadConfiguration(NPL::InputParser) ;
 
     // Construct detector and inialise sensitive part.
@@ -76,39 +77,49 @@ class SAMURAI : public NPS::VDetector{
 
     // Add Detector branch to the EventTree.
     // Called After DetecorConstruction::AddDetector Method
-    void InitializeRootOutput() ;
+    //void InitializeRootOutput() ;
 
     // Read sensitive part and fill the Root tree.
     // Called at in the EventAction::EndOfEventAvtion
     void ReadSensitive(const G4Event* event) ;
 
-  public:   // Scorer
+  public:
+    // Scorer
     //   Initialize all Scorer used by the MUST2Array
-    void InitializeScorers() ;
+    //void InitializeScorers() ;
+
+    // Set region were magnetic field is active:
+    void SetPropagationRegion();
 
     //   Associated Scorer
-    G4MultiFunctionalDetector* m_SAMURAIScorer ;
+    //G4MultiFunctionalDetector* m_SAMURAIScorer ;
     ////////////////////////////////////////////////////
     ///////////Event class to store Data////////////////
     ////////////////////////////////////////////////////
   private:
-    TSAMURAIData* m_Event ;
+    TSAMURAIData* m_Event ; //FIXME
+
+    // Region were magnetic field is active:
+    G4Region* m_PropagationRegion;
+    vector<G4VFastSimulationModel*> m_PropagationModel;
+  
 
     ////////////////////////////////////////////////////
     ///////////////Private intern Data//////////////////
     ////////////////////////////////////////////////////
-  private: // Geometry
-    // Detector Coordinate 
-    vector<double>  m_R; 
-    vector<double>  m_Theta;
-    vector<double>  m_Phi; 
+  private:
+    // Geometry
+    // Detector Coordinate
+    double m_R;
+    double m_Theta;
+    double m_Phi;
+
+    // Angle of Rotation
+    double m_Angle;
     
-    //   Shape type
-    vector<string> m_Shape ;
-   
-    // Visualisation Attribute
-    G4VisAttributes* m_VisSquare;
-    G4VisAttributes* m_VisCylinder;
+    // Visualisation Attributes
+    G4VisAttributes* m_VisMagnet;
+    G4VisAttributes* m_VisYokes;
 
   // Needed for dynamic loading of the library
   public:

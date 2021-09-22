@@ -1,25 +1,28 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 Target
- THICKNESS= 10 micrometer
+ THICKNESS= 1 micrometer
  RADIUS=	20 mm
- MATERIAL= CD2
+ MATERIAL= Vacuum
  ANGLE= 0 deg
  X= 0 mm
  Y= 0 mm
- Z= 0 mm
+ Z= 1000 mm
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 SAMURAI
- POS= 0 0 350 mm
- Shape= Square
+ POS= 0 0 1000 cm
+ ANGLE= -30 deg
+% Shape= Square
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-SAMURAI
- POS = 35 35 35 cm
- Shape= Square
+%
+%SAMURAI
+% POS = 35 35 35 cm
+% Shape= Square
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-SAMURAI
- R= 350 mm
- THETA= 90 deg
- PHI= 63 deg
- Shape= Cylindrical
+%SAMURAI
+% R= 350 mm
+% THETA= 90 deg
+% PHI= 63 deg
+% Shape= Cylindrical
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
+%
+%E-O

@@ -21,7 +21,7 @@
  *                                                                           *   
  *                                                                           *
  *****************************************************************************/
-
+//Elia is great
 // STL
 #include <vector>
 using namespace std;
@@ -60,7 +60,7 @@ class TSAMURAIData : public TObject {
 
   //////////////////////////////////////////////////////////////
   // Getters and Setters
-  // Prefer inline declaration to avoid unnecessary called of 
+  // Prefer inline declaration to avoid unnecessary called of  
   // frequently used methods
   // add //! to avoid ROOT creating dictionnary for the methods
   public:
