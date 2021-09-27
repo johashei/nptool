@@ -6,9 +6,10 @@
  *****************************************************************************/
 
 /*****************************************************************************
- * Original Author: Adrien MATTA  contact address: matta@lpccaen.in2p3.fr    *
+ * Original Author: Elia Pilotto, Omar Nasr                                  *
+ * contact address: pilottoelia@gmail.com, omar.nasr@etu.unicaen.fr          *
  *                                                                           *
- * Creation Date  : Octobre 2017                                             *
+ * Creation Date  : September 2021                                           *
  * Last update    :                                                          *
  *---------------------------------------------------------------------------*
  * Decription:                                                               *
@@ -136,9 +137,9 @@ void NPS::SamuraiFieldPropagation::DoIt(const G4FastTrack& fastTrack,
 
   // Get the track info
   const G4Track* PrimaryTrack = fastTrack.GetPrimaryTrack();
-  //G4ThreeVector  pdirection   = PrimaryTrack->GetMomentum().unit();
 
-  m_length = 300*cm;
+  m_length = 100*cm;
+  m_B = G4ThreeVector( 0. , 1. , 0. ) * tesla;
   
   //G4double energy = PrimaryTrack->GetKineticEnergy();
   G4double speed = PrimaryTrack->GetVelocity();
@@ -149,22 +150,65 @@ void NPS::SamuraiFieldPropagation::DoIt(const G4FastTrack& fastTrack,
   G4ThreeVector localDir = fastTrack.GetPrimaryTrackLocalDirection();
   G4ThreeVector localPosition = fastTrack.GetPrimaryTrackLocalPosition();
   G4ThreeVector localMomentum = fastTrack.GetPrimaryTrackLocalMomentum();
-  /*
-  G4ThreeVector globalDir = PrimaryTrack->GetMomentumDirection();
-  G4ThreeVector globalPosition = PrimaryTrack->GetPosition();
-  G4ThreeVector globalMomentum = PrimaryTrack->GetMomentum();
-  */
   G4ThreeVector newDir;
   G4ThreeVector newPosition;
   G4ThreeVector newMomentum;
+
+
+
   
-  newDir = localDir.rotateY(-40*deg);/*
-  double newTheta = localDir.getTheta() - 2*deg;
-  if (newTheta < 0) newTheta += 2*M_PI;
-  newDir.setTheta( newTheta );*/
+  double B = m_B.mag() / tesla;
+  double q = PrimaryTrack->GetParticleDefinition()->GetPDGCharge() / coulomb;
+  double ConF = (1.e6 * (1.602176634e-19) ) / 2.99792458e8 ;
+  G4ThreeVector rho = (localMomentum*ConF).cross(m_B/tesla);
+ 
+  //cout << "Rho : " << Cart(rho) << "\t" << rho.mag()<< endl;
+  rho = rho / (q*B*B) * meter;
+  /* cout << "Rho : " << Cart(rho) << "\t" << (rho/m).mag()<< endl;
+
+  cout << "q : " << q << endl;
+  cout << "B mag : " << B << endl;
+  cout << "B vec : " << Cart(m_B/tesla) << endl;
+  cout << "Mom : " << Cart(localMomentum * ConF*1e20) << "\t" << localMomentum.mag() << endl;
+  cout << "Pos : " << Cart(localPosition/cm) << endl;
+  cout << "conversion: " << ConF << endl;
+  cout << "tesla " << tesla << endl;
+  cout << "meter " << meter << endl;*/
+
+
+  double angle = m_length / rho.mag() * rad;
+  cout << "Rho: " << Prt(-rho) << endl;
+  G4ThreeVector rho2 = (-rho).rotateY(-angle);
+  newPosition = rho + rho2 + localPosition;
+  cout << "newPos: " << Cart(newPosition) << endl;
+  cout << "locPos: " << Cart(localPosition) << endl;
+  cout << "Rho: " << Prt(-rho) << endl;
+  cout << "Rho2: " << Prt(rho2) << endl;
+  
+
+
+  cout << "localDir: " << Prt(localDir) << endl;
+
+  newDir = localDir.rotateY(-angle);
+  newMomentum = localMomentum.getR() * newDir;
+  
+  cout << "localDir: " << Prt(localDir) << endl;
+  cout << "newDir: " << Prt(newDir) << endl;
+  cout << "localMom: " << Prt(localMomentum) << endl;
+  cout << "newMom: " << Prt(newMomentum) << endl;
+
+
+
+  cout << "angle " << angle << endl;
+
+
+
+  
+  /*
+  newDir = localDir.rotateY(-1*deg);
   newPosition = localPosition + m_length * newDir;
   newMomentum = localMomentum.getR() * newDir;
-
+  */
   //cout << " New Theta: " << newTheta << endl;
   //cout << " Local Pos: " << Prt(localPosition) << endl;
   //cout << " Local Mom: " << Prt(localMomentum) << endl;
@@ -173,20 +217,7 @@ void NPS::SamuraiFieldPropagation::DoIt(const G4FastTrack& fastTrack,
   //cout << " New Position: " << Prt(newPosition) << endl;
   //cout << " New Momentum: " << Prt(newMomentum) << endl;
   //cout << endl;
-  
-  /*
-  newDir = globalDir;
-  double newTheta = globalDir.getTheta() - 3*deg;
-  if (newTheta < 0) newTheta += 2*M_PI;
-  newDir.setTheta( newTheta );
-  newPosition = globalPosition + m_length * newDir;
-  newMomentum = globalMomentum.mag() * newDir;*/
-  /*
-  cout << " Global Dir: " << Prt(globalDir) << endl;
-  cout << " New Theta: " << newTheta << endl;
-  cout << " New Dir: "      << Prt(newDir) << endl;
-  cout << endl;
-  */
+
   fastStep.ProposePrimaryTrackFinalPosition( newPosition );
   fastStep.SetPrimaryTrackFinalMomentum ( newMomentum );//FIXME
   fastStep.ProposePrimaryTrackFinalTime( time );

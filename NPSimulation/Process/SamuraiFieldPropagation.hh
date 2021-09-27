@@ -6,9 +6,10 @@
  *****************************************************************************/
 
 /*****************************************************************************
- * Original Author: Adrien MATTA  contact address: matta@lpccaen.in2p3.fr    *
+ * Original Author: Elia Pilotto, Omar Nasr                                  *
+ * contact address: pilottoelia@gmail.com, omar.nasr@etu.unicaen.fr          *
  *                                                                           *
- * Creation Date  : Octobre 2017                                             *
+ * Creation Date  : September 2021                                           *
  * Last update    :                                                          *
  *---------------------------------------------------------------------------*
  * Decription:                                                               *
@@ -57,29 +58,22 @@ namespace NPS{
       void DoIt(const G4FastTrack&, G4FastStep&);
  
     private:
-    //NPL::Reaction m_Reaction;
-    //NPL::QFS m_QFS;
-    //string m_BeamName;
-    //int m_ReactionType;
       G4AblaInterface* ABLA;
 
-    string Prt (G4ThreeVector V){
+    string Prt (G4ThreeVector V){//FIXME
       return to_string(V.getR()) + " " + to_string(V.getPhi()) + " " + to_string(V.getTheta());
     }
-    //bool   m_active;// is the process active
-    //bool   m_shoot;
-    double m_StepSize;
-    //double m_Z;
-    //double m_S;
-    //double m_rand;
-    double m_length;
-    //int    m_Parent_ID;
-    //double SlowDownBeam(const G4ParticleDefinition* Beam, double IncidentEnergy, double Thickness,G4Material* Material);
+
+    string Cart (G4ThreeVector V){//FIXME
+      return to_string(V.getX()) + " " + to_string(V.getY()) + " " + to_string(V.getZ());
+    }
     
-    private:// specific for the simple case of fusion
-    //string m_TargetNuclei;
-    //string m_FusionProduct;
-    //double m_FusionExcitation;
+    double m_StepSize;//FIXME
+    double m_length;
+
+    G4ThreeVector m_B;
+    
+    private:
   
    private:
     //TReactionConditions* m_ReactionConditions;
