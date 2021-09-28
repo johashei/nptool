@@ -12,7 +12,7 @@
  * Last update    : septembre 2021                                           *
  *---------------------------------------------------------------------------*
  * Decription:                                                               *
- *  This class describe  SAMURAI simulation                                 *
+ *  This class describe  Samurai simulation                                 *
  *                                                                           *
  *---------------------------------------------------------------------------*
  * Comment:                                                                  *
@@ -42,7 +42,7 @@
 #include "G4UserLimits.hh"
 
 // NPTool header
-#include "SAMURAI.hh"
+#include "Samurai.hh"
 #include "SamuraiFieldPropagation.hh"
 #include "CalorimeterScorers.hh"
 #include "InteractionScorers.hh"
@@ -59,8 +59,8 @@ using namespace CLHEP;
 
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-namespace SAMURAI_NS{
-  // SAMURAI magnet construction paramethers
+namespace Samurai_NS{
+  // Samurai magnet construction paramethers
   const double Magnet_Width = 6700*mm;
   const double Magnet_Height = 4640*mm;
   const double Magnet_Depth = 3500*mm;
@@ -74,9 +74,8 @@ namespace SAMURAI_NS{
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-// SAMURAI Specific Method
-SAMURAI::SAMURAI(){
-  m_Event = new TSAMURAIData() ;
+// Samurai Specific Method
+Samurai::Samurai(){
 
   //Visualization attributes
   m_VisMagnet = new G4VisAttributes(G4Colour(0,0,1,0.5));
@@ -90,11 +89,11 @@ SAMURAI::SAMURAI(){
   m_PropagationRegion = NULL;
 }
 
-SAMURAI::~SAMURAI(){
+Samurai::~Samurai(){
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-void SAMURAI::AddMagnet(G4ThreeVector POS, double Angle){
+void Samurai::AddMagnet(G4ThreeVector POS, double Angle){
   // Convert the POS value to R theta Phi as Spherical coordinate is easier in G4 
   m_R = POS.mag();
   m_Theta = POS.theta();
@@ -103,7 +102,7 @@ void SAMURAI::AddMagnet(G4ThreeVector POS, double Angle){
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-void SAMURAI::AddMagnet(double R, double Theta, double Phi, double Angle){
+void Samurai::AddMagnet(double R, double Theta, double Phi, double Angle){
   m_R = R;
   m_Theta = Theta;
   m_Phi = Phi;
@@ -111,36 +110,36 @@ void SAMURAI::AddMagnet(double R, double Theta, double Phi, double Angle){
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-G4LogicalVolume* SAMURAI::BuildMagnet(){
+G4LogicalVolume* Samurai::BuildMagnet(){
   if(!m_Magnet){
     //Shape - G4Box
-    G4Box* box = new G4Box("SAMURAI_Box",SAMURAI_NS::Magnet_Width*0.5,
-			   SAMURAI_NS::Magnet_Height*0.5,SAMURAI_NS::Magnet_Depth*0.5);
+    G4Box* box = new G4Box("Samurai_Box",Samurai_NS::Magnet_Width*0.5,
+			   Samurai_NS::Magnet_Height*0.5,Samurai_NS::Magnet_Depth*0.5);
   
     //Material - vacuum
     G4Material* VacuumMaterial = MaterialManager::getInstance()
-      ->GetMaterialFromLibrary(SAMURAI_NS::Magnet_Material);
+      ->GetMaterialFromLibrary(Samurai_NS::Magnet_Material);
 
     //Logical Volume
-    m_Magnet = new G4LogicalVolume(box, VacuumMaterial, "logic_SAMURAI_box",0,0,0);
+    m_Magnet = new G4LogicalVolume(box, VacuumMaterial, "logic_Samurai_box",0,0,0);
     m_Magnet->SetVisAttributes(m_VisMagnet);
   }
   return m_Magnet;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-G4LogicalVolume* SAMURAI::BuildYoke(){
+G4LogicalVolume* Samurai::BuildYoke(){
   if(!m_Yoke){
     //Shape - G4Box
-    G4Box* yoke = new G4Box("SAMURAI_yoke_1",SAMURAI_NS::Magnet_Width*0.5,
-			    SAMURAI_NS::Yoke_Height*0.5,SAMURAI_NS::Magnet_Depth*0.5);
+    G4Box* yoke = new G4Box("Samurai_yoke_1",Samurai_NS::Magnet_Width*0.5,
+			    Samurai_NS::Yoke_Height*0.5,Samurai_NS::Magnet_Depth*0.5);
 
     //Material
     G4Material* YokeMaterial = MaterialManager::getInstance()
-      ->GetMaterialFromLibrary(SAMURAI_NS::Yoke_Material);
+      ->GetMaterialFromLibrary(Samurai_NS::Yoke_Material);
 
     //Logical Volume
-    m_Yoke = new G4LogicalVolume(yoke, YokeMaterial, "logic_SAMURAI_yoke",0,0,0);
+    m_Yoke = new G4LogicalVolume(yoke, YokeMaterial, "logic_Samurai_yoke",0,0,0);
     m_Yoke->SetVisAttributes(m_VisYokes);
   }
   return m_Yoke;
@@ -154,13 +153,13 @@ G4LogicalVolume* SAMURAI::BuildYoke(){
 
 // Read stream at Configfile to pick-up parameters of detector (Position,...)
 // Called in DetecorConstruction::ReadDetectorConfiguration Method
-void SAMURAI::ReadConfiguration(NPL::InputParser parser){
+void Samurai::ReadConfiguration(NPL::InputParser parser){
   
-  vector<NPL::InputBlock*> blocks = parser.GetAllBlocksWithToken("SAMURAI");
+  vector<NPL::InputBlock*> blocks = parser.GetAllBlocksWithToken("Samurai");
 
   if(blocks.size()==1){
     if(NPOptionManager::getInstance()->GetVerboseLevel()) {
-      cout << "//// SAMURAI magnet found " << endl;
+      cout << "//// Samurai magnet found " << endl;
     }
     vector<string> cart = {"POS","ANGLE"};
     vector<string> sphe = {"R","Theta","Phi","ANGLE"};
@@ -179,7 +178,7 @@ void SAMURAI::ReadConfiguration(NPL::InputParser parser){
     }
   }
   else{
-    cout << "ERROR: there should be only one SAMURAI magnet, check your input file" << endl;
+    cout << "ERROR: there should be only one Samurai magnet, check your input file" << endl;
     exit(1);
   }
 }
@@ -189,10 +188,10 @@ void SAMURAI::ReadConfiguration(NPL::InputParser parser){
 
 // Construct detector and inialise sensitive part.
 // Called After DetectorConstruction::AddDetector Method
-void SAMURAI::ConstructDetector(G4LogicalVolume* world){
+void Samurai::ConstructDetector(G4LogicalVolume* world){
 
   //Yokes placement
-  double distance = ( SAMURAI_NS::Magnet_Height - SAMURAI_NS::Yoke_Height ) * 0.5;
+  double distance = ( Samurai_NS::Magnet_Height - Samurai_NS::Yoke_Height ) * 0.5;
   G4ThreeVector upper (0, distance,0);
   G4ThreeVector lower (0,-distance,0);
   
@@ -212,9 +211,9 @@ void SAMURAI::ConstructDetector(G4LogicalVolume* world){
   G4RotationMatrix* Rot = new G4RotationMatrix(u,v,w);
   
   //new G4PVPlacement(G4Transform3D(*Rot,Mag_pos),
-  //        m_Magnet, "SAMURAI",world, false, 0);
+  //        m_Magnet, "Samurai",world, false, 0);
   new G4PVPlacement(Rot, Mag_pos,
-          BuildMagnet(), "SAMURAI", world, false, 0);
+          BuildMagnet(), "Samurai", world, false, 0);
 
   // Set region were magnetic field is active
   SetPropagationRegion();
@@ -224,13 +223,13 @@ void SAMURAI::ConstructDetector(G4LogicalVolume* world){
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 // Set region were magnetic field is active
-// Called in SAMURAI::ConstructDetector
-void SAMURAI::SetPropagationRegion(){
+// Called in Samurai::ConstructDetector
+void Samurai::SetPropagationRegion(){
   
   if(!m_PropagationRegion){
     m_PropagationRegion= new G4Region("NPSamuraiFieldPropagation");
     m_PropagationRegion -> AddRootLogicalVolume(m_Magnet);
-    m_PropagationRegion->SetUserLimits(new G4UserLimits(SAMURAI_NS::StepSize));
+    m_PropagationRegion->SetUserLimits(new G4UserLimits(Samurai_NS::StepSize));
   }
   
   G4FastSimulationManager* mng = m_PropagationRegion->GetFastSimulationManager();
@@ -242,7 +241,7 @@ void SAMURAI::SetPropagationRegion(){
  
   G4VFastSimulationModel* fsm;
   fsm = new NPS::SamuraiFieldPropagation("SamuraiFieldPropagation", m_PropagationRegion);
-  ((NPS::SamuraiFieldPropagation*) fsm)->SetStepSize(SAMURAI_NS::StepSize);
+  ((NPS::SamuraiFieldPropagation*) fsm)->SetStepSize(Samurai_NS::StepSize);
   ((NPS::SamuraiFieldPropagation*) fsm)->SetAngle(m_Angle);
   m_PropagationModel.push_back(fsm);
   
@@ -253,13 +252,13 @@ void SAMURAI::SetPropagationRegion(){
 // Called After DetecorConstruction::AddDetector Method
 //FIXME
 /*
-void SAMURAI::InitializeRootOutput(){
+void Samurai::InitializeRootOutput(){
   RootOutput *pAnalysis = RootOutput::getInstance();
   TTree *pTree = pAnalysis->GetTree();
-  if(!pTree->FindBranch("SAMURAI")){
-    pTree->Branch("SAMURAI", "TSAMURAIData", &m_Event) ;
+  if(!pTree->FindBranch("Samurai")){
+    pTree->Branch("Samurai", "TSamuraiData", &m_Event) ;
   }
-  pTree->SetBranchAddress("SAMURAI", &m_Event) ;
+  pTree->SetBranchAddress("Samurai", &m_Event) ;
 }
 */
 
@@ -267,24 +266,24 @@ void SAMURAI::InitializeRootOutput(){
 // Read sensitive part and fill the Root tree.
 // Called at in the EventAction::EndOfEventAvtion
 //FIXME
-void SAMURAI::ReadSensitive(const G4Event* ){
+void Samurai::ReadSensitive(const G4Event* ){
 }
   
 /*
 //FIXME
-void SAMURAI::ReadSensitive(const G4Event* ){
+void Samurai::ReadSensitive(const G4Event* ){
   m_Event->Clear();
 
   ///////////
   // Calorimeter scorer
-  CalorimeterScorers::PS_Calorimeter* Scorer= (CalorimeterScorers::PS_Calorimeter*) m_SAMURAIScorer->GetPrimitive(0);
+  CalorimeterScorers::PS_Calorimeter* Scorer= (CalorimeterScorers::PS_Calorimeter*) m_SamuraiScorer->GetPrimitive(0);
 
   unsigned int size = Scorer->GetMult(); 
   for(unsigned int i = 0 ; i < size ; i++){
     vector<unsigned int> level = Scorer->GetLevel(i); 
-    double Energy = RandGauss::shoot(Scorer->GetEnergy(i),SAMURAI_NS::ResoEnergy);
-    if(Energy>SAMURAI_NS::EnergyThreshold){
-      double Time = RandGauss::shoot(Scorer->GetTime(i),SAMURAI_NS::ResoTime);
+    double Energy = RandGauss::shoot(Scorer->GetEnergy(i),Samurai_NS::ResoEnergy);
+    if(Energy>Samurai_NS::EnergyThreshold){
+      double Time = RandGauss::shoot(Scorer->GetTime(i),Samurai_NS::ResoTime);
       int DetectorNbr = level[0];
       m_Event->SetEnergy(DetectorNbr,Energy);
       m_Event->SetTime(DetectorNbr,Time); 
@@ -297,10 +296,10 @@ void SAMURAI::ReadSensitive(const G4Event* ){
 ////////////////////////////////////////////////////////////////   
 /*
 //FIXME
-void SAMURAI::InitializeScorers() { 
+void Samurai::InitializeScorers() { 
   // This check is necessary in case the geometry is reloaded
   bool already_exist = false; 
-  m_SAMURAIScorer = CheckScorer("SAMURAIScorer",already_exist) ;
+  m_SamuraiScorer = CheckScorer("SamuraiScorer",already_exist) ;
 
   if(already_exist) 
     return ;
@@ -310,9 +309,9 @@ void SAMURAI::InitializeScorers() {
   G4VPrimitiveScorer* Calorimeter= new CalorimeterScorers::PS_Calorimeter("Calorimeter",level, 0) ;
   G4VPrimitiveScorer* Interaction= new InteractionScorers::PS_Interactions("Interaction",ms_InterCoord, 0) ;
   //and register it to the multifunctionnal detector
-  m_SAMURAIScorer->RegisterPrimitive(Calorimeter);
-  m_SAMURAIScorer->RegisterPrimitive(Interaction);
-  G4SDManager::GetSDMpointer()->AddNewDetector(m_SAMURAIScorer) ;
+  m_SamuraiScorer->RegisterPrimitive(Calorimeter);
+  m_SamuraiScorer->RegisterPrimitive(Interaction);
+  G4SDManager::GetSDMpointer()->AddNewDetector(m_SamuraiScorer) ;
 }
 */
 
@@ -322,8 +321,8 @@ void SAMURAI::InitializeScorers() {
 ////////////////////////////////////////////////////////////////////////////////
 //            Construct Method to be pass to the DetectorFactory              //
 ////////////////////////////////////////////////////////////////////////////////
-NPS::VDetector* SAMURAI::Construct(){
-  return  (NPS::VDetector*) new SAMURAI();
+NPS::VDetector* Samurai::Construct(){
+  return  (NPS::VDetector*) new Samurai();
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -331,15 +330,15 @@ NPS::VDetector* SAMURAI::Construct(){
 //            Registering the construct method to the factory                 //
 ////////////////////////////////////////////////////////////////////////////////
 extern"C" {
-  class proxy_nps_SAMURAI{
+  class proxy_nps_Samurai{
     public:
-      proxy_nps_SAMURAI(){
-        NPS::DetectorFactory::getInstance()->AddToken("SAMURAI","SAMURAI");
-        NPS::DetectorFactory::getInstance()->AddDetector("SAMURAI",SAMURAI::Construct);
+      proxy_nps_Samurai(){
+        NPS::DetectorFactory::getInstance()->AddToken("Samurai","Samurai");
+        NPS::DetectorFactory::getInstance()->AddDetector("Samurai",Samurai::Construct);
       }
   };
   
-  proxy_nps_SAMURAI p_nps_SAMURAI;
+  proxy_nps_Samurai p_nps_Samurai;
 }
 
 

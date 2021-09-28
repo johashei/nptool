@@ -1,5 +1,5 @@
-#ifndef SAMURAI_h
-#define SAMURAI_h 1
+#ifndef Samurai_h
+#define Samurai_h 1
 /*****************************************************************************
  * Copyright (C) 2009-2021   this file is part of the NPTool Project       *
  *                                                                           *
@@ -14,7 +14,7 @@
  * Last update    : septembre 2021                                           *
  *---------------------------------------------------------------------------*
  * Decription:                                                               *
- *  This class describe  SAMURAI simulation                                  *
+ *  This class describe  Samurai simulation                                  *
  *                                                                           *
  *---------------------------------------------------------------------------*
  * Comment:                                                                  *
@@ -35,16 +35,15 @@ using namespace std;
 
 // NPTool header
 #include "NPSVDetector.hh"
-#include "TSAMURAIData.h"
 #include "NPInputParser.h"
 
-class SAMURAI : public NPS::VDetector{
+class Samurai : public NPS::VDetector{
   ////////////////////////////////////////////////////
   /////// Default Constructor and Destructor /////////
   ////////////////////////////////////////////////////
   public:
-    SAMURAI() ;
-    virtual ~SAMURAI() ;
+    Samurai() ;
+    virtual ~Samurai() ;
 
     ////////////////////////////////////////////////////
     /////// Specific Function of this Class ///////////
@@ -92,12 +91,11 @@ class SAMURAI : public NPS::VDetector{
     void SetPropagationRegion();
 
     //   Associated Scorer
-    //G4MultiFunctionalDetector* m_SAMURAIScorer ;
+    //G4MultiFunctionalDetector* m_SamuraiScorer ;
     ////////////////////////////////////////////////////
     ///////////Event class to store Data////////////////
     ////////////////////////////////////////////////////
   private:
-    TSAMURAIData* m_Event ; //FIXME
 
     // Region were magnetic field is active:
     G4Region* m_PropagationRegion;
