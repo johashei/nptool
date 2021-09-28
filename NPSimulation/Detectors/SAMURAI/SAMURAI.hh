@@ -80,7 +80,7 @@ class SAMURAI : public NPS::VDetector{
     //void InitializeRootOutput() ;
 
     // Read sensitive part and fill the Root tree.
-    // Called at in the EventAction::EndOfEventAvtion
+    // Called at in the EventAction::EndOfEventAction
     void ReadSensitive(const G4Event* event) ;
 
   public:
@@ -116,6 +116,15 @@ class SAMURAI : public NPS::VDetector{
 
     // Angle of Rotation
     double m_Angle;
+
+    // Propagation Parameters
+    enum PropagationMethod{
+    RungeKutta,
+    EliaOmar
+    };
+    PropagationMethod m_Method;
+    double m_StepSize;
+    string m_FieldMapFile;
     
     // Visualisation Attributes
     G4VisAttributes* m_VisMagnet;

@@ -35,16 +35,19 @@
 #include "TReactionConditions.h"
 
 //FIXME
+#include "SamuraiFieldMap.h"
+
+//FIXME
 #include <string>
 
 class G4VPhysicalVolume;
+class SamuraiFieldMap;
 namespace NPS{
-  enum ReactionType{
-    TwoBody,
-    QFS,
-    Fusion
+  enum PropagationMethod{
+    RungeKutta,
+    EliaOmar
     };
-
+  
   class SamuraiFieldPropagation : public G4VFastSimulationModel{
     public:
       SamuraiFieldPropagation (G4String, G4Region*);
@@ -52,35 +55,43 @@ namespace NPS{
       ~SamuraiFieldPropagation ();
 
     public:
-      void ReadConfiguration();
+    //void ReadConfiguration();
       G4bool IsApplicable(const G4ParticleDefinition&);
       G4bool ModelTrigger(const G4FastTrack &);
       void DoIt(const G4FastTrack&, G4FastStep&);
  
     private:
-      G4AblaInterface* ABLA;
+    //G4AblaInterface* ABLA;
 
+    //Functions to print out vectors for debugging
+    /*
     string Prt (G4ThreeVector V){//FIXME
       return to_string(V.getR()) + " " + to_string(V.getPhi()) + " " + to_string(V.getTheta());
-    }
+      }
 
     string Cart (G4ThreeVector V){//FIXME
       return to_string(V.getX()) + " " + to_string(V.getY()) + " " + to_string(V.getZ());
-    }
+      }*/
     
-    double m_StepSize;//FIXME
-    double m_length;
+    double m_StepSize;
+    double m_Angle; //Angle of rotation of the whole magnet
+    //G4ThreeVector m_B;
+    SamuraiFieldMap* m_Map;
 
-    G4ThreeVector m_B;
+    G4ThreeVector MagField (G4ThreeVector pos);//FIXME
+
+    PropagationMethod Meth;
     
+    
+      
     private:
-  
-   private:
     //TReactionConditions* m_ReactionConditions;
  
-   public:
-    void AttachReactionConditions();
+    public:
+    void AttachReactionConditions();//FIXME
+    
     void SetStepSize(double step){m_StepSize=step;};
+    void SetAngle(double angle){m_Angle=angle;};
   };
 }
 

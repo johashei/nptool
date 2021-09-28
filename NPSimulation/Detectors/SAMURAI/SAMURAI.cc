@@ -67,8 +67,10 @@ namespace SAMURAI_NS{
   const string Magnet_Material = "G4_Galactic"; //where the main beam will travel
   const double Yoke_Height = 1880*mm; //(4640-880)/2
   const string Yoke_Material = "G4_Fe";
-  
+
+  const double StepSize = 1*mm;
 }
+
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -164,7 +166,7 @@ void SAMURAI::ReadConfiguration(NPL::InputParser parser){
     vector<string> sphe = {"R","Theta","Phi","ANGLE"};
 
     if(blocks[0]->HasTokenList(cart)){
-      G4ThreeVector Pos = NPS::ConvertVector(blocks[0]->GetTVector3("POS","mm"));
+      G4ThreeVector Pos = NPS::ConvertVector(blocks[0]->GetTVector3("POS", "cm"));
       double Angle = blocks[0]->GetDouble("ANGLE","deg");
       AddMagnet(Pos,Angle);
     }
@@ -228,10 +230,8 @@ void SAMURAI::SetPropagationRegion(){
   if(!m_PropagationRegion){
     m_PropagationRegion= new G4Region("NPSamuraiFieldPropagation");
     m_PropagationRegion -> AddRootLogicalVolume(m_Magnet);
-    //m_PropagationRegion->SetUserLimits(new G4UserLimits(1.2*mm));//FIXME
+    m_PropagationRegion->SetUserLimits(new G4UserLimits(SAMURAI_NS::StepSize));
   }
-  //FIXME
-  //m_PropagationRegion->SetUserLimits(new G4UserLimits(m_TargetThickness/m_TargetNbSlices));
   
   G4FastSimulationManager* mng = m_PropagationRegion->GetFastSimulationManager();
   //To make sure no other models are present in the region
@@ -242,8 +242,8 @@ void SAMURAI::SetPropagationRegion(){
  
   G4VFastSimulationModel* fsm;
   fsm = new NPS::SamuraiFieldPropagation("SamuraiFieldPropagation", m_PropagationRegion);
-  //FIXME
-  //((NPS::SamuraiFieldPropagation*) fsm)->SetStepSize(m_TargetThickness/m_TargetNbSlices);
+  ((NPS::SamuraiFieldPropagation*) fsm)->SetStepSize(SAMURAI_NS::StepSize);
+  ((NPS::SamuraiFieldPropagation*) fsm)->SetAngle(m_Angle);
   m_PropagationModel.push_back(fsm);
   
 }
