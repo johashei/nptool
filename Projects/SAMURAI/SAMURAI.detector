@@ -8,7 +8,7 @@ Target
  Y= 0 mm
  Z= 1000 mm
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-SAMURAI
+Samurai
  POS= 0 0 10000 mm
  ANGLE= 30 deg
 % Shape= Square

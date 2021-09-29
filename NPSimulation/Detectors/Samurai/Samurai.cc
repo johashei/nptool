@@ -330,15 +330,15 @@ NPS::VDetector* Samurai::Construct(){
 //            Registering the construct method to the factory                 //
 ////////////////////////////////////////////////////////////////////////////////
 extern"C" {
-  class proxy_nps_Samurai{
+  class proxy_nps_samurai{
     public:
-      proxy_nps_Samurai(){
+      proxy_nps_samurai(){
         NPS::DetectorFactory::getInstance()->AddToken("Samurai","Samurai");
         NPS::DetectorFactory::getInstance()->AddDetector("Samurai",Samurai::Construct);
       }
   };
   
-  proxy_nps_Samurai p_nps_Samurai;
+  proxy_nps_samurai p_nps_samurai;
 }
 
 
