@@ -39,6 +39,7 @@
 
 //FIXME
 #include <string>
+#include <vector>
 
 class G4VPhysicalVolume;
 class SamuraiFieldMap;
@@ -63,24 +64,33 @@ namespace NPS{
     private:
     //G4AblaInterface* ABLA;
 
-    //Functions to print out vectors for debugging
-    /*
+    //Utility functions
+    vector <double> G4toV(G4ThreeVector V){
+      return vector <double> { V.x(),V.y(),V.z() }; 
+    }
+    G4ThreeVector VtoG4(vector <double> V){
+      return G4ThreeVector( V.at(0), V.at(1), V.at(2) ) ;
+    }
+    
     string Prt (G4ThreeVector V){//FIXME
       return to_string(V.getR()) + " " + to_string(V.getPhi()) + " " + to_string(V.getTheta());
       }
 
     string Cart (G4ThreeVector V){//FIXME
       return to_string(V.getX()) + " " + to_string(V.getY()) + " " + to_string(V.getZ());
-      }*/
-    
+      }
+
+    bool m_Initialized;
     double m_StepSize;
     double m_Angle; //Angle of rotation of the whole magnet
-    //G4ThreeVector m_B;
+    string m_FieldMap;
+    PropagationMethod m_Meth;// "I AM THE ONE WHO KNOCKS!!!" cit. Heisenberg
     SamuraiFieldMap* m_Map;
 
     G4ThreeVector MagField (G4ThreeVector pos);//FIXME
 
-    PropagationMethod Meth;
+    void EliaOmarPropagation (const G4FastTrack& fastTrack, G4FastStep& fastStep);
+    void RungeKuttaPropagation (const G4FastTrack& fastTrack, G4FastStep& fastStep);
     
     
       
@@ -92,6 +102,8 @@ namespace NPS{
     
     void SetStepSize(double step){m_StepSize=step;};
     void SetAngle(double angle){m_Angle=angle;};
+    void SetFieldMap(string fieldmap){m_FieldMap=fieldmap;};
+    void SetMethod(PropagationMethod method){m_Meth=method;};
   };
 }
 

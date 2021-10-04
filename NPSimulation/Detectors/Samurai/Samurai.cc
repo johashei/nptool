@@ -63,12 +63,12 @@ namespace Samurai_NS{
   // Samurai magnet construction paramethers
   const double Magnet_Width = 6700*mm;
   const double Magnet_Height = 4640*mm;
-  const double Magnet_Depth = 3500*mm;
+  const double Magnet_Depth = 6000*mm;
   const string Magnet_Material = "G4_Galactic"; //where the main beam will travel
+  const double Yoke_Width = 6700*mm;
+  const double Yoke_Depth = 3500*mm;
   const double Yoke_Height = 1880*mm; //(4640-880)/2
   const string Yoke_Material = "G4_Fe";
-
-  const double StepSize = 1*mm;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -93,20 +93,54 @@ Samurai::~Samurai(){
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-void Samurai::AddMagnet(G4ThreeVector POS, double Angle){
+void Samurai::AddMagnet(G4ThreeVector POS, double Angle, int method, string fieldmap,
+			double n_steps){
   // Convert the POS value to R theta Phi as Spherical coordinate is easier in G4 
   m_R = POS.mag();
   m_Theta = POS.theta();
   m_Phi = POS.phi();
   m_Angle = Angle;
+  switch (method) {
+    case 0:
+      m_Method = NPS::RungeKutta;
+      break;
+    case 1:
+      m_Method = NPS::EliaOmar;//FIXME
+      break;
+    default:
+      cout << endl;
+      cout << "//////WARNING///////" << endl;
+      cout << "In Samurai.cc:\n";
+      cout << "Propagation method " << method << " not defined\n";
+      cout << endl;
+    }
+  m_FieldMapFile = fieldmap;
+  m_StepSize = 1 / n_steps * meter;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-void Samurai::AddMagnet(double R, double Theta, double Phi, double Angle){
+void Samurai::AddMagnet(double R, double Theta, double Phi, double Angle, int method,
+			string fieldmap, double n_steps){
   m_R = R;
   m_Theta = Theta;
   m_Phi = Phi;
   m_Angle = Angle;
+  switch (method) {
+    case 0:
+      m_Method = NPS::RungeKutta;
+      break;
+    case 1:
+      m_Method = NPS::EliaOmar;//FIXME
+      break;
+    default:
+      cout << endl;
+      cout << "//////WARNING///////" << endl;
+      cout << "In Samurai.cc:\n";
+      cout << "Propagation method " << method << " not defined\n";
+      cout << endl;
+    }
+  m_FieldMapFile = fieldmap;
+  m_StepSize = 1 / n_steps * meter;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -131,8 +165,8 @@ G4LogicalVolume* Samurai::BuildMagnet(){
 G4LogicalVolume* Samurai::BuildYoke(){
   if(!m_Yoke){
     //Shape - G4Box
-    G4Box* yoke = new G4Box("Samurai_yoke_1",Samurai_NS::Magnet_Width*0.5,
-			    Samurai_NS::Yoke_Height*0.5,Samurai_NS::Magnet_Depth*0.5);
+    G4Box* yoke = new G4Box("Samurai_yoke_1",Samurai_NS::Yoke_Width*0.5,
+			    Samurai_NS::Yoke_Height*0.5,Samurai_NS::Yoke_Depth*0.5);
 
     //Material
     G4Material* YokeMaterial = MaterialManager::getInstance()
@@ -161,20 +195,26 @@ void Samurai::ReadConfiguration(NPL::InputParser parser){
     if(NPOptionManager::getInstance()->GetVerboseLevel()) {
       cout << "//// Samurai magnet found " << endl;
     }
-    vector<string> cart = {"POS","ANGLE"};
-    vector<string> sphe = {"R","Theta","Phi","ANGLE"};
+    vector<string> cart = {"POS","ANGLE","METHOD","FIELDMAP","STEPS_PER_METER"};
+    vector<string> sphe = {"R","Theta","Phi","ANGLE","METHOD","FIELDMAP","STEPS_PER_METER"};
 
     if(blocks[0]->HasTokenList(cart)){
       G4ThreeVector Pos = NPS::ConvertVector(blocks[0]->GetTVector3("POS", "cm"));
       double Angle = blocks[0]->GetDouble("ANGLE","deg");
-      AddMagnet(Pos,Angle);
+      int method = blocks[0]->GetInt("METHOD");
+      string fieldmap = blocks[0]->GetString("FIELDMAP");
+      double n_steps = (double) blocks[0]->GetInt("STEPS_PER_METER");
+      AddMagnet(Pos,Angle,method,fieldmap,n_steps);
     }
     else if(blocks[0]->HasTokenList(sphe)){
       double R = blocks[0]->GetDouble("R","mm");
       double Theta = blocks[0]->GetDouble("Theta","deg");
       double Phi = blocks[0]->GetDouble("Phi","deg");
       double Angle = blocks[0]->GetDouble("ANGLE","deg");
-      AddMagnet(R,Theta,Phi,Angle);
+      int method = blocks[0]->GetInt("METHOD");
+      string fieldmap = blocks[0]->GetString("FIELDMAP");
+      double n_steps = (double) blocks[0]->GetInt("STEPS_PER_METER");
+      AddMagnet(R,Theta,Phi,Angle,method,fieldmap,n_steps);
     }
   }
   else{
@@ -229,7 +269,7 @@ void Samurai::SetPropagationRegion(){
   if(!m_PropagationRegion){
     m_PropagationRegion= new G4Region("NPSamuraiFieldPropagation");
     m_PropagationRegion -> AddRootLogicalVolume(m_Magnet);
-    m_PropagationRegion->SetUserLimits(new G4UserLimits(Samurai_NS::StepSize));
+    m_PropagationRegion->SetUserLimits(new G4UserLimits(m_StepSize));
   }
   
   G4FastSimulationManager* mng = m_PropagationRegion->GetFastSimulationManager();
@@ -241,8 +281,10 @@ void Samurai::SetPropagationRegion(){
  
   G4VFastSimulationModel* fsm;
   fsm = new NPS::SamuraiFieldPropagation("SamuraiFieldPropagation", m_PropagationRegion);
-  ((NPS::SamuraiFieldPropagation*) fsm)->SetStepSize(Samurai_NS::StepSize);
+  ((NPS::SamuraiFieldPropagation*) fsm)->SetStepSize(m_StepSize);
   ((NPS::SamuraiFieldPropagation*) fsm)->SetAngle(m_Angle);
+  ((NPS::SamuraiFieldPropagation*) fsm)->SetFieldMap(m_FieldMapFile);
+  ((NPS::SamuraiFieldPropagation*) fsm)->SetMethod(m_Method);
   m_PropagationModel.push_back(fsm);
   
 }

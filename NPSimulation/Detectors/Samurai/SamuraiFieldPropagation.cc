@@ -55,13 +55,8 @@ NPS::SamuraiFieldPropagation::SamuraiFieldPropagation(G4String modelName, G4Regi
     //m_B = G4ThreeVector( 0. , 1., 0. ) * tesla;
 
     m_Map = NULL;
+    m_Initialized = false;
 
-    /*
-    string s1 =  "/local/pilotto/nptool/Projects/SAMURAI/field_map/3T.table.bin";
-    string s2 = "./field_map/3T.table";
-    string s3 = "/Projects/SAMURAI/field_map/3T.table.bin";*/
-    //m_Map = new SamuraiFieldMap();
-    //m_Map->LoadMap(30*deg, "3T.table.bin", 1);
 
     //ABLA = new G4AblaInterface();
   }
@@ -149,7 +144,37 @@ G4bool NPS::SamuraiFieldPropagation::ModelTrigger(const G4FastTrack& fastTrack) 
 void NPS::SamuraiFieldPropagation::DoIt(const G4FastTrack& fastTrack,
     G4FastStep&        fastStep) {
   //std::cout << "DOIT" << std::endl;
+  //std::cout << "FIELDMAP " << m_FieldMap << std::endl;
+  
+  if(!m_Initialized){
+    m_Map = new SamuraiFieldMap();
+    //m_Map->LoadMap(m_Angle, "/local/pilotto/nptool/Projects/Samurai/" + m_FieldMap, 1);
+    m_Map->LoadMap(0, m_FieldMap, 1);
+    m_Initialized = true;
+  }
 
+  switch (m_Meth){
+    case RungeKutta:
+      RungeKuttaPropagation(fastTrack, fastStep);
+      break;
+    case EliaOmar:
+      EliaOmarPropagation(fastTrack, fastStep);
+      break;
+    default:
+      cout << endl;
+      cout << "//////WARNING///////" << endl;
+      cout << "In SamuraiFieldPropagation.cc:\n";
+      cout << "Propagation method not defined - THIS MESSAGE SHOULD NEVER APPEAR\n";
+      cout << endl;
+
+  }
+  
+  return;
+}
+
+/////////////////////////////////////////////////////////////////////////
+void NPS::SamuraiFieldPropagation::EliaOmarPropagation (const G4FastTrack& fastTrack,
+							G4FastStep& fastStep){
   // Get the track info
   const G4Track* PrimaryTrack = fastTrack.GetPrimaryTrack();
   
@@ -163,14 +188,13 @@ void NPS::SamuraiFieldPropagation::DoIt(const G4FastTrack& fastTrack,
   G4ThreeVector localDir = fastTrack.GetPrimaryTrackLocalDirection();
   G4ThreeVector localPosition = fastTrack.GetPrimaryTrackLocalPosition();
   G4ThreeVector localMomentum = fastTrack.GetPrimaryTrackLocalMomentum();
-  G4ThreeVector newDir;
-  G4ThreeVector newPosition;
-  G4ThreeVector newMomentum;
 
 
   //Calculate the curvature radius
-
-  G4ThreeVector m_B = MagField(localPosition);
+  
+  //G4ThreeVector m_B = MagField(localPosition);
+  /*
+  G4ThreeVector m_B = VtoG4( m_Map->InterpolateB(G4toV(localPosition)) );
   double B = m_B.mag() / tesla;
   double q = PrimaryTrack->GetParticleDefinition()->GetPDGCharge() / coulomb;
 
@@ -198,7 +222,6 @@ void NPS::SamuraiFieldPropagation::DoIt(const G4FastTrack& fastTrack,
   fastStep.ProposePrimaryTrackFinalTime( time );
 
 
-
   static int count = 0;
   count++;
   
@@ -209,11 +232,55 @@ void NPS::SamuraiFieldPropagation::DoIt(const G4FastTrack& fastTrack,
     cout << setprecision(15) << "X " << newPosition.getX() << endl;
     cout << setprecision(15) << "Y " << newPosition.getY() << endl;
     cout << setprecision(15) << "Theta " << newDir.getTheta() << endl;
-  }
+    }*/
+
+  G4ThreeVector B = VtoG4( m_Map->InterpolateB(G4toV(localPosition)) );
+  double magB = B.mag() / tesla;
+  double charge = PrimaryTrack->GetParticleDefinition()->GetPDGCharge() / coulomb;
+  double mass = PrimaryTrack->GetParticleDefinition()->GetPDGMass() / kg;
+
+  //units conversion factor MeV/c to kg*m/s (SI units)
+  double ConF = (1.e6 * e_SI ) / (c_light / (m/s)) ;
+  
+  G4ThreeVector rho = -(localMomentum*ConF).cross(B/tesla);
+  rho = rho / (charge*magB*magB) * meter;
+  G4ThreeVector omega = ( -(charge/mass) * B / tesla ) / s;
+
+  
+  //Calculate new position
+  double angle = m_StepSize / rho.mag() * rad;
+  G4ThreeVector rho2 = rho;
+  rho2.rotate(angle, omega);
+
+  //Setting new kinematic properties
+  G4ThreeVector newPosition = localPosition - rho + rho2;
+  G4ThreeVector newDir = localDir;
+  newDir.rotate(angle, omega);
+  G4ThreeVector newMomentum = localMomentum.mag() * newDir;
+
+  cout<< "Newpos = "<< Cart(newPosition) << endl;
+  cout<< "NewDir = "<< Cart(newDir) << endl;
+  cout<< "NewMom = "<< Cart(newMomentum) << endl;
+  cout<< "B = "<< Cart(B) << endl;
+  cout<< "omega = "<< Cart(omega) << endl;
+  cout<< "rho = "<< Cart(rho) << endl;
+  cout<< "ConF = "<< ConF << endl;
+  
+  fastStep.ProposePrimaryTrackFinalPosition( newPosition );
+  fastStep.SetPrimaryTrackFinalMomentum ( newMomentum );//FIXME
+  fastStep.ProposePrimaryTrackFinalTime( time );
 
   return;
-}
   
+}
+
+/////////////////////////////////////////////////////////////////////////
+void NPS::SamuraiFieldPropagation::RungeKuttaPropagation (const G4FastTrack& fastTrack,
+							  G4FastStep& fastStep){
+  cout << "Method not defined yet\n";
+  return;
+}
+
 /////////////////////////////////////////////////////////////////////////
 G4ThreeVector NPS::SamuraiFieldPropagation::MagField (G4ThreeVector pos){
   double x = pos.x()/meter;
