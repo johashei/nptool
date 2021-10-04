@@ -45,11 +45,11 @@ void Analysis::Init() {
  ///////////////////////////////////////////////////////////////////////////////  
   
 //  if(NPOptionManager::getInstance()->HasDefinition("simulation")){
-    cout << " == == == == SIMULATION == == == ==" << endl;
-    isSim=true;
+//    cout << " == == == == SIMULATION == == == ==" << endl;
+//    isSim=true;
 //  } else {
-//    cout << " == == == == EXPERIMENT == == == ==" << endl;
-//    isSim=false;
+    cout << " == == == == EXPERIMENT == == == ==" << endl;
+    isSim=false;
 //  }
 
   agata_zShift=51*mm;
@@ -58,6 +58,7 @@ void Analysis::Init() {
   if(isSim){
     Initial = new TInitialConditions();
     ReactionConditions = new TReactionConditions(); 
+    RootInput::getInstance()->GetChain()->SetBranchAddress("InitialConditions",&Initial);
   }
 
   // initialize input and output branches
@@ -138,8 +139,8 @@ void Analysis::Init() {
     GATCONF_Counter[i] = 0 ; 
   }
 
-  ThetaCM_detected->Sumw2();
-  ThetaLab_detected->Sumw2();
+//  ThetaCM_detected->Sumw2();
+//  ThetaLab_detected->Sumw2();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -150,8 +151,11 @@ void Analysis::TreatEvent(){
 
   if(isSim){
     //ThetaCM_emmitted->Fill(Initial->GetThetaCM(0));
-    ThetaLab_emmitted->Fill(Initial->GetThetaLab_WorldFrame(0));
-    
+    ThetaCM_emmitted->Fill(ReactionConditions->GetThetaCM());
+    //ThetaLab_emmitted->Fill(Initial->GetThetaLab_WorldFrame(0));
+    ThetaLab_emmitted->Fill(ReactionConditions->GetTheta(0));
+
+    /* 
     TVector3 labDir = Initial->GetParticleDirection(0);
     TVector3 comDir = labDir;
 
@@ -159,14 +163,14 @@ void Analysis::TreatEvent(){
     comDir.SetX( labDir.X() / (2*comDir.Z()) );
     comDir.SetY( labDir.Y() / (2*comDir.Z()) );
 
-    /*
+    
     cout << Initial->GetThetaLab_WorldFrame(0) << "  " 
 	 << labDir.Theta()/deg << " "
 	 << comDir.Theta()/deg << " "
 	 << endl;
-    */
 
     ThetaCM_emmitted->Fill(comDir.Theta()/deg);
+   */
   }
 
   GATCONF_MASTER=ML->GetCalibratedValue("GATCONF_MASTER");
@@ -177,16 +181,19 @@ void Analysis::TreatEvent(){
     }
   }
 
-//  if(isSim){
-//    OriginalELab = ReactionConditions->GetKineticEnergy(0);
-//    OriginalThetaLab = ReactionConditions->GetTheta(0);
-//    BeamEnergy = ReactionConditions->GetBeamEnergy();
-//  }
+  if(isSim){
+    OriginalELab = ReactionConditions->GetKineticEnergy(0);
+    OriginalThetaLab = ReactionConditions->GetTheta(0);
+    BeamEnergy = ReactionConditions->GetBeamEnergy();
+  }
 
   TVector3 BeamDirection(0.,0.,1.);
   BeamImpact = TVector3(XBeam,YBeam,m_DetectorManager->GetTargetZ()); 
 
-  ParticleMult=M2->Si_E.size()+MG->DSSD_E.size();
+////  ParticleMult=M2->Si_E.size()+MG->DSSD_E.size();
+  ParticleMult=M2->Si_E.size();////+MG->DSSD_E.size();
+
+
   //ParticleMult=M2->Si_E.size();
   //  FinalBeamEnergy=BeamCD2.Slow(OriginalBeamEnergy,0.5*TargetThickness,BeamDirection.Angle(TVector(0,0,1)));
   //reaction.SetBeamEnergy(FinalBeamEnergy);
@@ -203,11 +210,15 @@ void Analysis::TreatEvent(){
     // MUST2
     int TelescopeNumber = M2->TelescopeNumber[countMust2];
 
+
     if(isSim){
       if(TelescopeNumber==5){
         //ThetaCM_detected->Fill(Initial->GetThetaCM(0));
-	ThetaLab_detected->Fill(Initial->GetThetaLab_WorldFrame(0));
+        ThetaCM_detected->Fill(ReactionConditions->GetThetaCM());
+	//ThetaLab_detected->Fill(Initial->GetThetaLab_WorldFrame(0));
+        ThetaLab_detected->Fill(ReactionConditions->GetTheta(0));
 
+        /*
         TVector3 labDir = Initial->GetParticleDirection(0);
         TVector3 comDir = labDir;
 
@@ -215,16 +226,15 @@ void Analysis::TreatEvent(){
         comDir.SetX( labDir.X() / (2*comDir.Z()) );
         comDir.SetY( labDir.Y() / (2*comDir.Z()) );
 
-        /*
+        
 	// Check the angles agree
         cout << Initial->GetThetaLab_WorldFrame(0) << "  " 
 	     << labDir.Theta()/deg << " "
 	     << comDir.Theta()/deg << " "
 	     << endl;
-        */
 
         ThetaCM_detected->Fill(comDir.Theta()/deg);
-
+	*/
       }
     }
 
@@ -330,7 +340,7 @@ void Analysis::TreatEvent(){
     PhiLab.push_back(philab_tmp/deg);
   }
 
-/*
+
   ////////////////////////////////////////////////////////////////////////////
   //////////////////////////////// LOOP on MUGAST ////////////////////////////
   ////////////////////////////////////////////////////////////////////////////
@@ -342,6 +352,14 @@ void Analysis::TreatEvent(){
     thetalab_tmp = 0;
     philab_tmp = 0;
     TVector3 HitDirection = MG->GetPositionOfInteraction(countMugast) - BeamImpact;
+    //TVector3 tempVector;
+    //if(MG->TelescopeNumber[0]==3){
+    //  tempVector = {MG->GetPositionOfInteraction(countMugast).X(),
+    //                MG->GetPositionOfInteraction(countMugast).Y(),
+    //                MG->GetPositionOfInteraction(countMugast).Z()+1.0}; //add 1mm to MG3
+    //  HitDirection = tempVector - BeamImpact;
+    //  if(warning){cout << "!!! EDITING MG3 !!!" << endl; warning=false;}
+    //}
     thetalab_tmp = HitDirection.Angle(BeamDirection);
     philab_tmp = HitDirection.Phi();
 
@@ -396,7 +414,8 @@ void Analysis::TreatEvent(){
 
   }//end loop Mugast
 
-*/
+
+
 
   ////////////////////////////////////////////////////////////////////////////
   ///////////////////////////////// LOOP on AGATA ////////////////////////////
@@ -433,7 +452,6 @@ void Analysis::TreatEvent(){
   }
   */
 
-/********
   // Agata add back is not always multiplicity 1 ?? NO, not necessarily!
   for(int i=0; i<nbAdd; i++){
   //if(nbAdd==1){
@@ -478,9 +496,8 @@ void Analysis::TreatEvent(){
         MWT[i] = (MW_T[i]-offset[j])/slope[j];
   }
 
-********/
-}
 
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 void Analysis::End(){
@@ -567,11 +584,11 @@ void Analysis::InitOutputBranch(){
   RootOutput::getInstance()->GetTree()->Branch("Y",&Y);
   RootOutput::getInstance()->GetTree()->Branch("Z",&Z);
   RootOutput::getInstance()->GetTree()->Branch("dE",&dE,"dE/D");
-  RootOutput::getInstance()->GetTree()->Branch("MG_T",MG_T);
-  RootOutput::getInstance()->GetTree()->Branch("MG_E",MG_E);
-  RootOutput::getInstance()->GetTree()->Branch("MG_X",MG_X);
-  RootOutput::getInstance()->GetTree()->Branch("MG_Y",MG_Y);
-  RootOutput::getInstance()->GetTree()->Branch("MG_D",MG_D);
+////  RootOutput::getInstance()->GetTree()->Branch("MG_T",MG_T);
+////  RootOutput::getInstance()->GetTree()->Branch("MG_E",MG_E);
+////  RootOutput::getInstance()->GetTree()->Branch("MG_X",MG_X);
+////  RootOutput::getInstance()->GetTree()->Branch("MG_Y",MG_Y);
+////  RootOutput::getInstance()->GetTree()->Branch("MG_D",MG_D);
 
   // Vamos 
   RootOutput::getInstance()->GetTree()->Branch("LTS",&LTS,"LTS/l");
@@ -720,11 +737,14 @@ void Analysis::InitInputBranch(){
   if(isSim){
     //RootInput:: getInstance()->GetChain()->SetBranchStatus("InitialConditions",true );
     //RootInput:: getInstance()->GetChain()->SetBranchStatus("fIC_*",true );
-    RootInput:: getInstance()->GetChain()->SetBranchAddress("InitialConditions",&Initial);
+    RootInput::getInstance()->GetChain()->SetBranchAddress("InitialConditions",
+		    &Initial);
+    RootInput::getInstance()->GetChain()->SetBranchAddress("InteractionCoordinates",
+		    &Interaction);
     //RootInput:: getInstance()->GetChain()->SetBranchStatus("ReactionConditions",true );
     //RootInput:: getInstance()->GetChain()->SetBranchStatus("fRC_*",true );
-    RootInput:: getInstance()->GetChain()->SetBranchAddress("ReactionConditions",
-      &ReactionConditions);
+    RootInput::getInstance()->GetChain()->SetBranchAddress("ReactionConditions",
+		    &ReactionConditions);
   }
 }
 
@@ -780,6 +800,7 @@ void Analysis::SetBranchStatus(){
   if(isSim){
     RootInput:: getInstance()->GetChain()->SetBranchStatus("InitialConditions",true );
     RootInput:: getInstance()->GetChain()->SetBranchStatus("fIC_*",true );
+    RootInput:: getInstance()->GetChain()->SetBranchStatus("InteractionCoordinates",true );
     RootInput:: getInstance()->GetChain()->SetBranchStatus("ReactionConditions",true );
     RootInput:: getInstance()->GetChain()->SetBranchStatus("fRC_*",true );
   }

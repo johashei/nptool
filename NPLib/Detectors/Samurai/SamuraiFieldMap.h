@@ -36,7 +36,7 @@ class SamuraiFieldMap{
 
   public:
     SamuraiFieldMap();
-    SamuraiFieldMap(std::string file);
+    SamuraiFieldMap(std::string file);//???
     ~SamuraiFieldMap(){};
   
   public: // Map reading

@@ -13,14 +13,16 @@ using namespace std::chrono;
 ////////////////////////////////////////////////////////////////////////////////
 /*   Global   */
 //Various numbers and objects
-double refE = 0.143; // the energy of the selected states
+
 vector<TVector3*> pos;
 vector<double> energy;
 vector<int> detnum;
 unsigned int mgSelect = 10;
 NPL::EnergyLoss CD2("proton_CD2.G4table","G4Table",100);
 NPL::EnergyLoss Al("proton_Al.G4table","G4Table",100);
+NPL::EnergyLoss BeamTarget("K47_CD2.G4table","G4Table",100);
 bool flagDraw = 0;
+bool allButMG3 = 0;
 
 //Output files
 TFile *histfile = new TFile("./gridHistograms.root", "RECREATE");
@@ -28,24 +30,25 @@ ofstream file;
 int writeCount = 0;
 
 //Histograms
-static auto h = new TH1D("h","All MG#'s", 80,-1.,1.);
-static auto h1 = new TH1D("h1","Individual MG#'s", 40,-1.,1.);
-static auto h2 = new TH1D("h2","h2", 40,-1.,1.);
-static auto h3 = new TH1D("h3","h3", 40,-1.,1.);
-static auto h4 = new TH1D("h4","h4", 40,-1.,1.);
-static auto h5 = new TH1D("h5","h5", 40,-1.,1.);
-static auto h7 = new TH1D("h7","h7", 40,-1.,1.);
-
+string filename;
+double refE; // the energy of the selected states
+static auto h = new TH1D("h","All MG#'s", 40,-1.0,3.0);
+static auto h1 = new TH1D("h1","Individual MG#'s", 40,-1.0,3.0);
+static auto h2 = new TH1D("h2","h2", 40,-1.0,3.0);
+static auto h3 = new TH1D("h3","h3", 40,-1.0,3.0);
+static auto h4 = new TH1D("h4","h4", 40,-1.0,3.0);
+static auto h5 = new TH1D("h5","h5", 40,-1.0,3.0);
+static auto h7 = new TH1D("h7","h7", 40,-1.0,3.0);
+static auto hT = new TH2F("hT","hT", 20,100.,160.,20,-0.1,0.4);
 ////////////////////////////////////////////////////////////////////////////////
 void LoadFile(){
   // Open XYZE gamma-gated file
-  ifstream file("XYZE_Full_09June_MG3.txt");
+  ifstream file(filename.c_str());
   if(!file.is_open()){
-    cout << "fail to load file" << endl;
-    exit(1);
+    cout << "fail to load file " << filename << endl;
   }
   else {
-    cout <<  "Success opening file" << endl;
+    cout <<  "Success opening file " << filename << endl;
   }
 
   // Read in
@@ -53,6 +56,10 @@ void LoadFile(){
   double x,y,z,e;
   while(file >> mg >> x >> y >> z >> e ){
     auto p = new TVector3(x,y,z);
+//    if(mg==3){
+//      p->SetZ(z+1.0); //Edit MG3 position directly
+//      cout << "EDITING MG3 POSITION" << endl;
+//    }
     detnum.push_back(mg);
     pos.push_back(p);
     energy.push_back(e);
@@ -74,27 +81,26 @@ void FillMatrix(double* matrix, TFitResultPtr fit){
   }
 }
 ////////////////////////////////////////////////////////////////////////////////
-//[[[[ UPDATE WITH NEW MG POSITIONS FROM SURVEY ]]]]
 //Overloaded function definiton; this is for MUGAST Normal vectors
 void DetectorSwitch(int MG, TVector3& Normal ){
   switch(MG){
       case 1:
-        Normal.SetXYZ(-0.453915, +0.455463, -0.765842);
+        Normal.SetXYZ(-0.454552, +0.454996, -0.765742);
         break;
       case 2:
-	Normal.SetXYZ(-0.642828, +0.000000, -0.766010);
+	Normal.SetXYZ(-0.641920, +0.002239, -0.766769);
         break;
       case 3:
-	Normal.SetXYZ(-0.454594, -0.450670, -0.768271);
+	Normal.SetXYZ(-0.455476, -0.452406, -0.766727);
         break;
       case 4:
-	Normal.SetXYZ(-0.002437, -0.638751, -0.769409);
+	Normal.SetXYZ(-0.003212, -0.641831, -0.766839);
         break;
       case 5:
-	Normal.SetXYZ(+0.452429, -0.454575, -0.767248);
+	Normal.SetXYZ(+0.452522, -0.455595, -0.766588);
         break;
       case 7:
-	Normal.SetXYZ(+0.443072, +0.443265, -0.779232);
+	Normal.SetXYZ(+0.454034, +0.458527, -0.763941);
         break;
       default:
 	cout << "ERROR:: Invalid DetNum " << MG << endl;
@@ -145,7 +151,7 @@ void WriteToCout(double* result, double thick, double metric){
     << "    Chi2/NDF = " 
     << result[4]
     << "    Metric: " 
-    << metric 
+    << metric
     << endl;
 }
 ////////////////////////////////////////////////////////////////////////////////
@@ -164,7 +170,7 @@ void WriteToFile(double* result, const double* parameter, double metric){
     << endl;
 }
 ////////////////////////////////////////////////////////////////////////////////
-void DrawOneHistogram(TH1D* hist, int mg, int colour, int fill, double *FitResultMatrixMG){
+void DrawOneHistogram(TH1D* hist, int mg, int colour, int fill, double *FitResultMatrixMG, bool drawFit){
   //Hist settings
   hist->SetStats(0);
   hist->SetLineColor(colour);
@@ -186,7 +192,14 @@ void DrawOneHistogram(TH1D* hist, int mg, int colour, int fill, double *FitResul
     cout << showpos;
   }
 
-  TFitResultPtr fit = hist->Fit("gaus","WQS"); //N=stop drawing, Q=stop writing
+  const char* settings;
+  if (drawFit){
+    settings = "WQS";
+  } else {
+    settings = "WQSN";
+  }  
+
+  TFitResultPtr fit = hist->Fit("gaus",settings); //N=stop drawing, Q=stop writing
   FillMatrix(FitResultMatrixMG,fit);
 } 
 ////////////////////////////////////////////////////////////////////////////////
@@ -195,7 +208,8 @@ void InitiliseCanvas(double FitResultMatrix[7][5]){
   //Canvas setup
   TCanvas *canv = new TCanvas("canv","Ex Histograms",20,20,1600,800);
   gStyle->SetOptStat(0);
-  canv->Divide(2,1,0.005,0.005,0);
+  //canv->Divide(2,1,0.005,0.005,0);
+  canv->Divide(3,1,0.005,0.005,0);
   canv->cd(1)->SetLeftMargin(0.15);
   canv->cd(1)->SetBottomMargin(0.15);
   gPad->SetTickx();
@@ -205,28 +219,31 @@ void InitiliseCanvas(double FitResultMatrix[7][5]){
   gPad->SetTickx();
   gPad->SetTicky();
 
+  canv->cd(3)->SetLeftMargin(0.15);
+  canv->cd(3)->SetBottomMargin(0.15);
+  gPad->SetTickx();
+  gPad->SetTicky();
+
   //Histogram setup - Individual
   canv->cd(1);
-  h1->SetMaximum(75.);
+  h1->SetMaximum(150.);
   h1->GetXaxis()->SetTitle("Ex [MeV]");
   h1->GetYaxis()->SetTitle("Counts");
   
   //Histogram draw - Individual
-  //DrawOneHistogram(h1, 1, 632, 3244, FitResultMatrix[1]);
-  DrawOneHistogram(h1, 1, 632, 0, FitResultMatrix[1]);
-  //DrawOneHistogram(h2, 2, 800, 3244, FitResultMatrix[2]);
-  DrawOneHistogram(h2, 2, 800, 0, FitResultMatrix[2]);
-  //DrawOneHistogram(h3, 3, 416, 3344, FitResultMatrix[3]);
-  DrawOneHistogram(h3, 3, 416, 0, FitResultMatrix[3]);
-  DrawOneHistogram(h4, 4, 840, 3444, FitResultMatrix[4]);
-  //DrawOneHistogram(h5, 5, 600, 3544, FitResultMatrix[5]);
-  DrawOneHistogram(h5, 5, 600, 0, FitResultMatrix[5]);
-  //DrawOneHistogram(h7, 6, 880, 3644, FitResultMatrix[6]);
-  DrawOneHistogram(h7, 6, 880, 0, FitResultMatrix[6]);
+  DrawOneHistogram(h1, 1, 632, 0,    FitResultMatrix[1], 0);
+  DrawOneHistogram(h2, 2, 800, 3001,    FitResultMatrix[2], 0);
+  if(allButMG3){
+    DrawOneHistogram(h3, 3, 416, 0,    FitResultMatrix[3], 0); //3344
+  } else {
+    DrawOneHistogram(h3, 3, 416, 0,    FitResultMatrix[3], 0); //3344
+  }
+  DrawOneHistogram(h4, 4, 840, 0,    FitResultMatrix[4], 0);
+  DrawOneHistogram(h5, 5, 600, 3001,    FitResultMatrix[5], 0);
+  DrawOneHistogram(h7, 6, 880, 0,    FitResultMatrix[6], 0);
 
   canv->Update();
-
-  TLine *line=new TLine(0.143,0.0,0.143,75.0);
+  TLine *line=new TLine(refE,0.0,refE,150.0);
   line->SetLineColor(kBlack);
   line->SetLineStyle(7);
   line->Draw();
@@ -247,7 +264,23 @@ void InitiliseCanvas(double FitResultMatrix[7][5]){
   h->GetYaxis()->SetTitle("Counts");
   
   //Histogram draw - Sum
-  DrawOneHistogram(h, 0, 1, 0, FitResultMatrix[0]);
+  DrawOneHistogram(h, 0, 1, 0, FitResultMatrix[0],1);
+
+  canv->Update();
+  TLine *line2=new TLine(refE,0.0,refE,h->GetMaximum()+10.);
+  line2->SetLineColor(kBlack);
+  line2->SetLineStyle(7);
+  line2->Draw();
+
+  canv->cd(3);
+  hT->GetXaxis()->SetTitle("Theta (degrees)");
+  hT->GetYaxis()->SetTitle("Ex [MeV]");
+  hT->Draw("colz");
+  canv->Update();
+  TLine *l0143 = new TLine(100., 0.143, 160., 0.143);
+  l0143->SetLineStyle(kDashed);
+  l0143->SetLineColor(kRed);
+  l0143->Draw("same");
 
   //Refresh
   gPad->Update();

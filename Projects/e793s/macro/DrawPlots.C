@@ -1,8 +1,199 @@
+#include "DoubleGausHeader.h"
 #include "DrawPlots.h"
 
 
 /* USE THIS SPACE TO TEST NEW FEATURES */
 /* ONCE HAPPY, MOVE TO HEADER          */
+
+void tempRunMe(double gamma, double width){
+
+  string gating = "abs(T_MUGAST_VAMOS-2777)<600 && abs(AddBack_EDC-" 
+      + to_string(gamma)
+      + ")<"
+      + to_string(width);
+
+  TFile *File22 = new TFile("../../../Outputs/Analysis/47K_Full_05Aug_MinWithNoMG3.root","READ");
+  TTree* Tree22 = (TTree*) File22->Get("PhysicsTree");
+  
+  Tree22->Draw("Ex>>Ex22(120,-1,5)",gating.c_str(),"");
+  TH1F* Ex22 = (TH1F*) gDirectory->Get("Ex22");
+  
+  //TFile *File30 = new TFile("../../../Outputs/Analysis/47K_Full_22July.root","READ");
+  TFile *File30 = new TFile("../../../Outputs/Analysis/47K_Full_09Aug_retest05NoMG3.root","READ");
+  TTree* Tree30 = (TTree*) File30->Get("PhysicsTree");
+
+  Tree30->Draw("Ex>>Ex30(120,-1,5)",gating.c_str(),"");
+  TH1F* Ex30 = (TH1F*) gDirectory->Get("Ex30");
+
+  Ex22->SetLineColor(kRed);
+  Ex22->Draw();
+  Ex30->SetLineColor(kBlue);
+  Ex30->Draw("same");
+
+}
+
+//void ExThetaAnalysis(int version){
+void ExThetaAnalysis(double gamma, double width, int version){
+//  int version;
+//  bool running = 1;
+
+//  cout << "Constructing Ex:ThetaLab..." << endl;
+
+
+  string gating = "abs(T_MUGAST_VAMOS-2777)<600 && Mugast.TelescopeNumber>0 && Mugast.TelescopeNumber<8 && abs(AddBack_EDC-"
+	        + to_string(gamma) + ") < " + to_string(width); 
+
+  TCanvas *diagnoseTheta2 = new TCanvas("diagnoseTheta2","diagnoseTheta2",1000,1000);
+  chain->Draw(
+    "Ex:ThetaLab>>thetaHist(60,100,160,120,-1,5)", 
+    //"abs(T_MUGAST_VAMOS-2777)<600 && Mugast.TelescopeNumber>0 && Mugast.TelescopeNumber<8",
+    gating.c_str(),
+    "colz");
+  TH2F* thetaHist = (TH2F*) gDirectory->Get("thetaHist");  
+
+
+//  while(running){
+//    cout << "Overlay projections (1) or candle plots (2)?" << endl;
+//    cin >> version;
+    cout << "Processing..." << endl;
+    if(version==1){
+      thetaHist->ProjectionY("tpy1",06.,15.); 
+      TH1F* tpy1 = (TH1F*) gDirectory->Get("tpy1");  
+      thetaHist->ProjectionY("tpy2",16.,25.); 
+      TH1F* tpy2 = (TH1F*) gDirectory->Get("tpy2");  
+      thetaHist->ProjectionY("tpy3",26.,35.); 
+      TH1F* tpy3 = (TH1F*) gDirectory->Get("tpy3");  
+      thetaHist->ProjectionY("tpy4",36.,45.); 
+      TH1F* tpy4 = (TH1F*) gDirectory->Get("tpy4");  
+      thetaHist->ProjectionY("tpy5",46.,55.); 
+      TH1F* tpy5 = (TH1F*) gDirectory->Get("tpy5");  
+
+      tpy1->SetLineColor(kRed);
+      tpy2->SetLineColor(kOrange);
+      tpy3->SetLineColor(kGreen);
+      tpy4->SetLineColor(kBlue);
+      tpy5->SetLineColor(kViolet);
+
+      tpy1->Rebin(2);
+      tpy2->Rebin(2);
+      tpy3->Rebin(2);
+      tpy4->Rebin(2);
+      tpy5->Rebin(2);
+
+      tpy1->Draw();
+      tpy2->Draw("same");
+      tpy3->Draw("same");
+      tpy4->Draw("same");
+      tpy5->Draw("same");
+    }else if (version==2){
+      thetaHist->GetXaxis()->SetRangeUser(105.,155.);
+      thetaHist->RebinX(5);
+      thetaHist->GetXaxis()->SetRangeUser(105.,155.);
+      thetaHist->Draw("candlex6");
+
+    }//else{running=0;}
+//  }
+
+}
+
+
+
+
+void ForPoster_DiffCrossSec(){
+  ifstream infile("DiffCrossSecInputfile.txt");
+  vector<double> theta, p32, p32Pos, p32Neg, f72, f72Pos, f72Neg, zero;
+
+  double a, b, c, d, e, f, g;
+  while(infile){
+    infile >> a >> b >> c >> d >> e >> f >> g;
+
+    theta.push_back(a);
+    zero.push_back(0.0);
+    
+    p32.push_back(b);
+    p32Pos.push_back(c);
+    p32Neg.push_back(d);
+    
+    f72.push_back(e);
+    f72Pos.push_back(f);
+    f72Neg.push_back(g);
+  }
+
+  TGraph *graphp32 = new TGraph(theta.size(), &theta[0], &p32[0]);
+  TGraph *graphf72 = new TGraph(theta.size(), &theta[0], &f72[0]);
+
+  int num = theta.size();
+
+  TGraphAsymmErrors *graphp32error 
+  = new TGraphAsymmErrors(num, &theta[0],  &p32[0], &zero[0], &zero[0], &p32Neg[0], &p32Pos[0]);
+
+  TGraphAsymmErrors *graphf72error 
+  = new TGraphAsymmErrors(num, &theta[0],  &f72[0], &zero[0], &zero[0], &f72Neg[0], &f72Pos[0]);
+
+
+  graphp32->SetFillColor(kRed);
+  graphp32->SetFillStyle(3005);
+  graphf72->SetFillColor(kBlue);
+  graphf72->SetFillStyle(3005);
+  
+  graphp32->Draw();
+  graphf72->Draw("same");
+  graphp32error->Draw("same");
+  graphf72error->Draw("same");
+
+/*
+  TMultiGraph *mg = new TMultiGraph();
+  mg->Add(graphp32);
+  mg->Add(graphf72);
+  mg->Add(graphp32error);
+  mg->Add(graphf72error);
+  mg->Draw();
+*/
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -11,13 +202,12 @@
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 void DrawPlots(){
-
   gStyle->SetOptStat("nei");
   LoadChainNP();
   
   cout << "==========================================" << endl;
   cout << "========== AVAILABLE FUNCTIONS ===========" << endl;
-  cout << " 2D Matrices " << endl;
+cout << " 2D Matrices " << endl;
   cout << "\t- Draw_2DParticleGamma() "<< endl;
   cout << "\t- Draw_2DGammaGamma() "<< endl;
   cout << ""<< endl;
@@ -38,6 +228,14 @@ void DrawPlots(){
   cout << " Specific functions" << endl;
   cout << "\t- CompareExsAt4MeV() "<< endl;
   cout << "\t- CompareSimExp() "<< endl;
+  cout << "\t- MugastMisalignment() "<< endl;
+  cout << "\t- ExPhiLab() "<< endl;
+  cout << "\t- ExThetaLab() "<< endl;
+  cout << "\t- ELabThetaLab() "<< endl;
+  cout << "\t- MM5_ELabThetaLab() "<< endl;
+  cout << "\t- MM5_ExThetaLab() "<< endl;
+  cout << ""<< endl;
+  cout << " ExPhiLab_ForPoster()!!!!!!!!!!!!!!!!!"<< endl;
   cout << "==========================================" << endl;
 
 
@@ -112,9 +310,6 @@ void DrawPlots(){
   //legend->Draw();
 
   /* MUGAST good Phi-Ex histogram*/
-  //TCanvas *diagnose = new TCanvas("diagnose","diagnose",1000,1000);
-  //chain->Draw("Ex:PhiLab>>hist(180,-180,180,80,-2,6)","abs(T_MUGAST_VAMOS-2777)<600 && (Mugast.TelescopeNumber==1 || Mugast.TelescopeNumber==2 || Mugast.TelescopeNumber==3 || Mugast.TelescopeNumber==4 || Mugast.TelescopeNumber==5 || Mugast.TelescopeNumber==7 )","colz");
-
   /* MUGAST testing theta dependance by detector */
 //  TCanvas *diagnose = new TCanvas("diagnose","diagnose",1000,1000);
 //  chain->Draw("Ex:ThetaLab>>histDiag(36,0,180,200,-3,7)","abs(T_MUGAST_VAMOS-2777)<600","colz");
@@ -126,52 +321,53 @@ void DrawPlots(){
 //  chain->Draw("Ex:ThetaLab>>histDiag(36,0,180,200,-3,7)","abs(T_MUGAST_VAMOS-2777)<600 && Mugast.TelescopeNumber==7","colz");
 //  TH2F* histDiag = (TH2F*) gDirectory->Get("histDiag");
 
-//  TCanvas *cG = new TCanvas("cG","cG",1000,1000);
-//  chain->Draw("Ex>>hcG(200,-3,7)","");
-//  chain->Draw("Ex>>hcG_T1(200,-3,7)","abs(T_MUGAST_VAMOS-2777)<600 && Mugast.TelescopeNumber==1","");
-//  chain->Draw("Ex>>hcG_T2(200,-3,7)","abs(T_MUGAST_VAMOS-2777)<600 && Mugast.TelescopeNumber==2","same");
-//  chain->Draw("Ex>>hcG_T3(200,-3,7)","abs(T_MUGAST_VAMOS-2777)<600 && Mugast.TelescopeNumber==3","same");
-//  chain->Draw("Ex>>hcG_T4(200,-3,7)","abs(T_MUGAST_VAMOS-2777)<600 && Mugast.TelescopeNumber==4","same");
-//  chain->Draw("Ex>>hcG_T5(200,-3,7)","abs(T_MUGAST_VAMOS-2777)<600 && Mugast.TelescopeNumber==5","same");
-//  chain->Draw("Ex>>hcG_T7(200,-3,7)","abs(T_MUGAST_VAMOS-2777)<600 && Mugast.TelescopeNumber==7","same");
-//  TH1F* hcG = (TH1F*) gDirectory->Get("hcG");
-//  hcG->GetXaxis()->SetTitle("E_{x} [MeV]");
-//  hcG->GetYaxis()->SetTitle("Counts / (50 keV)");
-//  hcG->SetLineColor(kBlack);
-//  TH1F* hcG_T1 = (TH1F*) gDirectory->Get("hcG_T1");
-//  hcG_T1->SetLineColor(kRed);
-//  hcG_T1->SetFillStyle(3001);
-//  hcG_T1->SetFillColor(kRed);
-//  TH1F* hcG_T2 = (TH1F*) gDirectory->Get("hcG_T2");
-//  hcG_T2->SetLineColor(kOrange);
-//  hcG_T2->SetFillStyle(3001);
-//  hcG_T2->SetFillColor(kOrange);
-//  TH1F* hcG_T3 = (TH1F*) gDirectory->Get("hcG_T3");
-//  hcG_T3->SetLineColor(kGreen);
-//  hcG_T3->SetFillStyle(3001);
-//  hcG_T3->SetFillColor(kGreen);
-//  TH1F* hcG_T4 = (TH1F*) gDirectory->Get("hcG_T4");
-//  hcG_T4->SetLineColor(kTeal);
-//  hcG_T4->SetFillStyle(3001);
-//  hcG_T4->SetFillColor(kTeal);
-//  TH1F* hcG_T5 = (TH1F*) gDirectory->Get("hcG_T5");
-//  hcG_T5->SetTitle("Misalignment of MUGAST telescopes");
-//  hcG_T5->GetXaxis()->SetTitle("E_{x} [MeV]");
-//  hcG_T5->GetYaxis()->SetTitle("Counts / (50 keV)");
-//  hcG_T5->SetLineColor(kBlue);
-//  hcG_T5->SetFillStyle(3001);
-//  hcG_T5->SetFillColor(kBlue);
-//  TH1F* hcG_T7 = (TH1F*) gDirectory->Get("hcG_T7");
-//  hcG_T7->SetLineColor(kViolet);
-//  hcG_T7->SetFillStyle(3001);
-//  hcG_T7->SetFillColor(kViolet);
-//  hcG_T5->GetYaxis()->SetRangeUser(0.,500.);
-//  hcG_T5->GetXaxis()->SetRangeUser(-3.,7.);
-
+  /*
+  TCanvas *cG = new TCanvas("cG","cG",1000,1000);
+  chain->Draw("Ex>>hcG(200,-3,7)","");
+  chain->Draw("Ex>>hcG_T1(200,-3,7)","abs(T_MUGAST_VAMOS-2777)<600 && Mugast.TelescopeNumber==1","");
+  chain->Draw("Ex>>hcG_T2(200,-3,7)","abs(T_MUGAST_VAMOS-2777)<600 && Mugast.TelescopeNumber==2","same");
+  chain->Draw("Ex>>hcG_T3(200,-3,7)","abs(T_MUGAST_VAMOS-2777)<600 && Mugast.TelescopeNumber==3","same");
+  chain->Draw("Ex>>hcG_T4(200,-3,7)","abs(T_MUGAST_VAMOS-2777)<600 && Mugast.TelescopeNumber==4","same");
+  chain->Draw("Ex>>hcG_T5(200,-3,7)","abs(T_MUGAST_VAMOS-2777)<600 && Mugast.TelescopeNumber==5","same");
+  chain->Draw("Ex>>hcG_T7(200,-3,7)","abs(T_MUGAST_VAMOS-2777)<600 && Mugast.TelescopeNumber==7","same");
+  TH1F* hcG = (TH1F*) gDirectory->Get("hcG");
+  hcG->GetXaxis()->SetTitle("E_{x} [MeV]");
+  hcG->GetYaxis()->SetTitle("Counts / (50 keV)");
+  hcG->SetLineColor(kBlack);
+  TH1F* hcG_T1 = (TH1F*) gDirectory->Get("hcG_T1");
+  hcG_T1->SetLineColor(kRed);
+  hcG_T1->SetFillStyle(3001);
+  hcG_T1->SetFillColor(kRed);
+  TH1F* hcG_T2 = (TH1F*) gDirectory->Get("hcG_T2");
+  hcG_T2->SetLineColor(kOrange);
+  hcG_T2->SetFillStyle(3001);
+  hcG_T2->SetFillColor(kOrange);
+  TH1F* hcG_T3 = (TH1F*) gDirectory->Get("hcG_T3");
+  hcG_T3->SetLineColor(kGreen);
+  hcG_T3->SetFillStyle(3001);
+  hcG_T3->SetFillColor(kGreen);
+  TH1F* hcG_T4 = (TH1F*) gDirectory->Get("hcG_T4");
+  hcG_T4->SetLineColor(kTeal);
+  hcG_T4->SetFillStyle(3001);
+  hcG_T4->SetFillColor(kTeal);
+  TH1F* hcG_T5 = (TH1F*) gDirectory->Get("hcG_T5");
+  hcG_T5->SetTitle("Misalignment of MUGAST telescopes");
+  hcG_T5->GetXaxis()->SetTitle("E_{x} [MeV]");
+  hcG_T5->GetYaxis()->SetTitle("Counts / (50 keV)");
+  hcG_T5->SetLineColor(kBlue);
+  hcG_T5->SetFillStyle(3001);
+  hcG_T5->SetFillColor(kBlue);
+  TH1F* hcG_T7 = (TH1F*) gDirectory->Get("hcG_T7");
+  hcG_T7->SetLineColor(kViolet);
+  hcG_T7->SetFillStyle(3001);
+  hcG_T7->SetFillColor(kViolet);
+  hcG_T5->GetYaxis()->SetRangeUser(0.,500.);
+  hcG_T5->GetXaxis()->SetRangeUser(-3.,7.);
+ */
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/*
 
+/*
   // MUGAST Displacement Ex histogram //
   TCanvas *cMisaligned = new TCanvas("cMisaligned","cMisaligned",1000,1000);
 //  chain->Draw("Ex>>hcG(200,-3,7)","");
@@ -227,8 +423,8 @@ void DrawPlots(){
   legend->AddEntry(hcG_T5,"MUGAST 5","f");
   legend->AddEntry(hcG_T7,"MUGAST 7","f");
   legend->Draw();
-
 */
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
