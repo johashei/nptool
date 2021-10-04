@@ -67,6 +67,10 @@ class TSofTwimPhysics : public TObject, public NPL::VDetector {
     vector<int>      AnodeSecNbr;
     vector<double>   AnodeEnergy;
     vector<double>   AnodeDT;
+    int mult1;
+    int mult2;
+    int mult3;
+    int mult4;
 
   /// A usefull method to bundle all operation to add a detector
   void AddDetector(TVector3 POS); 
