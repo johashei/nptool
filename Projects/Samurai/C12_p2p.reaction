@@ -1,0 +1,28 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Beam
+  Particle= 12C
+  Energy= 8800 MeV
+  SigmaEnergy= 0 MeV
+  SigmaThetaX= 5 deg
+  SigmaPhiY= 5 deg
+  SigmaX= 100 mm
+  SigmaY= 100 mm
+  MeanThetaX= 0 deg
+  MeanPhiY= 0 deg
+  MeanX= 0 mm
+  MeanY= 0 mm
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%QFSReaction
+% Beam= 12C
+% Target= 1H
+% Scattered= 1H
+% KnockedOut= 1H
+% Heavy= 11B
+% ExcitationEnergyBeam= 0.0 MeV
+% ExcitationEnergyHeavy= 0.0 MeV
+% MomentumSigma= 50.0 
+% ShootHeavy= 1
+% ShootLight= 1
+%  
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

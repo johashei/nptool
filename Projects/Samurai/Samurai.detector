@@ -1,0 +1,21 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Target
+ THICKNESS= 1 micrometer
+ RADIUS=	20 mm
+ MATERIAL= Vacuum
+ ANGLE= 0 deg
+ X= 0 mm
+ Y= 0 mm
+ Z= 1000 mm
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Samurai
+ POS= 2000 0 10000 mm
+ ANGLE= 45 deg
+ %
+ METHOD= 1				
+ % 0=RungeKutta, 1=EliaOmar
+ FIELDMAP=3T.table.bin 
+ %/local/pilotto/nptool/Projects/Samurai/3T.table.bin 		
+ % fieldmap path
+ STEPS_PER_METER= 1000
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
