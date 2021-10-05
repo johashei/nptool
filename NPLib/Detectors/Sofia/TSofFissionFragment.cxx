@@ -51,8 +51,10 @@ void TSofFissionFragment::Clear() {
   fFF_TOF.clear();
   fFF_Gamma.clear();
   fFF_Brho.clear();
+  fFF_DT.clear();
   
   fFF_Zsum = -1;
+  fFF_IntZsum = -1;
 }
 
 
