@@ -149,7 +149,7 @@ void NPS::SamuraiFieldPropagation::DoIt(const G4FastTrack& fastTrack,
   if(!m_Initialized){
     m_Map = new SamuraiFieldMap();
     //m_Map->LoadMap(m_Angle, "/local/pilotto/nptool/Projects/Samurai/" + m_FieldMap, 1);
-    m_Map->LoadMap(0, m_FieldMap, 1);
+    m_Map->LoadMap(0, m_FieldMap, 10);
     m_Initialized = true;
   }
 
@@ -237,11 +237,22 @@ void NPS::SamuraiFieldPropagation::EliaOmarPropagation (const G4FastTrack& fastT
     cout << setprecision(15) << "Theta " << newDir.getTheta() << endl;
     }*/
 
+  static int count = 0;
+  count++;
 
-  //G4ThreeVector B = VtoG4( m_Map->InterpolateB(G4toV(localPosition)) );
-  G4ThreeVector B (15.*tesla, 0., 0.);
+  G4ThreeVector B = VtoG4( m_Map->InterpolateB(G4toV(localPosition/mm)) );
+  //G4ThreeVector B (100.*tesla, 200.*tesla, 300.*tesla);
   //G4ThreeVector B = MagField(localPosition);
 
+
+  bool debugging = false;
+  if (debugging && localPosition.y() <= 400*mm && localPosition.y() >= -400*mm){
+    vector <double> dummy = m_Map->InterpolateB(G4toV(localPosition/mm));
+    for (auto x:dummy) cout << x << endl;
+    cout << "loc Pos " << Cart(localPosition/millimeter) << endl;
+    cout << count << " B = " << Cart(B/tesla) << "\t" << Prt(B/tesla) << endl;
+  }
+  
   double magB = B.mag() / tesla;
 
   
@@ -249,15 +260,12 @@ void NPS::SamuraiFieldPropagation::EliaOmarPropagation (const G4FastTrack& fastT
   G4ThreeVector newDir;
   G4ThreeVector newMomentum;  
 
-
   int N_print = -1;
   
-  static int count = 0;
-  count++;
   if(count == 1 && count < N_print){
       cout << "\nIteration " << count << endl;
     
-      if (magB == 0) cout << "\\\\\\\\\\\\\\\ZERO\\\\\\\\\\\\\\\\\\\\\ " << endl;
+      if (magB == 0) cout << "\\\\\\\\\\\\\\\ ZERO \\\\\\\\\\\\\\\\\\\\\ " << endl;
       cout<< "localPos = "<< Cart(localPosition/meter) << "\t" << Prt(localPosition/meter) << endl;
       cout<< "localDir = "<< Cart(localDir) << "\t" << Prt(localDir) << endl;
       cout<< "localMom = "<< Cart(localMomentum) << "\t" << Prt(localMomentum) << endl;
@@ -304,7 +312,7 @@ void NPS::SamuraiFieldPropagation::EliaOmarPropagation (const G4FastTrack& fastT
     if (count < N_print){
       cout << "\nIteration " << count << endl;
     
-      if (magB == 0) cout << "\\\\\\\\\\\\\\\ZERO\\\\\\\\\\\\\\\\\\\\\ " << endl;
+      if (magB == 0) cout << "\\\\\\\\\\\\\\\ ZERO \\\\\\\\\\\\\\\\\\\\\ " << endl;
       cout << "mass(kg) = " << mass << " " << endl;
       cout << "charge (C) = " << charge << endl;
       cout << "speed (m/s) = " << speed / (m/s)  << endl;
@@ -332,7 +340,7 @@ void NPS::SamuraiFieldPropagation::EliaOmarPropagation (const G4FastTrack& fastT
     if (count < N_print){
       cout << "\nIteration " << count << endl;
     
-      if (magB == 0) cout << "\\\\\\\\\\\\\\\ZERO\\\\\\\\\\\\\\\\\\\\\ " << endl;
+      if (magB == 0) cout << "\\\\\\\\\\\\\\\ ZERO \\\\\\\\\\\\\\\\\\\\\ " << endl;
       cout<< "Newpos = "<< Cart(newPosition/meter) << "\t" << Prt(newPosition/meter) << endl;
       cout<< "NewDir = "<< Cart(newDir) << "\t" << Prt(newDir) << endl;
       cout<< "NewMom = "<< Cart(newMomentum) << "\t" << Prt(newMomentum) << endl;
@@ -343,6 +351,7 @@ void NPS::SamuraiFieldPropagation::EliaOmarPropagation (const G4FastTrack& fastT
   //cout << count << endl;
 
   
+
   
   fastStep.ProposePrimaryTrackFinalPosition( newPosition );
   fastStep.SetPrimaryTrackFinalMomentum ( newMomentum );//FIXME
@@ -362,13 +371,13 @@ void NPS::SamuraiFieldPropagation::RungeKuttaPropagation (const G4FastTrack& fas
 /////////////////////////////////////////////////////////////////////////
 G4ThreeVector NPS::SamuraiFieldPropagation::MagField (G4ThreeVector pos){
   double x = pos.x()/meter;
+  double y = pos.y()/meter;
   double z = pos.z()/meter;
   double a = 5;
-  double c = 2;
-  double By = c * exp( -x*x / a ) * tesla;
+  double c = 1;
   double Bx = 0.1 * c * exp( -x*x / a ) * tesla;
-
-  double Bz = 0.2  * exp( -x*x / a ) * tesla;
+  double By = c * exp( -y*y / a ) * tesla;
+  double Bz = 0.3 * c * exp( -z*z / a ) * tesla;
 
   //double By = - c * z * tesla;
   //double By;

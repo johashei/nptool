@@ -68,8 +68,8 @@ namespace Samurai_NS{
   const double Yoke_Width = 6700*mm;
   const double Yoke_Depth = 3500*mm;
   const double Yoke_Height = 1880*mm; //(4640-880)/2
-  //const string Yoke_Material = "G4_Fe";
-  const string Yoke_Material = "G4_Galactic";
+  const string Yoke_Material = "G4_Fe";
+  //const string Yoke_Material = "G4_Galactic";
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
