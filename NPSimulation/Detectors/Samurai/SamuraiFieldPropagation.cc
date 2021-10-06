@@ -188,6 +188,9 @@ void NPS::SamuraiFieldPropagation::EliaOmarPropagation (const G4FastTrack& fastT
   G4ThreeVector localDir = fastTrack.GetPrimaryTrackLocalDirection();
   G4ThreeVector localPosition = fastTrack.GetPrimaryTrackLocalPosition();
   G4ThreeVector localMomentum = fastTrack.GetPrimaryTrackLocalMomentum();
+  
+  G4ThreeVector localVel = localDir * speed;
+
 
 
   //Calculate the curvature radius
@@ -234,37 +237,112 @@ void NPS::SamuraiFieldPropagation::EliaOmarPropagation (const G4FastTrack& fastT
     cout << setprecision(15) << "Theta " << newDir.getTheta() << endl;
     }*/
 
-  G4ThreeVector B = VtoG4( m_Map->InterpolateB(G4toV(localPosition)) );
+
+  //G4ThreeVector B = VtoG4( m_Map->InterpolateB(G4toV(localPosition)) );
+  G4ThreeVector B (15.*tesla, 0., 0.);
+  //G4ThreeVector B = MagField(localPosition);
+
   double magB = B.mag() / tesla;
-  double charge = PrimaryTrack->GetParticleDefinition()->GetPDGCharge() / coulomb;
-  double mass = PrimaryTrack->GetParticleDefinition()->GetPDGMass() / kg;
-
-  //units conversion factor MeV/c to kg*m/s (SI units)
-  double ConF = (1.e6 * e_SI ) / (c_light / (m/s)) ;
-  
-  G4ThreeVector rho = -(localMomentum*ConF).cross(B/tesla);
-  rho = rho / (charge*magB*magB) * meter;
-  G4ThreeVector omega = ( -(charge/mass) * B / tesla ) / s;
 
   
-  //Calculate new position
-  double angle = m_StepSize / rho.mag() * rad;
-  G4ThreeVector rho2 = rho;
-  rho2.rotate(angle, omega);
+  G4ThreeVector newPosition;
+  G4ThreeVector newDir;
+  G4ThreeVector newMomentum;  
 
-  //Setting new kinematic properties
-  G4ThreeVector newPosition = localPosition - rho + rho2;
-  G4ThreeVector newDir = localDir;
-  newDir.rotate(angle, omega);
-  G4ThreeVector newMomentum = localMomentum.mag() * newDir;
 
-  cout<< "Newpos = "<< Cart(newPosition) << endl;
-  cout<< "NewDir = "<< Cart(newDir) << endl;
-  cout<< "NewMom = "<< Cart(newMomentum) << endl;
-  cout<< "B = "<< Cart(B) << endl;
-  cout<< "omega = "<< Cart(omega) << endl;
-  cout<< "rho = "<< Cart(rho) << endl;
-  cout<< "ConF = "<< ConF << endl;
+  int N_print = -1;
+  
+  static int count = 0;
+  count++;
+  if(count == 1 && count < N_print){
+      cout << "\nIteration " << count << endl;
+    
+      if (magB == 0) cout << "\\\\\\\\\\\\\\\ZERO\\\\\\\\\\\\\\\\\\\\\ " << endl;
+      cout<< "localPos = "<< Cart(localPosition/meter) << "\t" << Prt(localPosition/meter) << endl;
+      cout<< "localDir = "<< Cart(localDir) << "\t" << Prt(localDir) << endl;
+      cout<< "localMom = "<< Cart(localMomentum) << "\t" << Prt(localMomentum) << endl;
+  }
+    
+  if(magB != 0){
+
+    //unit conversion factors 
+    double ConF_p = 1 / (joule * c_light / (m/s)) ; // MeV/c to kg*m/s (SI units)
+    double ConF_m = 1 / ( joule * (c_light/(m/s)) * (c_light/(m/s)) ) ; // MeV/c^2 to kg (SI units)
+  
+    double charge = PrimaryTrack->GetParticleDefinition()->GetPDGCharge() / coulomb;
+    double mass = PrimaryTrack->GetParticleDefinition()->GetPDGMass() * ConF_m;
+
+    //Calculate curvature radius and pulsation
+    G4ThreeVector rho = -(localMomentum * ConF_p).cross(B/tesla);
+    rho = rho / (charge * magB * magB) * m;//CLEANME
+    G4ThreeVector omega = ( -(charge/mass) * B / tesla ) * hertz;
+
+
+    double StepTime = m_StepSize / speed;
+    
+    double L_B = B.unit().dot(localDir) * m_StepSize;
+    double L_perp = sqrt(m_StepSize*m_StepSize - L_B*L_B);
+    
+    
+    //Calculate new position
+    double angle = L_perp / rho.mag() * rad;
+    // double angle = omega.mag() * StepTime;
+    G4ThreeVector rho2 = rho;
+    rho2.rotate(angle, omega);
+
+    //motion along the B direction
+    G4ThreeVector B_motion = L_B * B.unit();
+    //G4ThreeVector B_motion = B.unit().dot(localVel) * StepTime * B.unit();
+
+    //Setting new kinematic properties
+    newPosition = localPosition - rho + rho2 + B_motion;
+    newDir = localDir;
+    newDir.rotate(angle, omega);
+    newMomentum = localMomentum.mag() * newDir;
+
+    
+    if (count < N_print){
+      cout << "\nIteration " << count << endl;
+    
+      if (magB == 0) cout << "\\\\\\\\\\\\\\\ZERO\\\\\\\\\\\\\\\\\\\\\ " << endl;
+      cout << "mass(kg) = " << mass << " " << endl;
+      cout << "charge (C) = " << charge << endl;
+      cout << "speed (m/s) = " << speed / (m/s)  << endl;
+      cout << "StepTime (s) = " << StepTime / s << endl;
+      cout << "speed_B = " << B.unit().dot(localVel) / (m/s)  << endl;
+      cout<< "B_motion = "<< Cart(B_motion/meter) << "\t" << Prt(B_motion/meter) << endl;
+      cout<< "Newpos = "<< Cart(newPosition/meter) << "\t" << Prt(newPosition/meter) << endl;
+      cout<< "NewDir = "<< Cart(newDir) << "\t" << Prt(newDir) << endl;
+      cout<< "NewMom = "<< Cart(newMomentum) << "\t" << Prt(newMomentum) << endl;
+      cout<< "B = "<< Cart(B/tesla) << "\t" << Prt(B/tesla) << endl;
+      cout<< "omega = "<< Cart(omega/hertz) << "\t" << Prt(omega/hertz) << endl;
+      cout<< "rho = "<< Cart(rho/meter) << "\t" << Prt(rho/meter) << endl;
+      cout<< "rho2 = "<< Cart(rho2/meter) << "\t" << Prt(rho2/meter) << endl;
+      cout << "angle " << angle/rad << endl;
+      cout<< "ConF_p = "<< ConF_p << endl;
+      cout<< "ConF_m = "<< ConF_m << endl;
+    }
+  }
+  else{
+    //Setting new kinematic properties with no magnetic field
+    newPosition = localPosition + localDir * m_StepSize;
+    newDir = localDir;
+    newMomentum = localMomentum;
+    
+    if (count < N_print){
+      cout << "\nIteration " << count << endl;
+    
+      if (magB == 0) cout << "\\\\\\\\\\\\\\\ZERO\\\\\\\\\\\\\\\\\\\\\ " << endl;
+      cout<< "Newpos = "<< Cart(newPosition/meter) << "\t" << Prt(newPosition/meter) << endl;
+      cout<< "NewDir = "<< Cart(newDir) << "\t" << Prt(newDir) << endl;
+      cout<< "NewMom = "<< Cart(newMomentum) << "\t" << Prt(newMomentum) << endl;
+      cout<< "B = "<< Cart(B/tesla) << "\t" << Prt(B/tesla) << endl;
+    }
+  }
+
+  //cout << count << endl;
+
+  
   
   fastStep.ProposePrimaryTrackFinalPosition( newPosition );
   fastStep.SetPrimaryTrackFinalMomentum ( newMomentum );//FIXME
@@ -288,11 +366,15 @@ G4ThreeVector NPS::SamuraiFieldPropagation::MagField (G4ThreeVector pos){
   double a = 5;
   double c = 2;
   double By = c * exp( -x*x / a ) * tesla;
+  double Bx = 0.1 * c * exp( -x*x / a ) * tesla;
+
+  double Bz = 0.2  * exp( -x*x / a ) * tesla;
+
   //double By = - c * z * tesla;
   //double By;
   //if (z <= 0) By = -c * tesla;
   //else By = c * tesla;
-  G4ThreeVector B (0,By,0);
+  G4ThreeVector B (Bx,By,Bz);
   return B;
 }
   
