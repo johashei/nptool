@@ -43,9 +43,11 @@
 #include <bitset>
 
 auto ThetaCM_emmitted = new TH1F("ThetaCM_emmitted","ThetaCM_emmitted",180,0,180);
-auto ThetaCM_detected = new TH1F("ThetaCM_detected","ThetaCM_detected",180,0,180);
+auto ThetaCM_detected_MM = new TH1F("ThetaCM_detected_MM","ThetaCM_detected_MM",180,0,180);
+auto ThetaCM_detected_MG = new TH1F("ThetaCM_detected_MG","ThetaCM_detected_MG",180,0,180);
 auto ThetaLab_emmitted = new TH1F("ThetaLab_emmitted","ThetaLab_emmitted",180,0,180);
-auto ThetaLab_detected = new TH1F("ThetaLab_detected","ThetaLab_detected",180,0,180);
+auto ThetaLab_detected_MM = new TH1F("ThetaLab_detected_MM","ThetaLab_detected_MM",180,0,180);
+auto ThetaLab_detected_MG = new TH1F("ThetaLab_detected_MG","ThetaLab_detected_MG",180,0,180);
  
 class Analysis: public NPL::VAnalysis{
   public:
