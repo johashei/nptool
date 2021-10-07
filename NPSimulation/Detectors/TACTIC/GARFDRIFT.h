@@ -8,10 +8,19 @@
 #include "Garfield/AvalancheMC.hh"
 #include "Garfield/ViewSignal.hh"
 #include "Garfield/ViewMedium.hh"
-		 
+#include <random>
+
 double GARFDRIFT(double energy, double t_start, G4ThreeVector start, G4ThreeVector delta_pos, double R, int Pad_start, double ID,
 		 double ScoLength, double SegLength, double event, double raw_energy_check, string shape) {
 
+
+  //cout << ID << endl;
+
+  //Resolution
+  std::default_random_engine generator;
+  std::normal_distribution<double> distribution(1,0.1273885); //Energy res = 2.355*0.1273885/1*100. = 30 %
+  //
+  
   ofstream file;
   /*        
   file.open("garf_E_check.dat", std::ios::app);
@@ -20,7 +29,7 @@ double GARFDRIFT(double energy, double t_start, G4ThreeVector start, G4ThreeVect
   */
   double rWire;
   if(shape == "Cylindrical") rWire = 1.2;
-  if(shape == "Long_Chamber") rWire = -2.5;
+  if(shape == "Long_Chamber") rWire = -1.5; //CHANGE TO 1.5 (for 3cm drift region).
   const double rTube = 5.;
   const double lTube = 25.19;
   //TH1F *hist = new TH1F("","",1000,0,10000); // 10 ns bins
@@ -36,17 +45,21 @@ double GARFDRIFT(double energy, double t_start, G4ThreeVector start, G4ThreeVect
   //const double vWire = -603.6855; // ND run 4279 (2008), HV = 1241, R1 = 1, R2 = 2 
   const double vTube = 0.;
   double x_start, y_start, z_start;
+  double production_bias = 0.1;
   //double production_bias = 0.01;
-  double production_bias = 0.001;
+  //double production_bias = 0.001;
   double t_end, x_end, y_end, z_end;
   int status;
   double Pad_end;
   //double w_value = 35.; //for HeCO2 --guess
   //double w_value = 26.31; //for argon
-  double w_value = 41.1;// for He
+  //double w_value = 41.1;// for He
+  double w_value = 40.5925;  //He/CO2 97/03
   energy = energy*production_bias;
   //int electrons  = (int)(energy/w_value*production_bias);
-  int electrons = (int)(energy/w_value);
+  //double resolution = distribution(generator); 
+  double resolution = 1.;
+  int electrons = (int)(energy*resolution/w_value);
   double energy_excess = 0.;
   int sector;
   vector<double> pad_vec, time_vec; 
@@ -54,8 +67,8 @@ double GARFDRIFT(double energy, double t_start, G4ThreeVector start, G4ThreeVect
   Garfield::MediumMagboltz* gas = new Garfield::MediumMagboltz();
   Garfield::ViewMedium* mediumView = new Garfield::ViewMedium();
   Garfield::GeometrySimple* geo = new Garfield::GeometrySimple();
-  Garfield::SolidTube* tube = new Garfield::SolidTube(0, 0, 0, 0, rTube, lTube/2);
-  Garfield::SolidBox* box = new Garfield::SolidBox(0, 0, 0, 3.47, 5.0, lTube/2); 
+  Garfield::SolidTube* tube = new Garfield::SolidTube(0, 0, 0, rTube, lTube/2); //HAVE TO DELETE A ZERO HERE TO COMPILE
+  Garfield::SolidBox* box = new Garfield::SolidBox(0, 0, 0, 3.47/2., 5.0/2., lTube/2); //Added /2 for x and y dimensions (should be half widths). 
   Garfield::ComponentAnalyticField* cmp = new Garfield::ComponentAnalyticField();
   Garfield::Sensor* sensor = new Garfield::Sensor();
   Garfield::AvalancheMC* drift = new Garfield::AvalancheMC();
@@ -73,11 +86,12 @@ double GARFDRIFT(double energy, double t_start, G4ThreeVector start, G4ThreeVect
   if(R>rWire && electrons>0) {
     
       //gas->LoadGasFile("he_90_co2_10_200mbar.gas");
-      //gas->LoadGasFile("ar_90_ch4_10.gas"); //atomic fraction in this case (P10).
+    //gas->LoadGasFile("ar_90_ch4_10.gas"); //atomic fraction in this case (P10).
     //gas->LoadGasFile("he_90_co2_10_500mbar.gas"); //mass fraction in this case
       //gas->LoadGasFile("he_90_co2_10_1bar.gas");
-
-    gas->LoadGasFile("he_90_co2_10_100mbar.gas");
+    gas->LoadGasFile("he_97_co2_3_mass_1bar.gas");
+    
+    //gas->LoadGasFile("he_90_co2_10_100mbar.gas");
     //gas->LoadGasFile("he_90_co2_10_700mbar.gas");
     
     gas->Initialise(true);
@@ -91,8 +105,8 @@ double GARFDRIFT(double energy, double t_start, G4ThreeVector start, G4ThreeVect
       cmp->AddTube(rTube, vTube, 0, "a");
     }
     if(shape == "Long_Chamber") {
-      cmp->AddPlaneY(-2.5,-500.,"c"); //CHANGE CATHODE AND ANODE VOLTAGE HERE (FOR LONG CHAMBER)
-      cmp->AddPlaneY(2.5,0.,"a");
+      cmp->AddPlaneY(-1.5,-500.,"c"); //CHANGE CATHODE AND ANODE VOLTAGE HERE (FOR LONG CHAMBER)
+      cmp->AddPlaneY(1.5,0.,"a");
     }
     sensor->AddComponent(cmp);
     drift->SetSensor(sensor);
@@ -124,20 +138,20 @@ double GARFDRIFT(double energy, double t_start, G4ThreeVector start, G4ThreeVect
       if(shape=="Cylindrical") {
       
 	if(x_end > 0 and y_end > 0) {
-	  if(abs(x_end) > abs(y_end)) sector = 0;
-	  if(abs(x_end) < abs(y_end)) sector = 1;
-	}
-	if(x_end < 0 and y_end > 0) {
-	  if(abs(x_end) < abs(y_end)) sector = 2;
-	  if(abs(x_end) > abs(y_end)) sector = 3;
-	}
-	if(x_end < 0 and y_end < 0) {
-	  if(abs(x_end) > abs(y_end)) sector = 4;
-	  if(abs(x_end) < abs(y_end)) sector = 5;
+	  if(abs(x_end) < abs(y_end)) sector = 0;
+	  if(abs(x_end) > abs(y_end)) sector = 1;
 	}
 	if(x_end > 0 and y_end < 0) {
-	  if(abs(x_end) < abs(y_end)) sector = 6;
-	  if(abs(x_end) > abs(y_end)) sector = 7;
+	  if(abs(x_end) > abs(y_end)) sector = 2;
+	  if(abs(x_end) < abs(y_end)) sector = 3;
+	}
+	if(x_end < 0 and y_end < 0) {
+	  if(abs(x_end) < abs(y_end)) sector = 4;
+	  if(abs(x_end) > abs(y_end)) sector = 5;
+	}
+	if(x_end < 0 and y_end > 0) {
+	  if(abs(x_end) > abs(y_end)) sector = 6;
+	  if(abs(x_end) < abs(y_end)) sector = 7;
 	}
 	
       }

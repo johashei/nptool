@@ -37,7 +37,15 @@ using namespace std;
 #include "NPSVDetector.hh"
 #include "NPInputParser.h"
 
+#include "SamuraiFieldPropagation.hh"
+
+
 class Samurai : public NPS::VDetector{
+  /*
+    enum PropagationMethod{
+      RungeKutta,
+      EliaOmar
+    };*/
   ////////////////////////////////////////////////////
   /////// Default Constructor and Destructor /////////
   ////////////////////////////////////////////////////
@@ -49,10 +57,13 @@ class Samurai : public NPS::VDetector{
     /////// Specific Function of this Class ///////////
     ////////////////////////////////////////////////////
   public:
+  
     // Cartesian
-    void AddMagnet(G4ThreeVector POS, double Angle);
+    void AddMagnet(G4ThreeVector POS, double Angle, int method,
+		 string fieldmap, double n_steps);
     // Spherical
-    void AddMagnet(double R, double Theta, double Phi, double Angle);
+    void AddMagnet(double R, double Theta, double Phi, double Angle,
+		   int method, string fieldmap, double n_steps);
 
     G4LogicalVolume* BuildMagnet();//FIXME
     G4LogicalVolume* BuildYoke();//FIXME
@@ -116,11 +127,7 @@ class Samurai : public NPS::VDetector{
     double m_Angle;
 
     // Propagation Parameters
-    enum PropagationMethod{
-    RungeKutta,
-    EliaOmar
-    };
-    PropagationMethod m_Method;
+    NPS::PropagationMethod m_Method;
     double m_StepSize;
     string m_FieldMapFile;
     

@@ -55,13 +55,8 @@ NPS::SamuraiFieldPropagation::SamuraiFieldPropagation(G4String modelName, G4Regi
     //m_B = G4ThreeVector( 0. , 1., 0. ) * tesla;
 
     m_Map = NULL;
+    m_Initialized = false;
 
-    /*
-    string s1 =  "/local/pilotto/nptool/Projects/SAMURAI/field_map/3T.table.bin";
-    string s2 = "./field_map/3T.table";
-    string s3 = "/Projects/SAMURAI/field_map/3T.table.bin";*/
-    //m_Map = new SamuraiFieldMap();
-    //m_Map->LoadMap(30*deg, "3T.table.bin", 1);
 
     //ABLA = new G4AblaInterface();
   }
@@ -149,7 +144,37 @@ G4bool NPS::SamuraiFieldPropagation::ModelTrigger(const G4FastTrack& fastTrack) 
 void NPS::SamuraiFieldPropagation::DoIt(const G4FastTrack& fastTrack,
     G4FastStep&        fastStep) {
   //std::cout << "DOIT" << std::endl;
+  //std::cout << "FIELDMAP " << m_FieldMap << std::endl;
+  
+  if(!m_Initialized){
+    m_Map = new SamuraiFieldMap();
+    //m_Map->LoadMap(m_Angle, "/local/pilotto/nptool/Projects/Samurai/" + m_FieldMap, 1);
+    m_Map->LoadMap(0, m_FieldMap, 10);
+    m_Initialized = true;
+  }
 
+  switch (m_Meth){
+    case RungeKutta:
+      RungeKuttaPropagation(fastTrack, fastStep);
+      break;
+    case EliaOmar:
+      EliaOmarPropagation(fastTrack, fastStep);
+      break;
+    default:
+      cout << endl;
+      cout << "//////WARNING///////" << endl;
+      cout << "In SamuraiFieldPropagation.cc:\n";
+      cout << "Propagation method not defined - THIS MESSAGE SHOULD NEVER APPEAR\n";
+      cout << endl;
+
+  }
+  
+  return;
+}
+
+/////////////////////////////////////////////////////////////////////////
+void NPS::SamuraiFieldPropagation::EliaOmarPropagation (const G4FastTrack& fastTrack,
+							G4FastStep& fastStep){
   // Get the track info
   const G4Track* PrimaryTrack = fastTrack.GetPrimaryTrack();
   
@@ -163,14 +188,16 @@ void NPS::SamuraiFieldPropagation::DoIt(const G4FastTrack& fastTrack,
   G4ThreeVector localDir = fastTrack.GetPrimaryTrackLocalDirection();
   G4ThreeVector localPosition = fastTrack.GetPrimaryTrackLocalPosition();
   G4ThreeVector localMomentum = fastTrack.GetPrimaryTrackLocalMomentum();
-  G4ThreeVector newDir;
-  G4ThreeVector newPosition;
-  G4ThreeVector newMomentum;
+  
+  G4ThreeVector localVel = localDir * speed;
+
 
 
   //Calculate the curvature radius
-
-  G4ThreeVector m_B = MagField(localPosition);
+  
+  //G4ThreeVector m_B = MagField(localPosition);
+  /*
+  G4ThreeVector m_B = VtoG4( m_Map->InterpolateB(G4toV(localPosition)) );
   double B = m_B.mag() / tesla;
   double q = PrimaryTrack->GetParticleDefinition()->GetPDGCharge() / coulomb;
 
@@ -198,7 +225,6 @@ void NPS::SamuraiFieldPropagation::DoIt(const G4FastTrack& fastTrack,
   fastStep.ProposePrimaryTrackFinalTime( time );
 
 
-
   static int count = 0;
   count++;
   
@@ -209,23 +235,155 @@ void NPS::SamuraiFieldPropagation::DoIt(const G4FastTrack& fastTrack,
     cout << setprecision(15) << "X " << newPosition.getX() << endl;
     cout << setprecision(15) << "Y " << newPosition.getY() << endl;
     cout << setprecision(15) << "Theta " << newDir.getTheta() << endl;
+    }*/
+
+  static int count = 0;
+  count++;
+
+  G4ThreeVector B = VtoG4( m_Map->InterpolateB(G4toV(localPosition/mm)) );
+  //G4ThreeVector B (100.*tesla, 200.*tesla, 300.*tesla);
+  //G4ThreeVector B = MagField(localPosition);
+
+
+  bool debugging = false;
+  if (debugging && localPosition.y() <= 400*mm && localPosition.y() >= -400*mm){
+    vector <double> dummy = m_Map->InterpolateB(G4toV(localPosition/mm));
+    for (auto x:dummy) cout << x << endl;
+    cout << "loc Pos " << Cart(localPosition/millimeter) << endl;
+    cout << count << " B = " << Cart(B/tesla) << "\t" << Prt(B/tesla) << endl;
+  }
+  
+  double magB = B.mag() / tesla;
+
+  
+  G4ThreeVector newPosition;
+  G4ThreeVector newDir;
+  G4ThreeVector newMomentum;  
+
+  int N_print = -1;
+  
+  if(count == 1 && count < N_print){
+      cout << "\nIteration " << count << endl;
+    
+      if (magB == 0) cout << "\\\\\\\\\\\\\\\ ZERO \\\\\\\\\\\\\\\\\\\\\ " << endl;
+      cout<< "localPos = "<< Cart(localPosition/meter) << "\t" << Prt(localPosition/meter) << endl;
+      cout<< "localDir = "<< Cart(localDir) << "\t" << Prt(localDir) << endl;
+      cout<< "localMom = "<< Cart(localMomentum) << "\t" << Prt(localMomentum) << endl;
+  }
+    
+  if(magB != 0){
+
+    //unit conversion factors 
+    double ConF_p = 1 / (joule * c_light / (m/s)) ; // MeV/c to kg*m/s (SI units)
+    double ConF_m = 1 / ( joule * (c_light/(m/s)) * (c_light/(m/s)) ) ; // MeV/c^2 to kg (SI units)
+  
+    double charge = PrimaryTrack->GetParticleDefinition()->GetPDGCharge() / coulomb;
+    double mass = PrimaryTrack->GetParticleDefinition()->GetPDGMass() * ConF_m;
+
+    //Calculate curvature radius and pulsation
+    G4ThreeVector rho = -(localMomentum * ConF_p).cross(B/tesla);
+    rho = rho / (charge * magB * magB) * m;//CLEANME
+    G4ThreeVector omega = ( -(charge/mass) * B / tesla ) * hertz;
+
+
+    double StepTime = m_StepSize / speed;
+    
+    double L_B = B.unit().dot(localDir) * m_StepSize;
+    double L_perp = sqrt(m_StepSize*m_StepSize - L_B*L_B);
+    
+    
+    //Calculate new position
+    double angle = L_perp / rho.mag() * rad;
+    // double angle = omega.mag() * StepTime;
+    G4ThreeVector rho2 = rho;
+    rho2.rotate(angle, omega);
+
+    //motion along the B direction
+    G4ThreeVector B_motion = L_B * B.unit();
+    //G4ThreeVector B_motion = B.unit().dot(localVel) * StepTime * B.unit();
+
+    //Setting new kinematic properties
+    newPosition = localPosition - rho + rho2 + B_motion;
+    newDir = localDir;
+    newDir.rotate(angle, omega);
+    newMomentum = localMomentum.mag() * newDir;
+
+    
+    if (count < N_print){
+      cout << "\nIteration " << count << endl;
+    
+      if (magB == 0) cout << "\\\\\\\\\\\\\\\ ZERO \\\\\\\\\\\\\\\\\\\\\ " << endl;
+      cout << "mass(kg) = " << mass << " " << endl;
+      cout << "charge (C) = " << charge << endl;
+      cout << "speed (m/s) = " << speed / (m/s)  << endl;
+      cout << "StepTime (s) = " << StepTime / s << endl;
+      cout << "speed_B = " << B.unit().dot(localVel) / (m/s)  << endl;
+      cout<< "B_motion = "<< Cart(B_motion/meter) << "\t" << Prt(B_motion/meter) << endl;
+      cout<< "Newpos = "<< Cart(newPosition/meter) << "\t" << Prt(newPosition/meter) << endl;
+      cout<< "NewDir = "<< Cart(newDir) << "\t" << Prt(newDir) << endl;
+      cout<< "NewMom = "<< Cart(newMomentum) << "\t" << Prt(newMomentum) << endl;
+      cout<< "B = "<< Cart(B/tesla) << "\t" << Prt(B/tesla) << endl;
+      cout<< "omega = "<< Cart(omega/hertz) << "\t" << Prt(omega/hertz) << endl;
+      cout<< "rho = "<< Cart(rho/meter) << "\t" << Prt(rho/meter) << endl;
+      cout<< "rho2 = "<< Cart(rho2/meter) << "\t" << Prt(rho2/meter) << endl;
+      cout << "angle " << angle/rad << endl;
+      cout<< "ConF_p = "<< ConF_p << endl;
+      cout<< "ConF_m = "<< ConF_m << endl;
+    }
+  }
+  else{
+    //Setting new kinematic properties with no magnetic field
+    newPosition = localPosition + localDir * m_StepSize;
+    newDir = localDir;
+    newMomentum = localMomentum;
+    
+    if (count < N_print){
+      cout << "\nIteration " << count << endl;
+    
+      if (magB == 0) cout << "\\\\\\\\\\\\\\\ ZERO \\\\\\\\\\\\\\\\\\\\\ " << endl;
+      cout<< "Newpos = "<< Cart(newPosition/meter) << "\t" << Prt(newPosition/meter) << endl;
+      cout<< "NewDir = "<< Cart(newDir) << "\t" << Prt(newDir) << endl;
+      cout<< "NewMom = "<< Cart(newMomentum) << "\t" << Prt(newMomentum) << endl;
+      cout<< "B = "<< Cart(B/tesla) << "\t" << Prt(B/tesla) << endl;
+    }
   }
 
+  //cout << count << endl;
+
+  
+
+  
+  fastStep.ProposePrimaryTrackFinalPosition( newPosition );
+  fastStep.SetPrimaryTrackFinalMomentum ( newMomentum );//FIXME
+  fastStep.ProposePrimaryTrackFinalTime( time );
+
+  return;
+  
+}
+
+/////////////////////////////////////////////////////////////////////////
+void NPS::SamuraiFieldPropagation::RungeKuttaPropagation (const G4FastTrack& fastTrack,
+							  G4FastStep& fastStep){
+  cout << "Method not defined yet\n";
   return;
 }
-  
+
 /////////////////////////////////////////////////////////////////////////
 G4ThreeVector NPS::SamuraiFieldPropagation::MagField (G4ThreeVector pos){
   double x = pos.x()/meter;
+  double y = pos.y()/meter;
   double z = pos.z()/meter;
   double a = 5;
-  double c = 2;
-  double By = c * exp( -x*x / a ) * tesla;
+  double c = 1;
+  double Bx = 0.1 * c * exp( -x*x / a ) * tesla;
+  double By = c * exp( -y*y / a ) * tesla;
+  double Bz = 0.3 * c * exp( -z*z / a ) * tesla;
+
   //double By = - c * z * tesla;
   //double By;
   //if (z <= 0) By = -c * tesla;
   //else By = c * tesla;
-  G4ThreeVector B (0,By,0);
+  G4ThreeVector B (Bx,By,Bz);
   return B;
 }
   

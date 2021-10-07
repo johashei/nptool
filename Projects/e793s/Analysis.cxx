@@ -45,11 +45,11 @@ void Analysis::Init() {
  ///////////////////////////////////////////////////////////////////////////////  
   
 //  if(NPOptionManager::getInstance()->HasDefinition("simulation")){
-//    cout << " == == == == SIMULATION == == == ==" << endl;
-//    isSim=true;
+    cout << " == == == == SIMULATION == == == ==" << endl;
+    isSim=true;
 //  } else {
-    cout << " == == == == EXPERIMENT == == == ==" << endl;
-    isSim=false;
+//    cout << " == == == == EXPERIMENT == == == ==" << endl;
+//    isSim=false;
 //  }
 
   agata_zShift=51*mm;
@@ -214,10 +214,9 @@ void Analysis::TreatEvent(){
     if(isSim){
       if(TelescopeNumber==5){
         //ThetaCM_detected->Fill(Initial->GetThetaCM(0));
-        ThetaCM_detected->Fill(ReactionConditions->GetThetaCM());
+        ThetaCM_detected_MM->Fill(ReactionConditions->GetThetaCM());
 	//ThetaLab_detected->Fill(Initial->GetThetaLab_WorldFrame(0));
-        ThetaLab_detected->Fill(ReactionConditions->GetTheta(0));
-
+        ThetaLab_detected_MM->Fill(ReactionConditions->GetTheta(0));
         /*
         TVector3 labDir = Initial->GetParticleDirection(0);
         TVector3 comDir = labDir;
@@ -346,6 +345,15 @@ void Analysis::TreatEvent(){
   ////////////////////////////////////////////////////////////////////////////
   unsigned int sizeMG = MG->DSSD_E.size();
   for(unsigned int countMugast = 0; countMugast<sizeMG; countMugast++){
+
+
+    if(isSim){
+//      if(TelescopeNumber==5){
+        ThetaCM_detected_MG->Fill(ReactionConditions->GetThetaCM());
+        ThetaLab_detected_MG->Fill(ReactionConditions->GetTheta(0));
+//      }
+    }
+
     // Part 1 : Impact Angle
     ThetaMGSurface = 0;
     ThetaNormalTarget = 0;
@@ -511,54 +519,87 @@ void Analysis::End(){
 
     TObjArray HistList(0);
 
-    auto Efficiency_CM = new TH1F(*ThetaCM_detected);
-    //auto Efficiency_CM = new TH1F(*ThetaCM_emmitted);
-    Efficiency_CM->SetName("Efficiency_CM");
-    Efficiency_CM->SetTitle("Efficiency_CM");
-    Efficiency_CM->Sumw2();
-    auto Efficiency_Lab = new TH1F(*ThetaLab_detected);
-    //auto Efficiency_Lab = new TH1F(*ThetaLab_emmitted);
-    Efficiency_Lab->SetName("Efficiency_Lab");
-    Efficiency_Lab->SetTitle("Efficiency_Lab");
-    Efficiency_Lab->Sumw2();
+
+    // MUST 2 DETECTOR #5
+    auto Efficiency_CM_MM = new TH1F(*ThetaCM_detected_MM);
+    Efficiency_CM_MM->SetName("Efficiency_CM_MM");
+    Efficiency_CM_MM->SetTitle("Efficiency_CM_MM");
+    Efficiency_CM_MM->Sumw2();
+    auto Efficiency_Lab_MM = new TH1F(*ThetaLab_detected_MM);
+    Efficiency_Lab_MM->SetName("Efficiency_Lab_MM");
+    Efficiency_Lab_MM->SetTitle("Efficiency_Lab_MM");
+    Efficiency_Lab_MM->Sumw2();
      
-    auto SolidAngle_CM = new TH1F(*ThetaCM_detected);
-    //auto SolidAngle_CM = new TH1F(*ThetaCM_emmitted);
-    SolidAngle_CM->SetName("SolidAngle_CM");
-    SolidAngle_CM->SetTitle("SolidAngle_CM");
-    auto SolidAngle_Lab = new TH1F(*ThetaLab_detected);
-    //auto SolidAngle_Lab = new TH1F(*ThetaLab_emmitted);
-    SolidAngle_Lab->SetName("SolidAngle_Lab");
-    SolidAngle_Lab->SetTitle("SolidAngle_Lab");
+    auto SolidAngle_CM_MM = new TH1F(*ThetaCM_detected_MM);
+    SolidAngle_CM_MM->SetName("SolidAngle_CM_MM");
+    SolidAngle_CM_MM->SetTitle("SolidAngle_CM_MM");
+    auto SolidAngle_Lab_MM = new TH1F(*ThetaLab_detected_MM);
+    SolidAngle_Lab_MM->SetName("SolidAngle_Lab_MM");
+    SolidAngle_Lab_MM->SetTitle("SolidAngle_Lab_MM");
 
-    Efficiency_CM->Divide(ThetaCM_emmitted);
-    //Efficiency_CM->Divide(ThetaCM_detected);
-    Efficiency_Lab->Divide(ThetaLab_emmitted);
-    //Efficiency_Lab->Divide(ThetaLab_detected);
+    Efficiency_CM_MM->Divide(ThetaCM_emmitted);
+    Efficiency_Lab_MM->Divide(ThetaLab_emmitted);
 
-    double dt = 180./Efficiency_Lab->GetNbinsX();
-    cout << "Angular infinitesimal = " << dt << "deg " << endl;
-    auto Cline = new TF1("Cline",Form("1./(2*%f*sin(x*%f/180.)*%f*%f/180.)",M_PI,M_PI,dt,M_PI),0,180);
+    double dt_MM = 180./Efficiency_Lab_MM->GetNbinsX();
+    cout << "Angular infinitesimal (MM) = " << dt_MM << "deg " << endl;
+    auto Cline_MM = new TF1("Cline_MM",Form("1./(2*%f*sin(x*%f/180.)*%f*%f/180.)",M_PI,M_PI,dt_MM,M_PI),0,180);
 
-    SolidAngle_CM->Divide(ThetaCM_emmitted);
-    //SolidAngle_CM->Divide(ThetaCM_detected);
-    SolidAngle_CM->Divide(Cline,1);
-    SolidAngle_Lab->Divide(ThetaLab_emmitted);
-    //SolidAngle_Lab->Divide(ThetaLab_detected);
-    SolidAngle_Lab->Divide(Cline,1);
+    SolidAngle_CM_MM->Divide(ThetaCM_emmitted);
+    SolidAngle_CM_MM->Divide(Cline_MM,1);
+    SolidAngle_Lab_MM->Divide(ThetaLab_emmitted);
+    SolidAngle_Lab_MM->Divide(Cline_MM,1);
 
     HistList.Add(ThetaCM_emmitted);
     HistList.Add(ThetaLab_emmitted);
-    HistList.Add(ThetaCM_detected);
-    HistList.Add(ThetaLab_detected);
-    HistList.Add(Efficiency_CM);
-    HistList.Add(Efficiency_Lab);
-    HistList.Add(SolidAngle_CM);
-    HistList.Add(SolidAngle_Lab);
-    HistList.Add(Cline);
+    HistList.Add(ThetaCM_detected_MM);
+    HistList.Add(ThetaLab_detected_MM);
+    HistList.Add(Efficiency_CM_MM);
+    HistList.Add(Efficiency_Lab_MM);
+    HistList.Add(SolidAngle_CM_MM);
+    HistList.Add(SolidAngle_Lab_MM);
+    HistList.Add(Cline_MM);
+
+
+    // MUGAST
+    auto Efficiency_CM_MG = new TH1F(*ThetaCM_detected_MG);
+    Efficiency_CM_MG->SetName("Efficiency_CM_MG");
+    Efficiency_CM_MG->SetTitle("Efficiency_CM_MG");
+    Efficiency_CM_MG->Sumw2();
+    auto Efficiency_Lab_MG = new TH1F(*ThetaLab_detected_MG);
+    Efficiency_Lab_MG->SetName("Efficiency_Lab_MG");
+    Efficiency_Lab_MG->SetTitle("Efficiency_Lab_MG");
+    Efficiency_Lab_MG->Sumw2();
+     
+    auto SolidAngle_CM_MG = new TH1F(*ThetaCM_detected_MG);
+    SolidAngle_CM_MG->SetName("SolidAngle_CM_MG");
+    SolidAngle_CM_MG->SetTitle("SolidAngle_CM_MG");
+    auto SolidAngle_Lab_MG = new TH1F(*ThetaLab_detected_MG);
+    SolidAngle_Lab_MG->SetName("SolidAngle_Lab_MG");
+    SolidAngle_Lab_MG->SetTitle("SolidAngle_Lab_MG");
+
+    Efficiency_CM_MG->Divide(ThetaCM_emmitted);
+    Efficiency_Lab_MG->Divide(ThetaLab_emmitted);
+
+    double dt_MG = 180./Efficiency_Lab_MG->GetNbinsX();
+    cout << "Angular infinitesimal (MG) = " << dt_MG << "deg " << endl;
+    auto Cline_MG = new TF1("Cline_MG",Form("1./(2*%f*sin(x*%f/180.)*%f*%f/180.)",M_PI,M_PI,dt_MG,M_PI),0,180);
+
+    SolidAngle_CM_MG->Divide(ThetaCM_emmitted);
+    SolidAngle_CM_MG->Divide(Cline_MG,1);
+    SolidAngle_Lab_MG->Divide(ThetaLab_emmitted);
+    SolidAngle_Lab_MG->Divide(Cline_MG,1);
+
+    HistList.Add(ThetaCM_detected_MG);
+    HistList.Add(ThetaLab_detected_MG);
+    HistList.Add(Efficiency_CM_MG);
+    HistList.Add(Efficiency_Lab_MG);
+    HistList.Add(SolidAngle_CM_MG);
+    HistList.Add(SolidAngle_Lab_MG);
+    HistList.Add(Cline_MG);
+
 
     //HistoFile->Write();
-    auto HistoFile = new TFile("SolidAngle_HistoFile.root","RECREATE");
+    auto HistoFile = new TFile("SolidAngle_HistFile_06Oct.root","RECREATE");
     HistList.Write();
     HistoFile->Close();
   }
