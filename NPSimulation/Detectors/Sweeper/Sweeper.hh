@@ -134,6 +134,8 @@ class Sweeper : public NPS::VDetector{
     vector<double> m_DistToDC1;
     vector<double> m_DistToDC2;
     vector<double> m_DistToIC;
+    vector<double> m_DistToHodo;
+  
    
     // Visualisation Attributes
     G4VisAttributes* m_VisCRDC;
