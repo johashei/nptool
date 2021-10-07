@@ -20,7 +20,7 @@
  *****************************************************************************/
 #include <iostream>
 #include "TSiResData.h"
-
+using namespace std;
 
 ClassImp(TSiResData)
 

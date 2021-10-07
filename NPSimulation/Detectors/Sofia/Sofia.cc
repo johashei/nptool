@@ -88,7 +88,7 @@ namespace Sofia_NS{
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 // Sofia Specific Method
 Sofia::Sofia(){
-  m_Event = new TSofiaData() ;
+  m_Event = new TSofTofWData() ;
   m_TofScorer = 0;
   m_TwinScorer = 0;
   m_PlasticTof = 0;
@@ -378,9 +378,9 @@ void Sofia::InitializeRootOutput(){
   RootOutput *pAnalysis = RootOutput::getInstance();
   TTree *pTree = pAnalysis->GetTree();
   if(!pTree->FindBranch("Sofia")){
-    pTree->Branch("Sofia", "TSofiaData", &m_Event) ;
+    pTree->Branch("SofTofW", "TSofTofWData", &m_Event) ;
   }
-  pTree->SetBranchAddress("Sofia", &m_Event) ;
+  pTree->SetBranchAddress("SofTofW", &m_Event) ;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -401,47 +401,15 @@ void Sofia::ReadSensitive(const G4Event* ){
       double Time = RandGauss::shoot(Scorer->GetTime(i),Sofia_NS::ResoTime);
       int DetectorNbr = level[0];
       int PlasticNbr = level[1]-1;
-      m_Event->SetDetectorNbr(DetectorNbr);
+      //m_Event->SetDetectorNbr(DetectorNbr);
       m_Event->SetPlasticNbr(PlasticNbr);
       m_Event->SetEnergy(Energy);
-      m_Event->SetTime(Time); 
+      m_Event->SetCoarseTime(Time); 
     }
   }
   Scorer->clear();
 
-  ///////////
-  // Twin scorer
-  CalorimeterScorers::PS_Calorimeter* TwinScorer= (CalorimeterScorers::PS_Calorimeter*) m_TwinScorer->GetPrimitive(0);
-  double Esum1=0;
-  double Esum2=0;
-  double Esum3=0;
-  double Esum4=0;
-  unsigned int twin_size = TwinScorer->GetMult(); 
-  for(unsigned int i = 0 ; i < twin_size ; i++){
-    vector<unsigned int> level = TwinScorer->GetLevel(i); 
-    double Energy = RandGauss::shoot(TwinScorer->GetEnergy(i),Sofia_NS::TwinResoEnergy);
-    if(Energy>Sofia_NS::EnergyThreshold){
-      double Time = RandGauss::shoot(TwinScorer->GetTime(i),Sofia_NS::ResoTime);
-      int SectorNbr = level[0];
-      int PlasticNbr = level[1];
-      if(SectorNbr==1) Esum1 += Energy;
-      if(SectorNbr==2) Esum2 += Energy;
-      if(SectorNbr==3) Esum3 += Energy;
-      if(SectorNbr==4) Esum4 += Energy;
-      m_Event->SetTwinSectorNbr(SectorNbr);
-      m_Event->SetTwinAnodeNbr(PlasticNbr);
-      m_Event->SetTwinAnodeEnergy(Energy);
-      m_Event->SetTwinAnodeTime(Time); 
-    }
   }
-  m_Event->SetTwinEsum1(Esum1);
-  m_Event->SetTwinEsum2(Esum1);
-  m_Event->SetTwinEsum3(Esum1);
-  m_Event->SetTwinEsum4(Esum1);
-
-  TwinScorer->clear();
-
-}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 ////////////////////////////////////////////////////////////////   
@@ -449,7 +417,6 @@ void Sofia::InitializeScorers() {
   // This check is necessary in case the geometry is reloaded
   bool already_exist = false; 
   m_TofScorer = CheckScorer("TofScorer",already_exist) ;
-  m_TwinScorer = CheckScorer("TwinScorer",already_exist) ;
 
   if(already_exist) 
     return ;

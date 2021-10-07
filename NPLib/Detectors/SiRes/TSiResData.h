@@ -24,20 +24,19 @@
 #include <iostream>
 
 #include "TObject.h"
-using namespace std ;
 
 
 class TSiResData : public TObject {
  private:
    // Energy 
-   vector<int>     fSiRes_E_Number;
-   vector<int>     fSiRes_E_Channel;
-   vector<double>  fSiRes_E_Energy;   
+   std::vector<int>     fSiRes_E_Number;
+   std::vector<int>     fSiRes_E_Channel;
+   std::vector<double>  fSiRes_E_Energy;   
    // Time
-   vector<int>     fSiRes_T_Number;
-   vector<double>  fSiRes_T_Time;
-   vector<int>     fSiRes_E_EnergyBack_Number;
-   vector<double>  fSiRes_E_EnergyBack;
+   std::vector<int>     fSiRes_T_Number;
+   std::vector<double>  fSiRes_T_Time;
+   std::vector<int>     fSiRes_E_EnergyBack_Number;
+   std::vector<double>  fSiRes_E_EnergyBack;
    
  public:
    TSiResData();

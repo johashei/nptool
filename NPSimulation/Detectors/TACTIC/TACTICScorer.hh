@@ -9,7 +9,7 @@ using namespace std;
 using namespace CLHEP;
 
 namespace TACTICScorer {
-
+  
   class Gas_Scorer : public G4VPrimitiveScorer{
     
   public:
@@ -21,7 +21,8 @@ namespace TACTICScorer {
 	       G4double p0 = 0,
 	       G4double p1 = 0,
 	       G4double p2 = 0,
-	       G4double p3 = 0
+	       G4double p3 = 0,
+	       string Shape = "default"
 	       );
     
     ~Gas_Scorer();
@@ -36,6 +37,7 @@ namespace TACTICScorer {
     void DrawAll();
     void PrintAll();
     
+    
   private: // Geometry of the detector                                                                                                                      
     G4double m_ScorerLength;
     G4int    m_NumberOfSegments;
@@ -46,6 +48,10 @@ namespace TACTICScorer {
     G4double m_p1;
     G4double m_p2;
     G4double m_p3;
+    string m_Shape; 
+    ofstream file;
+
+    //    G4double excess;
     
   private: // inherited from G4VPrimitiveScorer                                                                                                             
     G4int HCID;

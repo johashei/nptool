@@ -25,6 +25,9 @@
 #define BeamReaction_h
 
 #include "G4VFastSimulationModel.hh"
+#include "G4Abla.hh"
+#include "G4AblaInterface.hh"
+#include "G4Fragment.hh"
 #include "PhysicsList.hh"
 #include "NPReaction.h"
 #include "NPQFS.h"
@@ -54,6 +57,7 @@ namespace NPS{
       NPL::QFS m_QFS;
       string m_BeamName;
       int m_ReactionType;
+      G4AblaInterface* ABLA;
 
       bool   m_active;// is the process active
       bool   m_shoot;

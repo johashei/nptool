@@ -118,6 +118,7 @@ namespace NPL {
     double			   GetGamma()			      const	{return fGamma;}
     double			   GetVelocity()	   	   const	{return fVelocity;}
     TLorentzVector GetEnergyImpulsion()    const {return fEnergyImpulsion;}
+    TVector3       GetImpulsion()          const {return fEnergyImpulsion.Vect();}
     double         GetExcitationEnergy()   const {return fExcitationEnergy;}
     void				SetName(const char* name)	{fName = name;}
     void				SetZ(int charge)					{fCharge = charge;}
@@ -126,8 +127,8 @@ namespace NPL {
     void				SetSpinParity(const char* spinparity)	{fSpinParity = spinparity;}
     void				SetSpin(double spin) {fSpin = spin;}
     void				SetParity(const char* parity)	{fParity = parity;}
-    void          SetLifeTime(double LifeTime) {fLifeTime=LifeTime;}
-    void          SetLifeTimeError(double LifeTimeErr) {fLifeTimeErr=LifeTimeErr;}
+    void        SetLifeTime(double LifeTime) {fLifeTime=LifeTime;}
+    void        SetLifeTimeError(double LifeTimeErr) {fLifeTimeErr=LifeTimeErr;}
     void				SetKineticEnergy(double energy)	{fKineticEnergy = energy; EnergyToBrho(); EnergyToTof(); EnergyToBeta(); BetaToGamma();BetaToVelocity();}
     void				SetBrho(double brho) {fBrho = brho; BrhoToEnergy(); BrhoToTof(); EnergyToBeta(); BetaToGamma();BetaToVelocity();}
     void				SetTimeOfFlight(double tof) {fTimeOfFlight = tof; TofToEnergy(); TofToBrho(); EnergyToBeta(); BetaToGamma();BetaToVelocity();}
@@ -138,6 +139,7 @@ namespace NPL {
       EnergyToBeta();
       BetaToGamma();
       BetaToVelocity();}
+
     void SetExcitationEnergy(double Ex) {fExcitationEnergy=Ex;}
     void				SetBeta(double beta)					{fBeta = beta; BetaToGamma(); BetaToEnergy(); EnergyToTof(); EnergyToBrho();BetaToVelocity();}
       double GetEnergyCM(double EnergyLab, double ThetaLab, double PhiLab, double relativisticboost);

@@ -1,7 +1,7 @@
 #ifndef ROOTINPUT_HH
 #define ROOTINPUT_HH
 /*****************************************************************************
- * Copyright (C) 2009-2016    this file is part of the NPTool Project        *
+ * Copyright (C) 2009-2021   this file is part of the NPTool Project         *
  *                                                                           *
  * For the licensing terms see $NPTOOL/Licence/NPTool_Licence                *
  * For the list of contributors see $NPTOOL/Licence/Contributors             *
@@ -11,7 +11,7 @@
  * Original Author: N. de Sereville  contact address: deserevi@ipno.in2p3.fr *
  *                                                                           *
  * Creation Date  : 21/07/09                                                 *
- * Last update    :                                                          *
+ * Last update    : 10/05/21 Add support for Split tree input (A. Matta)     *
  *---------------------------------------------------------------------------*
  * Decription: This class is a singleton class which deals with the ROOT     *
  *             input file and tree both for NPSimulation and NPAnalysis.     *
@@ -25,12 +25,14 @@
 
 // C++ header
 #include <string>
-
+#include <map>
+#include <vector>
 // ROOT headers
 #include "TFile.h"
 #include "TChain.h"
 
-
+// NPL
+#include "NPInputParser.h"
 
 class RootInput
 {
@@ -71,17 +73,22 @@ public:
    TFile*   GetFile()   {return pRootFile;}
    void     SetChain(TChain* c)  {pRootChain = c;} 
 
-   // Add a Friend chain to the input chain
-   void     AddFriendChain(std::string RunToAdd);
+   // Read Input file
+   void     ReadOldStyleInputFile(NPL::InputParser& parser);
+   void     ReadInputFile(NPL::InputParser& parser);
+   void     ReadTreeFile(std::string path);
 
 private:
    TChain   *pRootChain;
    TFile    *pRootFile;
+   std::string pTreeName;// the main tree name
+   std::vector<std::string> pTreePath;// the main tree path
+   // Used for user made tree friends
+   std::multimap<std::string,std::vector<std::string>> pFriendsPath;// list of Friends tree indexed by their tree name
+   // Used for .tree file input
+   std::map<unsigned int, std::vector<std::string>> pFriendsTreePath;// list of Friends tree path indexed by number
    int NumberOfFriend;
   
 };
-
-// A convenient function related to Root Input, coded Here so it can be called within ROOT CINT
-TChain* MakeFriendTrees(std::string,std::string);
 
 #endif // ROOTINPUT_HH

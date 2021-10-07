@@ -1,6 +1,13 @@
 #ifndef DECODED_H
 #define DECODED_H
 
+#define __OLDFRAME__ 0 // To read data before conversion
+#if __OLDFRAME__
+  #define __EVENTTYPE__ frame_t // To read data before conversion
+#else
+  #define __EVENTTYPE__ newframe_t // To read data after conversion
+#endif
+
 // General C++ librairies
 #include <iostream>
 #include <fstream>
@@ -48,7 +55,8 @@ class DecodeD
     bool verbose;
     Datatype datatype;
     long int cursor;
-    newframe_t event;
+    __EVENTTYPE__ event;
+    //newframe_t event;
 
     // For root data
     TTree* t1;
@@ -58,6 +66,7 @@ class DecodeD
     vector<int> FaceType;
     vector<int> DetNbr;
     vector<int> StripNbr;
+    //vector<int> Energy;
     vector<double> Energy;
 
   public:
@@ -76,7 +85,8 @@ class DecodeD
     int getStripNbr(const int i);
     double getEnergy(const int i);
     long int getTime();
-    newframe_t* getEvent();
+    __EVENTTYPE__* getEvent();
+    //newframe_t* getEvent();
     // One may add a few getters here and deprecate getEvent to avoid requiring the class user to know the newframe_t struct
     
     void decodeEvent();

@@ -3,14 +3,17 @@
 #include "TACTICScorer.hh"
 #include "G4UnitsTable.hh"
 #include "G4RunManager.hh"
+#include "TACTIC.hh"
 
 #ifdef USE_Garfield
 #include "GARFDRIFT.h"
 #endif
 
+double excess;
+
 using namespace TACTICScorer;
 
-Gas_Scorer::Gas_Scorer(G4String name,G4int Level,G4double ScorerLength,G4int NumberOfSegments, G4int depth, G4double p0, G4double p1, G4double p2, G4double p3) //what do level and depth do?       
+Gas_Scorer::Gas_Scorer(G4String name,G4int Level,G4double ScorerLength,G4int NumberOfSegments, G4int depth, G4double p0, G4double p1, G4double p2, G4double p3,string Shape) //what do level and depth do?       
 :G4VPrimitiveScorer(name, depth),HCID(-1){
   m_ScorerLength = ScorerLength;
   m_NumberOfSegments = NumberOfSegments;
@@ -23,15 +26,16 @@ Gas_Scorer::Gas_Scorer(G4String name,G4int Level,G4double ScorerLength,G4int Num
   m_p1 = p1;
   m_p2 = p2;
   m_p3 = p3;
+  m_Shape = Shape;
 }
 
 Gas_Scorer::~Gas_Scorer(){}
 
 G4bool Gas_Scorer::ProcessHits(G4Step* aStep, G4TouchableHistory*){
 
-  G4double* Infos = new G4double[14];
+  G4double* Infos = new G4double[16];
   m_Position  = aStep->GetPreStepPoint()->GetPosition();
-
+  
   Infos[0] = G4RunManager::GetRunManager()->GetCurrentEvent()->GetEventID();
 
   Infos[1] = aStep->GetTrack()->GetTrackID();
@@ -45,14 +49,40 @@ G4bool Gas_Scorer::ProcessHits(G4Step* aStep, G4TouchableHistory*){
   m_SegmentNumber = (int)((m_Position.z() + m_ScorerLength / 2.) / m_SegmentLength ) + 1; //Pad number 
   Infos[6] = m_SegmentNumber;
   Infos[7] = m_Position.z();
-  Infos[8] = pow(pow(m_Position.x(),2) + pow(m_Position.y(),2),0.5); //R
+  if(m_Shape == "Cylindrical") Infos[8] = pow(pow(m_Position.x(),2) + pow(m_Position.y(),2),0.5); //R
+  if(m_Shape == "Long_Chamber") Infos[8] = m_Position.y();
   Infos[9] = aStep->GetTrack()->GetVertexPosition()[2];
   Infos[10] = aStep->GetTrack()->GetVertexKineticEnergy();
   G4ThreeVector p_vec = aStep->GetTrack()->GetVertexMomentumDirection();
   Infos[11] = acos(p_vec[2]/pow(pow(p_vec[0],2)+pow(p_vec[1],2)+pow(p_vec[2],2),0.5))/deg; //angle relative to z axis (theta);   
   Infos[12] = aStep->GetTrack()->GetTrackLength();
-  Infos[13] = m_p0 + m_p1*Infos[8] + m_p2*Infos[8]*Infos[8] + m_p3*Infos[8]*Infos[8]*Infos[8];
+
+  int sector = -1;
+  if(Infos[8]/cm > 1.2) { 
+    if(m_Position.x() > 0 and m_Position.y() > 0) {
+      if(abs(m_Position.x()) < abs(m_Position.y())) sector = 0;
+      if(abs(m_Position.x()) > abs(m_Position.y())) sector = 1;
+    }
+    if(m_Position.x() > 0 and m_Position.y() < 0) {
+      if(abs(m_Position.x()) > abs(m_Position.y())) sector = 2;
+      if(abs(m_Position.x()) < abs(m_Position.y())) sector = 3;
+    }
+    if(m_Position.x() < 0 and m_Position.y() < 0) {
+      if(abs(m_Position.x()) < abs(m_Position.y())) sector = 4;
+      if(abs(m_Position.x()) > abs(m_Position.y())) sector = 5;
+    }
+    if(m_Position.x() < 0 and m_Position.y() > 0) {
+      if(abs(m_Position.x()) > abs(m_Position.y())) sector = 6;
+      if(abs(m_Position.x()) < abs(m_Position.y())) sector = 7;
+    }
+  }
   
+  Infos[13] = sector;
+
+  Infos[14] = m_p0 + m_p1*Infos[8] + m_p2*Infos[8]*Infos[8] + m_p3*Infos[8]*Infos[8]*Infos[8];
+  
+  G4ThreeVector delta_Position = aStep->GetDeltaPosition();
+
   m_DetectorNumber = aStep->GetPreStepPoint()->GetTouchableHandle()->GetCopyNumber(m_Level);
   m_Index = m_DetectorNumber * 1e3 + m_SegmentNumber * 1e6;
   
@@ -60,12 +90,8 @@ G4bool Gas_Scorer::ProcessHits(G4Step* aStep, G4TouchableHistory*){
     aStep->GetTrack()->SetTrackStatus(fStopAndKill);
     return 0;
   }
-            
-#ifdef USE_Garfield
-  G4ThreeVector delta_Position = aStep->GetDeltaPosition();
 
-  GARFDRIFT(Infos[5]/eV, Infos[3], m_Position/cm, delta_Position/cm, Infos[8]/cm, Infos[6], Infos[2], m_ScorerLength/cm, m_SegmentLength/cm, Infos[0], Infos[2], Infos[11]);
-#endif
+  if(aStep->IsFirstStepInVolume() == true) excess = 0.;
   
   map<G4int, G4double**>::iterator it;
   it= EvtMap->GetMap()->find(m_Index);
@@ -74,7 +100,19 @@ G4bool Gas_Scorer::ProcessHits(G4Step* aStep, G4TouchableHistory*){
     if(Infos[1]==dummy[1]) Infos[5]+=dummy[5]; //accumulate ionisation energy deposit to get total accross pad
     delete dummy;
   }
-  
+    
+#ifdef USE_Garfield
+
+  Infos[15] = GARFDRIFT(((aStep->GetTotalEnergyDeposit() - aStep->GetNonIonizingEnergyDeposit())/eV+excess), Infos[3], m_Position/cm, delta_Position/cm, Infos[8]/cm, Infos[6], Infos[2], m_ScorerLength/cm, m_SegmentLength/cm, Infos[0], (aStep->GetTotalEnergyDeposit() - aStep->GetNonIonizingEnergyDeposit())/eV, m_Shape)*eV;
+  /*  
+  file.open("excess_test.dat",std::ios::app);
+  file << Infos[6] << "\t"  << "\t" <<  aStep->IsFirstStepInVolume() << "\t" << excess  << "\t" << Infos[15]/eV << "\t" << (int)((((aStep->GetTotalEnergyDeposit() - aStep->GetNonIonizingEnergyDeposit())/eV+excess) / 41.1)*0.01) << "\t" <<  Infos[8] <<  endl;
+  file.close();
+  */
+  excess = Infos[15]/eV;
+ 
+#endif
+
   EvtMap->set(m_Index, Infos);
 
   return TRUE;

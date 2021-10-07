@@ -25,12 +25,12 @@ int main(int argc, char *argv[])
   // configure option manager
 //   NPOptionManager::getInstance()->Destroy();
 
-  //string arg = "-D ./ComptonCAM.detector -C calibrations.txt -GH -E ./10He.reaction --circular";
-  string arg = "-D ./ComptonCAM.detector -C calibrations.txt -GH -E ./10He.reaction";
+  string arg = "-D ./ComptonCAM.detector -C calibrations.txt -GH -E ./10He.reaction --circular";
+  //string arg = "-D ./ComptonCAM.detector -C calibrations.txt -GH -E ./10He.reaction";
   NPOptionManager::getInstance(arg);  
 
   // open ROOT output file
-  RootOutput::getInstance("OnlineTree.root", "OnlineTree");
+  RootOutput::getInstance("OnlineTree_DSSSD.root", "OnlineTree");
   // get tree pointer
   auto m_OutputTree = RootOutput::getInstance()->GetTree();
 
@@ -93,7 +93,8 @@ int main(int argc, char *argv[])
     m_NPDetectorManager->ClearEventData();
 
     // Fill data
-    //cout << "event size " << DD->getEventSize() << endl;      
+    //cout << "event size " << DD->getEventSize() << endl;
+    //ccamData -> Dump();
     for (int i = 0; i < DD->getEventSize(); i++) {
       //cout << i << endl;
       if (DD -> getFaceType(i) == 0) { // front

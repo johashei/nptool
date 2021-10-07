@@ -57,26 +57,29 @@ class TComptonTelescopePhysics : public TObject, public NPL::VDetector
       //   DSSD
       int EventMultiplicity;
       vector<int> EventType;
+      vector<int> TowerNumber;//
       vector<int> DetectorNumber;
       vector<int>    Strip_Front;
       vector<int>    Strip_Back;
-      vector<double> Strip_E;
+      vector<double> Strip_E;//
       vector<double> Strip_T;
       vector<double> Front_Energy;
       vector<double> Back_Energy;
+      vector<double> Half_Energy;//
       vector<double> Front_Time;
       vector<double> Back_Time;
+      vector<bool> Same_FBTime;//
       // Calorimeter
       vector<double> Calor_E;
       vector<double> Calor_T;
       vector<int>    CalorPosX;
       vector<int>    CalorPosY;
       multimap<int, vector<int>> CalorData;
+      vector<double> Calor_E_calib;
       // Both
       vector<int> deltaT;
       long int resetCount;
    
-
  
    public:  // inherited from VDetector
       // Read stream at ConfigFile to pick-up parameters of detector (Position,...) using Token
@@ -141,7 +144,8 @@ class TComptonTelescopePhysics : public TObject, public NPL::VDetector
       void ReadAnalysisConfig();
          
       // Add a Detector
-      void AddDetectorDSSSD(TVector3 C_X0_Y0, TVector3 C_X31_Y0, TVector3 C_X0_Y31, TVector3 C_X31_Y31, double size_dsssd, int nb_strip);
+//      void AddDetectorDSSSD(TVector3 C_X0_Y0, TVector3 C_X31_Y0, TVector3 C_X0_Y31, TVector3 C_X31_Y31, double size_dsssd, int nb_strip);
+      void AddComptonTelescope(TVector3 C_X0_Y0, TVector3 C_X31_Y0, TVector3 C_X0_Y31, TVector3 C_X31_Y31, double size_dsssd, int nb_strip);
       void AddComptonTelescope(double Z);
       
       // Give and external TComptonTelescopeData object to TComptonTelescopePhysics
@@ -170,6 +174,8 @@ class TComptonTelescopePhysics : public TObject, public NPL::VDetector
       double GetHalfEnergy(const int i) {return Half_Energy[i];};
       double GetFrontTime(const int i) {return Front_Time[i];};
       double GetBackTime(const int i) {return Back_Time[i];};
+
+      double GetCalorEnergy(const int i) {return Calor_E_calib[i];};
       
       TVector3 GetPositionOfInteractionDSSSD(const int i) const;   
       TVector3 GetDetectorNormal(const int i) const;
@@ -227,16 +233,16 @@ class TComptonTelescopePhysics : public TObject, public NPL::VDetector
      ClassDef(TComptonTelescopePhysics,1)  // ComptonTelescopePhysics structure
 
 
-    public: // Add data for DSSSD analysis
+    public: // Add data for analysis
       // counters
       Int_t m_nCounterEvt; //!
       Int_t m_nCounterHit; //!
       Int_t m_CounterEvt[50]; //!
       Int_t m_CounterHit[50]; //!
       // physical events
-      vector<int> TowerNumber;
-      vector<double> Half_Energy;
-      vector<bool> Same_FBTime; 
+      //vector<int> TowerNumber;
+      //vector<double> Half_Energy;
+      //vector<bool> Same_FBTime; 
 
 };
 
@@ -256,6 +262,8 @@ namespace ComptonTelescope_LOCAL
    double fCalorimeter_E(double charge, int detectorNumber);
    double fCalorimeter_Q(const TComptonTelescopeData* Data, const int i);
    double fCalorimeter_ped(const TComptonTelescopeData* Data, const int i);
+   double fCalorimeter_coeffAlign(const TComptonTelescopeData* Data, const int i);
+   double fCalorimeter_calibE(double sumADC, int detectorNumber);
 }
 
 

@@ -55,6 +55,9 @@
 // CLHEP header
 #include "CLHEP/Random/RandGauss.h"
 
+// CAD Mesh
+#include "CADMesh.hh"
+
 using namespace std;
 using namespace CLHEP;
 
@@ -85,6 +88,8 @@ namespace Strasse_NS{
   double Inner_PCB_DownstreamWidth=2*mm;
   double Inner_PCB_MidWidth=2*mm;
   double Inner_PCB_Thickness=3*mm;
+  double Inner_PCB_Ledge = 1*mm ;
+  double Inner_PCB_Step = 2*mm ;
   double Inner_Wafer_TransverseStrips= 128;
   double Inner_Wafer_LongitudinalStrips= 128;
 
@@ -108,6 +113,8 @@ namespace Strasse_NS{
   double Outer_PCB_DownstreamWidth=2*mm;
   double Outer_PCB_MidWidth=2*mm;
   double Outer_PCB_Thickness=3*mm;
+  double Outer_PCB_Ledge = 1*mm ;
+  double Outer_PCB_Step = 2*mm ;
   double Outer_Wafer_TransverseStrips= 128;
   double Outer_Wafer_LongitudinalStrips= 128;
 
@@ -140,8 +147,14 @@ Strasse::Strasse(){
   m_InnerDetector=0;
   m_OuterDetector=0;
   m_Chamber=0;
-  m_Frame=0;
+  m_Blades=0;
+  m_Stars=0;
+  m_Base=0;
   m_Electronic=0;
+  found_chamber = false;
+  found_stars = false;
+  found_blades = false;
+  found_base = false;
   // Dark Grey
   SiliconVisAtt = new G4VisAttributes(G4Colour(0.5, 0.5, 0.5)) ;
   // Green
@@ -149,11 +162,13 @@ Strasse::Strasse(){
   // Gold Yellow
   PADVisAtt = new G4VisAttributes(G4Colour(0.5, 0.5, 0.2)) ;
   // Light Grey
-  FrameVisAtt = new G4VisAttributes(G4Colour(0.5, 0.5, 0.5)) ;
+  StarsVisAtt = new G4VisAttributes(G4Colour(0.5, 0.5, 0.5)) ;
   // Space transparent
   ChamberVisAtt = new G4VisAttributes(G4Colour(0.3, 0.4, 0.5,0.2)) ;
   // Light Blue
-  GuardRingVisAtt = new G4VisAttributes(G4Colour(0, 0, 0,0.5)) ;
+  GuardRingVisAtt = new G4VisAttributes(G4Colour(0.85, 0.85, 0.85,0.5)) ;
+  // Light Blue
+  BladeVisAtt = new G4VisAttributes(G4Colour(1, 0.65, 0.0,0.7)) ;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -199,12 +214,15 @@ G4LogicalVolume* Strasse::BuildInnerDetector(){
       +Inner_PCB_PortWidth;
 
     vector<G4TwoVector> PCBCrossSection;
-    double l1 = Inner_PCB_Thickness*0.5/tan(Inner_PCB_BevelAngle);
+    
+    double l1;
+    if(Inner_PCB_BevelAngle==90) l1 = 0;
+    else l1 = Inner_PCB_Thickness*0.5/tan(Inner_PCB_BevelAngle);
 
     PCBCrossSection.push_back(G4TwoVector(Inner_PCB_Width*0.5-l1,-Inner_PCB_Thickness*0.5));
     PCBCrossSection.push_back(G4TwoVector(Inner_PCB_Width*0.5,Inner_PCB_Thickness*0.5));
-    PCBCrossSection.push_back(G4TwoVector(-Inner_PCB_Width*0.5-l1,Inner_PCB_Thickness*0.5));
-    PCBCrossSection.push_back(G4TwoVector(-Inner_PCB_Width*0.5,-Inner_PCB_Thickness*0.5));
+    PCBCrossSection.push_back(G4TwoVector(-Inner_PCB_Width*0.5,Inner_PCB_Thickness*0.5));
+    PCBCrossSection.push_back(G4TwoVector(-Inner_PCB_Width*0.5+l1,-Inner_PCB_Thickness*0.5));
 
     G4ExtrudedSolid* PCBFull =
       new G4ExtrudedSolid("PCBFull",
@@ -219,7 +237,7 @@ G4LogicalVolume* Strasse::BuildInnerDetector(){
     m_InnerDetector->SetVisAttributes(G4VisAttributes::Invisible);
 
     ///////////////////////////////////////////////////////////////////////////
-    // Build the external PCB layer
+    // Build the external PCB frame
     // Calculate the hole shift within the PCB
     double Width_Shift= -0.5*Inner_PCB_Width + 0.5*Inner_Wafer_Width // Flush to border
       +Inner_PCB_PortWidth; // add the port side shift
@@ -256,33 +274,23 @@ G4LogicalVolume* Strasse::BuildInnerDetector(){
         false,0);
 
     ///////////////////////////////////////////////////////////////////////////
-    // Build the internal PCB layer
-    double offsetPCB2 = -0.3;
-    double Inner_PCB2_Thickness = Inner_PCB_Thickness + offsetPCB2;
+    // Build the PCB Ledge on wich Silicon is glued
+    double Inner_PCB2_Thickness = Inner_PCB_Step; //Step size 
+    double offsetPCB2 = Inner_PCB2_Thickness - Inner_PCB_Thickness; 
 
-    double Inner_PCB2_StarboardWidth = Inner_PCB_StarboardWidth;
-    double Inner_PCB2_PortWidth = Inner_PCB_PortWidth; 
-    double Inner_PCB2_UpstreamWidth = Inner_PCB_UpstreamWidth; 
     double Inner_PCB2_MidWidth = Inner_PCB_MidWidth; 
-    double Inner_PCB2_DownstreamWidth =Inner_PCB_DownstreamWidth; 
 
     // perpendicular to beam axis
-    double Inner_PCB2_Width= Inner_Wafer_Width-Inner_PCB_PortWidth*2
-      +Inner_PCB2_StarboardWidth
-      +Inner_PCB2_PortWidth;
+    double Inner_PCB2_Width= Inner_Wafer_Width;
 
     vector<G4TwoVector> PCB2CrossSection;
-    double l21 = Inner_PCB2_Thickness*0.5/tan(Inner_PCB_BevelAngle);
-
-    PCB2CrossSection.push_back(G4TwoVector(Inner_PCB2_Width*0.5-l21,-Inner_PCB2_Thickness*0.5));
+    PCB2CrossSection.push_back(G4TwoVector(Inner_PCB2_Width*0.5,-Inner_PCB2_Thickness*0.5));
     PCB2CrossSection.push_back(G4TwoVector(Inner_PCB2_Width*0.5,Inner_PCB2_Thickness*0.5));
-    PCB2CrossSection.push_back(G4TwoVector(-Inner_PCB2_Width*0.5-l21,Inner_PCB2_Thickness*0.5));
+    PCB2CrossSection.push_back(G4TwoVector(-Inner_PCB2_Width*0.5,Inner_PCB2_Thickness*0.5));
     PCB2CrossSection.push_back(G4TwoVector(-Inner_PCB2_Width*0.5,-Inner_PCB2_Thickness*0.5));
 
-    double Inner_PCB2_Length= 2*(Inner_Wafer_Length-Inner_PCB_PortWidth)
-      +Inner_PCB2_UpstreamWidth
-      +Inner_PCB2_MidWidth
-      +Inner_PCB2_DownstreamWidth;
+    //double Inner_PCB2_Length= Inner_PCB_Length;
+    double Inner_PCB2_Length= 2*Inner_Wafer_Length + Inner_PCB_MidWidth;
 
     G4ExtrudedSolid* PCB2Full =
       new G4ExtrudedSolid("PCB2Full",
@@ -291,35 +299,53 @@ G4LogicalVolume* Strasse::BuildInnerDetector(){
           G4TwoVector(0,0),1,// offset, scale
           G4TwoVector(0,0),1);// offset, scale
 
-    G4ThreeVector HoleShift21 = G4ThreeVector(0, 0, 0);
+
+    double Length_Shift21 = -0.5*Inner_PCB_Length  // Flush to border
+                           + 0.5*(Inner_PCB_UpstreamWidth+Inner_PCB_DownstreamWidth) // add Upstream side shift
+                           + 0.5*Inner_Wafer_Length;
+    double Length_Shift22 = Length_Shift21 // overlap detector 1
+      + Inner_Wafer_Length // at opposing edge
+      + Inner_PCB_MidWidth; // after mid width
+
+    G4ThreeVector HoleShift21 = G4ThreeVector(0, 0, Length_Shift21);
+    G4ThreeVector HoleShift22 = G4ThreeVector(0, 0, Length_Shift22);
+
     G4Box* HoleShape2 = new G4Box("HoleShape2",
-        Inner_PCB2_Width*0.5 -1,
+        Inner_Wafer_Width*0.5 - Inner_PCB_Ledge,
         Inner_PCB2_Thickness,
-        Inner_PCB2_Length*0.5-1);
+        Inner_Wafer_Length*0.5 - Inner_PCB_Ledge);
 
     // Substracting the hole Shape from the Stock PCB
     G4SubtractionSolid* PCB2_1 = new G4SubtractionSolid("PCB2_1", PCB2Full, HoleShape2,
         new G4RotationMatrix,HoleShift21);
-      
+    G4SubtractionSolid* PCB2_2 = new G4SubtractionSolid("PCB2_2", PCB2_1, HoleShape2,
+        new G4RotationMatrix,HoleShift22);
+
     G4ThreeVector HoleCenterBar = G4ThreeVector(0, 0, 0);
     G4Box* HoleShapeCenterBar = new G4Box("HoleShapeCenterBar",
-        Inner_PCB2_Width*0.5,
+        Inner_PCB2_Width*0.5+0.1,
         Inner_PCB2_Thickness,
-      0.5*mm);
+        Inner_PCB2_MidWidth*0.5);
 
-    // Substracting the hole Shape from the Stock PCB
-    G4SubtractionSolid* PCB2_2 = new G4SubtractionSolid("PCB2_2", PCB2_1, HoleShapeCenterBar,
+    G4SubtractionSolid* PCB2_3 = new G4SubtractionSolid("PCB2_3", PCB2_2, HoleShapeCenterBar,
         new G4RotationMatrix,HoleCenterBar);
 
     // Sub Volume PCB
     G4LogicalVolume* logicPCB2 =
-      new G4LogicalVolume(PCB2_2,m_MaterialPCB,"logicPCB2", 0, 0, 0);
-    logicPCB2->SetVisAttributes(PCBVisAtt);
+      new G4LogicalVolume(PCB2_3,m_MaterialPCB,"logicPCB2", 0, 0, 0);
+    logicPCB2->SetVisAttributes(PADVisAtt);
+
+    // Offset along beam axis between PCB middle and (2*Wafer+MiddleBar) volume center
+    double CentralZOffset = - Inner_PCB_Length*0.5
+                    + Inner_PCB_UpstreamWidth
+                    + Inner_Wafer_Length
+                    + Inner_PCB_MidWidth*0.5;
 
     new G4PVPlacement(new G4RotationMatrix(0,0,0),
-        G4ThreeVector(0,-0.5*offsetPCB2,0),
+        G4ThreeVector(0,-0.5*offsetPCB2,CentralZOffset),
         logicPCB2,"Strasse_Inner_PCB2",m_InnerDetector,
         false,0);
+
 
     /////////////////////////////////////////////////////////////////////////// 
     // Build the Wafer
@@ -337,19 +363,24 @@ G4LogicalVolume* Strasse::BuildInnerDetector(){
       new G4LogicalVolume(WaferShape,m_MaterialSilicon,"logicWafer2", 0, 0, 0);
     logicWafer2->SetVisAttributes(GuardRingVisAtt);
 
+    // Shift along Y to flush the wafer to the pcb ledge on one side
+    G4ThreeVector WaferShiftY = G4ThreeVector(0,-0.5*Inner_Wafer_Thickness
+          -Inner_Wafer_AlThickness
+          -0.5*Inner_PCB_Thickness
+          -offsetPCB2-0.05,0);
+
+    //G4ThreeVector WaferShiftZ = G4ThreeVector(0,0,-Inner_PCB_UpstreamWidth-Inner_PCB_MidWidth);
+    G4ThreeVector WaferShiftZ = G4ThreeVector(0,0,CentralZOffset);
+
     new G4PVPlacement(new G4RotationMatrix(0,0,0),
-        G4ThreeVector(0,0.5*Inner_Wafer_Thickness
-          +Inner_Wafer_AlThickness
-          -0.5*Inner_PCB_Thickness,0) // flush the wafer to the pcb on one side
-        +HoleShift1, // Shift wafer in the hole 
+        WaferShiftY+WaferShiftZ // Shift along Y
+        +HoleShift21, // Shift along Z to putwafer in the 1st hole 
         logicWafer1,"Strasse_Inner_Wafer1",m_InnerDetector,
         false,0);
 
     new G4PVPlacement(new G4RotationMatrix(0,0,0),
-        G4ThreeVector(0,0.5*Inner_Wafer_Thickness
-          +Inner_Wafer_AlThickness
-          -0.5*Inner_PCB_Thickness,0)// flush the wafer to the pcb on one side
-        +HoleShift2, // Shift wafer in the hole 
+        WaferShiftY+WaferShiftZ// Shift along Y
+        +HoleShift22, // Shift along Z to put wafer in the 2nd hole 
         logicWafer2,"Strasse_Inner_Wafer2",m_InnerDetector,
         false,0);
 
@@ -378,7 +409,9 @@ G4LogicalVolume* Strasse::BuildInnerDetector(){
         G4ThreeVector(0,0,-0.5*(Inner_Wafer_PADExternal-Inner_Wafer_PADInternal)), // assymetric pading for bounding
         logicActiveWafer2,"Strasse_Inner_ActiveWafer2",logicWafer2,
         false,2);
+
   }
+
   return m_InnerDetector;
 }
 
@@ -399,12 +432,14 @@ G4LogicalVolume* Strasse::BuildOuterDetector(){
 
 
     vector<G4TwoVector> PCBCrossSection;
-    double l1 = Outer_PCB_Thickness*0.5/tan(Outer_PCB_BevelAngle);
+    double l1;
+    if(Outer_PCB_BevelAngle==90) l1 = 0;
+    else l1 = Outer_PCB_Thickness*0.5/tan(Outer_PCB_BevelAngle);
 
     PCBCrossSection.push_back(G4TwoVector(Outer_PCB_Width*0.5-l1,-Outer_PCB_Thickness*0.5));
     PCBCrossSection.push_back(G4TwoVector(Outer_PCB_Width*0.5,Outer_PCB_Thickness*0.5));
-    PCBCrossSection.push_back(G4TwoVector(-Outer_PCB_Width*0.5-l1,Outer_PCB_Thickness*0.5));
-    PCBCrossSection.push_back(G4TwoVector(-Outer_PCB_Width*0.5,-Outer_PCB_Thickness*0.5));
+    PCBCrossSection.push_back(G4TwoVector(-Outer_PCB_Width*0.5,Outer_PCB_Thickness*0.5));
+    PCBCrossSection.push_back(G4TwoVector(-Outer_PCB_Width*0.5+l1,-Outer_PCB_Thickness*0.5));
 
     G4ExtrudedSolid* PCBFull =
       new G4ExtrudedSolid("PCBFull",
@@ -456,32 +491,22 @@ G4LogicalVolume* Strasse::BuildOuterDetector(){
 
     ///////////////////////////////////////////////////////////////////////////
     // Build the internal PCB layer
-    double offsetPCB2 = -0.3;
-    double Outer_PCB2_Thickness = Outer_PCB_Thickness + offsetPCB2;
+    double Outer_PCB2_Thickness = Outer_PCB_Step;//Step size
+    double offsetPCB2 = Outer_PCB2_Thickness - Outer_PCB_Thickness;
 
-    double Outer_PCB2_StarboardWidth = Outer_PCB_StarboardWidth;
-    double Outer_PCB2_PortWidth = Outer_PCB_PortWidth; 
-    double Outer_PCB2_UpstreamWidth =Outer_PCB_UpstreamWidth; 
-    double Outer_PCB2_MidWidth =Outer_PCB_MidWidth; 
-    double Outer_PCB2_DownstreamWidth =Outer_PCB_DownstreamWidth; 
+    double Outer_PCB2_MidWidth = Outer_PCB_MidWidth; 
 
     // perpendicular to beam axis
-    double Outer_PCB2_Width= Outer_Wafer_Width-Outer_PCB_PortWidth*2
-      +Outer_PCB2_StarboardWidth
-      +Outer_PCB2_PortWidth;
+    double Outer_PCB2_Width= Outer_Wafer_Width;
 
     vector<G4TwoVector> PCB2CrossSection;
-    double l21 = Outer_PCB2_Thickness*0.5/tan(Outer_PCB_BevelAngle);
-
-    PCB2CrossSection.push_back(G4TwoVector(Outer_PCB2_Width*0.5-l21,-Outer_PCB2_Thickness*0.5));
+    PCB2CrossSection.push_back(G4TwoVector(Outer_PCB2_Width*0.5,-Outer_PCB2_Thickness*0.5));
     PCB2CrossSection.push_back(G4TwoVector(Outer_PCB2_Width*0.5,Outer_PCB2_Thickness*0.5));
-    PCB2CrossSection.push_back(G4TwoVector(-Outer_PCB2_Width*0.5-l21,Outer_PCB2_Thickness*0.5));
+    PCB2CrossSection.push_back(G4TwoVector(-Outer_PCB2_Width*0.5,Outer_PCB2_Thickness*0.5));
     PCB2CrossSection.push_back(G4TwoVector(-Outer_PCB2_Width*0.5,-Outer_PCB2_Thickness*0.5));
 
-    double Outer_PCB2_Length= 2*(Outer_Wafer_Length-Outer_PCB_PortWidth)
-      +Outer_PCB2_UpstreamWidth
-      +Outer_PCB2_MidWidth
-      +Outer_PCB2_DownstreamWidth;
+
+    double Outer_PCB2_Length= 2*Outer_Wafer_Length + Outer_PCB_MidWidth;
 
     G4ExtrudedSolid* PCB2Full =
       new G4ExtrudedSolid("PCB2Full",
@@ -490,37 +515,55 @@ G4LogicalVolume* Strasse::BuildOuterDetector(){
           G4TwoVector(0,0),1,// offset, scale
           G4TwoVector(0,0),1);// offset, scale
 
-    G4ThreeVector HoleShift21 = G4ThreeVector(0, 0, 0);
+
+    double Length_Shift21 = -0.5*Outer_PCB_Length  // Flush to border
+                           + 0.5*(Outer_PCB_UpstreamWidth+Outer_PCB_DownstreamWidth) 
+                           + 0.5*Outer_Wafer_Length;
+    double Length_Shift22 = Length_Shift21 // overlap detector 1
+      + Outer_Wafer_Length // at opposing edge
+      + Outer_PCB_MidWidth; // after mid width
+
+    G4ThreeVector HoleShift21 = G4ThreeVector(0, 0, Length_Shift21);
+    G4ThreeVector HoleShift22 = G4ThreeVector(0, 0, Length_Shift22);
+
     G4Box* HoleShape2 = new G4Box("HoleShape2",
-        Outer_PCB2_Width*0.5 -1,
+        Outer_Wafer_Width*0.5 - Outer_PCB_Ledge,
         Outer_PCB2_Thickness,
-        Outer_PCB2_Length*0.5-1);
+        Outer_Wafer_Length*0.5 - Outer_PCB_Ledge);
 
     // Substracting the hole Shape from the Stock PCB
     G4SubtractionSolid* PCB2_1 = new G4SubtractionSolid("PCB2_1", PCB2Full, HoleShape2,
         new G4RotationMatrix,HoleShift21);
+    G4SubtractionSolid* PCB2_2 = new G4SubtractionSolid("PCB2_2", PCB2_1, HoleShape2,
+        new G4RotationMatrix,HoleShift22);
       
     G4ThreeVector HoleCenterBar = G4ThreeVector(0, 0, 0);
     G4Box* HoleShapeCenterBar = new G4Box("HoleShapeCenterBar",
-        Outer_PCB2_Width*0.5,
+        Outer_PCB2_Width*0.5+0.1,
         Outer_PCB2_Thickness,
-      0.5*mm);
+        Outer_PCB2_MidWidth*0.5);
 
-    // Substracting the hole Shape from the Stock PCB
-    G4SubtractionSolid* PCB2_2 = new G4SubtractionSolid("PCB2_2", PCB2_1, HoleShapeCenterBar,
+    G4SubtractionSolid* PCB2_3 = new G4SubtractionSolid("PCB2_3", PCB2_2, HoleShapeCenterBar,
         new G4RotationMatrix,HoleCenterBar);
 
     // Sub Volume PCB
     G4LogicalVolume* logicPCB2 =
-      new G4LogicalVolume(PCB2_2,m_MaterialPCB,"logicPCB2", 0, 0, 0);
-    logicPCB2->SetVisAttributes(PCBVisAtt);
+      new G4LogicalVolume(PCB2_3,m_MaterialPCB,"logicPCB2", 0, 0, 0);
+    logicPCB2->SetVisAttributes(PADVisAtt);
+
+    // Offset along beam axis between PCB middle and (2*Wafer+MiddleBar) volume center
+    double CentralZOffset = - Outer_PCB_Length*0.5
+                    + Outer_PCB_UpstreamWidth
+                    + Outer_Wafer_Length
+                    + Outer_PCB_MidWidth*0.5;
 
     new G4PVPlacement(new G4RotationMatrix(0,0,0),
-        G4ThreeVector(0,-0.5*offsetPCB2,0),
+        G4ThreeVector(0,-0.5*offsetPCB2,CentralZOffset),
         logicPCB2,"Strasse_Outer_PCB2",m_OuterDetector,
         false,0);
 
     //////////////////////////////////////////////////////////////////
+    // Build the Wafer
     // Sub volume Wafer
     G4Box*  WaferShape = new G4Box("WaferShape",
         Outer_Wafer_Width*0.5,
@@ -535,19 +578,24 @@ G4LogicalVolume* Strasse::BuildOuterDetector(){
       new G4LogicalVolume(WaferShape,m_MaterialSilicon,"logicWafer2", 0, 0, 0);
     logicWafer2->SetVisAttributes(GuardRingVisAtt);
 
+    // Shift along Y to flush the wafer to the pcb ledge on one side
+    G4ThreeVector WaferShiftY = G4ThreeVector(0,-0.5*Outer_Wafer_Thickness
+                    -Outer_Wafer_AlThickness
+                    -0.5*Outer_PCB_Thickness
+                    -offsetPCB2-0.05,0);
+
+    //G4ThreeVector WaferShiftZ = G4ThreeVector(0,0,-Outer_PCB_UpstreamWidth-Outer_PCB_MidWidth);
+    G4ThreeVector WaferShiftZ = G4ThreeVector(0,0,CentralZOffset);
+
     new G4PVPlacement(new G4RotationMatrix(0,0,0),
-        G4ThreeVector(0,0.5*Outer_Wafer_Thickness
-          +Outer_Wafer_AlThickness
-          -0.5*Outer_PCB_Thickness,0)// flush the wafer to the pcb on one side
-        +HoleShift1, // Shift wafer in the hole 
+        WaferShiftY+WaferShiftZ
+        +HoleShift21, // Shift along Z to put wafer in the 1st hole 
         logicWafer1,"Strasse_Outer_Wafer1",m_OuterDetector,
         false,0);
 
     new G4PVPlacement(new G4RotationMatrix(0,0,0),
-        G4ThreeVector(0,0.5*Outer_Wafer_Thickness
-          +Outer_Wafer_AlThickness
-          -0.5*Outer_PCB_Thickness,0)// flush the wafer to the pcb on one side
-        +HoleShift2, // Shift wafer in the hole 
+        WaferShiftY+WaferShiftZ
+        +HoleShift22, // Shift along Z to put wafer in the 1st hole 
         logicWafer2,"Strasse_Outer_Wafer2",m_OuterDetector,
         false,0);
 
@@ -567,16 +615,16 @@ G4LogicalVolume* Strasse::BuildOuterDetector(){
     logicActiveWafer2->SetVisAttributes(SiliconVisAtt);
     logicActiveWafer2->SetSensitiveDetector(m_OuterScorer2);
 
-
     new G4PVPlacement(new G4RotationMatrix(0,0,0),
-        G4ThreeVector(0,0,0.5*(Outer_Wafer_PADExternal-Outer_Wafer_PADInternal)), // assymetric pading for bounding
+        G4ThreeVector(0,0,0.5*(Outer_Wafer_PADExternal-Outer_Wafer_PADInternal)),
         logicActiveWafer1,"Strasse_Outer_ActiveWafer1",logicWafer1,
         false,1);
 
     new G4PVPlacement(new G4RotationMatrix(0,0,0),
-        G4ThreeVector(0,0,-0.5*(Outer_Wafer_PADExternal-Outer_Wafer_PADInternal)), // assymetric pading for bounding
+        G4ThreeVector(0,0,-0.5*(Outer_Wafer_PADExternal-Outer_Wafer_PADInternal)),
         logicActiveWafer2,"Strasse_Outer_ActiveWafer2",logicWafer2,
         false,2);
+
   }
   return m_OuterDetector;
 }
@@ -656,6 +704,78 @@ G4LogicalVolume* Strasse::BuildChamber(){
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+G4LogicalVolume* Strasse::BuildChamberFromCAD(string path){
+    if(!m_Chamber){
+        auto mesh = CADMesh::TessellatedMesh::FromSTL((char*) path.c_str());
+        mesh->SetScale(mm);
+        //mesh->SetOffset(offset);
+        mesh->SetReverse(false);
+
+        auto cad_solid = mesh->GetSolid();
+        m_Chamber = new G4LogicalVolume(cad_solid,
+            m_MaterialAl,
+            "Strasse_Chamber", 0, 0, 0);
+
+       m_Chamber->SetVisAttributes(ChamberVisAtt);
+    }
+    return m_Chamber;
+
+}
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+G4LogicalVolume* Strasse::BuildBlades(string path){
+    if(!m_Blades){
+        auto mesh = CADMesh::TessellatedMesh::FromSTL((char*) path.c_str());
+        mesh->SetScale(mm);
+        //mesh->SetOffset(offset);
+        mesh->SetReverse(false);
+
+        auto cad_solid = mesh->GetSolid();
+        m_Blades = new G4LogicalVolume(cad_solid,
+            m_MaterialCu,
+            "Strasse_Blades", 0, 0, 0);
+
+       m_Blades->SetVisAttributes(BladeVisAtt);
+    }
+    return m_Blades;
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+G4LogicalVolume* Strasse::BuildStars(string path){
+    if(!m_Stars){
+        auto mesh = CADMesh::TessellatedMesh::FromSTL((char*) path.c_str());
+        mesh->SetScale(mm);
+        //mesh->SetOffset(offset);
+        mesh->SetReverse(false);
+
+        auto cad_solid = mesh->GetSolid();
+        m_Stars = new G4LogicalVolume(cad_solid,
+            m_MaterialAl,
+            "Strasse_Stars", 0, 0, 0);
+
+       m_Stars->SetVisAttributes(StarsVisAtt);
+    }
+    return m_Stars;
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+G4LogicalVolume* Strasse::BuildBase(string path){
+    if(!m_Base){
+        auto mesh = CADMesh::TessellatedMesh::FromSTL((char*) path.c_str());
+        mesh->SetScale(mm);
+        //mesh->SetOffset(offset);
+        mesh->SetReverse(false);
+
+        auto cad_solid = mesh->GetSolid();
+        m_Base = new G4LogicalVolume(cad_solid,
+            m_MaterialAl,
+            "Strasse_Base", 0, 0, 0);
+
+       m_Base->SetVisAttributes(StarsVisAtt);
+    }
+    return m_Base;
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 // Virtual Method of NPS::VDetector class
@@ -688,6 +808,8 @@ void Strasse::ReadConfiguration(NPL::InputParser parser){
     "Inner_PCB_DownstreamWidth",
     "Inner_PCB_MidWidth",       
     "Inner_PCB_Thickness",      
+    "Inner_PCB_Ledge",      
+    "Inner_PCB_Step",      
     "Inner_Wafer_TransverseStrips",
     "Inner_Wafer_LongitudinalStrips",
     "Outer_Wafer_Length",       
@@ -704,6 +826,8 @@ void Strasse::ReadConfiguration(NPL::InputParser parser){
     "Outer_PCB_DownstreamWidth",
     "Outer_PCB_MidWidth",       
     "Outer_PCB_Thickness",      
+    "Outer_PCB_Ledge",      
+    "Outer_PCB_Step",      
     "Outer_Wafer_TransverseStrips",
     "Outer_Wafer_LongitudinalStrips",
     "Chamber_Thickness",
@@ -734,6 +858,8 @@ void Strasse::ReadConfiguration(NPL::InputParser parser){
     Inner_PCB_DownstreamWidth = blocks_info[0]->GetDouble("Inner_PCB_DownstreamWidth","mm"); 
     Inner_PCB_MidWidth = blocks_info[0]->GetDouble("Inner_PCB_MidWidth","mm");        
     Inner_PCB_Thickness = blocks_info[0]->GetDouble("Inner_PCB_Thickness","mm");       
+    Inner_PCB_Ledge = blocks_info[0]->GetDouble("Inner_PCB_Ledge","mm");       
+    Inner_PCB_Step = blocks_info[0]->GetDouble("Inner_PCB_Step","mm");       
     Outer_Wafer_Length = blocks_info[0]->GetDouble("Outer_Wafer_Length","mm");        
     Outer_Wafer_Width = blocks_info[0]->GetDouble("Outer_Wafer_Width","mm");         
     Outer_Wafer_Thickness = blocks_info[0]->GetDouble("Outer_Wafer_Thickness","mm");     
@@ -750,6 +876,8 @@ void Strasse::ReadConfiguration(NPL::InputParser parser){
     Outer_PCB_DownstreamWidth = blocks_info[0]->GetDouble("Outer_PCB_DownstreamWidth","mm"); 
     Outer_PCB_MidWidth = blocks_info[0]->GetDouble("Outer_PCB_MidWidth","mm");        
     Outer_PCB_Thickness = blocks_info[0]->GetDouble("Outer_PCB_Thickness","mm");       
+    Outer_PCB_Ledge = blocks_info[0]->GetDouble("Outer_PCB_Ledge","mm");       
+    Outer_PCB_Step = blocks_info[0]->GetDouble("Outer_PCB_Step","mm");       
     Chamber_Thickness= blocks_info[0]->GetDouble("Chamber_Thickness","mm"); 
     Chamber_Cylinder_Length= blocks_info[0]->GetDouble("Chamber_Cylinder_Length","mm");        
     Chamber_Radius= blocks_info[0]->GetDouble("Chamber_Radius","mm");       
@@ -837,6 +965,32 @@ void Strasse::ReadConfiguration(NPL::InputParser parser){
   }
 
 
+  // Inactive material inside chamber imported form CAD drawings
+  vector<NPL::InputBlock*> blocks_material = parser.GetAllBlocksWithTokenAndValue("Strasse","InactiveMaterial");
+  if(NPOptionManager::getInstance()->GetVerboseLevel())
+    cout << "//// " << blocks_material.size() << " inactive material found " << endl; 
+
+  for(unsigned int i = 0 ; i < blocks_material.size() ; i++){
+      if(NPOptionManager::getInstance()->GetVerboseLevel())
+        cout << endl << "////  Strasse Inactive material from CAD " << i+1 <<  endl;
+
+      if(blocks_material[i]->HasToken("Chamber")){
+          ChamberPath= blocks_material[i]->GetString("Chamber");
+          found_chamber = true;
+      }
+      if(blocks_material[i]->HasToken("Stars")){
+          StarsPath= blocks_material[i]->GetString("Stars");
+          found_stars = true;
+      }
+      if(blocks_material[i]->HasToken("Blades")){
+          BladesPath= blocks_material[i]->GetString("Blades");
+          found_blades = true;
+      }
+      if(blocks_material[i]->HasToken("Base")){
+          BasePath= blocks_material[i]->GetString("Base");
+          found_base = true;
+      }
+  }
 }
 
 
@@ -848,7 +1002,7 @@ void Strasse::ConstructDetector(G4LogicalVolume* world){
 
   // Inner Barrel
   for (unsigned short i = 0 ; i < m_Inner_R.size() ; i++) {
-    G4ThreeVector Det_pos = G4ThreeVector(m_Inner_Shift[i],m_Inner_R[i]+0.5*Inner_PCB_Thickness,m_Inner_Z[i]) ;
+    G4ThreeVector Det_pos = G4ThreeVector(m_Inner_Shift[i],m_Inner_R[i]+0.5*Inner_PCB_Thickness+0.001,m_Inner_Z[i]) ; //0.001 offset just to avoid overlap with frame
     Det_pos.rotate(-m_Inner_Phi[i],G4ThreeVector(0,0,1));
     G4RotationMatrix* Rot =  new G4RotationMatrix(0*deg,0*deg,m_Inner_Phi[i]);
 
@@ -859,7 +1013,7 @@ void Strasse::ConstructDetector(G4LogicalVolume* world){
 
   // Outer Barrel 
   for (unsigned short i = 0 ; i < m_Outer_R.size() ; i++) {
-    G4ThreeVector Det_pos = G4ThreeVector(m_Outer_Shift[i],m_Outer_R[i]+0.5*Inner_PCB_Thickness,m_Outer_Z[i]) ;
+    G4ThreeVector Det_pos = G4ThreeVector(m_Outer_Shift[i],m_Outer_R[i]+0.5*Inner_PCB_Thickness+0.001,m_Outer_Z[i]) ;//0.001 offset just to avoid overlap with frame
     Det_pos.rotate(-m_Outer_Phi[i],G4ThreeVector(0,0,1));
     G4RotationMatrix* Rot =  new G4RotationMatrix(0*deg,0*deg,m_Outer_Phi[i]);
 
@@ -869,6 +1023,7 @@ void Strasse::ConstructDetector(G4LogicalVolume* world){
   }
 
   // Chamber 
+  /*
   for (unsigned short i = 0 ; i < m_Chamber_Z.size() ; i++) {
     G4ThreeVector Det_pos = G4ThreeVector(0,0,-m_Chamber_Z[i]) ;
     G4RotationMatrix* Rot =  new G4RotationMatrix();
@@ -877,6 +1032,35 @@ void Strasse::ConstructDetector(G4LogicalVolume* world){
         BuildChamber(),
         "Strasse",world,false,i+1);
   }
+  */
+
+
+    //G4ThreeVector Det_pos = G4ThreeVector(0,0,+11.5) ;
+    G4ThreeVector Det_pos = G4ThreeVector(0,0,0) ;
+    G4RotationMatrix* Rot =  new G4RotationMatrix();
+    Rot->rotateY(270.*deg);
+    Rot->rotateX(0.*deg);
+
+   if(found_chamber){ 
+    new G4PVPlacement(Rot, Det_pos, BuildChamberFromCAD(ChamberPath),
+        "Strasse_Chamber",world, false, 0);
+   }
+
+   if(found_blades){ 
+    new G4PVPlacement(Rot, Det_pos, BuildBlades(BladesPath),
+        "Strasse_Blades",world, false, 0);
+   }
+   if(found_stars){ 
+    G4ThreeVector Det_pos2 = G4ThreeVector(0,0,0) ;
+    new G4PVPlacement(Rot, Det_pos2, BuildStars(StarsPath),
+        "Strasse_Stars",world, false, 0);
+   }
+   if(found_base){ 
+    G4ThreeVector Det_pos3 = G4ThreeVector(0,0,0) ;
+    new G4PVPlacement(Rot, Det_pos3, BuildBase(BasePath),
+        "Strasse_Base",world, false, 0);
+   }
+
 }
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 // Add Detector branch to the EventTree.
@@ -1087,6 +1271,7 @@ void Strasse::InitializeMaterial(){
   m_MaterialSilicon = MaterialManager::getInstance()->GetMaterialFromLibrary("Si");
   m_MaterialAl = MaterialManager::getInstance()->GetMaterialFromLibrary("Al");
   m_MaterialPCB = MaterialManager::getInstance()->GetMaterialFromLibrary("PCB");
+  m_MaterialCu = MaterialManager::getInstance()->GetMaterialFromLibrary("Cu");
   m_MaterialVacuum = MaterialManager::getInstance()->GetMaterialFromLibrary("Vacuum");
 }
 

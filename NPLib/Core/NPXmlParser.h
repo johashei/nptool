@@ -4,6 +4,7 @@
 #include<map>
 #include<set>
 #include<vector>
+#include <iostream>
 #include "TXMLEngine.h"
 namespace NPL{
   /////////////////////
@@ -44,20 +45,25 @@ namespace NPL{
       public:
         Channel();
         ~Channel();
-        Channel(int device,int geo,int ch){
+        Channel(int device, int fpl, int detector, int geo,int ch){
           m_device=device;
+          m_fpl=fpl;
+          m_detector=detector;
           m_geo=geo;
           m_ch=ch;
         };
-
+    
       private:
         int m_device;
+        int m_fpl;
+        int m_detector;
         int m_geo;
         int m_ch;
 
       public:
-        int norme() const {return (m_device*1000000+m_geo*1000+m_ch);} ;
-
+        int norme() const {return (m_device*10000000000000+m_fpl*10000000000+m_detector*1000000+m_geo*1000+m_ch);} ;
+        void EraseGeoCh(){m_ch=-1;m_geo=-1;};// use for MRDC
+        void Print() const {std::cout << m_device << " " << m_fpl << " " << m_detector << " " << m_geo << " " << m_ch<< std::endl;}
       public:
         bool operator<(const Channel p2){
           return this->norme()<p2.norme();
@@ -82,7 +88,8 @@ namespace NPL{
         double AsDouble(std::string name);
         std::string AsString(std::string name); 
         void AddParameter(parameter p){ m_parameters.insert(p);};
-
+        std::string GetName(){return m_name;};
+        void SetName(std::string name) {m_name=name;};
       private:
         std::string m_name;
         std::set<parameter> m_parameters;
@@ -112,7 +119,7 @@ namespace NPL{
       void SetBlock(const XML::Channel& c,XML::block* b){
         m_Channels[c]=b; 
       } 
-
+       std::map<XML::Channel,XML::block*> GetChannels(){return m_Channels;}; 
     public:
       std::vector<XML::block*> GetAllBlocksWithName(std::string name) ;
       std::vector<std::string> GetAllBlocksName();

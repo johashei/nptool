@@ -90,7 +90,7 @@ void ParticleStack::AddParticleToStack(Particle& particle){
     
     // If the particle is the first one to be added, then the IC are cleared
     if(m_First)
-        m_InitialConditions->Clear();
+        m_InitialConditions->Clear(); 
    
     m_ParticleStack.push_back(particle);
    

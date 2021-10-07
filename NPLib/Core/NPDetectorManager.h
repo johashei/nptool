@@ -23,6 +23,7 @@
 //   NPL
 #include "NPVDetector.h"
 #include "NPSpectraServer.h"
+#include "RootOutput.h"
 // ROOT
 #include "TH1.h"
 
@@ -30,6 +31,7 @@
 #include <string>
 #include <map>
 #include <vector>
+#include <mutex>
 #include <iostream>
 #if __cplusplus > 199711L 
 #include <thread>
@@ -66,6 +68,13 @@ namespace NPL{
     private :
       NPL::SpectraServer* m_SpectraServer;
 
+
+    private:// root outpu
+      RootOutput* m_RootOutput;
+
+    public:
+      void       FillOutputTree();
+
     private:   
       // The std::map containning all detectors
       // Using a Map one can access to any detector using its name
@@ -82,6 +91,7 @@ namespace NPL{
     private: // Thread Pool defined if C++11 is available
       std::vector<std::thread> m_ThreadPool;
       std::vector<bool> m_Ready;
+      std::mutex m_mtx;
       bool m_stop;
 
     public: // Init the Thread Pool

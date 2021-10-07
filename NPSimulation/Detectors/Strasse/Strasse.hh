@@ -57,16 +57,29 @@ class Strasse : public NPS::VDetector{
     G4LogicalVolume* BuildInnerDetector();
     G4LogicalVolume* BuildOuterDetector();
     G4LogicalVolume* BuildElectronic();
-    G4LogicalVolume* BuildFrame();
     G4LogicalVolume* BuildChamber();
+    G4LogicalVolume* BuildChamberFromCAD(string path);
+    G4LogicalVolume* BuildStars(string path);
+    G4LogicalVolume* BuildBlades(string path);
+    G4LogicalVolume* BuildBase(string path);
 
   private:
     G4LogicalVolume* m_InnerDetector;
     G4LogicalVolume* m_OuterDetector;
     G4LogicalVolume* m_Electronic;
-    G4LogicalVolume* m_Frame;
+    G4LogicalVolume* m_Stars;
     G4LogicalVolume* m_Chamber;
+    G4LogicalVolume* m_Blades;
+    G4LogicalVolume* m_Base;
 
+    string ChamberPath;
+    string BasePath;
+    string StarsPath;
+    string BladesPath;
+    bool found_chamber;
+    bool found_blades;
+    bool found_stars;
+    bool found_base;
 
   private:
     //    Initialize material used in detector definition
@@ -78,6 +91,7 @@ class Strasse : public NPS::VDetector{
     G4Material* m_MaterialAl      ;
     G4Material* m_MaterialVacuum  ;
     G4Material* m_MaterialPCB     ;
+    G4Material* m_MaterialCu     ;
 
     // calculated dimension
     double m_Active_InnerWafer_Width;
@@ -141,8 +155,6 @@ class Strasse : public NPS::VDetector{
 
     vector<double>  m_Chamber_Z;
 
-    // Visualisation Attribute
-    //G4VisAttributes* m_VisTrap;
 
     // Needed for dynamic loading of the library
   public:
@@ -153,9 +165,10 @@ class Strasse : public NPS::VDetector{
     G4VisAttributes* SiliconVisAtt  ;
     G4VisAttributes* PCBVisAtt;
     G4VisAttributes* PADVisAtt  ;
-    G4VisAttributes* FrameVisAtt ;
+    G4VisAttributes* StarsVisAtt ;
     G4VisAttributes* ChamberVisAtt ;
     G4VisAttributes* GuardRingVisAtt ;
+    G4VisAttributes* BladeVisAtt ;
 
 
 };

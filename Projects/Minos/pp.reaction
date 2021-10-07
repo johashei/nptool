@@ -25,7 +25,7 @@ TwoBodyReaction
  Heavy= 1H
  ExcitationEnergy3= 0.0 MeV
  ExcitationEnergy4= 0.0 MeV
- CrossSectionPath= distrib.txt CS10He
+ CrossSectionPath= flat.txt CS10He
  ShootLight= 1
  ShootHeavy= 1
   

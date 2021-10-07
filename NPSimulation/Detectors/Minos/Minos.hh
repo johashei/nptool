@@ -1,20 +1,21 @@
 #ifndef Minos_h
 #define Minos_h 1
 /*****************************************************************************
- * Copyright (C) 2009-2018   this file is part of the NPTool Project       *
+ * Copyright (C) 2009-2018   this file is part of the NPTool Project         *
  *                                                                           *
  * For the licensing terms see $NPTOOL/Licence/NPTool_Licence                *
  * For the list of contributors see $NPTOOL/Licence/Contributors             *
  *****************************************************************************/
 
 /*****************************************************************************
- * Original Author: Elidiano Tronchin  contact address: tronchin@lpccaen.in2p3.fr                        *
+ * Original Author: Elidiano Tronchin                                        *
+ * Maintainer : Cyril Lenain       contact address: lenain@lpccaen.in2p3.fr  *
  *                                                                           *
- * Creation Date  : October 2018                                           *
- * Last update    :                                                          *
+ * Creation Date  : October 2018                                             *
+ * Last update    : April 2021                                               *
  *---------------------------------------------------------------------------*
  * Decription:                                                               *
- *  This class describe  Minos simulation                             *
+ *  This class describe  Minos simulation                                    *
  *                                                                           *
  *---------------------------------------------------------------------------*
  * Comment:                                                                  *
@@ -41,7 +42,9 @@ using namespace std;
 #include "NPInputParser.h"
 #include "Decay.hh"
 #include "BeamReaction.hh"
+#include "NPXmlParser.h"
 
+//Root
 #include "TF1.h"
 
 class Minos : public NPS::VDetector{
@@ -134,7 +137,7 @@ class Minos : public NPS::VDetector{
      TH1F* Raw_Signal ;      
      TH1F* Elec_Signal;
      TF1* fa1;   
-     vector<double> Charge2, Time;
+     vector<int> Q, T;
      
     ////////////////////////////////////////////////////
     //////  Inherite from NPS::VDetector class /////////
@@ -159,8 +162,16 @@ class Minos : public NPS::VDetector{
   public:   // Scorer
     //   Initialize all Scorer used by the MUST2Array
     void InitializeScorers() ;
-    void SimulateGainAndDigitizer(vector<double> Q, vector<double> T);
-    
+    void SimulateGainAndDigitizer(vector<double>* rawT, vector<double>* rawQ,vector<int>& Q,vector<int>& T);
+
+  private: // parameter for the digitization  
+    double m_TimeBin;
+    double m_ShapingTime;
+    double m_Baseline;
+    unsigned int m_Sampling;
+    double m_ZOffset;
+
+
     //   Associated Scorer
     G4MultiFunctionalDetector* m_MinosPadScorer ;
   
@@ -191,6 +202,15 @@ class Minos : public NPS::VDetector{
   G4VisAttributes* m_VisKapton;
   G4VisAttributes* m_VisTargetCell;
   G4VisAttributes* m_VisOuterKapton;
+
+  private:
+  // XML ID to G4ID
+  // map of ID, coordinate
+  map<unsigned int,pair<double,double> > m_XY;
+  // map of G4ID to XML ID
+  map<unsigned int,unsigned int> m_ID;
+  void ReadXML(NPL::XmlParser& xml);
+  unsigned int FindPadID(unsigned int G4ID, double X,double Y);
 
   private:
     

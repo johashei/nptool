@@ -135,7 +135,7 @@ void Analysis::TreatEvent() {
   BeamImpact = TVector3(XTarget,YTarget,0); 
   // determine beam energy for a randomized interaction point in target
   // 1% FWHM randominastion (E/100)/2.35
-  //reaction.SetBeamEnergy(Rand.Gaus(myInit->GetIncidentFinalKineticEnergy(),myInit->GetIncidentFinalKineticEnergy()/235));
+  //reaction.SetBeamEnergy(Rand.Gaus(ReactionConditions->GetIncidentFinalKineticEnergy(),ReactionConditions->GetIncidentFinalKineticEnergy()/235));
 
   ////////////////////////////////////////////////////////////////////////////
   //////////////////////////////// LOOP on MUST2  ////////////////////////////
@@ -191,6 +191,10 @@ void Analysis::TreatEvent() {
     /************************************************/
     // Part 3 : Excitation Energy Calculation
     Ex = reaction.ReconstructRelativistic( ELab , ThetaLab );
+    reaction.SetBeamEnergy(Initial->GetIncidentFinalKineticEnergy());
+    ExNoBeam=reaction.ReconstructRelativistic( ELab , ThetaLab );
+    reaction.SetBeamEnergy(FinalBeamEnergy);
+    ExNoProton = reaction.ReconstructRelativistic( ReactionConditions->GetKineticEnergy(0) , ReactionConditions->GetParticleDirection(0).Angle(TVector3(0,0,1)) );
     ThetaLab=ThetaLab/deg;
 
     /************************************************/
@@ -233,7 +237,11 @@ void Analysis::TreatEvent() {
 
     // Part 3 : Excitation Energy Calculation
     Ex = reaction.ReconstructRelativistic( ELab , ThetaLab );
-
+    reaction.SetBeamEnergy(Initial->GetIncidentFinalKineticEnergy()-0.005*Initial->GetIncidentFinalKineticEnergy());
+    ExNoBeam=reaction.ReconstructRelativistic( ELab , ThetaLab );
+    reaction.SetBeamEnergy(FinalBeamEnergy);
+    ExNoProton = reaction.ReconstructRelativistic( ReactionConditions->GetKineticEnergy(0) , ReactionConditions->GetParticleDirection(0).Angle(TVector3(0,0,1)) );
+    
 
     // Part 4 : Theta CM Calculation
     ThetaCM  = reaction.EnergyLabToThetaCM( ELab , ThetaLab)/deg;
@@ -273,6 +281,8 @@ void Analysis::End(){
 ////////////////////////////////////////////////////////////////////////////////
 void Analysis::InitOutputBranch() {
   RootOutput::getInstance()->GetTree()->Branch("Ex",&Ex,"Ex/D");
+  RootOutput::getInstance()->GetTree()->Branch("ExNoBeam",&ExNoBeam,"ExNoBeam/D");
+  RootOutput::getInstance()->GetTree()->Branch("ExNoProton",&ExNoProton,"ExNoProton/D");
   RootOutput::getInstance()->GetTree()->Branch("EDC",&Ex,"Ex/D");
   RootOutput::getInstance()->GetTree()->Branch("ELab",&ELab,"ELab/D");
   RootOutput::getInstance()->GetTree()->Branch("ThetaLab",&ThetaLab,"ThetaLab/D");
@@ -346,6 +356,7 @@ void Analysis::InitInputBranch(){
 ////////////////////////////////////////////////////////////////////////////////
 void Analysis::ReInitValue(){
   Ex = -1000 ;
+  ExNoBeam=ExNoProton=-1000;
   EDC= -1000;
   ELab = -1000;
   BeamEnergy = -1000;

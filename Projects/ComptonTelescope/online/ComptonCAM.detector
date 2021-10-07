@@ -1,23 +1,17 @@
-%%%%%% DSSSD 1 %%%%%%
-DSSSD
-  NUMBER_DSSSD= 1
-  X0_Y0=   32.0   32.0   0.0
-  X31_Y0=  -32.0  32.0   0.0
-  X0_Y31=  32.0   -32.0  0.0
-  X31_Y31= -32.0  -32.0  0.0
-  SIZE_DSSSD= 64 mm
-  THICKNESS_DSSSD= 1.5 mm
-  NUMBER_STRIPS= 32
-
-%%%%%% CALORIMETER 1 %%%%%%
-CALORIMETER
-  NUMBER_CALORIMETER= 4
-  THICKNESS_CALORIMETER= 10 mm
-  NPIXELS_CALORIMETER= 64
-
-%%%%%% ComptonTelescope %%%%%%
-ComptonTelescope
-   TRACKER= 1
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ComptonTelescope   
+   SIZE_DSSSD= 64 mm
+   THICKNESS_DSSSD= 1.5 mm
+   NUMBER_STRIPS= 32
+   X0_Y0=   -32.0   32.0   0.0
+   X31_Y0=  32.0  32.0   0.0
+   X0_Y31=  -32.0   -32.0  0.0
+   X31_Y31= 32.0  -32.0  0.0
+   NUMBER_DSSSD= 1 
    DISTANCE_INTER_DSSSD= 10 mm
    DISTANCE_TRACKER_CALORIMETER= 20 mm
+   THICKNESS_CALORIMETER= 10 mm
+   NPIXELS_CALORIMETER= 64
+   TRACKER= 1
+   CALORIMETER= 4
    VIS= 1

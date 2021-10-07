@@ -32,72 +32,72 @@
 class TSpegDCData : public TObject {
  private:
    // Strips for CDM 11
-   vector<UShort_t>	fSpeg_DC_Strip11_DetNbr;
-   vector<UShort_t>	fSpeg_DC_Strip11_StripNbr;
-   vector<UShort_t>	fSpeg_DC_Strip11_Energy;
+   std::vector<UShort_t>	fSpeg_DC_Strip11_DetNbr;
+   std::vector<UShort_t>	fSpeg_DC_Strip11_StripNbr;
+   std::vector<UShort_t>	fSpeg_DC_Strip11_Energy;
 
    // Strips for CDM 12
-   vector<UShort_t>	fSpeg_DC_Strip12_DetNbr;
-   vector<UShort_t>	fSpeg_DC_Strip12_StripNbr;
-   vector<UShort_t>	fSpeg_DC_Strip12_Energy;
+   std::vector<UShort_t>	fSpeg_DC_Strip12_DetNbr;
+   std::vector<UShort_t>	fSpeg_DC_Strip12_StripNbr;
+   std::vector<UShort_t>	fSpeg_DC_Strip12_Energy;
 
    // Strips for CDM 21
-   vector<UShort_t>	fSpeg_DC_Strip21_DetNbr;
-   vector<UShort_t>	fSpeg_DC_Strip21_StripNbr;
-   vector<UShort_t>	fSpeg_DC_Strip21_Energy;
+   std::vector<UShort_t>	fSpeg_DC_Strip21_DetNbr;
+   std::vector<UShort_t>	fSpeg_DC_Strip21_StripNbr;
+   std::vector<UShort_t>	fSpeg_DC_Strip21_Energy;
 
    // Strips for CDM 22
-   vector<UShort_t>	fSpeg_DC_Strip22_DetNbr;
-   vector<UShort_t>	fSpeg_DC_Strip22_StripNbr;
-   vector<UShort_t>	fSpeg_DC_Strip22_Energy;
+   std::vector<UShort_t>	fSpeg_DC_Strip22_DetNbr;
+   std::vector<UShort_t>	fSpeg_DC_Strip22_StripNbr;
+   std::vector<UShort_t>	fSpeg_DC_Strip22_Energy;
 
    // EFil11
-   vector<UShort_t>	fSpeg_DC_Efil11_DetNbr;
-   vector<UShort_t>	fSpeg_DC_Efil11_Energy;
+   std::vector<UShort_t>	fSpeg_DC_Efil11_DetNbr;
+   std::vector<UShort_t>	fSpeg_DC_Efil11_Energy;
 
    // EFil12
-   vector<UShort_t>	fSpeg_DC_Efil12_DetNbr;
-   vector<UShort_t>	fSpeg_DC_Efil12_Energy;
+   std::vector<UShort_t>	fSpeg_DC_Efil12_DetNbr;
+   std::vector<UShort_t>	fSpeg_DC_Efil12_Energy;
 
    // EFil21
-   vector<UShort_t>	fSpeg_DC_Efil21_DetNbr;
-   vector<UShort_t>	fSpeg_DC_Efil21_Energy;
+   std::vector<UShort_t>	fSpeg_DC_Efil21_DetNbr;
+   std::vector<UShort_t>	fSpeg_DC_Efil21_Energy;
 
    // EFil22
-   vector<UShort_t>	fSpeg_DC_Efil22_DetNbr;
-   vector<UShort_t>	fSpeg_DC_Efil22_Energy;
+   std::vector<UShort_t>	fSpeg_DC_Efil22_DetNbr;
+   std::vector<UShort_t>	fSpeg_DC_Efil22_Energy;
 
    // Tplfil11
-   vector<UShort_t>	fSpeg_DC_Tplfil11_DetNbr;
-   vector<UShort_t>	fSpeg_DC_Tplfil11_Time;
+   std::vector<UShort_t>	fSpeg_DC_Tplfil11_DetNbr;
+   std::vector<UShort_t>	fSpeg_DC_Tplfil11_Time;
 
    // Tplfil12
-   vector<UShort_t>	fSpeg_DC_Tplfil12_DetNbr;
-   vector<UShort_t>	fSpeg_DC_Tplfil12_Time;
+   std::vector<UShort_t>	fSpeg_DC_Tplfil12_DetNbr;
+   std::vector<UShort_t>	fSpeg_DC_Tplfil12_Time;
 
    // Tplfil21
-   vector<UShort_t>	fSpeg_DC_Tplfil21_DetNbr;
-   vector<UShort_t>	fSpeg_DC_Tplfil21_Time;
+   std::vector<UShort_t>	fSpeg_DC_Tplfil21_DetNbr;
+   std::vector<UShort_t>	fSpeg_DC_Tplfil21_Time;
 
    // Tplfil22
-   vector<UShort_t>	fSpeg_DC_Tplfil22_DetNbr;
-   vector<UShort_t>	fSpeg_DC_Tplfil22_Time;
+   std::vector<UShort_t>	fSpeg_DC_Tplfil22_DetNbr;
+   std::vector<UShort_t>	fSpeg_DC_Tplfil22_Time;
 
    // TEMPS fil11
-   vector<UShort_t>	fSpeg_DC_Tfil11_DetNbr;
-   vector<UShort_t>	fSpeg_DC_Tfil11_Time;
+   std::vector<UShort_t>	fSpeg_DC_Tfil11_DetNbr;
+   std::vector<UShort_t>	fSpeg_DC_Tfil11_Time;
 
    // TEMPS fil12
-   vector<UShort_t>	fSpeg_DC_Tfil12_DetNbr;
-   vector<UShort_t>	fSpeg_DC_Tfil12_Time;
+   std::vector<UShort_t>	fSpeg_DC_Tfil12_DetNbr;
+   std::vector<UShort_t>	fSpeg_DC_Tfil12_Time;
 
    // TEMPS fil21
-   vector<UShort_t>	fSpeg_DC_Tfil21_DetNbr;
-   vector<UShort_t>	fSpeg_DC_Tfil21_Time;
+   std::vector<UShort_t>	fSpeg_DC_Tfil21_DetNbr;
+   std::vector<UShort_t>	fSpeg_DC_Tfil21_Time;
 
    // TEMPS fill22
-   vector<UShort_t>	fSpeg_DC_Tfil22_DetNbr;
-   vector<UShort_t>	fSpeg_DC_Tfil22_Time;
+   std::vector<UShort_t>	fSpeg_DC_Tfil22_DetNbr;
+   std::vector<UShort_t>	fSpeg_DC_Tfil22_Time;
 
  public:
    TSpegDCData();

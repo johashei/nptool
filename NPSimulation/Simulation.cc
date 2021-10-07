@@ -29,6 +29,7 @@
 #include "TRandom.h"
 
 // NPS headers
+#include "SteppingAction.hh"
 #include "EventAction.hh"
 #include "RunAction.hh"
 #include "NPSimulationVersion.hh"
@@ -39,6 +40,7 @@
 int main(int argc, char** argv){
     // Initialize NPOptionManager object
     NPOptionManager* OptionManager  = NPOptionManager::getInstance(argc, argv);
+    OptionManager->SetIsSimulation();
     if(OptionManager->GetVerboseLevel() > 0){
         string line;
         line.resize(80,'*');
@@ -76,7 +78,7 @@ int main(int argc, char** argv){
     ///////////////////////////////////////////////////////////////
     ///////////////// Initializing the Root Output ////////////////
     ///////////////////////////////////////////////////////////////
-    RootOutput::getInstance("Simulation/" + OptionManager->GetOutputFile());
+    RootOutput::getInstance(OptionManager->GetOutputFile());
     
     // Construct the default run manager
     G4RunManager* runManager = new G4RunManager;
@@ -108,6 +110,12 @@ int main(int argc, char** argv){
     ///////////////////////////////////////////////////////////////
     primary->ReadEventGeneratorFile(EventGeneratorFileName);
     runManager->SetUserAction(primary);
+  
+    ///////////////////////////////////////////////////////////////
+    ///////////////// Starting the Stepping Action ////////////////
+    ///////////////////////////////////////////////////////////////
+    SteppingAction* stepping_action = new SteppingAction() ;
+    runManager->SetUserAction(stepping_action)       ;
     
     ///////////////////////////////////////////////////////////////
     ////////////////// Starting the Event Action //////////////////

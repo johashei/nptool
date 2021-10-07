@@ -22,11 +22,12 @@
  *****************************************************************************/
 
 
+#include <iostream>
 #include <vector>
+#include <string>
 #include <map>
 
 #include "TObject.h"
-#include <iostream>
 #include "ConfigReader.h"
 
 #define	MAYA_PAD_NPARCAL 3
@@ -48,22 +49,22 @@ class TMayaData : public TObject {
 
  
   // (PAD)/CRAMS
-  vector<UShort_t> fMaya_PAD_Nbr;
-  vector<UShort_t> fMaya_PAD_Col;
-  vector<UShort_t> fMaya_PAD_Row;
-  vector<UShort_t> fMaya_PAD_E;
-  vector<Float_t> fMaya_PAD_x;
-  vector<Float_t> fMaya_PAD_y;
+  std::vector<UShort_t> fMaya_PAD_Nbr;
+  std::vector<UShort_t> fMaya_PAD_Col;
+  std::vector<UShort_t> fMaya_PAD_Row;
+  std::vector<UShort_t> fMaya_PAD_E;
+  std::vector<Float_t> fMaya_PAD_x;
+  std::vector<Float_t> fMaya_PAD_y;
 
-  map<UShort_t,UShort_t> fMaya_PAD_map_idx ; //!
+  std::map<UShort_t,UShort_t> fMaya_PAD_map_idx ; //!
   
 
   bool bMaya_IsPAD_Calibrated ; 
   bool bMaya_Clean_PADS ;  // boolean, parameter -> if true clean the PAD calibrated matrix
   Int_t fMaya_PAD_Neighbors_Min; //! number of minimum Neighbors before cleaning
-  vector<vector<Float_t> > fMaya_PAD_E_calpar;//! 
-  vector<Float_t> fMaya_PAD_E_cal ;
-  vector<UShort_t> fMaya_PAD_Neighbors ;
+  std::vector<std::vector<Float_t> > fMaya_PAD_E_calpar;//! 
+  std::vector<Float_t> fMaya_PAD_E_cal ;
+  std::vector<UShort_t> fMaya_PAD_Neighbors ;
   Float_t fMaya_PAD_E_cal_threshold; //!
   UShort_t fMaya_PAD_Mult_cal  ;
   UShort_t fMaya_PAD_Row_Mult[32] ; 
@@ -78,15 +79,15 @@ class TMayaData : public TObject {
 
   // (QFIL)
   bool bMaya_IsQFIL_Calibrated ;
-  vector<UShort_t> fMaya_QFIL_E_Nbr ;
-  vector<UShort_t> fMaya_QFIL_T_Nbr ;
+  std::vector<UShort_t> fMaya_QFIL_E_Nbr ;
+  std::vector<UShort_t> fMaya_QFIL_T_Nbr ;
 
-  vector<vector<Float_t> > fMaya_QFIL_E_calpar;//! 
-  vector<UShort_t> fMaya_QFIL_E ;
-  vector<Float_t> fMaya_QFIL_E_cal ;
-  vector<vector<Float_t> > fMaya_QFIL_T_calpar;//! 
-  vector<UShort_t> fMaya_QFIL_T ;
-  vector<Float_t> fMaya_QFIL_T_cal ;
+  std::vector<std::vector<Float_t> > fMaya_QFIL_E_calpar;//! 
+  std::vector<UShort_t> fMaya_QFIL_E ;
+  std::vector<Float_t> fMaya_QFIL_E_cal ;
+  std::vector<std::vector<Float_t> > fMaya_QFIL_T_calpar;//! 
+  std::vector<UShort_t> fMaya_QFIL_T ;
+  std::vector<Float_t> fMaya_QFIL_T_cal ;
 
   ULong64_t fMaya_QFIL_Sum ;   
   Float_t fMaya_QFIL_Sum_cal ;   
@@ -97,26 +98,26 @@ class TMayaData : public TObject {
 
   // Silicons
   bool bMaya_IsSi_Calibrated ;
-  //  vector<UShort_t>  fMaya_Si_Nbr; // TODO
+  //  std::vector<UShort_t>  fMaya_Si_Nbr; // TODO
   // * Energy * //
-  vector<UShort_t>  fMaya_Si_E_Nbr;
-  vector<UShort_t>  fMaya_Si_E;
-  vector<vector<Float_t> > fMaya_Si_E_calpar;//! 
-  vector<Float_t>  fMaya_Si_E_cal;
+  std::vector<UShort_t>  fMaya_Si_E_Nbr;
+  std::vector<UShort_t>  fMaya_Si_E;
+  std::vector<std::vector<Float_t> > fMaya_Si_E_calpar;//! 
+  std::vector<Float_t>  fMaya_Si_E_cal;
   // * Time * //
-  //  map<UShort_t, UShort_t> fMaya_Si_EvsT_index; //! TODO
-  vector<UShort_t>  fMaya_Si_T_Nbr;
-  vector<UShort_t>  fMaya_Si_T;
-  vector<vector<Float_t> > fMaya_Si_T_calpar;//! 
-  vector<Float_t>  fMaya_Si_T_cal;
+  //  std::map<UShort_t, UShort_t> fMaya_Si_EvsT_index; //! TODO
+  std::vector<UShort_t>  fMaya_Si_T_Nbr;
+  std::vector<UShort_t>  fMaya_Si_T;
+  std::vector<std::vector<Float_t> > fMaya_Si_T_calpar;//! 
+  std::vector<Float_t>  fMaya_Si_T_cal;
 
   // FADC : to record wire pulses
-  vector<UShort_t> fMaya_QFil_Pulse_E; 
-  vector<UShort_t> fMaya_QFil_Pulse_Nbr; // sample number  
-  vector<UShort_t> fMaya_QFil_Pulse_Ch;  // FADC channel: [0:3]
-  map<UShort_t, UShort_t> fMaya_QFil_Pulse_map_Current_Nbr; //! keep track of current FADC sanple number within on channel, not save
-  vector<ULong64_t> fMaya_QFil_Pulse_Sum ;
-  vector<ULong64_t> fMaya_QFil_Pulse_Sum_Ch ;
+  std::vector<UShort_t> fMaya_QFil_Pulse_E; 
+  std::vector<UShort_t> fMaya_QFil_Pulse_Nbr; // sample number  
+  std::vector<UShort_t> fMaya_QFil_Pulse_Ch;  // FADC channel: [0:3]
+  std::map<UShort_t, UShort_t> fMaya_QFil_Pulse_map_Current_Nbr; //! keep track of current FADC sanple number within on channel, not save
+  std::vector<ULong64_t> fMaya_QFil_Pulse_Sum ;
+  std::vector<ULong64_t> fMaya_QFil_Pulse_Sum_Ch ;
 
   // TOF
   UShort_t fMaya_TOF_GAL_HF ;
@@ -221,7 +222,7 @@ class TMayaData : public TObject {
   void SetTimeSi(UShort_t ,UShort_t );
 
   /*           CALIBRATION       */
-  bool InitCalibrate(std::vector<string>&) ; //!
+  bool InitCalibrate(std::vector<std::string>&) ; //!
   bool Calibrate(void) ;                     //!
   
   // TOF

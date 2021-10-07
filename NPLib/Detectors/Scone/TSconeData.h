@@ -24,33 +24,32 @@
 
 // STL
 #include <vector>
-using namespace std;
 
 // ROOT
 #include "TObject.h"
 
 class TSconeData : public TObject {
   //////////////////////////////////////////////////////////////
-  // data members are hold into vectors in order 
+  // data members are hold into std::vectors in order 
   // to allow multiplicity treatment
   private: 
     // Energy
-    vector<UShort_t>   fScone_E_DetectorNbr;
-    vector<UShort_t>   fScone_E_PlasticNbr;
-    vector<Double_t>   fScone_Energy;
+    std::vector<UShort_t>   fScone_E_DetectorNbr;
+    std::vector<UShort_t>   fScone_E_PlasticNbr;
+    std::vector<Double_t>   fScone_Energy;
 
     // Time
-    vector<UShort_t>   fScone_T_DetectorNbr;
-    vector<UShort_t>   fScone_T_PlasticNbr;
-    vector<Double_t>   fScone_Time;
+    std::vector<UShort_t>   fScone_T_DetectorNbr;
+    std::vector<UShort_t>   fScone_T_PlasticNbr;
+    std::vector<Double_t>   fScone_Time;
 
     // Flag for simulation
-    vector<UShort_t>   fScone_HasCaptured; //=1 for neutron capture on H, 2 on Gd 0 otherwise
-    vector<double>     fScone_CaptureTime; 
-    vector<double>     fScone_GammaEnergy;
-    vector<double>     fScone_ProtonEnergy;
-    vector<double>     fScone_ProtonTime;
-    vector<int>        fScone_FCProcess;
+    std::vector<UShort_t>   fScone_HasCaptured; //=1 for neutron capture on H, 2 on Gd 0 otherwise
+    std::vector<double>     fScone_CaptureTime; 
+    std::vector<double>     fScone_GammaEnergy;
+    std::vector<double>     fScone_ProtonEnergy;
+    std::vector<double>     fScone_ProtonTime;
+    std::vector<int>        fScone_FCProcess;
     //////////////////////////////////////////////////////////////
     // Constructor and destructor
   public: 

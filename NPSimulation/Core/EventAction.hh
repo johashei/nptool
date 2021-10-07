@@ -62,7 +62,7 @@ class EventAction : public G4UserEventAction{
     unsigned int total;
     double mean_rate;
     int displayed;
-
+    
   private: // Random state
     std::ostringstream m_Geant4RandomFullState; 
     std::string  m_G4State;  

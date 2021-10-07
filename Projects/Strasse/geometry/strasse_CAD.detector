@@ -1,0 +1,101 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Target
+ THICKNESS= 150 mm
+ ANGLE= 0 deg
+ RADIUS= 15 mm
+ MATERIAL= LH2
+ X= 0 mm
+ Y= 0 mm
+ Z= 0 mm
+ NbSlices= 150
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%1
+Strasse Info
+  Inner_Wafer_Length= 124 mm
+  Inner_Wafer_Width= 32 mm
+  Inner_Wafer_Thickness= 200 micrometer
+  Inner_Wafer_AlThickness= 0.4 micrometer
+  Inner_Wafer_PADExternal= 0 mm
+  Inner_Wafer_PADInternal= 0 mm
+  Inner_Wafer_GuardRing= 1.0 mm
+  Inner_Wafer_TransverseStrips= 610
+  Inner_Wafer_LongitudinalStrips= 150
+  Inner_PCB_PortWidth= 1 mm
+  Inner_PCB_StarboardWidth= 1 mm
+  Inner_PCB_BevelAngle=  90 deg
+  Inner_PCB_UpstreamWidth= 12 mm
+  Inner_PCB_DownstreamWidth= 38 mm
+  Inner_PCB_MidWidth= 1 mm
+  Inner_PCB_Thickness= 2.4 mm
+  Inner_PCB_Ledge= 1 mm
+  Inner_PCB_Step= 2.2 mm
+  Outer_Wafer_Length= 123 mm
+  Outer_Wafer_Width= 64.6 mm
+  Outer_Wafer_Thickness= 300 micrometer
+  Outer_Wafer_AlThickness= 0.4 micrometer
+  Outer_Wafer_PADExternal= 0 mm
+  Outer_Wafer_PADInternal= 0 mm
+  Outer_Wafer_GuardRing= 1.0 mm
+  Outer_PCB_PortWidth= 1 mm
+  Outer_PCB_StarboardWidth= 1 mm
+  Outer_PCB_BevelAngle=  90 deg
+  Outer_PCB_UpstreamWidth= 40 mm
+  Outer_PCB_DownstreamWidth= 12 mm
+  Outer_PCB_MidWidth= 1 mm
+  Outer_PCB_Thickness= 2.4 mm
+  Outer_PCB_Ledge= 1 mm
+  Outer_PCB_Step= 2.1 mm
+  Outer_Wafer_TransverseStrips= 605
+  Outer_Wafer_LongitudinalStrips= 313
+  % unused if using CAD file (.stl) chamber
+  Chamber_Thickness= 3 mm
+  Chamber_Cylinder_Length= 360 mm
+  Chamber_Radius= 180 mm
+  Chamber_ExitTube_Radius= 79.5 mm 
+  Chamber_ExitTube_Length= 100 mm
+  Chamber_Flange_Inner_Radius= 50 mm
+  Chamber_Sphere_Radius= 220 mm 
+  Chamber_Sphere_Shift= 60 mm
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Alias InnerPhi
+  Action= Copy
+%  Value= 116
+  Value= -4 56 116 176 236 296
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Strasse Inner
+  Radius= 27.6 mm
+  Z= 76.5 mm
+  Phi= @InnerPhi deg
+  Shift= 3 mm
+  Ref= 0 0 0 mm
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Alias OuterPhi
+  Action= Copy
+%  Value= 0
+  Value= 0 60 120 180 240 300
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Strasse Outer
+  Radius= 58.5 mm
+  Z= 76.5 mm
+  Phi= @OuterPhi deg
+  Shift= 0 mm
+  Ref= 0 0 0 mm
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%Strasse InactiveMaterial
+% Chamber= ./geometry/STRASSE_Chamber.stl
+% Stars= ./geometry/STRASSE_StarSupports.stl
+% Base= ./geometry/STRASSE_Base.stl
+% Blades= ./geometry/STRASSE_Blades.stl
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%1
+%Catana CSV
+% Path= geometry/Catana.csv 
+% Pos= 0 0 100 mm
+% Rshift= 100 micrometer
+
+

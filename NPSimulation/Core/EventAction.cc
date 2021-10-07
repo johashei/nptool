@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (C) 2009-2016   this file is part of the NPTool Project         *
+ * Copyright (C) 2009-2021   this file is part of the NPTool Project         *
  *                                                                           *
  * For the licensing terms see $NPTOOL/Licence/NPTool_Licence                *
  * For the list of contributors see $NPTOOL/Licence/Contributors             *
@@ -44,8 +44,7 @@ EventAction::EventAction(){
     total=0;
     mean_rate=0;
     displayed=0;
-
-     m_tree =  RootOutput::getInstance()->GetTree();
+    m_tree =  RootOutput::getInstance()->GetTree();
   //  m_tree->Branch("Geant4RandomState",&m_G4State );
  
 }
@@ -70,9 +69,6 @@ void EventAction::EndOfEventAction(const G4Event* event){
 //        tree->AutoSave();
 //        RootOutput::getInstance()->GetFile()->SaveSelf(kTRUE);
 //    }
-
-    
-
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -90,6 +86,7 @@ void EventAction::SaveRandomGeneratorInitialState(){
     m_Geant4RandomFullState.str("");
     m_Geant4RandomFullState.clear();
 }
+
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 void EventAction::ProgressDisplay(){

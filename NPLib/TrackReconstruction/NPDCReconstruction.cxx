@@ -31,7 +31,7 @@ DCReconstruction::DCReconstruction(){
   m_min->SetPrintLevel(0);
 
   // this avoid error 
-    gErrorIgnoreLevel = kError;
+  gErrorIgnoreLevel = kError;
   //m_min->SetMaxFunctionCalls(1000); 
   //m_min->SetMaxIterations(1000);
   //m_min->SetTolerance(1);
@@ -52,10 +52,20 @@ double DCReconstruction::BuildTrack2D(const vector<double>& X,const vector<doubl
   // Define the starting point of the fit: a straight line passing through the 
   // the first and last wire
   // z = ax+b -> x=(z-b)/a
-  //  ai = (Z[size-1]-Z[0])/(X[size-1]-R[size-1]-X[0]-R[0]);
-  //  bi = Z[0]-ai*(X[0]+R[0]);
-  ai = (Z[sizeX-1]-Z[0])/(X[sizeX-1]-X[0]);
-  bi = Z[0]-ai*(X[0]);
+  unsigned int i = 1;
+  ai=1/0.;
+  while(isinf(ai)&&i!=sizeX){
+    ai = (Z[sizeX-i]-Z[0])/(X[sizeX-i]-X[0]);
+    bi = Z[0]-ai*(X[0]);
+    i++;
+  }
+  if(isinf(ai)){ // then there is no two point in different layer
+    a=-10000;
+    b=-10000;
+    X0=-10000;
+    X100=-10000;
+    return 10000;
+  }
 
   m_min->Clear(); 
   m_min->SetVariable(0,"a",ai,1);
@@ -144,17 +154,17 @@ TGraph* DCReconstruction::Scan(double a, double b, int tovary, double minV, doub
   double step = (maxV-minV)/sizeT;
   double p[2]={a,b};
   for(unsigned int i = 0 ; i < sizeT ; i++){
-   if(!tovary){
-    p[0]=minV+step*i; 
-    x.push_back(p[0]);
-    y.push_back(SumD(p));
-   }
+    if(!tovary){
+      p[0]=minV+step*i; 
+      x.push_back(p[0]);
+      y.push_back(SumD(p));
+    }
 
-   else{
-    p[1]=minV+step*i; 
-    x.push_back(p[1]);
-    y.push_back(SumD(p));
-   }
+    else{
+      p[1]=minV+step*i; 
+      x.push_back(p[1]);
+      y.push_back(SumD(p));
+    }
   }
 
   TGraph* g = new TGraph(x.size(),&x[0],&y[0]);

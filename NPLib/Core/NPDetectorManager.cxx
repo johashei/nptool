@@ -50,6 +50,7 @@ using namespace NPUNITS;
 
 //   Default Constructor
 NPL::DetectorManager::DetectorManager(){
+  ROOT::EnableThreadSafety();
   m_BuildPhysicalPtr = &NPL::VDetector::BuildPhysicalEvent;
   m_ClearEventPhysicsPtr =  &NPL::VDetector::ClearEventPhysics;
   m_ClearEventDataPtr = &NPL::VDetector::ClearEventData ;
@@ -87,6 +88,7 @@ NPL::DetectorManager::DetectorManager(){
   m_ShieldFrontRadius = 0 ; 
   m_ShieldBackRadius = 0 ;
   m_ShieldMaterial = "" ;
+  m_RootOutput=RootOutput::getInstance();
 }
 
 
@@ -248,7 +250,9 @@ void NPL::DetectorManager::ReadConfigurationFile(std::string Path)   {
 void NPL::DetectorManager::BuildPhysicalEvent(){
 #if __cplusplus > 199711L && NPMULTITHREADING
     // add new job
+    m_mtx.lock();
     m_Ready.flip();
+    m_mtx.unlock();
     std::this_thread::yield();
 
   while(!IsDone()){
@@ -263,9 +267,8 @@ void NPL::DetectorManager::BuildPhysicalEvent(){
   for (it =begin; it != end; ++it) {
     (it->second->*m_ClearEventPhysicsPtr)();
     (it->second->*m_BuildPhysicalPtr)();
-    if(m_FillSpectra){
       (it->second->*m_FillSpectra)();
-      if(m_CheckSpectra)
+      if(m_CheckSpectra) {
         (it->second->*m_CheckSpectra)();
     }
   }
@@ -410,7 +413,7 @@ void NPL::DetectorManager::InitThreadPool(){
 ////////////////////////////////////////////////////////////////////////////////
 void NPL::DetectorManager::StartThread(NPL::VDetector* det,unsigned int id){ 
   // Let the main thread start 
-  std::this_thread::sleep_for(std::chrono::milliseconds(100));
+  std::this_thread::sleep_for(std::chrono::milliseconds(250));
   while(true){
     // Do the job if possible
     if(m_Ready[id]){
@@ -424,7 +427,9 @@ void NPL::DetectorManager::StartThread(NPL::VDetector* det,unsigned int id){
        if(m_CheckSpectra)
           (det->*m_CheckSpectra)();
       }
+     m_mtx.lock();
      m_Ready[id].flip();
+     m_mtx.unlock();
      std::this_thread::yield();
    }
    else{
@@ -493,6 +498,12 @@ void NPL::DetectorManager::CheckSpectraServer(){
     std::cout <<"WARNING: requesting to check spectra server, which is not started" << std::endl; 
 
 }
+
+////////////////////////////////////////////////////////////////////////////////
+void  NPL::DetectorManager::FillOutputTree(){
+  m_RootOutput->Fill();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 bool NPL::DetectorManager::IsCryogenic() const {return  m_CryoTarget;};
 double NPL::DetectorManager::GetTargetThickness() const {return m_TargetThickness;};

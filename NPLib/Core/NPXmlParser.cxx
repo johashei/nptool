@@ -1,6 +1,5 @@
 #include "NPXmlParser.h"
 #include <stdio.h>
-#include <iostream>
 using namespace NPL;
 using namespace NPL::XML;
 ////////////////////////////////////////////////////////////////////////////////
@@ -49,7 +48,7 @@ Channel::~Channel(){};
 
 ////////////////////////////////////////////////////////////////////////////////
 void XmlParser::LoadFile(std::string file){
-     // First create engine
+   // First create engine
    TXMLEngine* xml = new TXMLEngine;
    // Now try to parse xml file
    // Only file with restricted xml syntax are supported
@@ -113,6 +112,7 @@ void XmlParser::LoadNode(TXMLEngine* xml, XMLNodePointer_t node, Int_t level){
         param=xml->GetNext(param);
       }
       std::string name = xml->GetNodeName(child);
+      b.SetName(name);
       m_blocks[name].push_back(b);
       child = xml->GetNext(child);
     }  

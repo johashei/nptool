@@ -87,7 +87,7 @@ QFS::QFS(){
 
     fPerpMomentumHist = NULL;
     fParMomentumHist = NULL;
-
+    fDeexcitation = false;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -173,6 +173,9 @@ void QFS::ReadConfigurationFile(NPL::InputParser parser){
           vector<string> file_par = blocks[i]->GetVectorString("ParMomentumPath");
           TH1F* Partemp = Read1DProfile(file_par[0], file_par[1]);
           SetParMomentumHist(Partemp);
+      }
+      if(blocks[i]->HasToken("Deexcitation")){
+        fDeexcitation = blocks[i]->GetInt("Deexcitation");
       }
   }
 

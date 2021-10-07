@@ -79,10 +79,18 @@ class TSamuraiFDC2Physics : public TObject, public NPL::VDetector{
     int Mult;
     int MultMean;
     int PileUp;
+  
+  private: // offset and inversion 
+    TVector3 m_offset;//!
+    bool m_invertX;//!
+    bool m_invertY;//!
+    bool m_invertD;//!
 
   public:
     // Projected position at given Z plan
     TVector3 ProjectedPosition(double Z);
+    double   ProjectedPositionX(double Z);
+    double   ProjectedPositionY(double Z);
 
   private: // Charateristic of the DC 
     void AddDC(std::string name, NPL::XmlParser&);//! take the XML file and fill in Wire_X and Layer_Angle
@@ -156,18 +164,20 @@ class TSamuraiFDC2Physics : public TObject, public NPL::VDetector{
     // Write Spectra to file
     void WriteSpectra();
 
-  public:      //   Specific to SamuraiFDC2 Array
 
-    //   Clear The PreTeated object
-    void ClearPreTreatedData()   {m_PreTreatedData->Clear();}
+
+  public:      //   Specific to SamuraiFDC2 Array
 
     //   Remove bad channel, calibrate the data and apply threshold
     void PreTreat();//!
 
     // Retrieve raw and pre-treated data
     TSamuraiFDC2Data* GetRawData()        const {return m_EventData;}
-    TSamuraiFDC2Data* GetPreTreatedData() const {return m_PreTreatedData;}
   
+    TVector3 GetPos(){return TVector3(PosX,PosY,m_offset.Z());}
+    TVector3 GetOffset(){return m_offset;}
+    bool GetInvertX(){return m_invertX;};
+    bool GetInvertY(){return m_invertY;};
     double GetPosX(){return PosX;}
     double GetPosY(){return PosY;}
     double GetThetaX(){return ThetaX;}
@@ -177,9 +187,7 @@ class TSamuraiFDC2Physics : public TObject, public NPL::VDetector{
 
   private:   //   Root Input and Output tree classes
     TSamuraiFDC2Data*         m_EventData;//!
-    TSamuraiFDC2Data*         m_PreTreatedData;//!
     TSamuraiFDC2Physics*      m_EventPhysics;//!
-
 
   private: // Spectra Class
    // TSamuraiFDC2Spectra* m_Spectra; // !

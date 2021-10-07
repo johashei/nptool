@@ -29,6 +29,16 @@ std::string NPL::StripSpaces(std::string line){
   if(line.length()>0)
     while(*line.rbegin()==' ')
       line = line.substr(0,line.length()-1);
+
+  // Remove preceding tabs
+  while(*line.begin()=='\t')
+    line = line.substr(1,line.length());
+
+  // Remove trailing tabs
+  if(line.length()>0)
+    while(*line.rbegin()=='\t')
+      line = line.substr(0,line.length()-1);
+
   return line;
 
 }
@@ -86,6 +96,7 @@ std::string NPL::InputBlock::ExtractValue(std::string line,std::string separator
 void NPL::InputBlock::AddLine(std::string line){
   m_Token.push_back(ToLower(StripSpaces(ExtractToken(line))));
   m_Value.push_back(StripSpaces(ExtractValue(line)));
+  m_Lines.push_back(StripSpaces(line)); 
 }
 ////////////////////////////////////////////////////////////////////////////////
 void NPL::InputBlock::Dump(){
@@ -128,7 +139,7 @@ std::string NPL::InputBlock::GetValue(std::string Token){
 }
 ////////////////////////////////////////////////////////////////////////////////
 double NPL::InputBlock::GetDouble(std::string Token,std::string default_unit){
-  int verbose = NPOptionManager::getInstance()->GetVerboseLevel();
+  int verbose = 1; //NPOptionManager::getInstance()->GetVerboseLevel();
   std::stringstream iss(GetValue(Token));
   double val;
   std::string unit;
@@ -150,7 +161,7 @@ double NPL::InputBlock::GetDouble(std::string Token,std::string default_unit){
 }
 ////////////////////////////////////////////////////////////////////////////////
 int NPL::InputBlock::GetInt(std::string Token){
-  int verbose = NPOptionManager::getInstance()->GetVerboseLevel();
+  int verbose = 1;//NPOptionManager::getInstance()->GetVerboseLevel();
   std::stringstream iss(GetValue(Token));
   int val;
   iss >> val ;
@@ -164,7 +175,7 @@ int NPL::InputBlock::GetInt(std::string Token){
 }
 ////////////////////////////////////////////////////////////////////////////////
 std::string NPL::InputBlock::GetString(std::string Token){
-  int verbose = NPOptionManager::getInstance()->GetVerboseLevel();
+  int verbose = 1;//NPOptionManager::getInstance()->GetVerboseLevel();
   if(verbose)
     printf(" %s: %s\n",Token.c_str(),GetValue(Token).c_str());
 //    std::cout << " " << Token << ": " << GetValue(Token) << std::endl; 
@@ -173,7 +184,7 @@ std::string NPL::InputBlock::GetString(std::string Token){
 }
 ////////////////////////////////////////////////////////////////////////////////
 TVector3 NPL::InputBlock::GetTVector3(std::string Token,std::string  default_unit){
-  int verbose = NPOptionManager::getInstance()->GetVerboseLevel();
+  int verbose = 1; //NPOptionManager::getInstance()->GetVerboseLevel();
   std::stringstream iss(GetValue(Token));
 
   double x,y,z;
@@ -205,7 +216,7 @@ TVector3 NPL::InputBlock::GetTVector3(std::string Token,std::string  default_uni
 }
 ////////////////////////////////////////////////////////////////////////////////
 std::vector<std::string> NPL::InputBlock::GetVectorString(std::string Token){
-  int verbose = NPOptionManager::getInstance()->GetVerboseLevel();
+  int verbose = 1 ; //NPOptionManager::getInstance()->GetVerboseLevel();
 
   std::stringstream iss(GetValue(Token));
 
@@ -231,7 +242,7 @@ std::vector<std::string> NPL::InputBlock::GetVectorString(std::string Token){
 
 ////////////////////////////////////////////////////////////////////////////////
 std::vector<double> NPL::InputBlock::GetVectorDouble(std::string Token,std::string  default_unit){
-  int verbose = NPOptionManager::getInstance()->GetVerboseLevel();
+  int verbose = 1 ; // NPOptionManager::getInstance()->GetVerboseLevel();
 
   std::stringstream iss(GetValue(Token));
 
@@ -271,7 +282,7 @@ std::vector<double> NPL::InputBlock::GetVectorDouble(std::string Token,std::stri
 
 ////////////////////////////////////////////////////////////////////////////////
 std::vector<int> NPL::InputBlock::GetVectorInt(std::string Token){
-  int verbose = NPOptionManager::getInstance()->GetVerboseLevel();
+  int verbose = 1;// NPOptionManager::getInstance()->GetVerboseLevel();
 
   std::stringstream iss(GetValue(Token));
   std::vector<int> val;
@@ -375,7 +386,7 @@ void NPL::InputParser::TreatAliases(){
       NPL::SendErrorAndExit("NPL::InputParser", "Alias block syntax incorrect");
     }
     
-    int verbose = NPOptionManager::getInstance()->GetVerboseLevel();
+    int verbose = 1; //NPOptionManager::getInstance()->GetVerboseLevel();
 
     if(verbose)
       std::cout << "Using Alias : @" << alias[i]->GetMainValue() << std::endl;

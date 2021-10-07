@@ -1,0 +1,20 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Target
+ Thickness= 18 micrometer
+ Radius=  30 mm
+ Material= CD2
+ Angle= 0 deg
+ X= 0 mm
+ Y= 0 mm 
+ Z= 0 mm
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+BigRIPSPPAC
+  XML= BigRIPSPPAC.xml
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+BigRIPSPlastic
+  XML= BigRIPSPlastic.xml
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+BigRIPSIC
+  XML= BigRIPSIC.xml
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

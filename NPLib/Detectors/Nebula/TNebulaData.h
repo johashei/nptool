@@ -34,14 +34,24 @@ class TNebulaData : public TObject {
   // data members are hold into vectors in order 
   // to allow multiplicity treatment
   private: 
-    // Energy
-    vector<UShort_t>   fNebula_E_DetectorNbr;
-    vector<Double_t>   fNebula_Energy;
-
+    // UP // 
+    // Charge 
+    vector<UShort_t>   fNebula_Qu_ID;
+    vector<Double_t>   fNebula_Qu_Charge;
+    
     // Time
-    vector<UShort_t>   fNebula_T_DetectorNbr;
-    vector<Double_t>   fNebula_Time;
-
+    vector<UShort_t>   fNebula_Tu_ID;
+    vector<Double_t>   fNebula_Tu_Time;
+    
+    // DOWN // 
+    // Charge 
+    vector<UShort_t>   fNebula_Qd_ID;
+    vector<Double_t>   fNebula_Qd_Charge;
+    
+    // Time
+    vector<UShort_t>   fNebula_Td_ID;
+    vector<Double_t>   fNebula_Td_Time;
+ 
 
   //////////////////////////////////////////////////////////////
   // Constructor and destructor
@@ -65,35 +75,68 @@ class TNebulaData : public TObject {
   // add //! to avoid ROOT creating dictionnary for the methods
   public:
     //////////////////////    SETTERS    ////////////////////////
-    // Energy
-    inline void SetEnergy(const UShort_t& DetNbr,const Double_t& Energy){
-      fNebula_E_DetectorNbr.push_back(DetNbr);
-      fNebula_Energy.push_back(Energy);
+    // UP // 
+    // Charge
+    inline void SetChargeUp(const Double_t& ID, const Double_t& Charge){
+    fNebula_Qu_ID.push_back(ID);
+    fNebula_Qu_Charge.push_back(Charge);
     };//!
 
     // Time
-    inline void SetTime(const UShort_t& DetNbr,const Double_t& Time)	{
-      fNebula_T_DetectorNbr.push_back(DetNbr);     
-      fNebula_Time.push_back(Time);
+    inline void SetTimeUp(const Double_t& ID, const Double_t& Time){
+    fNebula_Tu_ID.push_back(ID);
+    fNebula_Tu_Time.push_back(Time);
     };//!
 
+    // DOWN // 
+    // Charge
+    inline void SetChargeDown(const Double_t& ID, const Double_t& Charge){
+    fNebula_Qd_ID.push_back(ID);
+    fNebula_Qd_Charge.push_back(Charge);
+    };//!
+
+    // Time
+    inline void SetTimeDown(const Double_t& ID, const Double_t& Time){
+    fNebula_Td_ID.push_back(ID);
+    fNebula_Td_Time.push_back(Time);
+    };//!
 
     //////////////////////    GETTERS    ////////////////////////
-    // Energy
-    inline UShort_t GetMultEnergy() const
-      {return fNebula_E_DetectorNbr.size();}
-    inline UShort_t GetE_DetectorNbr(const unsigned int &i) const 
-      {return fNebula_E_DetectorNbr[i];}//!
-    inline Double_t Get_Energy(const unsigned int &i) const 
-      {return fNebula_Energy[i];}//!
-
+    // MULT //
+    // Charge 
+    inline unsigned int GetChargeUpMult() const
+      {return fNebula_Qu_ID.size();};
     // Time
-    inline UShort_t GetMultTime() const
-      {return fNebula_T_DetectorNbr.size();}
-    inline UShort_t GetT_DetectorNbr(const unsigned int &i) const 
-      {return fNebula_T_DetectorNbr[i];}//!
-    inline Double_t Get_Time(const unsigned int &i) const 
-      {return fNebula_Time[i];}//!
+    inline unsigned int GetTimeUpMult() const
+      {return fNebula_Tu_ID.size();};
+    // Charge
+    inline unsigned int GetChargeDownMult() const
+      {return fNebula_Qd_ID.size();};
+    // Time
+    inline unsigned int GetTimeDownMult() const
+      {return fNebula_Td_ID.size();};
+
+    // Value // 
+    // Charge 
+    inline UShort_t GetChargeUpID(unsigned int& i) const
+      {return fNebula_Qu_ID[i];};
+    inline double GetChargeUp(unsigned int& i) const
+      {return fNebula_Qu_Charge[i];};
+    // Time 
+    inline UShort_t GetTimeUpID(unsigned int& i) const
+      {return fNebula_Tu_ID[i];};
+    inline double GetTimeUp(unsigned int& i) const
+      {return fNebula_Tu_Time[i];};
+    // Charge 
+    inline UShort_t GetChargeDownID(unsigned int& i) const
+      {return fNebula_Qd_ID[i];};
+    inline double GetChargeDown(unsigned int& i) const
+      {return fNebula_Qd_Charge[i];};
+    // Time 
+    inline UShort_t GetTimeDownID(unsigned int& i) const
+      {return fNebula_Td_ID[i];};
+    inline double GetTimeDown(unsigned int& i) const
+      {return fNebula_Td_Time[i];};
 
 
   //////////////////////////////////////////////////////////////

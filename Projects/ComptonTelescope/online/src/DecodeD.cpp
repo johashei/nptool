@@ -36,6 +36,10 @@ void DecodeD::setTree(const char* filename)
   t1->SetBranchAddress("sample", &event.sample);
   t1->SetBranchAddress("cm_data", &event.cm_data);
   t1->SetBranchAddress("timestamp", &event.timestamp);
+  #if __OLDFRAME__
+  t1->SetBranchAddress("chain", &event.chain);
+  t1->SetBranchAddress("nb_asic", &event.nb_asic);
+  #endif
 }
 
 void DecodeD::setRaw()
@@ -88,18 +92,20 @@ long int DecodeD::getTime()
   return event.timestamp;
 }
 
-newframe_t* DecodeD::getEvent()
+//newframe_t* DecodeD::getEvent()
+__EVENTTYPE__* DecodeD::getEvent()
 {
   return &event;
 }
 
 void DecodeD::decodeEvent()
 {
-  this -> Clear();
+  /*this -> */Clear();
   switch (datatype) {
     case D_ROOT:
       if (cursor < length) {
         t1->GetEntry(cursor);
+        #if !__OLDFRAME__
         for (int i = 0; i < 2; i++) { // 2 faces
           for (int j = 0; j < NBDETECTORS; j++) {
             if (event.chip_data[i][j]) { // Test if data is present
@@ -113,7 +119,7 @@ void DecodeD::decodeEvent()
             } // end Test
           } // end loop on detectors
         } // end loop on faces 
-
+        #endif
         cursor++;
       }
       break;
@@ -147,17 +153,31 @@ void DecodeD::Dump()
       return;
   }
   cout << "Timestamp: " << event.timestamp << endl;
+  #if __OLDFRAME__
+  cout << "Chain: " << event.chain << " - Asic: " << event.nb_asic << endl;
+  cout << "Chip data: " << event.chip_data << " Analog trigger: " << event.analog_trigger << " seu: " << event.seu << " Channel status: " << event.ch_status << " cm data: " << event.cm_data << endl;
+  cout << "Samples: ";
+  for (int k = 0; k<NBSTRIPS; k++) {
+    cout << event.sample[k] << " ";
+  }
+  cout << endl;
+  #else
   cout << "Chip data\tanalog trigger\tseu\tchannel status\tref channel\tcm data" << endl;
   for (int i = 0; i < 2; i++) {
-    for (int j = 0; j < 8; j++) {
+    for (int j = 0; j < NBDETECTORS; j++) {
       cout << (int)event.chip_data[i][j] << "\t" << (int)event.analog_trigger[i][j] << "\t" << (int)event.seu[i][j] << "\t" << (int)event.ch_status[i][j] << "\t" << (int)event.ref_channel[i][j] << "\t" << (int)event.cm_data[i][j] << endl;
       cout << "Samples: ";
-      for (int k = 0; k<32; k++) {
+      for (int k = 0; k<NBSTRIPS; k++) {
         cout << event.sample[i][j][k] << " ";
       }
       cout << endl;
     }
   }
+  cout << FaceType.size() << " " << DetNbr.size() << " " << StripNbr.size() << " " << Energy.size() << endl;
+  for (int n = 0; n < Energy.size(); n++) {
+    cout << FaceType[n] << " " << DetNbr[n] << " " << StripNbr[n] << " " << Energy[n] << endl;
+  }
+  #endif
 }
 
 

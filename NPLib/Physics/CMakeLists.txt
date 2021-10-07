@@ -14,6 +14,8 @@ add_custom_command(OUTPUT NPEnergyLossDict.cxx COMMAND ${CMAKE_BINARY_DIR}/scrip
 
 add_custom_command(OUTPUT TInitialConditionsDict.cxx COMMAND ${CMAKE_BINARY_DIR}/scripts/build_dict.sh TInitialConditions.h TInitialConditionsDict.cxx TInitialConditions.rootmap libNPInitialConditions.so DEPENDS TInitialConditions.h)
 
+add_custom_command(OUTPUT TTrackInfoDict.cxx COMMAND ${CMAKE_BINARY_DIR}/scripts/build_dict.sh TTrackInfo.h TTrackInfoDict.cxx TTrackInfo.rootmap libNPTrackInfo.so DEPENDS TTrackInfo.h)
+
 add_custom_command(OUTPUT TInteractionCoordinatesDict.cxx COMMAND ${CMAKE_BINARY_DIR}/scripts/build_dict.sh TInteractionCoordinates.h TInteractionCoordinatesDict.cxx TInteractionCoordinates.rootmap libNPInteractionCoordinates.so DEPENDS TInteractionCoordinates.h)
 
 add_custom_command(OUTPUT TReactionConditionsDict.cxx COMMAND ${CMAKE_BINARY_DIR}/scripts/build_dict.sh TReactionConditions.h TReactionConditionsDict.cxx TReactionConditions.rootmap libNPReactionConditions.so DEPENDS TReactionConditions.h)
@@ -26,6 +28,9 @@ target_link_libraries(NPPhysics ${ROOT_LIBRARIES} Physics NPCore)
 add_library(NPInitialConditions  SHARED  TInitialConditions.cxx TInitialConditionsDict.cxx )
 target_link_libraries(NPInitialConditions  ${ROOT_LIBRARIES} ) 
 
+add_library(NPTrackInfo  SHARED  TTrackInfo.cxx TTrackInfoDict.cxx )
+target_link_libraries(NPTrackInfo  ${ROOT_LIBRARIES} ) 
+
 add_library(NPInteractionCoordinates SHARED TInteractionCoordinates.cxx TInteractionCoordinatesDict.cxx)
 target_link_libraries(NPInteractionCoordinates ${ROOT_LIBRARIES} ) 
 
@@ -36,4 +41,4 @@ add_library(NPFissionConditions SHARED TFissionConditions.cxx TFissionConditions
 target_link_libraries(NPFissionConditions ${ROOT_LIBRARIES} ) 
 
 
-install(FILES GEF.h NPFissionDecay.h NPDecay.h NPBeam.h NPEnergyLoss.h NPFunction.h NPParticle.h NPNucleus.h NPReaction.h  NPQFS.h TInitialConditions.h TInteractionCoordinates.h TReactionConditions.h TFissionConditions.h DESTINATION ${CMAKE_INCLUDE_OUTPUT_DIRECTORY})
+install(FILES GEF.h NPFissionDecay.h NPDecay.h NPBeam.h NPEnergyLoss.h NPFunction.h NPParticle.h NPNucleus.h NPReaction.h  NPQFS.h TInitialConditions.h TTrackInfo.h TInteractionCoordinates.h TReactionConditions.h TFissionConditions.h DESTINATION ${CMAKE_INCLUDE_OUTPUT_DIRECTORY})

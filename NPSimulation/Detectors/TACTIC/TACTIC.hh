@@ -42,6 +42,8 @@ using namespace std;
 #include "Decay.hh"
 #include "BeamReaction.hh"
 
+extern double excess;
+
 class TACTIC : public NPS::VDetector{
   ////////////////////////////////////////////////////
   /////// Default Constructor and Destructor /////////
@@ -65,7 +67,8 @@ private:
   G4LogicalVolume* m_CylindricalDetector;
   G4LogicalVolume* gas_volume_log;
   G4LogicalVolume* window_log;
-  G4LogicalVolume* vacuum_log;
+  //G4LogicalVolume* window_log_2;
+  //G4LogicalVolume* vacuum_log;
     ////////////////////////////////////////////////////
     //////  Inherite from NPS::VDetector class /////////
     ////////////////////////////////////////////////////
@@ -116,13 +119,16 @@ private: // Geometry
   vector<string> m_Shape ;
   string m_Active;
   double m_p0, m_p1, m_p2, m_p3;
+  string Shape;
+  
+  //int NumberOfStrips;
   
   // Visualisation Attribute
   G4VisAttributes* m_VisChamber;
   G4VisAttributes* m_VisWindows;
   G4VisAttributes* m_VisGas;
   G4VisAttributes* m_VisVacuum;
-
+  
 private:
   // Region were reaction can occure:
   G4Region* m_ReactionRegion;
@@ -131,6 +137,7 @@ private:
   // Needed for dynamic loading of the library
 public:
   static NPS::VDetector* Construct();
+
 };
 
 #endif

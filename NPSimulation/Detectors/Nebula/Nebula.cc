@@ -226,8 +226,8 @@ void Nebula::ReadSensitive(const G4Event* ){
     if(Energy>Nebula_NS::EnergyThreshold){
       double Time = RandGauss::shoot(Scorer->GetTime(i),Nebula_NS::ResoTime);
       int DetectorNbr = level[0];
-      m_Event->SetEnergy(DetectorNbr,Energy);
-      m_Event->SetTime(DetectorNbr,Time); 
+      //m_Event->SetEnergy(DetectorNbr,Energy);
+      //m_Event->SetTime(DetectorNbr,Time); 
     }
   }
 }

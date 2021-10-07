@@ -1,0 +1,8 @@
+CalibrationFilePath
+  Calibration/BDC/BDC1_Calib_824.txt
+  Calibration/BDC/BDC2_Calib_824.txt
+  Calibration/FDC2_Calib.txt
+  Calibration/FDC0_Calib.txt
+  Calibration/CalibVDrift/CalibVDrift.txt
+  Calibration/Nebula/offset_gamma.txt
+  Calibration/Nebula/Nebula_Y.txt

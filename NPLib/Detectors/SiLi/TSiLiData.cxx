@@ -20,7 +20,7 @@
  *****************************************************************************/
 #include <iostream>
 #include "TSiLiData.h"
-
+using namespace std;
 
 ClassImp(TSiLiData)
 
