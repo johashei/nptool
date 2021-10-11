@@ -1,0 +1,30 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Beam
+  Particle= 55Sc
+  Energy= 11000 MeV
+  SigmaEnergy= 0 MeV
+  SigmaThetaX= 0.1 deg
+  SigmaPhiY= 0.1 deg
+  SigmaX= 5 mm
+  SigmaY= 5 mm
+  MeanThetaX= 0 deg
+  MeanPhiY= 0 deg
+  MeanX= 0 mm
+  MeanY= 0 mm
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+QFSReaction
+ Beam= 55Sc
+ Target= 1H
+ Scattered= 1H
+ KnockedOut= 1H
+ Heavy= 54Ca
+ ExcitationEnergyBeam= 0.0 MeV
+ ExcitationEnergyHeavy= 3.6800 MeV
+ MomentumSigma= 50.0 
+ ShootHeavy= 1
+ ShootLight= 1
+  
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+LevelData 54Ca
+ Path= reaction/54Ca.dat 
