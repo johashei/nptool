@@ -68,7 +68,7 @@ namespace Sweeper_NS{
   const double Phi = 0*deg;
   const double VolumeWidth = 1.000*m;
   const double VolumeLength = 0.800*m;
-  const double VolumeThickness = 3.5*m;
+  const double VolumeThickness = 4.0*m;
   //Sweeper
   const double Rmin = 0.53*m ; //1.03-0.5=0.53
   const double Rmax = 1.53*m ; //1.03+0.5=1.53
@@ -97,10 +97,12 @@ namespace CRDC_NS{
 }
 namespace IonChamber_NS{
   const double EnergyThreshold = 0.1*MeV;//?
-  const double ResoEnergy = 3*perCent;//%
+  const double ResoEnergy = 2*perCent;//%
   const double Width = 45*cm ;
-  const double Thickness = 65*cm ;
-  const string Material = "P10_1atm";
+  const double Thickness = 71.11*cm ;//65 cm???
+  //const string Material = "P10_1atm";
+  const string Material = "P10";
+  
 
 }
 namespace ThinScint_NS{
@@ -108,7 +110,7 @@ namespace ThinScint_NS{
   const double ResoTime = 0.300*ns ;
   const double ResoEnergy = 0.001*MeV ;//?
   const double Width = 55*cm ;
-  const double Thickness = 5*cm ;
+  const double Thickness = 5*mm ;
   const string Material = "BC400";//?
 }
 namespace OldHodo_NS{
@@ -123,8 +125,8 @@ namespace NewHodo_NS{
   const double EnergyThreshold = 0.001*MeV;//?
   //const double ResoTime = 0.94*ns ;
   const double ResoEnergy = 0.03; //3% resolution
-  const double Width = 250*cm ; //50*5
-  const double Thickness = 30*cm ;
+  const double Width = 40*cm ; //50*5
+  const double Thickness = 7.2*cm ;
   const string Material = "CsI_Scintillator";
 }
 
@@ -174,6 +176,7 @@ void Sweeper::AddDetector(G4ThreeVector POS, double  Theta, double  Brho, double
   m_DistToDC1.push_back(Dist[1]);
   m_DistToDC2.push_back(Dist[2]);
   m_DistToIC.push_back(Dist[3]);
+  m_DistToHodo.push_back(Dist[4]);
   
 }
 
@@ -184,8 +187,7 @@ G4LogicalVolume* Sweeper::BuildMotherVolume(){
 
     G4Material* DetectorMaterial = MaterialManager::getInstance()->GetMaterialFromLibrary("Vacuum");
     m_MotherLog = new G4LogicalVolume(box,DetectorMaterial,"logic_Mother",0,0,0);
-    m_MotherLog->SetVisAttributes(G4VisAttributes::GetInvisible);
-    //m_MotherLog->SetSensitiveDetector(m_SweeperScorer);
+    //m_MotherLog->SetVisAttributes(G4VisAttributes::GetInvisible());
 
   }
   return m_MotherLog;
@@ -199,7 +201,10 @@ G4LogicalVolume* Sweeper::BuildCRDC(){
     int NumMaterial = sizeof(CRDC_NS::GasProportion)/sizeof(CRDC_NS::GasProportion[0]);
     
     for(int i=0;i<NumMaterial;i++)
-      {  G4Material *material = MaterialManager::getInstance()->GetGasFromLibrary(CRDC_NS::Material[i],1.01325*bar,288.15*kelvin);
+      {
+	//G4Material *material = MaterialManager::getInstance()->GetGasFromLibrary(CRDC_NS::Material[i],1.01325*bar,288.15*kelvin);
+	G4Material *material = MaterialManager::getInstance()->GetGasFromLibrary(CRDC_NS::Material[i],0.05*bar,288.15*kelvin);
+	
         DetectorMaterial->AddMaterial(material,CRDC_NS::GasProportion[i]*perCent);
       }
     
@@ -317,8 +322,8 @@ void Sweeper::SetSweeperField(bool kMap, double B_Field=0){
     G4AutoDelete::Register(FieldMap);
     G4AutoDelete::Register(SweeperMagFieldMgr);
   }else { //Uniform map
-   
-    cout<<"Uniform magnetic field set for: "<<B_Field/tesla<<" "<<B_Field*tesla<<endl;
+
+    cout<<"Uniform magnetic field set for: "<<B_Field*tesla*1000<<" T"<<endl;
     
     fSweeperMagField = new G4UniformMagField(G4ThreeVector(0.,B_Field*tesla,0.));
     SweeperMagFieldMgr = new G4FieldManager(fSweeperMagField);
@@ -348,7 +353,7 @@ void Sweeper::ReadConfiguration(NPL::InputParser parser){
     cout << "//// " << blocks.size() << " detectors found " << endl; 
 
   vector<string> basic = {"Pos","Theta","Brho"};
-  vector<string> dist_par = {"DistToExit", "DistToDC1", "DistToDC2", "DistToIC"};
+  vector<string> dist_par = {"DistToExit", "DistToDC1", "DistToDC2", "DistToIC", "DistToHodo"};
 
   for(unsigned int i = 0 ; i < blocks.size() ; i++){
      if(blocks[i]->HasTokenList(basic)){
@@ -360,7 +365,7 @@ void Sweeper::ReadConfiguration(NPL::InputParser parser){
       //double Phi = blocks[i]->GetDouble("Phi");
 
       //Get distance parameters
-      double Dist[]={-1,-1,-1,-1};
+      double Dist[]={-1,-1,-1,-1, -1};
       for(unsigned int j=0; j<dist_par.size(); j++){
 	if(blocks[i]->HasToken(dist_par[j])){
 	  Dist[j]=blocks[i]->GetDouble(dist_par[j], "mm");
@@ -424,7 +429,7 @@ void Sweeper::ConstructDetector(G4LogicalVolume* world){
     //G4double B_Field = (m_Brho[i]*tesla*m)/(Sweeper_ArcLength/m);
     G4double B_Field = (m_Brho[i]*tesla*m)/(((Sweeper_NS::Rmin_MagField/m+Sweeper_NS::Rmax_MagField/m)/2.));
 
-    cout<<m_Brho[i]<<" "<<Sweeper_ArcLength/m<<" "<<B_Field/tesla<<" "<< (Sweeper_NS::Rmin_MagField+Sweeper_NS::Rmax_MagField)/2 << " "<< CLHEP::pi*m_Theta[i]/(180*deg)<<endl;
+    //cout<<m_Brho[i]<<" "<<Sweeper_ArcLength/m<<" "<<B_Field/tesla<<" "<< (Sweeper_NS::Rmin_MagField+Sweeper_NS::Rmax_MagField)/2 << " "<< CLHEP::pi*m_Theta[i]/(180*deg)<<endl;
       
     bool k3DMap = false;
     SetSweeperField(k3DMap, B_Field); //3D case or uniform
@@ -434,7 +439,8 @@ void Sweeper::ConstructDetector(G4LogicalVolume* world){
     G4double wX = Sweeper_x-sin(m_Theta[i])*(Sweeper_NS::VolumeThickness*0.5)-cos(m_Theta[i])*Sweeper_x/*Sweeper_NS::Rmin+Sweeper_NS::VolumeWidth*0.5)*/;
     G4double wY = 0;
     G4double wZ =Sweeper_z+cos(m_Theta[i])*(Sweeper_NS::VolumeThickness*0.5)-sin(m_Theta[i])*Sweeper_x/*+Sweeper_NS::Rmin-Sweeper_NS::VolumeWidth*0.5)*/; 
-  
+
+    cout<<"wZ: "<<wZ<<" wX: "<<wX<<endl;
     G4ThreeVector Det_pos = G4ThreeVector(wX, wY, wZ) ;
     
     G4RotationMatrix *RotMother = new G4RotationMatrix();
@@ -443,65 +449,72 @@ void Sweeper::ConstructDetector(G4LogicalVolume* world){
     new G4PVPlacement(G4Transform3D(*RotMother,Det_pos),BuildMotherVolume(),"MotherVolume",world, false,0);
     
     //// CRDCs
-
+    G4double Dist_ExitToCRDC1;
+    if(m_DistToExit[i]!=-1)Dist_ExitToCRDC1=m_DistToExit[i];
+    else Dist_ExitToCRDC1=1.0*m + 14.9*cm;
+    
     G4double CRDC1_x = 0.0;
     G4double CRDC1_y = 0.0;
-    G4double CRDC1_z = -Sweeper_NS::VolumeThickness*0.5+47*cm;
-    cout<<CRDC1_z<<endl;
+    G4double CRDC1_z = -Sweeper_NS::VolumeThickness*0.5+Dist_ExitToCRDC1;
+    cout<<"Dist CRDC1 center to Exit of Field "<<Sweeper_NS::VolumeThickness*0.5+CRDC1_z<<" mm"<<endl;
     G4ThreeVector CRDC1_pos = G4ThreeVector(CRDC1_x,CRDC1_y,CRDC1_z);
     m_CRDCPhys = new G4PVPlacement(0,CRDC1_pos,
     				      BuildCRDC(),"crdc1_phys",m_MotherLog,false,0);
 
     G4double Dist_CRDCs;
-    if(m_DistToExit[i]!=-1)Dist_CRDCs=m_DistToExit[i];
+    if(m_DistToDC1[i]!=-1)Dist_CRDCs=m_DistToDC1[i];
     else Dist_CRDCs=1.54*m;
     
     G4double CRDC2_x = 0.0;
     G4double CRDC2_y = 0.0;
     G4double CRDC2_z = CRDC1_z + Dist_CRDCs;
-
+    cout<<"Dist CRDC2 to center: "<<CRDC1_z<<" "<<CRDC2_z<<endl;
+    cout<<"Dist CRDC2 center to CRDC1 center "<<CRDC2_z-CRDC1_z<<" mm"<<endl;
     G4ThreeVector CRDC2_pos = G4ThreeVector(CRDC2_x,CRDC2_y,CRDC2_z);
     m_CRDCPhys = new G4PVPlacement(0,CRDC2_pos,
      				      BuildCRDC(),"crdc2_phys",m_MotherLog,false,1);
 
     ///// Ion Chamber
     G4double Dist_CRDC2ToIonChamber;
-    if(m_DistToDC1[i]!=-1) Dist_CRDC2ToIonChamber=m_DistToDC1[i];
+    if(m_DistToDC2[i]!=-1) Dist_CRDC2ToIonChamber=m_DistToDC2[i];
     else  Dist_CRDC2ToIonChamber=0.09*m;
     
     G4double IonChamber_x = 0.0;
     G4double IonChamber_y = 0.0;
-    G4double IonChamber_z = CRDC2_z + (CRDC_NS::Thickness*0.5 + IonChamber_NS::Thickness*0.5 + Dist_CRDC2ToIonChamber);
+    G4double IonChamber_z = CRDC2_z + (/*CRDC_NS::Thickness*0.5 +*/ IonChamber_NS::Thickness*0.5 + Dist_CRDC2ToIonChamber);
+    cout<<"Dist IC center to CRDC2 center "<<IonChamber_z-CRDC2_z<<" mm"<<endl;
+    
     G4ThreeVector IonChamber_pos = G4ThreeVector(IonChamber_x,IonChamber_y,IonChamber_z);
     new G4PVPlacement(0,IonChamber_pos,
 		      BuildIonChamber(),"IonChamber_phys",m_MotherLog,false,2);
-
-    ////// Thin Scint
-    G4double Dist_IonChamberToScint;
-    if(m_DistToDC2[i]!=-1) Dist_IonChamberToScint=m_DistToDC2[i];
-    else Dist_IonChamberToScint=9.525*cm;
     
+    ////// Thin Scint
+    G4double Dist_ICToScint;
+    if(m_DistToIC[i]!=-1) Dist_ICToScint=m_DistToIC[i];
+    else Dist_ICToScint=9.525*cm;
+   
     G4double Thin_x = 0;
     G4double Thin_y = 0;
-    G4double Thin_z = IonChamber_z+IonChamber_NS::Thickness*0.5+ThinScint_NS::Thickness*0.5+Dist_IonChamberToScint;
-
+    G4double Thin_z = IonChamber_z+IonChamber_NS::Thickness*0.5/*+ThinScint_NS::Thickness*0.5*/+Dist_ICToScint;
+    cout<<"Dist Thin center to IC center "<<Thin_z-IonChamber_z<<" mm"<<endl;
     
     G4ThreeVector ThinScint_pos = G4ThreeVector(Thin_x,Thin_y,Thin_z);
     new G4PVPlacement(0,ThinScint_pos,
     		      BuildThinScint(),"ThinScint_phys",m_MotherLog,false,3);
 
     //////// New Hodoscope
-    // G4double Dist_ScintToNewHodo=100*cm;
-    // if(m_DistToIC[i]!=-1)Dist_ScintToNewHodo=m_DistToIC[i];
-    // else Dist_ScintToNewHodo=100*cm;
+    G4double Dist_ScintToNewHodo;
+    if(m_DistToHodo[i]!=-1)Dist_ScintToNewHodo=m_DistToHodo[i];
+    else Dist_ScintToNewHodo=10*cm;
+    std::cout<<"Dist Thin center to Hodo center "<<Dist_ScintToNewHodo<<std::endl;
     
-    // G4double NewHodo_x = 0;
-    // G4double NewHodo_y = 0;
-    // G4double NewHodo_z = Dist_ScintToNewHodo + ThinScint_NS::Thickness*0.5 + NewHodo_NS::Thickness*0.5;
+    G4double NewHodo_x = 0;
+    G4double NewHodo_y = 0;
+    G4double NewHodo_z = Thin_z + ThinScint_NS::Thickness*0.5 + Dist_ScintToNewHodo;
     
-    // G4ThreeVector NewHodoScint_pos = G4ThreeVector(NewHodo_x,NewHodo_y,NewHodo_z);
-    // new G4PVPlacement(0,NewHodoScint_pos,
-    // 		      BuildNewHodo(),"NewHodoScint_phys",m_MotherLog,false,5);
+    G4ThreeVector NewHodoScint_pos = G4ThreeVector(NewHodo_x,NewHodo_y,NewHodo_z);
+    new G4PVPlacement(0,NewHodoScint_pos,
+		      BuildNewHodo(),"NewHodoScint_phys",m_MotherLog,false,4);
 
     // //////// Old Hodoscope
     // G4double Dist_ScintToOldHodo=50*cm;
@@ -515,7 +528,7 @@ void Sweeper::ConstructDetector(G4LogicalVolume* world){
     
     // G4ThreeVector OldHodoScint_pos = G4ThreeVector(OldHodo_x,OldHodo_y,OldHodo_z);
     // new G4PVPlacement(0,OldHodoScint_pos,
-    // 		      BuildOldHodo(),"OldHodoScint_phys",m_MotherLog,false,6);
+    // 		      BuildOldHodo(),"OldHodoScint_phys",m_MotherLog,false,5);
 
     
   }
@@ -536,6 +549,8 @@ void Sweeper::InitializeRootOutput(){
 // Read sensitive part and fill the Root tree.
 // Called at in the EventAction::EndOfEventAvtion
 void Sweeper::ReadSensitive(const G4Event* event){
+
+  //std::cout<<"TEST"<<std::endl;
   m_Event->Clear();
 
   ////// Sweeper Collection Hits
@@ -553,18 +568,26 @@ void Sweeper::ReadSensitive(const G4Event* event){
   //Loop in map
   for(Sweeper_itr = SweeperHitMap->GetMap()->begin(); Sweeper_itr != SweeperHitMap->GetMap()->end();Sweeper_itr++){
     
-    G4double *Info = *(Sweeper_itr->second); 
-    cout<<"Energy: "<< Info[0]<<endl;
-    cout<<"time: "<< Info[1]<<endl;
-    cout<<"Detector Nbr: "<< Info[7]<<" "<<endl;
+    G4double *Info = *(Sweeper_itr->second);
+  
+    // cout<<"Energy: "<< Info[0]<<endl;
+    //cout<<"time: "<< Info[1]<<endl;
+    //cout<<"Detector Nbr: "<< Info[7]<<" "<<endl;
 
+    //cout<<"event ==========" <<endl;
+    
     double energy = Info[0];
     double time = Info[1];
     double xpos = Info[2];
     double ypos = Info[3];
     unsigned short detnum = Info[7];
 
+    if(detnum==4)std::cout<<energy<<" "<<time<<std::endl;
+
     if(detnum<2){//DCs
+      // cout<<"x b: "<<xpos<<" "<<endl;
+      // cout<<"y b: "<<ypos<<" "<<endl;
+      
       double x = RandGauss::shoot(xpos, CRDC_NS::ResoPosX);
       double y = RandGauss::shoot(ypos, CRDC_NS::ResoPosY);
   
@@ -573,14 +596,20 @@ void Sweeper::ReadSensitive(const G4Event* event){
     }else if(detnum==2){//IC
       double e = RandGauss::shoot(energy, IonChamber_NS::ResoEnergy*energy);
       m_Event->SetEnergy(detnum,e);
+      //cout<<energy<<endl;
     }else if(detnum==3){//Thin
       double t = RandGauss::shoot(time, ThinScint_NS::ResoTime);
       m_Event->SetTime(detnum,t);
-    }
+      //cout<<ThinScint_NS::ResoTime/ns<<" "<<time/ns<<endl;
+      //cout<<time/ns<<endl;
+    }else if(detnum==4){
+      double tke = RandGauss::shoot(energy, NewHodo_NS::ResoEnergy*energy);
+      m_Event->SetTKE(detnum,tke);
+    } 
     //else if(detnum==5){ //Hodos
 
   }
-  cout<<SweeperHitMap->GetSize()<<endl;   
+  //cout<<SweeperHitMap->GetSize()<<endl;   
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

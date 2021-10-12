@@ -108,9 +108,16 @@ void TMinosPhysics::PreTreat() {
           unsigned int ring = round((sqrt(x_mm*x_mm + y_mm*y_mm)-44.15)/2.1);
           cal_v="Minos/R"+NPL::itoa(ring)+"_VDRIFT";
           cal_o="Minos/R"+NPL::itoa(ring)+"_OFFSET";
+          double calV= cal->GetValue(cal_v,0);
+          double calO=cal->GetValue(cal_o,0);
 
-          double z_mm = (T*m_TimeBin+cal->GetValue(cal_o,0))*cal->GetValue(cal_v,0);    
-
+          // regular case
+          //double z_mm = (T*m_TimeBin+cal->GetValue(cal_o,0))*cal->GetValue(cal_v,0);    
+          
+          // testing dependency:
+          calV+=-calV*30./100.;// -5%
+          calO+=+calO*60./100;
+          double z_mm = (T*m_TimeBin+calO)*calV;    
           TVector3 Pos=TVector3(x_mm+m_Position.X(),y_mm+m_Position.Y(),z_mm+m_Position.Z());
           Pos.RotateZ(m_ZRotation); 
           // Calibrate the Pad:
