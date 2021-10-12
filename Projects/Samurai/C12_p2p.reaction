@@ -3,10 +3,10 @@ Beam
   Particle= 12C
   Energy= 8800 MeV
   SigmaEnergy= 0 MeV
-  SigmaThetaX= 5 deg
-  SigmaPhiY= 5 deg
-  SigmaX= 100 mm
-  SigmaY= 100 mm
+  SigmaThetaX= 0 deg
+  SigmaPhiY= 0 deg
+  SigmaX= 0 mm
+  SigmaY= 0 mm
   MeanThetaX= 0 deg
   MeanPhiY= 0 deg
   MeanX= 0 mm

@@ -9,8 +9,8 @@ Target
  Z= 1000 mm
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 Samurai
- POS= 2000 0 10000 mm
- ANGLE= 45 deg
+ POS= 0 0 10000 mm
+ ANGLE= 30 deg
  %
  METHOD= 1				
  % 0=RungeKutta, 1=EliaOmar
