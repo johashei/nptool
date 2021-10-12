@@ -35,9 +35,6 @@
 #include "TReactionConditions.h"
 
 //FIXME
-#include "SamuraiFieldMap.h"
-
-//FIXME
 #include <string>
 #include <vector>
 
@@ -80,10 +77,10 @@ namespace NPS{
       return to_string(V.getX()) + " " + to_string(V.getY()) + " " + to_string(V.getZ());
       }
 
-    bool m_Initialized;
+    bool m_Initialized; //Map Loaded
     double m_StepSize;
-    double m_Angle; //Angle of rotation of the whole magnet
-    string m_FieldMap;
+    double m_Angle; //Angle of rotation of the whole magnet - FIXME
+    string m_FieldMap;//FIXME
     PropagationMethod m_Meth;// "I AM THE ONE WHO KNOCKS!!!" cit. Heisenberg
     SamuraiFieldMap* m_Map;
 
@@ -101,8 +98,8 @@ namespace NPS{
     void AttachReactionConditions();//FIXME
     
     void SetStepSize(double step){m_StepSize=step;};
-    void SetAngle(double angle){m_Angle=angle;};
-    void SetFieldMap(string fieldmap){m_FieldMap=fieldmap;};
+    void SetAngle(double angle){m_Angle=angle;};//FIXME
+    void SetFieldMap(string fieldmap){m_FieldMap=fieldmap;};//FIXME
     void SetMethod(PropagationMethod method){m_Meth=method;};
   };
 }

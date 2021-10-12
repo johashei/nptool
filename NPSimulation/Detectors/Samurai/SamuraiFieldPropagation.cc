@@ -52,7 +52,6 @@
 NPS::SamuraiFieldPropagation::SamuraiFieldPropagation(G4String modelName, G4Region* envelope)
   : G4VFastSimulationModel(modelName, envelope) {
   //ReadConfiguration();
-    //m_B = G4ThreeVector( 0. , 1., 0. ) * tesla;
 
     m_Map = NULL;
     m_Initialized = false;
@@ -143,16 +142,15 @@ G4bool NPS::SamuraiFieldPropagation::ModelTrigger(const G4FastTrack& fastTrack) 
 ////////////////////////////////////////////////////////////////////////////////
 void NPS::SamuraiFieldPropagation::DoIt(const G4FastTrack& fastTrack,
     G4FastStep&        fastStep) {
-  //std::cout << "DOIT" << std::endl;
+  //std::cout << "\nDOIT" << std::endl;
   //std::cout << "FIELDMAP " << m_FieldMap << std::endl;
   
   if(!m_Initialized){
     m_Map = new SamuraiFieldMap();
-    //m_Map->LoadMap(m_Angle, "/local/pilotto/nptool/Projects/Samurai/" + m_FieldMap, 1);
-    m_Map->LoadMap(0, m_FieldMap, 10);
+    m_Map->LoadMap(0, m_FieldMap, 10);//FIXME
     m_Initialized = true;
   }
-
+  
   switch (m_Meth){
     case RungeKutta:
       RungeKuttaPropagation(fastTrack, fastStep);
@@ -348,11 +346,7 @@ void NPS::SamuraiFieldPropagation::EliaOmarPropagation (const G4FastTrack& fastT
     }
   }
 
-  //cout << count << endl;
 
-  
-
-  
   fastStep.ProposePrimaryTrackFinalPosition( newPosition );
   fastStep.SetPrimaryTrackFinalMomentum ( newMomentum );//FIXME
   fastStep.ProposePrimaryTrackFinalTime( time );
@@ -364,7 +358,61 @@ void NPS::SamuraiFieldPropagation::EliaOmarPropagation (const G4FastTrack& fastT
 /////////////////////////////////////////////////////////////////////////
 void NPS::SamuraiFieldPropagation::RungeKuttaPropagation (const G4FastTrack& fastTrack,
 							  G4FastStep& fastStep){
-  cout << "Method not defined yet\n";
+
+  static bool inside = false;//previous step
+  static vector<TVector3> trajectory;
+  static int count;
+
+  // Get the track info
+  const G4Track* PrimaryTrack = fastTrack.GetPrimaryTrack();
+  
+  //G4double energy = PrimaryTrack->GetKineticEnergy();
+  G4double speed = PrimaryTrack->GetVelocity();
+  //G4double time  = PrimaryTrack->GetGlobalTime()+m_StepSize/speed;
+  
+  //Get Track info
+  G4ThreeVector localDir = fastTrack.GetPrimaryTrackLocalDirection();
+  G4ThreeVector localPosition = fastTrack.GetPrimaryTrackLocalPosition();
+  G4ThreeVector localMomentum = fastTrack.GetPrimaryTrackLocalMomentum();
+  
+  G4ThreeVector localVel = localDir * speed;
+
+  double charge = PrimaryTrack->GetParticleDefinition()->GetPDGCharge() / coulomb;
+  double ConF_p = 1 / (joule * c_light / (m/s)) ; // MeV/c to kg*m/s (SI units)
+
+  if (!inside){
+    count = 0;
+    double Brho = localMomentum.mag() * ConF_p / charge;
+    TVector3 pos (localPosition.x(), localPosition.y(), localPosition.z());
+    TVector3 dir (localDir.x(), localDir.y(), localDir.z());
+
+
+    trajectory.clear();
+    trajectory = m_Map->Propagate(Brho, pos, dir);
+
+    inside = true;
+  }
+
+  
+  G4ThreeVector newPosition (trajectory[count+1].x(), trajectory[count+1].y(), trajectory[count+1].z());
+  G4ThreeVector newDir = (newPosition - localPosition).unit();
+  G4ThreeVector newMomentum = newDir * localMomentum.mag(); 
+  G4double time  = PrimaryTrack->GetGlobalTime()+(newPosition - localPosition).mag()/speed;
+
+  //cout << "deltaPos " << (newPosition - localPosition).mag()/m << endl;
+  //cout << "speed " << speed/(m/s) << endl;
+   
+  if (inside){
+    G4VPhysicalVolume* solid = PrimaryTrack->GetTouchable()->GetVolume();
+    if (solid->GetName() != "Samurai") inside = false;
+    cout << solid->GetName() << " because of yes" << endl;
+  }
+  fastStep.ProposePrimaryTrackFinalPosition( newPosition );
+  fastStep.SetPrimaryTrackFinalMomentum ( newMomentum );//FIXME
+  fastStep.ProposePrimaryTrackFinalTime( time );
+
+  count++;
+  
   return;
 }
 
