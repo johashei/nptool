@@ -1,8 +1,8 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 Beam
   Particle= 12C
-  Energy= 8800 MeV
-  SigmaEnergy= 100 MeV
+  Energy= 4800 MeV
+  SigmaEnergy= 500 MeV
   SigmaThetaX= 0 deg
   SigmaPhiY= 0 deg
   SigmaX= 0 mm

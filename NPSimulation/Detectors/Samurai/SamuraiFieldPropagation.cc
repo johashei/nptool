@@ -147,6 +147,7 @@ void NPS::SamuraiFieldPropagation::DoIt(const G4FastTrack& fastTrack,
   
   if(!m_Initialized){
     m_Map = new SamuraiFieldMap();
+    //cout << "before load map\n";
     m_Map->LoadMap(0, m_FieldMap, 10);//FIXME
     m_Initialized = true;
   }
@@ -359,6 +360,7 @@ void NPS::SamuraiFieldPropagation::EliaOmarPropagation (const G4FastTrack& fastT
 void NPS::SamuraiFieldPropagation::RungeKuttaPropagation (const G4FastTrack& fastTrack,
 							  G4FastStep& fastStep){
 
+  static int counter = 0;//debugging purposes
   static bool inside = false;//previous step
   static vector<TVector3> trajectory;
   static int count;
@@ -403,10 +405,23 @@ void NPS::SamuraiFieldPropagation::RungeKuttaPropagation (const G4FastTrack& fas
   //cout << "speed " << speed/(m/s) << endl;
    
   if (inside){
-    G4VPhysicalVolume* solid = PrimaryTrack->GetTouchable()->GetVolume();
-    if (solid->GetName() != "Samurai") inside = false;
-    cout << solid->GetName() << " because of yes" << endl;
+    G4VSolid* solid = PrimaryTrack->GetTouchable()->GetVolume()->GetLogicalVolume()->GetSolid();
+
+    if (solid->Inside(newPosition) != kInside){
+      counter++;
+      inside = false;
+      cout << "\n" << counter << " inside = false";
+    }
   }
+
+  if(counter > 0){
+    cout << "newP " << Cart(newPosition) << endl;
+    cout << "speed " << speed/(m/s) << endl;
+    G4ThreeVector B = VtoG4( m_Map->InterpolateB(G4toV(localPosition/mm)) );
+    cout << "B " << Cart(B) << endl;
+    if(!inside) for(auto s:trajectory) cout << s.x() << " " << s.y() << " " << s.z() << endl;
+  }
+
   fastStep.ProposePrimaryTrackFinalPosition( newPosition );
   fastStep.SetPrimaryTrackFinalMomentum ( newMomentum );//FIXME
   fastStep.ProposePrimaryTrackFinalTime( time );
