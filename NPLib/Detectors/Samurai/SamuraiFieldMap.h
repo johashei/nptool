@@ -72,12 +72,13 @@ class SamuraiFieldMap{
  
   public: // Propagation of a particule in the field
     // return a 3D track of the particle in the field
-    std::vector< TVector3 > Propagate(double Brho, TVector3 pos, TVector3 dir,bool store=true);
+    std::vector< TVector3 > Propagate(double Brho, TVector3 pos, TVector3 dir,bool store=true,bool propagate_to_Rmax=true);
     void func(NPL::Particle& N, TVector3 pos, TVector3 imp, TVector3& new_pos, TVector3& new_dir);
   private:
     double m_fdc2angle;
     double m_fdc2R;
   public:
+    void SetStepSize(double StepSize){m_step_size=StepSize;};
     void SetFDC2Angle(double angle){m_fdc2angle=angle;};
     void SetFDC2R(double R){m_fdc2R=R;};
     TVector3 PropagateToFDC2(TVector3 pos, TVector3 dir);
@@ -93,7 +94,8 @@ class SamuraiFieldMap{
     ROOT::Math::Functor    m_func;
     double Delta(const double* parameter);
     TVector3 m_FitPosFDC0,m_FitDirFDC0,m_FitPosFDC2,m_FitDirFDC2;
-    
+   private:
+    double m_step_size; // time interval for RK4
 
     //
     ClassDef(SamuraiFieldMap,1);
