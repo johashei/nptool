@@ -47,11 +47,16 @@ class TSweeperData : public TObject {
     vector<Double_t>   fSweeper_X;
     vector<Double_t>   fSweeper_Y;
     vector<Double_t>   fSweeper_DriftTime;
+
+    //TKE (Hodoscope)
+    vector<UShort_t>   fSweeper_TKE_DetectorNbr;
+    vector<Double_t>   fSweeper_TKE;
     
     /* vector<UShort_t>   fSweeper_CRDC2_DetectorNbr; */
     /* vector<Double_t>   fSweeper_CRDC2_X; */
     /* vector<Double_t>   fSweeper_CRDC2_DriftTime; */
-    
+
+  // Double_t h;
 
   //////////////////////////////////////////////////////////////
   // Constructor and destructor
@@ -98,6 +103,12 @@ class TSweeperData : public TObject {
       fSweeper_X.push_back(X);
       fSweeper_Y.push_back(Y); 
     };//!
+
+    inline void SetTKE(const UShort_t& DetNbr,const Double_t& TKE)  {
+      fSweeper_TKE_DetectorNbr.push_back(DetNbr);
+      fSweeper_TKE.push_back(TKE);
+    };//!
+  
     
     
     //////////////////////    GETTERS    ////////////////////////
@@ -128,7 +139,14 @@ class TSweeperData : public TObject {
       {return fSweeper_Y[i];}//!
     inline Double_t Get_DriftTime(const unsigned int &i) const 
       {return fSweeper_DriftTime[i];}//!
-    
+
+    //TKE
+     inline UShort_t GetMultTKE() const
+      {return fSweeper_TKE_DetectorNbr.size();}
+    inline UShort_t GetTKE_DetectorNbr(const unsigned int &i) const 
+      {return fSweeper_TKE_DetectorNbr[i];}//!
+     inline Double_t Get_TKE(const unsigned int &i) const 
+      {return fSweeper_TKE[i];}//!
     
   //////////////////////////////////////////////////////////////
   // Required for ROOT dictionnary

@@ -1,20 +1,20 @@
-#ifndef Sweeper_h
-#define Sweeper_h 1
+#ifndef Samurai_h
+#define Samurai_h 1
 /*****************************************************************************
- * Copyright (C) 2009-2020   this file is part of the NPTool Project       *
+ * Copyright (C) 2009-2021   this file is part of the NPTool Project       *
  *                                                                           *
  * For the licensing terms see $NPTOOL/Licence/NPTool_Licence                *
  * For the list of contributors see $NPTOOL/Licence/Contributors             *
  *****************************************************************************/
 
 /*****************************************************************************
- * Original Author: B. Monteagudo  contact address: monteagu@frib.msu.edu                        *
+ * Original Author: Elia Pilotto  contact address: pilottoelia@gmail.com     *
  *                                                                           *
- * Creation Date  : May 2020                                           *
- * Last update    :                                                          *
+ * Creation Date  : septembre 2021                                           *
+ * Last update    : septembre 2021                                           *
  *---------------------------------------------------------------------------*
  * Decription:                                                               *
- *  This class describe  Sweeper simulation                             *
+ *  This class describe  Samurai simulation                                  *
  *                                                                           *
  *---------------------------------------------------------------------------*
  * Comment:                                                                  *
@@ -31,67 +31,54 @@ using namespace std;
 #include "G4RotationMatrix.hh"
 #include "G4LogicalVolume.hh"
 #include "G4MultiFunctionalDetector.hh"
+#include "G4VFastSimulationModel.hh"
 
 // NPTool header
 #include "NPSVDetector.hh"
-#include "TSweeperData.h"
 #include "NPInputParser.h"
-//#include "MagField.hh"
 
-class Sweeper : public NPS::VDetector{
+#include "SamuraiFieldPropagation.hh"
+
+
+class Samurai : public NPS::VDetector{
+  /*
+    enum PropagationMethod{
+      RungeKutta,
+      EliaOmar
+    };*/
   ////////////////////////////////////////////////////
   /////// Default Constructor and Destructor /////////
   ////////////////////////////////////////////////////
   public:
-    Sweeper() ;
-    virtual ~Sweeper() ;
+    Samurai() ;
+    virtual ~Samurai() ;
 
     ////////////////////////////////////////////////////
     /////// Specific Function of this Class ///////////
     ////////////////////////////////////////////////////
   public:
-
-    // Spherical
-    void AddDetector(G4ThreeVector POS,double Theta,double Brho, double* Dist);  
   
-    //Logical Volumes
-    G4LogicalVolume* BuildMotherVolume();
-    G4LogicalVolume* BuildSweeper(double theta);
-    G4LogicalVolume* BuildSweeperMagField(double theta);
-    G4LogicalVolume* BuildCRDC();
-    G4LogicalVolume* BuildIonChamber();
-    G4LogicalVolume* BuildThinScint();
-    G4LogicalVolume* BuildOldHodo();
-    G4LogicalVolume* BuildNewHodo();
+    // Cartesian
+    void AddMagnet(G4ThreeVector POS, double Angle, int method,
+		 string fieldmap, double n_steps);
+    // Spherical
+    void AddMagnet(double R, double Theta, double Phi, double Angle,
+		   int method, string fieldmap, double n_steps);
 
-    //Magnetic Field
-  void SetSweeperField(bool kMap, double bfield);
+    G4LogicalVolume* BuildMagnet();//FIXME
+    G4LogicalVolume* BuildYoke();//FIXME
   
   private:
-    //Logical volumes
-    G4LogicalVolume* m_MotherLog;
-    G4LogicalVolume* m_SweeperLog;
-    G4LogicalVolume* m_SweeperMagFieldLog;
-    G4LogicalVolume* m_CRDCLog;
-    G4LogicalVolume* m_IonChamberLog;
-    G4LogicalVolume* m_ThinScintLog;
-    G4LogicalVolume* m_OldHodoLog;
-    G4LogicalVolume* m_NewHodoLog;
   
-  
-    //Physical Volumes
-    G4VPhysicalVolume *m_SweeperPhys;
-    G4VPhysicalVolume *m_CRDCPhys;
-
-    //Magnetic Field
-    G4MagneticField *fSweeperMagField;
-  
+    G4LogicalVolume* m_Magnet;
+    G4LogicalVolume* m_Yoke;
+    
     ////////////////////////////////////////////////////
     //////  Inherite from NPS::VDetector class /////////
     ////////////////////////////////////////////////////
   public:
     // Read stream at Configfile to pick-up parameters of detector (Position,...)
-    // Called in DetecorConstruction::ReadDetextorConfiguration Method
+    // Called in DetecorConstruction::ReadDetectorConfiguration Method
     void ReadConfiguration(NPL::InputParser) ;
 
     // Construct detector and inialise sensitive part.
@@ -100,52 +87,54 @@ class Sweeper : public NPS::VDetector{
 
     // Add Detector branch to the EventTree.
     // Called After DetecorConstruction::AddDetector Method
-    void InitializeRootOutput() ;
+    //void InitializeRootOutput() ;
 
     // Read sensitive part and fill the Root tree.
-    // Called at in the EventAction::EndOfEventAvtion
+    // Called at in the EventAction::EndOfEventAction
     void ReadSensitive(const G4Event* event) ;
 
-  public:   // Scorer
+  public:
+    // Scorer
     //   Initialize all Scorer used by the MUST2Array
-    void InitializeScorers() ;
+    //void InitializeScorers() ;
+
+    // Set region were magnetic field is active:
+    void SetPropagationRegion();
 
     //   Associated Scorer
-    G4MultiFunctionalDetector* m_SweeperScorer;
-  
+    //G4MultiFunctionalDetector* m_SamuraiScorer ;
     ////////////////////////////////////////////////////
     ///////////Event class to store Data////////////////
     ////////////////////////////////////////////////////
   private:
-    TSweeperData* m_Event ;
+
+    // Region were magnetic field is active:
+    G4Region* m_PropagationRegion;
+    vector<G4VFastSimulationModel*> m_PropagationModel;
+  
 
     ////////////////////////////////////////////////////
     ///////////////Private intern Data//////////////////
     ////////////////////////////////////////////////////
-  private: // Geometry
-    // Detector Coordinate 
-    vector<double>  m_R; 
-    vector<double>  m_Theta;
-    vector<double>  m_Phi;
-    vector<double>  m_Brho; 
-    vector<G4ThreeVector> m_Pos;
-    //Detectors distances
-    vector<double> m_DistToExit;
-    vector<double> m_DistToDC1;
-    vector<double> m_DistToDC2;
-    vector<double> m_DistToIC;
-    vector<double> m_DistToHodo;
-  
-   
-    // Visualisation Attributes
-    G4VisAttributes* m_VisCRDC;
-    G4VisAttributes* m_VisSweeper;
-    G4VisAttributes* m_VisIonChamber;
-    G4VisAttributes* m_VisThinScint;
-    G4VisAttributes* m_VisHodo;
+  private:
+    // Geometry
+    // Detector Coordinate
+    double m_R;
+    double m_Theta;
+    double m_Phi;
 
-  
-  
+    // Angle of Rotation
+    double m_Angle;
+
+    // Propagation Parameters
+    NPS::PropagationMethod m_Method;
+    double m_StepSize;
+    string m_FieldMapFile;
+    
+    // Visualisation Attributes
+    G4VisAttributes* m_VisMagnet;
+    G4VisAttributes* m_VisYokes;
+
   // Needed for dynamic loading of the library
   public:
     static NPS::VDetector* Construct();

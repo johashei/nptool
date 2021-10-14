@@ -134,6 +134,9 @@ void TSofSciPhysics::BuildPhysicalEvent() {
     }
   }
 
+  if(S2_pmtR.size()==0 || S2_pmtL.size()==0 || CC_pmtR.size()==0 || CC_pmtL.size()==0)
+    return;
+
   if(m_NumberOfDetectors==2){
     double CC_rawpos;
     double S2_rawpos;

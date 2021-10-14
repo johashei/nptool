@@ -36,7 +36,7 @@ class SamuraiFieldMap{
 
   public:
     SamuraiFieldMap();
-    SamuraiFieldMap(std::string file);
+    SamuraiFieldMap(std::string file);//???
     ~SamuraiFieldMap(){};
   
   public: // Map reading
@@ -78,6 +78,7 @@ class SamuraiFieldMap{
     double m_fdc2angle;
     double m_fdc2R;
   public:
+    void SetStepSize(double StepSize){m_step_size=StepSize;};
     void SetFDC2Angle(double angle){m_fdc2angle=angle;};
     void SetFDC2R(double R){m_fdc2R=R;};
     TVector3 PropagateToFDC2(TVector3 pos, TVector3 dir);
@@ -93,7 +94,8 @@ class SamuraiFieldMap{
     ROOT::Math::Functor    m_func;
     double Delta(const double* parameter);
     TVector3 m_FitPosFDC0,m_FitDirFDC0,m_FitPosFDC2,m_FitDirFDC2;
-    
+   private:
+    double m_step_size; // time interval for RK4
 
     //
     ClassDef(SamuraiFieldMap,1);

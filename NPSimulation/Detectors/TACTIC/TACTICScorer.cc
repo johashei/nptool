@@ -33,8 +33,7 @@ Gas_Scorer::~Gas_Scorer(){}
 
 G4bool Gas_Scorer::ProcessHits(G4Step* aStep, G4TouchableHistory*){
 
-  G4double* Infos = new G4double[15];
-  //bool first_step = true;
+  G4double* Infos = new G4double[16];
   m_Position  = aStep->GetPreStepPoint()->GetPosition();
   
   Infos[0] = G4RunManager::GetRunManager()->GetCurrentEvent()->GetEventID();
@@ -49,7 +48,6 @@ G4bool Gas_Scorer::ProcessHits(G4Step* aStep, G4TouchableHistory*){
 
   m_SegmentNumber = (int)((m_Position.z() + m_ScorerLength / 2.) / m_SegmentLength ) + 1; //Pad number 
   Infos[6] = m_SegmentNumber;
-  //prepad = Infos[6]; 
   Infos[7] = m_Position.z();
   if(m_Shape == "Cylindrical") Infos[8] = pow(pow(m_Position.x(),2) + pow(m_Position.y(),2),0.5); //R
   if(m_Shape == "Long_Chamber") Infos[8] = m_Position.y();
@@ -58,9 +56,30 @@ G4bool Gas_Scorer::ProcessHits(G4Step* aStep, G4TouchableHistory*){
   G4ThreeVector p_vec = aStep->GetTrack()->GetVertexMomentumDirection();
   Infos[11] = acos(p_vec[2]/pow(pow(p_vec[0],2)+pow(p_vec[1],2)+pow(p_vec[2],2),0.5))/deg; //angle relative to z axis (theta);   
   Infos[12] = aStep->GetTrack()->GetTrackLength();
-  Infos[13] = m_p0 + m_p1*Infos[8] + m_p2*Infos[8]*Infos[8] + m_p3*Infos[8]*Infos[8]*Infos[8];
+
+  int sector = -1;
+  if(Infos[8]/cm > 1.2) { 
+    if(m_Position.x() > 0 and m_Position.y() > 0) {
+      if(abs(m_Position.x()) < abs(m_Position.y())) sector = 0;
+      if(abs(m_Position.x()) > abs(m_Position.y())) sector = 1;
+    }
+    if(m_Position.x() > 0 and m_Position.y() < 0) {
+      if(abs(m_Position.x()) > abs(m_Position.y())) sector = 2;
+      if(abs(m_Position.x()) < abs(m_Position.y())) sector = 3;
+    }
+    if(m_Position.x() < 0 and m_Position.y() < 0) {
+      if(abs(m_Position.x()) < abs(m_Position.y())) sector = 4;
+      if(abs(m_Position.x()) > abs(m_Position.y())) sector = 5;
+    }
+    if(m_Position.x() < 0 and m_Position.y() > 0) {
+      if(abs(m_Position.x()) > abs(m_Position.y())) sector = 6;
+      if(abs(m_Position.x()) < abs(m_Position.y())) sector = 7;
+    }
+  }
   
-  //Infos[14] = excess;
+  Infos[13] = sector;
+
+  Infos[14] = m_p0 + m_p1*Infos[8] + m_p2*Infos[8]*Infos[8] + m_p3*Infos[8]*Infos[8]*Infos[8];
   
   G4ThreeVector delta_Position = aStep->GetDeltaPosition();
 
@@ -84,13 +103,13 @@ G4bool Gas_Scorer::ProcessHits(G4Step* aStep, G4TouchableHistory*){
     
 #ifdef USE_Garfield
 
-  Infos[14] = GARFDRIFT(((aStep->GetTotalEnergyDeposit() - aStep->GetNonIonizingEnergyDeposit())/eV+excess), Infos[3], m_Position/cm, delta_Position/cm, Infos[8]/cm, Infos[6], Infos[2], m_ScorerLength/cm, m_SegmentLength/cm, Infos[0], (aStep->GetTotalEnergyDeposit() - aStep->GetNonIonizingEnergyDeposit())/eV, m_Shape)*eV;
+  Infos[15] = GARFDRIFT(((aStep->GetTotalEnergyDeposit() - aStep->GetNonIonizingEnergyDeposit())/eV+excess), Infos[3], m_Position/cm, delta_Position/cm, Infos[8]/cm, Infos[6], Infos[2], m_ScorerLength/cm, m_SegmentLength/cm, Infos[0], (aStep->GetTotalEnergyDeposit() - aStep->GetNonIonizingEnergyDeposit())/eV, m_Shape)*eV;
   /*  
   file.open("excess_test.dat",std::ios::app);
-  file << Infos[6] << "\t"  << "\t" <<  aStep->IsFirstStepInVolume() << "\t" << excess  << "\t" << Infos[14]/eV << "\t" << (int)((((aStep->GetTotalEnergyDeposit() - aStep->GetNonIonizingEnergyDeposit())/eV+excess) / 41.1)*0.01) << "\t" <<  Infos[8] <<  endl;
+  file << Infos[6] << "\t"  << "\t" <<  aStep->IsFirstStepInVolume() << "\t" << excess  << "\t" << Infos[15]/eV << "\t" << (int)((((aStep->GetTotalEnergyDeposit() - aStep->GetNonIonizingEnergyDeposit())/eV+excess) / 41.1)*0.01) << "\t" <<  Infos[8] <<  endl;
   file.close();
   */
-  excess = Infos[14]/eV;
+  excess = Infos[15]/eV;
  
 #endif
 

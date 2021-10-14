@@ -117,66 +117,53 @@ void TACTIC::AddDetector(double  R, double  Theta, double  Phi, string  Shape){
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 G4LogicalVolume* TACTIC::BuildCylindricalDetector(){
-  //  if(!m_CylindricalDetector){
+
+  G4Material* Mylar = MaterialManager::getInstance()->GetMaterialFromLibrary("Mylar");
+  G4Material* Vacuum = MaterialManager::getInstance()->GetMaterialFromLibrary("G4_Galactic");
+
+  unsigned const int NumberOfGasMix = m_GasMaterial.size();
   
-    // G4Material* Cu = MaterialManager::getInstance()->GetMaterialFromLibrary("Cu");
-    G4Material* Mylar = MaterialManager::getInstance()->GetMaterialFromLibrary("Mylar");
-    G4Material* Vacuum = MaterialManager::getInstance()->GetMaterialFromLibrary("G4_Galactic");
-
-    //    std::cout << "Vacuum: " << Vacuum << std::endl;
+  double density=0;
+  vector<G4Material*> GasComponent;;
+  
+  for(unsigned int i=0; i<NumberOfGasMix; i++)GasComponent.push_back(MaterialManager::getInstance()->GetMaterialFromLibrary(m_GasMaterial[i]));
+  
+  double total_m = 0.;
     
-    unsigned const int NumberOfGasMix = m_GasMaterial.size();
-
-    double density=0;
-    vector<G4Material*> GasComponent;
+  for(unsigned int i=0; i<NumberOfGasMix; i++) {
+    total_m += GasComponent[i]->GetMassOfMolecule()*(double)m_GasFraction[i]/100.;
+  }
     
-    for(unsigned int i=0; i<NumberOfGasMix; i++){
-      //      if(m_GasMaterial[i] == "CO2") GasComponent.push_back(MaterialManager::getInstance()->GetGasFromLibrary(m_GasMaterial[i], 1.0/bar, m_Temperature));
-      if(m_GasMaterial[i] == "P10_gas") {
-	//G4Material *P10_gas = new G4Material("P10_gas", 0.00156 * g /cm3, 3, kStateGas, m_Temperature, 1.0/bar); //density for SRIM (1 atm);
-	G4Material *P10_gas = new G4Material("P10_gas", 0.00156*g/cm3, 3);
-	G4Element *elAr = new G4Element("Argon","Ar",18.,39.948*g/mole);
-	G4Element *elC = new G4Element("Carbon","C",6.,12.0107*g/mole);
-	G4Element *elH = new G4Element("Hydrogen","H",1.,1.00784*g/mole);
-	P10_gas->AddElement(elAr,90);
-	P10_gas->AddElement(elC,2);
-	P10_gas->AddElement(elH,8);
-	GasComponent.push_back(P10_gas);
-      }
-      else GasComponent.push_back(MaterialManager::getInstance()->GetMaterialFromLibrary(m_GasMaterial[i]));
-    }
-    
-    for(unsigned int i=0; i<NumberOfGasMix; i++){
-      density += ((double)m_GasFraction[i]/100)*GasComponent[i]->GetDensity()*(m_Pressure/bar)/(GasComponent[i]->GetPressure()/bar);
-      // p2 = p1*(P2/P1) //e.g.  p2 = p1*(0.5/1) p scales with P, T=const 
-    }
-
+    for(unsigned int i=0; i<NumberOfGasMix; i++)density += ((double)m_GasFraction[i]/100)*GasComponent[i]->GetDensity()*(m_Pressure/bar)/(GasComponent[i]->GetPressure()/bar); // p2 = p1*(P2/P1) //e.g.  p2 = p1*(0.5/1) p scales with P, T=const       
+   
     G4Material* TACTIC_gas = new G4Material("TACTIC_gas", density, NumberOfGasMix, kStateGas, m_Temperature, m_Pressure);
+    
+    //for(unsigned int i=0; i<NumberOfGasMix; i++) TACTIC_gas->AddMaterial(GasComponent[i], (double)m_GasFraction[i]/100); //by mass fraction
 
-    for(unsigned int i=0; i<NumberOfGasMix; i++) TACTIC_gas->AddMaterial(GasComponent[i], (double)m_GasFraction[i]/100);
+    double total_n = 0;
+    
+    for(unsigned int i=0; i<NumberOfGasMix; i++) TACTIC_gas->AddMaterial(GasComponent[i], (GasComponent[i]->GetMassOfMolecule()*(double)m_GasFraction[i]/100.)/total_m); //by molar fraction
+    
+    for(unsigned int i=0; i<NumberOfGasMix; i++) total_n += TACTIC_gas->GetVecNbOfAtomsPerVolume()[i];
+
+    for(unsigned int i=0; i<NumberOfGasMix; i++) cout << GasComponent[i]->GetName() << " molar fraction : " << TACTIC_gas->GetVecNbOfAtomsPerVolume()[i] / total_n << endl;
 
     cout << TACTIC_gas << endl;
-
     
     if(m_Shape[0] == "Cylindrical") {
     
       G4Tubs* world_volume = new G4Tubs("world_volume",0,TACTIC_NS::drift_radius+1*mm,TACTIC_NS::active_length*0.5+1*mm,0,360*deg);
       G4Tubs* window = new G4Tubs("window",0,TACTIC_NS::window_radius,TACTIC_NS::window_width*0.5,0,360*deg);
 
-      //G4Tubs* anode = new G4Tubs("anode",TACTIC_NS::drift_radius,TACTIC_NS::anode_radius,TACTIC_NS::active_length*0.5,0,360*deg);
       G4Tubs* gas_cathode = new G4Tubs("gas_cathode",0,TACTIC_NS::window_radius,TACTIC_NS::window_pos-TACTIC_NS::window_width*0.5,0,360*deg); //window pos doesn't need halving
       G4Tubs* gas_drift = new G4Tubs("gas_drift",TACTIC_NS::window_radius,TACTIC_NS::drift_radius,TACTIC_NS::active_length*0.5,0,360*deg);
       G4UnionSolid* gas_volume = new G4UnionSolid("gas_volume",gas_cathode,gas_drift);
       
-      //G4Tubs* gas_volume = new G4Tubs("gas_volume",0,TACTIC_NS::drift_radius,TACTIC_NS::active_length*0.5,0,360*deg); 
-      
       m_CylindricalDetector = new G4LogicalVolume(world_volume, Vacuum, "m_CylindricalDetector_log",0,0,0);
-      //anode_log = new G4LogicalVolume(anode, Cu, "anode_log", 0,0,0);
       gas_volume_log = new G4LogicalVolume(gas_volume, TACTIC_gas, "gas_volume_log",0,0,0);
       window_log = new G4LogicalVolume(window, Mylar, "window_log",0,0,0);
       
       new G4PVPlacement(0,G4ThreeVector(0,0,0),gas_volume_log,"gas_volume_phys",m_CylindricalDetector,false,0);
-      //new G4PVPlacement(0,G4ThreeVector(0,0,0),anode_log,"anode_phys",m_CylindricalDetector,false,0,true);
       new G4PVPlacement(0,G4ThreeVector(0,0,TACTIC_NS::window_pos),window_log,"window_phys1",m_CylindricalDetector,false,0,true);
       new G4PVPlacement(0,G4ThreeVector(0,0,-TACTIC_NS::window_pos),window_log,"window_phys2",m_CylindricalDetector,false,0,true);
 
@@ -184,9 +171,9 @@ G4LogicalVolume* TACTIC::BuildCylindricalDetector(){
     
     if(m_Shape[0] == "Long_Chamber") {
 
-      G4Box* world_volume = new G4Box("world_volume",34.7,25.,TACTIC_NS::active_length/2.); //Pad width = 34.7 mm (2 rows of pads), LC drift = 50 mm
+      G4Box* world_volume = new G4Box("world_volume",34.7,15.,TACTIC_NS::active_length/2.); //Pad width = 34.7 mm (2 rows of pads), LC drift = 30 mm
       m_CylindricalDetector = new G4LogicalVolume(world_volume, Vacuum, "m_CylindricalDetector_log",0,0,0);
-      G4Box* gas_volume = new G4Box("gas_volume",34.7,25.,TACTIC_NS::active_length/2.);
+      G4Box* gas_volume = new G4Box("gas_volume",34.7,15.,TACTIC_NS::active_length/2.);
       gas_volume_log = new G4LogicalVolume(gas_volume, TACTIC_gas, "gas_volume_log",0,0,0);
       new G4PVPlacement(0,G4ThreeVector(0,0,0),gas_volume_log,"gas_volume_phys",m_CylindricalDetector,false,0);
       
@@ -334,10 +321,10 @@ void TACTIC::ReadSensitive(const G4Event* event ){
   for (Light_itr = LightHitMap->GetMap()->begin(); Light_itr != LightHitMap->GetMap()->end(); Light_itr++) {
     G4double* Info = *(Light_itr->second);
     //file << event->GetEventID() << "\t";
-    for(int s = 0; s<13; s++) {
+    for(int s = 0; s<14; s++) {
       file << Info[s] << "\t";
     }
-    file << Info[13] << endl;
+    file << Info[14] << endl;
   }
   
   LightHitMap->clear();
@@ -350,10 +337,10 @@ void TACTIC::ReadSensitive(const G4Event* event ){
   for (Heavy_itr = HeavyHitMap->GetMap()->begin(); Heavy_itr != HeavyHitMap->GetMap()->end(); Heavy_itr++) {
     G4double* Info = *(Heavy_itr->second);
     //file << event->GetEventID() << "\t";
-    for(int s = 0; s<13; s++) {
+    for(int s = 0; s<14; s++) {
       file << Info[s] << "\t";
     }
-    file << Info[13] << endl;
+    file << Info[14] << endl;
   }
   
   HeavyHitMap->clear();
@@ -366,10 +353,10 @@ void TACTIC::ReadSensitive(const G4Event* event ){
   for (Beam_itr = BeamHitMap->GetMap()->begin(); Beam_itr != BeamHitMap->GetMap()->end(); Beam_itr++) {
     G4double* Info = *(Beam_itr->second);
     //file << event->GetEventID() << "\t";
-    for(int s = 0; s<13; s++) {
+    for(int s = 0; s<14; s++) {
       file << Info[s] << "\t";
     }
-    file << Info[13] << endl;
+    file << Info[14] << endl;
   }
 
   BeamHitMap->clear();
@@ -401,7 +388,6 @@ void TACTIC::InitializeScorers() {
     G4SDParticleFilter* LightFilter = new G4SDParticleFilter("LightFilter");
     G4SDParticleFilter* HeavyFilter = new G4SDParticleFilter("HeavyFilter");
     G4SDParticleFilter* BeamFilter = new G4SDParticleFilter("BeamFilter");
-  
   
     cout << m_Reaction.GetParticle1()->GetName() << "\t" << m_Reaction.GetParticle1()->GetA() << "\t" << m_Reaction.GetParticle1()->GetZ() << endl;
     cout << m_Reaction.GetParticle2()->GetName() << "\t" << m_Reaction.GetParticle2()->GetA() << "\t" << m_Reaction.GetParticle2()->GetZ() << endl;

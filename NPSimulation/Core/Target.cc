@@ -137,7 +137,8 @@ void Target::ReadConfiguration(NPL::InputParser parser){
       cout << "ERROR: Target token list incomplete, check your input file" << endl;
       exit(1);
     }
-    
+
+
     if(starget[0]->HasToken("NbSlices"))
       m_TargetNbSlices = starget[0]->GetInt("NbSlices");
     

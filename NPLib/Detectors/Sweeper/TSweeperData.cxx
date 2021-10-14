@@ -55,6 +55,9 @@ void TSweeperData::Clear() {
   fSweeper_X.clear();
   fSweeper_Y.clear();
   fSweeper_DriftTime.clear();
+  //TKE
+  fSweeper_TKE.clear();
+  fSweeper_TKE_DetectorNbr.clear();
 }
 
 
@@ -91,5 +94,16 @@ void TSweeperData::Dump() const {
          << " X position: " << fSweeper_X[i]
 	 << " Y position: " << fSweeper_Y[i];   
   }
+
+  
+  // TKE
+  mysize = fSweeper_TKE_DetectorNbr.size();
+  cout << "Sweeper_TKE_Mult: " << mysize << endl;
+ 
+  for (size_t i = 0 ; i < mysize ; i++){
+    cout << "DetNbr: " << fSweeper_TKE_DetectorNbr[i]
+         << " Energy: " << fSweeper_TKE[i];
+  }
+  
   
 }

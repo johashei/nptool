@@ -82,24 +82,21 @@ void TSofTwimPhysics::BuildSimplePhysicalEvent() {
 ///////////////////////////////////////////////////////////////////////////
 void TSofTwimPhysics::BuildPhysicalEvent() {
 
-  //if(m_Beta<0)
-  //  return;
-
   // apply thresholds and calibration
   PreTreat();
-  /*if(m_PreTreatedData->GetMultiplicity() != 32){
-  //m_Beta = -1;
-  return;
-  }*/
 
   vector<double> anode_energy_sec1;
   vector<double> anode_energy_sec2;
   vector<double> anode_energy_sec3;
   vector<double> anode_energy_sec4;
-  vector<double> anode_dt_sec1;
-  vector<double> anode_dt_sec2;
-  vector<double> anode_dt_sec3;
-  vector<double> anode_dt_sec4;
+  double Esec1=0;
+  double Esec2=0;
+  double Esec3=0;
+  double Esec4=0;
+  double DTsec1=-1e6;
+  double DTsec2=-1e6;
+  double DTsec3=-1e6;
+  double DTsec4=-1e6;
 
   unsigned int mysizeE = m_PreTreatedData->GetMultiplicity();
   for (UShort_t e = 0; e < mysizeE ; e++) {
@@ -107,6 +104,8 @@ void TSofTwimPhysics::BuildPhysicalEvent() {
     int AnodeNumber = m_PreTreatedData->GetAnodeNbr(e);
     double Energy   = m_PreTreatedData->GetEnergy(e);
     double DT       = m_PreTreatedData->GetDriftTime(e);
+    int PU          = m_PreTreatedData->GetPileUp(e);
+    int OV          = m_PreTreatedData->GetOverflow(e);
 
     AnodeSecNbr.push_back(SectionNbr);
     AnodeNbr.push_back(AnodeNumber);
@@ -115,80 +114,73 @@ void TSofTwimPhysics::BuildPhysicalEvent() {
 
     if(SectionNbr==1){
       anode_energy_sec1.push_back(Energy);
-      anode_dt_sec1.push_back(DT);
+      if(AnodeNumber==8)
+        DTsec1 = DT;
     }
     if(SectionNbr==2){
       anode_energy_sec2.push_back(Energy);
-      anode_dt_sec2.push_back(DT);
+      if(AnodeNumber==8)
+        DTsec2 = DT;
     }
     if(SectionNbr==3){
       anode_energy_sec3.push_back(Energy);
-      anode_dt_sec3.push_back(DT);
+      if(AnodeNumber==8)
+        DTsec3 = DT;
     }
     if(SectionNbr==4){
       anode_energy_sec4.push_back(Energy);
-      anode_dt_sec4.push_back(DT);
+      if(AnodeNumber==8)
+        DTsec4 = DT;
+    }
+  }
+
+  mult1 = anode_energy_sec1.size();
+  mult2 = anode_energy_sec2.size();
+  mult3 = anode_energy_sec3.size();
+  mult4 = anode_energy_sec4.size();
+
+  if(mult1<17){
+    for(int i=0; i<mult1; i++){
+      Esec1 += anode_energy_sec1[i];
+    }
+  }
+  if(mult2<17){
+    for(int i=0; i<mult2; i++){
+      Esec2 += anode_energy_sec2[i];
+    }
+  }
+  if(mult3<17){
+    for(int i=0; i<mult3; i++){
+      Esec3 += anode_energy_sec3[i];
+    }
+  }
+  if(mult4<17){
+    for(int i=0; i<mult4; i++){
+      Esec4 += anode_energy_sec4[i];
     }
   }
 
   static CalibrationManager* Cal = CalibrationManager::getInstance();
-  double Esec1=0;
-  double Esec2=0;
-  double Esec3=0;
-  double Esec4=0;
-  double DTsec1=0;
-  double DTsec2=0;
-  double DTsec3=0;
-  double DTsec4=0;
-  for(int i=0; i<anode_energy_sec1.size(); i++){
-    Esec1 += anode_energy_sec1[i];
-    DTsec1 += anode_dt_sec1[i];
-  }
-  for(int i=0; i<anode_energy_sec2.size(); i++){
-    Esec2 += anode_energy_sec2[i];
-    DTsec2 += anode_dt_sec2[i];
-  }
-  for(int i=0; i<anode_energy_sec3.size(); i++){
-    Esec3 += anode_energy_sec3[i];
-    DTsec3 += anode_dt_sec3[i];
-  }
-  for(int i=0; i<anode_energy_sec4.size(); i++){
-    Esec4 += anode_energy_sec4[i];
-    DTsec4 += anode_dt_sec4[i];
-  }
-
-  if(Esec1>0 && anode_energy_sec1.size()>2){
-    Esec1 = Esec1 / anode_energy_sec1.size();
+  if(Esec1>0){
     Esec1 = Cal->ApplyCalibration("SofTwim/SEC1_ALIGN",Esec1);
-
-    DTsec1 = DTsec1 / anode_dt_sec1.size();
     EnergySection.push_back(Esec1);
     DriftTime.push_back(DTsec1);
     SectionNbr.push_back(1);
   }
-  if(Esec2>0 && anode_energy_sec2.size()>2){
-    Esec2 = Esec2 / anode_energy_sec2.size();
+  if(Esec2>0){
     Esec2 = Cal->ApplyCalibration("SofTwim/SEC2_ALIGN",Esec2);
-
-    DTsec2 = DTsec2 / anode_dt_sec2.size();
     EnergySection.push_back(Esec2);
     DriftTime.push_back(DTsec2);
     SectionNbr.push_back(2);
   }
-  if(Esec3>0 && anode_energy_sec3.size()>2){
-    Esec3 = Esec3 / anode_energy_sec3.size();
+  if(Esec3>0){
     Esec3 = Cal->ApplyCalibration("SofTwim/SEC3_ALIGN",Esec3);
-
-    DTsec3 = DTsec3 / anode_dt_sec3.size();
     EnergySection.push_back(Esec3);
     DriftTime.push_back(DTsec3);
     SectionNbr.push_back(3);
   }
-  if(Esec4>0 && anode_energy_sec4.size()>2){
-    Esec4 = Esec4 / anode_energy_sec4.size();
+  if(Esec4>0){
     Esec4 = Cal->ApplyCalibration("SofTwim/SEC4_ALIGN",Esec4);
-
-    DTsec4 = DTsec4 / anode_dt_sec4.size();
     EnergySection.push_back(Esec4);
     DriftTime.push_back(DTsec4);
     SectionNbr.push_back(4);
@@ -318,6 +310,11 @@ void TSofTwimPhysics::Clear() {
   AnodeSecNbr.clear();
   AnodeEnergy.clear();
   AnodeDT.clear();
+
+  mult1 = 0;
+  mult2 = 0;
+  mult3 = 0;
+  mult4 = 0;
 }
 
 

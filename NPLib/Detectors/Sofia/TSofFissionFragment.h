@@ -42,7 +42,9 @@ class TSofFissionFragment : public TObject {
     vector<double> fFF_TOF;
     vector<double> fFF_Gamma;
     vector<double> fFF_Brho;
+    vector<double> fFF_DT;
     double fFF_Zsum;
+    int fFF_IntZsum;
 
   //////////////////////////////////////////////////////////////
   // Constructor and destructor
@@ -67,6 +69,7 @@ class TSofFissionFragment : public TObject {
   public:
     //////////////////////    SETTERS    ////////////////////////
     inline void SetZsum(double val){fFF_Zsum = val;};//!
+    inline void SetIntZsum(int val){fFF_IntZsum = val;};//!
     inline void SetZ(double val){fFF_Z.push_back(val);};//!
     inline void SetQmax(double val){fFF_Qmax.push_back(val);};//!
     inline void SetAoQ(double val){fFF_AoQ.push_back(val);};//!
@@ -75,10 +78,12 @@ class TSofFissionFragment : public TObject {
     inline void SetTOF(double val){fFF_TOF.push_back(val);};//!
     inline void SetGamma(double val){fFF_Gamma.push_back(val);};//!
     inline void SetBrho(double val){fFF_Brho.push_back(val);};//!
+    inline void SetDT(double val){fFF_DT.push_back(val);};//!
 
     //////////////////////    GETTERS    ////////////////////////
     int GetMult() {return fFF_Z.size();}//!
     inline double GetZsum() const {return fFF_Zsum;}//! 
+    inline int GetIntZsum() const {return fFF_IntZsum;}//! 
     inline double GetZ(int i) const {return fFF_Z[i];}//! 
     inline double GetQmax(int i) const {return fFF_Qmax[i];}//! 
     inline double GetAoQ(int i) const {return fFF_AoQ[i];}//! 
@@ -87,6 +92,7 @@ class TSofFissionFragment : public TObject {
     inline double GetTOF(int i) const {return fFF_TOF[i];}//! 
     inline double GetGamma(int i) const {return fFF_Gamma[i];}//! 
     inline double GetBrho(int i) const {return fFF_Brho[i];}//! 
+    inline double GetDT(int i) const {return fFF_DT[i];}//! 
 
   //////////////////////////////////////////////////////////////
   // Required for ROOT dictionnary
