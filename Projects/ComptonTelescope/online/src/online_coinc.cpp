@@ -16,12 +16,16 @@
 #include "DecodeD.h"
 #include "DecodeT.h"
 
-#define __RUN__ 3
+#define __RUN__ 7
+
+#define __OUTPUT_ALL__
+#undef __OUTPUT_ALL__
 
 #define __1DET__
+#undef __1DET__
 
 #define __TEST_ZONE__
-#undef __TEST_ZONE__
+//#undef __TEST_ZONE__
 
 #define __CIRCULAR_TREE__
 #undef __CIRCULAR_TREE__
@@ -88,17 +92,20 @@ int main(int argc, char** argv)
   string arg = "-D ./ComptonCAM.detector -C calibrations.txt -GH -E ./10He.reaction";
 #endif
   NPOptionManager::getInstance(arg);
-
   // open ROOT output file
   RootOutput::getInstance("OnlineTree.root", "OnlineTree");
   // get tree pointer
   auto m_OutputTree = RootOutput::getInstance()->GetTree();
 
+//cout << 1 << endl;
   // configure detector manager
   string detectorfileName = NPOptionManager::getInstance()->GetDetectorFile();
   NPL::DetectorManager* m_NPDetectorManager = new NPL::DetectorManager();
+//cout << 2 << endl;
   m_NPDetectorManager->ReadConfigurationFile(detectorfileName);
+//cout << 3 << endl;
   m_NPDetectorManager->InitializeRootOutput();
+//cout << 4 << endl;
 
   // configure spectra server
   m_NPDetectorManager->SetSpectraServer();
@@ -109,27 +116,49 @@ int main(int argc, char** argv)
   auto ccamPhys = (TComptonTelescopePhysics*) m_NPDetectorManager->GetDetector("ComptonTelescope");
   ccamPhys->SetRawDataPointer(ccamData);
 
-#ifdef __1DET__
+#ifdef __1DET__ // To test or provide test data to Vincent Lafage
+  #if __RUN__ == 3 || __RUN__ == 7
   ifstream is;
+  #if __RUN__ == 3
   is.open("/disk/proto-data/data/20210510_Bi207/mfm_rdd_rosmap_04_mfm_rosmap_04_2021-05-10_07_41_50.raw");
+  #elif __RUN__ == 7
+  #endif
   is.seekg(0, ios::end);
   int len = is.tellg();
   is.seekg(0, ios::beg);
   char* buff = new char[len];
   is.read(buff, len);
   is.close();
-  DecodeR* DR = new DecodeR(false, buff);
-  while(DR -> getCursor() < len) {
-    DR -> decodeBlobMFM();
+  DecodeR* Decoder = new DecodeR(false, buff);
+  #elif __RUN__ == 0
+  DecodeD* Decoder = new DecodeD(false);
+  //Decoder -> setTree("/disk/proto-data/data/20210722_Cs137_run7/bb7_3309-5_cs137_20210722_15h09_run7_2_conv.root");//using __OLDFRAME__ 0 in DecodeD
+  Decoder -> setTree("/disk/proto-data/data/20210510_Bi207/1005-207Bi_conv.root");//using __OLDFRAME__ 0 in DecodeD
+  long int len = Decoder -> getLength();
+  #endif
+  while(Decoder -> getCursor() < len) {
+    #if __RUN__ == 3 || __RUN__ == 7
+    Decoder -> decodeBlobMFM();
+    #elif __RUN__ == 0
+    Decoder -> decodeEvent();
+    //Decoder -> Dump();
+    #endif
     m_NPDetectorManager->ClearEventPhysics();
     m_NPDetectorManager->ClearEventData();
+    #if __RUN__ == 3 || __RUN__ == 7
     ccamData -> SetCTCalorimeter(1, 4, DR->getPixelNumber(), DR->getTime(), DR->getData(), 64);
+    #elif __RUN__ == 0
+    setCTTracker(ccamData, Decoder);
+    //ccamData -> Dump();
+    #endif
     m_NPDetectorManager->BuildPhysicalEvent();
     m_OutputTree->Fill();
     m_NPDetectorManager->CheckSpectraServer();
   }
-  delete DR;
+  delete Decoder;
+  #if __RUN__ == 3 || __RUN__ == 7
   delete [] buff;
+  #endif
   m_NPDetectorManager -> WriteSpectra();
 #else
 
@@ -149,6 +178,8 @@ int main(int argc, char** argv)
   DD -> setTree("/disk/proto-data/data/20210305_run3/bb7_3309-7_cs137_20210305_14h53_conv.root");
   #elif __RUN__ == 4
   DD -> setTree("/disk/proto-data/data/20210407_run4/bb7_3309-7_cs137_20210407_14h53_conv.root");
+  #elif __RUN__ == 7
+  DD -> setTree("/disk/proto-data/data/20210722_Cs137_run7/bb7_3309-5_cs137_20210722_15h09_run7_conv.root");
   #endif
   int dlen = DD -> getLength();
 
@@ -171,6 +202,8 @@ int main(int argc, char** argv)
   itrig.open("/disk/proto-data/data/20210305_run3/mfm_trigger_20210305_run3.raw", ios::binary);
   #elif __RUN__ == 4
   itrig.open("/disk/proto-data/data/20210407_run4/mfm_trigger_20210407_run4.raw", ios::binary);
+  #elif __RUN__ == 7
+  itrig.open("/disk/proto-data/data/20210722_Cs137_run7/mfm_rdd_trigger_mfm_trigger_2021-07-22_13_05_48.raw.0001");
   #endif
   itrig.seekg(0, ios::end);
   int tlen = itrig.tellg();
@@ -189,6 +222,8 @@ int main(int argc, char** argv)
   iros.open("/disk/proto-data/data/20210305_run3/mfm_rosmap_20210305_run3.raw", ios::binary);
   #elif __RUN__ == 4
   iros.open("/disk/proto-data/data/20210407_run4/mfm_rosmap_20210407_run4.raw", ios::binary);
+  #elif __RUN__ == 7
+  iros.open("/disk/proto-data/data/20210722_Cs137_run7/mfm_rdd_rosmap_04_mfm_rosmap_04_2021-07-22_13_05_48.raw.0001");
   #endif
   iros.seekg(0, ios::end);
   int rlen = iros.tellg();
@@ -201,6 +236,7 @@ int main(int argc, char** argv)
   // Search for reset count in trigger data
   DT -> setRaw(tbuff);
   DT -> decodeBlobMFM();
+  DT -> Dump();
   int resetCount = DT -> getResetCount();
   //while (not(DT->hasTrigged(2))) {
   while (not(DT->hasTrigged(0))) {
@@ -215,12 +251,20 @@ int main(int argc, char** argv)
     cout << "reset count is 0. Continue ? y/[n]";
     cin >> ans;
     if (ans != "y" and ans != "Y") {
+      int detn = 1;
+      cout << "Looking for detector #" << detn << endl;
       DT -> setRaw(tbuff);
       DT -> decodeBlobMFM();
       resetCount = DT -> getResetCount();
-      while (not(DT->hasTrigged(2))) {
+      i = 0;
+      while (not(DT->hasTrigged(detn)) and DT -> getCursor() < tlen) {
         DT -> decodeBlobMFM();
+        if (i%1000 == 0) {
+          DT -> Dump();
+        }
+        i++;
       }
+      i = 0;
       resetCount = DT->getResetCount() - resetCount;
       cout << "Found reset count: " << resetCount << endl;
     }
@@ -339,18 +383,29 @@ int main(int argc, char** argv)
     tr = DR -> getTime();
     td = DD -> getTime();
 
-    while(DR -> getCursor() < rlen and DD -> getCursor() < dlen and c < 10000)
+    bool coinc_dsssd = true;
+    bool coinc_ros = true;
+
+    cout << "Entering main loop with\nROSMAP: " 
+        << rlen << " octets = " << float(rlen)/153. << " events\nDSSSD: " 
+        << dlen << " events\nTrigger data: " 
+        << tlen << "octets = " << float(tlen)/64. << " frames" << endl;
+
+    while(DR -> getCursor() < rlen and DD -> getCursor() < dlen and cc < 9029487)
     {
       if (cr == cd) {
-  #ifndef __TEST_ZONE__
-        if (td-tr > 20 and td-tr < 120) { // That one is the real one
+      #ifndef __OUTPUT_ALL__
+      #ifndef __TEST_ZONE__
+        if (td-tr > 20 and td-tr < 120) // That one is the real one
         //if (td-tr > -1000 and td-tr < 1000) { // That one is the real one
-  #else
-        if (td-tr > -1000  and td-tr < 0) {
-  #endif
+      #else
+        if (td-tr > -1000  and td-tr < 1000) 
+      #endif
+        {
           //DR -> Dump();
           //DD -> Dump();
           c++;
+
           // Clear raw and physics data
           m_NPDetectorManager->ClearEventPhysics();
           m_NPDetectorManager->ClearEventData();
@@ -365,16 +420,16 @@ int main(int argc, char** argv)
   
           // Fill object in output ROOT file
           if (ccamPhys->EventMultiplicity > 0) {
-  #ifdef __USE_CUTG__
+          #ifdef __USE_CUTG__
             if (mcut->IsInside(ccamPhys->Half_Energy[0], ccamPhys->Calor_E[0])) {
               cc++;
               m_OutputTree->Fill();
             }
-  #else
+          #else
             m_OutputTree->Fill();
             cc++;
-  #endif
-            cout << cc << " " << c /*<< "(" << cr << ", " << cd << ") : " << tr << " " << td*/ << " |\t";
+          #endif
+            if (cc % 0x80 == 0) {cout << cc << " " << c /*<< "(" << cr << ", " << cd << ") : " << tr << " " << td*/ << endl;}
           }
   
           // check spectra
@@ -386,6 +441,25 @@ int main(int argc, char** argv)
         } else {
           DR -> decodeBlobMFM();
         }
+      #else
+        m_NPDetectorManager->ClearEventPhysics();
+        m_NPDetectorManager->ClearEventData();
+        if (td < tr) {
+          DD -> decodeEvent();
+          setCTTracker(ccamData, DD);
+        } else {
+          DR -> decodeBlobMFM();
+          ccamData -> SetCTCalorimeter(1, 4, DR->getPixelNumber(), DR->getTime(), DR->getData(), pixelNumber);
+        }
+        ccamData -> SetResetCount(cr);
+        m_NPDetectorManager->BuildPhysicalEvent();
+        m_OutputTree->Fill();
+        cc++;
+        if (cc % 1000 == 0) {
+          cout << cc << "/" << 9029487 << endl;
+        }
+        m_NPDetectorManager->CheckSpectraServer();
+      #endif
       } else if (cr < cd) {
         DR -> decodeBlobMFM();
       } else {
