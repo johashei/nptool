@@ -56,7 +56,6 @@ NPS::SamuraiFieldPropagation::SamuraiFieldPropagation(G4String modelName, G4Regi
     m_Map = NULL;
     m_Initialized = false;
 
-
     //ABLA = new G4AblaInterface();
   }
 
@@ -361,9 +360,9 @@ void NPS::SamuraiFieldPropagation::RungeKuttaPropagation (const G4FastTrack& fas
 							  G4FastStep& fastStep){
 
   static int counter = 0;//debugging purposes
-  static bool inside = false;//previous step
+  static bool inside = false;//true if previous step is inside the volume
   static vector<TVector3> trajectory;
-  static int count;
+  static int count;//keeps track of the step reached inside trajectory
 
   // Get the track info
   const G4Track* PrimaryTrack = fastTrack.GetPrimaryTrack();
@@ -377,17 +376,19 @@ void NPS::SamuraiFieldPropagation::RungeKuttaPropagation (const G4FastTrack& fas
   G4ThreeVector localPosition = fastTrack.GetPrimaryTrackLocalPosition();
   G4ThreeVector localMomentum = fastTrack.GetPrimaryTrackLocalMomentum();
   
-  G4ThreeVector localVel = localDir * speed;
+  //G4ThreeVector localVel = localDir * speed;
 
   double charge = PrimaryTrack->GetParticleDefinition()->GetPDGCharge() / coulomb;
   double ConF_p = 1 / (joule * c_light / (m/s)) ; // MeV/c to kg*m/s (SI units)
 
+
   if (!inside){
-    count = 0;
+    count = 1;//skip first position as it's the same as the current position
+    m_Map->SetTimeIntervalSize( m_StepSize / speed );
+    m_Map->SetStepLimit( 10.*m / m_StepSize );
     double Brho = localMomentum.mag() * ConF_p / charge;
     TVector3 pos (localPosition.x(), localPosition.y(), localPosition.z());
     TVector3 dir (localDir.x(), localDir.y(), localDir.z());
-
 
     trajectory.clear();
     trajectory = m_Map->Propagate(Brho, pos, dir);
@@ -395,32 +396,34 @@ void NPS::SamuraiFieldPropagation::RungeKuttaPropagation (const G4FastTrack& fas
     inside = true;
   }
 
-  
-  G4ThreeVector newPosition (trajectory[count+1].x(), trajectory[count+1].y(), trajectory[count+1].z());
-  G4ThreeVector newDir = (newPosition - localPosition).unit();
-  G4ThreeVector newMomentum = newDir * localMomentum.mag(); 
-  G4double time  = PrimaryTrack->GetGlobalTime()+(newPosition - localPosition).mag()/speed;
+  G4ThreeVector newPosition (trajectory[count].x(), trajectory[count].y(), trajectory[count].z());
 
-  //cout << "deltaPos " << (newPosition - localPosition).mag()/m << endl;
-  //cout << "speed " << speed/(m/s) << endl;
-   
+
   if (inside){
-    G4VSolid* solid = PrimaryTrack->GetTouchable()->GetVolume()->GetLogicalVolume()->GetSolid();
+    G4VSolid* solid = PrimaryTrack->GetTouchable()->GetSolid();
 
-    if (solid->Inside(newPosition) != kInside){
-      counter++;
+    if (solid->Inside(newPosition) != kInside || count >= trajectory.size()-2){
       inside = false;
-      cout << "\n" << counter << " inside = false";
+      G4ThreeVector toOut = solid->DistanceToOut(localPosition, localDir) * localDir;
+      newPosition = localPosition + toOut;
+      //counter++;
+      //cout << "\n" << counter << " inside = false\n";
     }
   }
 
+/*
   if(counter > 0){
-    cout << "newP " << Cart(newPosition) << endl;
-    cout << "speed " << speed/(m/s) << endl;
-    G4ThreeVector B = VtoG4( m_Map->InterpolateB(G4toV(localPosition/mm)) );
-    cout << "B " << Cart(B) << endl;
-    if(!inside) for(auto s:trajectory) cout << s.x() << " " << s.y() << " " << s.z() << endl;
+    //cout << "newP " << Cart(newPosition) << endl;
+    //cout << "speed " << speed/(m/s) << endl;
+    //G4ThreeVector B = VtoG4( m_Map->InterpolateB(G4toV(localPosition/mm)) );
+    //cout << "B " << Cart(B) << endl;
+    if(!inside) cout << "Size " << trajectory.size() << endl;
+    if(!inside) for(unsigned int i=0; i<trajectory.size(); i++) cout << i << " " << trajectory[i].x() << " " << trajectory[i].y() << " " << trajectory[i].z() << endl;
   }
+*/
+  G4ThreeVector newDir = (newPosition - localPosition).unit();
+  G4ThreeVector newMomentum = newDir * localMomentum.mag(); 
+  G4double time  = PrimaryTrack->GetGlobalTime()+(newPosition - localPosition).mag()/speed;
 
   fastStep.ProposePrimaryTrackFinalPosition( newPosition );
   fastStep.SetPrimaryTrackFinalMomentum ( newMomentum );//FIXME

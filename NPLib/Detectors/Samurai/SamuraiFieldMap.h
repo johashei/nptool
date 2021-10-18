@@ -54,6 +54,9 @@ class SamuraiFieldMap{
     double m_angle;
     double m_Rmax ;
 
+    double m_StepTime;//propagation time interval size
+    double m_Limit;//maximum number of steps before giving up
+
   public: // getting the field at a point in space
     // return B at an existing point
     std::vector<double> GetB(std::vector<double>& pos); 
@@ -74,6 +77,9 @@ class SamuraiFieldMap{
     // return a 3D track of the particle in the field
     std::vector< TVector3 > Propagate(double Brho, TVector3 pos, TVector3 dir,bool store=true);
     void func(NPL::Particle& N, TVector3 pos, TVector3 imp, TVector3& new_pos, TVector3& new_dir);
+    void SetTimeIntervalSize (double size){m_StepTime=size;}
+    void SetStepLimit (double limit){m_Limit=limit;}
+
   private:
     double m_fdc2angle;
     double m_fdc2R;
