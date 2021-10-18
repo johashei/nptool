@@ -57,7 +57,7 @@ void cal(){
 
 ////////////////////////////////////////////////////////////////////////////////
 TGraphErrors* GetT(int ring){
-  static TFile* Tfile = new TFile("TPad_distrib_new.root"); 
+  static TFile* Tfile = new TFile("TPad_distrib.root"); 
   TString name = Form("TPad_ring%d",ring);
   TH1F* h = (TH1F*) Tfile->FindObjectAny(name);
   h->Scale(1./h->Integral());
@@ -186,15 +186,15 @@ void NumericalMinimization(const char * minName ,const char *algoName){
   min->Clear();
   double* parameter = new double[2];
   parameter[0] = -1200;
-  parameter[1] = 0.03508 ;
+  parameter[1] = 0.0327339 ;
   //parameter[1] = 0.0337261;
 
   // Set the free variables to be minimized!
-  min->SetLimitedVariable(0,"Offset",parameter[0],1,-2000,-1000);
+  min->SetLimitedVariable(0,"Offset",parameter[0],1,-1300,-1100);
   //min->SetFixedVariable(0,"Offset",parameter[0]);
-  //min->SetLimitedVariable(1,"VDrift",parameter[1],1e-5,0.02,0.04); 
+   min->SetLimitedVariable(1,"VDrift",parameter[1],1e-5,0.02,0.04); 
   // Set a fixed VDrift
-  min->SetFixedVariable(1,"VDrift",parameter[1]);
+ // min->SetFixedVariable(1,"VDrift",parameter[1]);
 
   // do the minimization
   min->Minimize(); 

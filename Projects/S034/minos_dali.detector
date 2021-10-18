@@ -1,0 +1,94 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Minos
+ Position= 0 0 0  mm
+ ZRotation= 40.6 deg
+ ZOffset= -4650
+ TargetLength= 151.72 mm
+ TargetMaterial= LH2 
+ CellMaterial= Mylar 
+ TPCOnly= 0 
+ TimeBin= 30 ns
+ ShapingTime= 333.9 ns
+ BaseLine= 250
+ Sampling= 10
+ XML= db/MINOS.xml
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Dali
+ R = 212.4 mm 
+ Alpha = 240 deg
+ Zeta = 298,28 mm 
+ Ring = 1
+ Material = NaI(Tl)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Dali
+ R = 212.4 mm 
+ Alpha = 180 deg 
+ Zeta = 298,28 mm
+ Ring = 1
+ Material = NaI(Tl)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Dali
+ R= 212.4 mm 
+ Alpha = 120 deg 
+ Zeta = 298,28 mm 
+ Ring = 1
+ Material = NaI(Tl)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Dali
+ R = 212.4 mm 
+ Alpha = 60 deg 
+ Zeta = 298,28 mm
+ Ring = 1
+ Material = NaI(Tl)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Dali
+ R = 212.4 mm
+ Alpha = 0 deg 
+ Zeta = 298,28 mm
+ Ring = 1
+ Material = NaI(Tl)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Dali
+ R = 212.4 mm 
+ Alpha = -60 deg 
+ Zeta = 298,28 mm
+ Ring = 1
+ Material = NaI(Tl)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Dali
+ R = 212.4 mm
+ Alpha = 240 deg 
+ Zeta = 469.28 mm 
+ Material = NaI(Tl)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Dali
+ R = 212.4 mm 
+ Alpha = 180 deg 
+ Zeta = 469.28 mm
+ Material = NaI(Tl)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Dali
+ R = 212.4 mm 
+ Alpha = 120 deg 
+ Zeta = 469.28 mm
+ Material = NaI(Tl)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Dali
+ R = 212.4 mm 
+ Alpha = 60 deg 
+ Zeta = 469.28 mm 
+ Material = NaI(Tl)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Dali
+ R = 212.4 mm 
+ Alpha = 0 deg 
+ Zeta = 469.28 mm 
+ Material = NaI(Tl)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Dali
+ R = 212.4 mm 
+ Alpha = -60 deg 
+ Zeta = 469.28 mm 
+ Material = NaI(Tl)
+%

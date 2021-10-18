@@ -115,8 +115,8 @@ void TMinosPhysics::PreTreat() {
           //double z_mm = (T*m_TimeBin+cal->GetValue(cal_o,0))*cal->GetValue(cal_v,0);    
           
           // testing dependency:
-          calV+=-calV*30./100.;// -5%
-          calO+=+calO*60./100;
+          //calV+=-calV*30./100.;// -5%
+          //calO+=+calO*60./100;
           double z_mm = (T*m_TimeBin+calO)*calV;    
           TVector3 Pos=TVector3(x_mm+m_Position.X(),y_mm+m_Position.Y(),z_mm+m_Position.Z());
           Pos.RotateZ(m_ZRotation); 

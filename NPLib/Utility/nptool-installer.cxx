@@ -6,7 +6,7 @@
 #include "NPDetectorFactory.h"
 int main(int argc , char** argv){
   int return_value;
-
+std::cout << "nptool installer: ... " ;
 #ifdef __APPLE__
   std::string CORRECT_LIB_EXTENSION = ".dylib";
   std::string INCORRECT_LIB_EXTENSION = ".so";
@@ -36,8 +36,10 @@ int main(int argc , char** argv){
  std::string lib;
   if ((dir = opendir (path.c_str())) != NULL) {
     while ((ent = readdir (dir)) != NULL) {
+      
+
       lib= ent->d_name ;
-      if(lib.find("lib")!=std::string::npos)
+      if(lib.find("lib")!=std::string::npos && lib.find("libNPOnline")==std::string::npos)
         dlopen(lib.c_str(),RTLD_LAZY);
     }
     closedir (dir);
@@ -148,5 +150,6 @@ int main(int argc , char** argv){
   }
 #endif  
 
+std::cout << "\rnptool installer: done " << std::endl ;
   return 0;
 }
