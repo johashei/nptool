@@ -26,6 +26,9 @@
 //G4 Geometry object
 #include "G4Tubs.hh"
 #include "G4Box.hh"
+#include "G4Trap.hh"
+#include "G4UnionSolid.hh"
+#include "G4SubtractionSolid.hh"
 
 //G4 sensitive
 #include "G4SDManager.hh"
@@ -61,15 +64,31 @@ using namespace CLHEP;
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 namespace Samurai_NS{
   // Samurai magnet construction paramethers
-  const double Magnet_Width = 6700*mm;
-  const double Magnet_Height = 4640*mm;
-  const double Magnet_Depth = 6000*mm;
+  const double Magnet_Width = 6700*mm; //(x)
+  const double Magnet_Height = 4640*mm;//(y)
+  const double Magnet_Depth = 6000*mm;//(z)
   const string Magnet_Material = "G4_Galactic"; //where the main beam will travel
   const double Yoke_Width = 6700*mm;
   const double Yoke_Depth = 3500*mm;
   const double Yoke_Height = 1880*mm; //(4640-880)/2
   const string Yoke_Material = "G4_Fe";
+  //Box
+  const double RYBox_Width = 750.*mm; //(x)
+  const double RYBox_Depth = (Yoke_Depth - 400*mm)/2; //1550*mm(z)
+  const double RYBox_Height = Magnet_Height - (Yoke_Height*2); //880*mm (y)
+  //Trap
+  const double RYTrap_Width = RYBox_Depth; //(lower_z)
+  const double RYTrap_Width_LTX = RYBox_Depth*0.4; //(upper_z)
+  const double RYTrap_Height = RYBox_Width; //(y)
+  const double RYTrap_Depth = RYBox_Height; //(x)
+  const string RYoke_Material = "G4_Fe";
   //const string Yoke_Material = "G4_Galactic";
+
+  //poropagation volume
+  const double pv_main_Width = Magnet_Width;
+  const double pv_main_Height = RYBox_Height;
+  const double pv_main_Depth = Magnet_Depth;
+  const string Propvol_Material = "G4_AIR";
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -81,10 +100,15 @@ Samurai::Samurai(){
   //Visualization attributes
   m_VisMagnet = new G4VisAttributes(G4Colour(0,0,1,0.5));
   m_VisYokes = new G4VisAttributes(G4Colour(0,1,0,0.5));
+  m_VisRYokes = new G4VisAttributes(G4Colour(1,0,0,0.5));
+  m_VisPropvol = new G4VisAttributes(G4Colour(0,1,1,0.5));
 
   //Logical volumes
   m_Magnet = NULL;
   m_Yoke = NULL;
+  m_RYoke = NULL;
+  m_Propvol = NULL;
+  m_RYokeSolid = NULL;
 
   //Propagation region
   m_PropagationRegion = NULL;
@@ -116,7 +140,7 @@ void Samurai::AddMagnet(G4ThreeVector POS, double Angle, int method, string fiel
       cout << endl;
     }
   m_FieldMapFile = fieldmap;
-  m_StepSize = 1 / n_steps * meter;
+  m_StepSize = 1.*meter / n_steps;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -141,7 +165,40 @@ void Samurai::AddMagnet(double R, double Theta, double Phi, double Angle, int me
       cout << endl;
     }
   m_FieldMapFile = fieldmap;
-  m_StepSize = 1 / n_steps * meter;
+  m_StepSize = 1.* meter / n_steps;
+}
+
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+G4VSolid* Samurai::BuildRYokeSolid(){
+  if(!m_RYokeSolid){
+    //Shape - G4Box
+    G4Box* ryokebox = new G4Box("Samurai_ryoke_1",Samurai_NS::RYBox_Width*0.5,
+			    Samurai_NS::RYBox_Height*0.5,Samurai_NS::RYBox_Depth*0.5);
+    //shape -G4Trap
+    G4Trap* ryoketrap = new G4Trap("Samurai_ryoke_2", Samurai_NS::RYTrap_Depth, Samurai_NS::RYTrap_Height,
+                                    Samurai_NS::RYTrap_Width, Samurai_NS::RYTrap_Width_LTX);
+                      
+    //Union
+    G4ThreeVector rytrans(750.*mm,0.,0.25*(Samurai_NS::RYTrap_Width - Samurai_NS::RYTrap_Width_LTX));
+    G4RotationMatrix* traprot = new G4RotationMatrix();
+    traprot->rotateX(-90. *deg);
+    traprot->rotateZ(90.*deg);
+
+
+    //double displacement_z = (Samurai_NS::Yoke_Depth/2) - (Samurai_NS::RYBox_Depth/2);
+    double displacement_z = (Samurai_NS::RYBox_Depth) +400*mm;
+    G4RotationMatrix* rotation1 = new G4RotationMatrix();
+    rotation1->rotateY(180.*deg);
+    rotation1->rotateZ(180.*deg);
+    G4RotationMatrix* rotation2 = new G4RotationMatrix();
+    rotation2->rotateY(180.*deg);
+    G4UnionSolid* ryoke1 = new G4UnionSolid("Samurai_ryoke_1", ryokebox, ryoketrap, traprot, rytrans);
+    G4UnionSolid* ryoke2 = new G4UnionSolid("Samurai_ryoke_2", ryoke1, ryoke1, rotation1, G4ThreeVector(0,0,displacement_z));
+    m_RYokeSolid = new G4UnionSolid("Samurai_ryoke_3", ryoke2, ryoke2, rotation2, G4ThreeVector(Samurai_NS::Yoke_Width - (Samurai_NS::RYBox_Width),0.,displacement_z));
+
+  }
+  return m_RYokeSolid;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -180,6 +237,89 @@ G4LogicalVolume* Samurai::BuildYoke(){
   return m_Yoke;
 }
 
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+G4LogicalVolume* Samurai::BuildRYoke(){
+  if(!m_RYoke){
+    /*
+    //Shape - G4Box
+    G4Box* ryokebox = new G4Box("Samurai_ryoke_1",Samurai_NS::RYBox_Width*0.5,
+			    Samurai_NS::RYBox_Height*0.5,Samurai_NS::RYBox_Depth*0.5);
+    //shape -G4Trap
+    G4Trap* ryoketrap = new G4Trap("Samurai_ryoke_2", Samurai_NS::RYTrap_Depth, Samurai_NS::RYTrap_Height,
+                                    Samurai_NS::RYTrap_Width, Samurai_NS::RYTrap_Width_LTX);
+                      
+    //Union
+    G4ThreeVector rytrans(750.*mm,0.,0.25*(Samurai_NS::RYTrap_Width - Samurai_NS::RYTrap_Width_LTX));
+    G4RotationMatrix* traprot = new G4RotationMatrix();
+    traprot->rotateX(-90. *deg);
+    traprot->rotateZ(90.*deg);
+
+
+    //double displacement_z = (Samurai_NS::Yoke_Depth/2) - (Samurai_NS::RYBox_Depth/2);
+    double displacement_z = (Samurai_NS::RYBox_Depth) +400*mm;
+    G4RotationMatrix* rotation1 = new G4RotationMatrix();
+    rotation1->rotateY(180.*deg);
+    rotation1->rotateZ(180.*deg);
+    G4RotationMatrix* rotation2 = new G4RotationMatrix();
+    rotation2->rotateY(180.*deg);
+    G4UnionSolid* ryoke1 = new G4UnionSolid("Samurai_ryoke_1", ryokebox, ryoketrap, traprot, rytrans);
+    G4UnionSolid* ryoke2 = new G4UnionSolid("Samurai_ryoke_2", ryoke1, ryoke1, rotation1, G4ThreeVector(0,0,displacement_z));
+    G4UnionSolid* ryoke = new G4UnionSolid("Samurai_ryoke_3", ryoke2, ryoke2, rotation2, G4ThreeVector(Samurai_NS::Yoke_Width - (Samurai_NS::RYBox_Width),0.,displacement_z));
+
+*/
+
+    /*double displacement_x = (Samurai_NS::Yoke_Width/2) - (Samurai_NS::RYBox_Width/2);
+    double displacement_z = (Samurai_NS::Yoke_Depth/2) - (Samurai_NS::RYBox_Depth/2);
+    G4ThreeVector trans1 (-displacement_x,0., -displacement_z);
+    G4ThreeVector trans2 (-displacement_x,0., displacement_z);
+    G4ThreeVector trans3 (displacement_x,0., -displacement_z);
+    G4ThreeVector trans4 (displacement_x,0., displacement_z);
+    G4RotationMatrix* rotation1 = new G4RotationMatrix();
+    rotation1->rotateY(180.*deg);
+    rotation1->rotateZ(180.*deg);
+    G4RotationMatrix* rotation4 = new G4RotationMatrix();
+    rotation4->rotateY(180.*deg);
+    G4RotationMatrix* rotation3 = new G4RotationMatrix();
+    rotation3->rotateZ(180.*deg);*/
+
+    //Material
+    G4Material* RYokeMaterial = MaterialManager::getInstance()
+      ->GetMaterialFromLibrary(Samurai_NS::RYoke_Material);
+
+    //Logical Volume
+    //m_RYoke = new G4LogicalVolume(ryoke, RYokeMaterial, "logic_Samurai_ryoke",0,0,0);
+    m_RYoke = new G4LogicalVolume(BuildRYokeSolid(), RYokeMaterial, "logic_Samurai_ryoke",0,0,0);
+    m_RYoke->SetVisAttributes(m_VisRYokes);
+  }
+  return m_RYoke;
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+G4LogicalVolume* Samurai::BuildPropvol(){
+  if(!m_Propvol){
+    ////////////////////////////////propagation volume///////////////////////////////////
+    cout<<"///////////////////////START//////////////////"<<endl;
+    //Shape - G4Box (Main)
+    G4Box* pvmain = new G4Box("Samurai_propvol_1",Samurai_NS::pv_main_Width*0.5,
+			    Samurai_NS::pv_main_Height*0.5,Samurai_NS::pv_main_Depth*0.5);
+    //Subtraction1
+    double displacement_x = (Samurai_NS::Yoke_Width/2) - (Samurai_NS::RYBox_Width/2);
+    double displacement_z = (Samurai_NS::Yoke_Depth/2) - (Samurai_NS::RYBox_Depth/2);
+    G4ThreeVector trans1 (-displacement_x,0., -displacement_z);
+    G4SubtractionSolid* propvol = new G4SubtractionSolid("propvol", pvmain, BuildRYokeSolid(), 0, trans1);
+
+    //Material
+    G4Material* PropVolMaterial = MaterialManager::getInstance()
+      ->GetMaterialFromLibrary(Samurai_NS::Propvol_Material);
+      cout<<"///////////////////////MID//////////////////"<<endl;
+
+    //Logical Volume
+    m_Propvol = new G4LogicalVolume(propvol, PropVolMaterial, "logic_Samurai_propvol",0,0,0);
+    m_Propvol->SetVisAttributes(m_VisPropvol);
+    cout<<"///////////////////////END//////////////////"<<endl;
+  }
+  return m_Propvol;
+}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -239,6 +379,28 @@ void Samurai::ConstructDetector(G4LogicalVolume* world){
   new G4PVPlacement(0, upper, BuildYoke(), "Upper_Yoke", BuildMagnet(), false, 0);
   new G4PVPlacement(0, lower, BuildYoke(), "Lower_Yoke", BuildMagnet(), false, 0);
   
+  //RYokes placement
+  double displacement_x = (Samurai_NS::Yoke_Width/2) - (Samurai_NS::RYBox_Width/2);
+  double displacement_z = (Samurai_NS::Yoke_Depth/2) - (Samurai_NS::RYBox_Depth/2);
+  G4ThreeVector trans1 (-displacement_x,0., -displacement_z);
+  /*G4ThreeVector trans2 (-displacement_x,0., displacement_z);
+  G4ThreeVector trans3 (displacement_x,0., -displacement_z);
+  G4ThreeVector trans4 (displacement_x,0., displacement_z);*/
+  G4RotationMatrix* rotation1 = new G4RotationMatrix();
+  rotation1->rotateY(180.*deg);
+  rotation1->rotateZ(180.*deg);
+  /*G4RotationMatrix* rotation4 = new G4RotationMatrix();
+  rotation4->rotateY(180.*deg);
+  G4RotationMatrix* rotation3 = new G4RotationMatrix();
+  rotation3->rotateZ(180.*deg);*/
+  cout<<"/////////////Before RYoke placement///////////////////////"<<endl;
+  new G4PVPlacement(0, trans1, BuildRYoke(), "R_Yoke1", BuildMagnet(), false, 0);  
+  /*new G4PVPlacement(rotation1, trans2, BuildRYoke(), "R_Yoke2", BuildMagnet(), false, 0);
+  new G4PVPlacement(rotation3, trans3, BuildRYoke(), "R_Yoke3", BuildMagnet(), false, 0);
+  new G4PVPlacement(rotation4, trans4, BuildRYoke(), "R_Yoke4", BuildMagnet(), false, 0);*/
+
+  //Propagation Volume placement
+  new G4PVPlacement(0, G4ThreeVector(0,0,0), BuildPropvol(), "Propagation_Volume", BuildMagnet(), false, 0);
 
   //Magnet placement
   G4double wX = m_R * sin(m_Theta) * cos(m_Phi);
@@ -258,6 +420,17 @@ void Samurai::ConstructDetector(G4LogicalVolume* world){
 
   // Set region were magnetic field is active
   SetPropagationRegion();
+
+  G4ThreeVector poss(0.,0.,0.);
+  G4ThreeVector velocity(0., 1*m, 3.*m);
+  G4VSolid* Eliaa = BuildMagnet()->GetSolid();
+  double dto = Eliaa->DistanceToOut(poss, velocity.unit());
+  if(Eliaa->Inside(poss)==kInside) cout<<"Inside"<<endl;
+  else cout<<"NOT INSIDE HOMIE"<<endl;
+  cout<< "Le Distance to out:"<<dto<<endl;
+  cout<<"Wx:"<<wX<<endl;
+  cout<<"Wy:"<<wY<<endl;
+  cout<<"Wz:"<<wZ<<endl;
 
   return;
 }

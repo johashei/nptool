@@ -32,6 +32,7 @@ using namespace std;
 #include "G4LogicalVolume.hh"
 #include "G4MultiFunctionalDetector.hh"
 #include "G4VFastSimulationModel.hh"
+#include "G4VSolid.hh"
 
 // NPTool header
 #include "NPSVDetector.hh"
@@ -65,13 +66,21 @@ class Samurai : public NPS::VDetector{
     void AddMagnet(double R, double Theta, double Phi, double Angle,
 		   int method, string fieldmap, double n_steps);
 
+    G4VSolid* BuildRYokeSolid();
+
     G4LogicalVolume* BuildMagnet();//FIXME
     G4LogicalVolume* BuildYoke();//FIXME
+    G4LogicalVolume* BuildRYoke();
+    G4LogicalVolume* BuildPropvol();
   
   private:
   
+    G4VSolid* m_RYokeSolid;
+
     G4LogicalVolume* m_Magnet;
     G4LogicalVolume* m_Yoke;
+    G4LogicalVolume* m_RYoke;
+    G4LogicalVolume* m_Propvol;
     
     ////////////////////////////////////////////////////
     //////  Inherite from NPS::VDetector class /////////
@@ -102,7 +111,7 @@ class Samurai : public NPS::VDetector{
     void SetPropagationRegion();
 
     //   Associated Scorer
-    //G4MultiFunctionalDetector* m_SamuraiScorer ;
+    //G4MultiFunctionalDetector* m_Sa//(x)muraiScorer ;
     ////////////////////////////////////////////////////
     ///////////Event class to store Data////////////////
     ////////////////////////////////////////////////////
@@ -134,9 +143,18 @@ class Samurai : public NPS::VDetector{
     // Visualisation Attributes
     G4VisAttributes* m_VisMagnet;
     G4VisAttributes* m_VisYokes;
+    G4VisAttributes* m_VisRYokes;
+    G4VisAttributes* m_VisPropvol;
 
   // Needed for dynamic loading of the library
   public:
     static NPS::VDetector* Construct();
 };
 #endif
+
+
+
+
+
+
+
