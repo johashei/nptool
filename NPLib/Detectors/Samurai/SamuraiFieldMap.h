@@ -79,6 +79,7 @@ class SamuraiFieldMap{
     void func(NPL::Particle& N, TVector3 pos, TVector3 imp, TVector3& new_pos, TVector3& new_dir);
     void SetTimeIntervalSize (double size){m_StepTime=size;}
     void SetStepLimit (double limit){m_Limit=limit;}
+    void SetRmax(double r_max){m_Rmax = r_max;}
 
   private:
     double m_fdc2angle;

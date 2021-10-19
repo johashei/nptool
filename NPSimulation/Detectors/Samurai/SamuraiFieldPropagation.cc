@@ -148,6 +148,11 @@ void NPS::SamuraiFieldPropagation::DoIt(const G4FastTrack& fastTrack,
     m_Map = new SamuraiFieldMap();
     //cout << "before load map\n";
     m_Map->LoadMap(0, m_FieldMap, 10);//FIXME
+
+    //Needed for the RungeKutta method
+    m_Map->SetStepLimit( 10.*m / m_StepSize );
+    m_Map->SetRmax( m_Rmax );
+
     m_Initialized = true;
   }
   
@@ -263,7 +268,7 @@ void NPS::SamuraiFieldPropagation::EliaOmarPropagation (const G4FastTrack& fastT
   if(count == 1 && count < N_print){
       cout << "\nIteration " << count << endl;
     
-      if (magB == 0) cout << "\\\\\\\\\\\\\\\ ZERO \\\\\\\\\\\\\\\\\\\\\ " << endl;
+      if (magB == 0) cout << "//////////////// ZERO ///////////////////// "  << endl;
       cout<< "localPos = "<< Cart(localPosition/meter) << "\t" << Prt(localPosition/meter) << endl;
       cout<< "localDir = "<< Cart(localDir) << "\t" << Prt(localDir) << endl;
       cout<< "localMom = "<< Cart(localMomentum) << "\t" << Prt(localMomentum) << endl;
@@ -310,7 +315,7 @@ void NPS::SamuraiFieldPropagation::EliaOmarPropagation (const G4FastTrack& fastT
     if (count < N_print){
       cout << "\nIteration " << count << endl;
     
-      if (magB == 0) cout << "\\\\\\\\\\\\\\\ ZERO \\\\\\\\\\\\\\\\\\\\\ " << endl;
+      if (magB == 0) cout << "//////////////// ZERO ///////////////////// "  << endl;
       cout << "mass(kg) = " << mass << " " << endl;
       cout << "charge (C) = " << charge << endl;
       cout << "speed (m/s) = " << speed / (m/s)  << endl;
@@ -338,7 +343,7 @@ void NPS::SamuraiFieldPropagation::EliaOmarPropagation (const G4FastTrack& fastT
     if (count < N_print){
       cout << "\nIteration " << count << endl;
     
-      if (magB == 0) cout << "\\\\\\\\\\\\\\\ ZERO \\\\\\\\\\\\\\\\\\\\\ " << endl;
+      if (magB == 0) cout << "//////////////// ZERO ///////////////////// " << endl;
       cout<< "Newpos = "<< Cart(newPosition/meter) << "\t" << Prt(newPosition/meter) << endl;
       cout<< "NewDir = "<< Cart(newDir) << "\t" << Prt(newDir) << endl;
       cout<< "NewMom = "<< Cart(newMomentum) << "\t" << Prt(newMomentum) << endl;
@@ -358,6 +363,7 @@ void NPS::SamuraiFieldPropagation::EliaOmarPropagation (const G4FastTrack& fastT
 /////////////////////////////////////////////////////////////////////////
 void NPS::SamuraiFieldPropagation::RungeKuttaPropagation (const G4FastTrack& fastTrack,
 							  G4FastStep& fastStep){
+  //cout << "RKO " << fastTrack.GetPrimaryTrack()->GetKineticEnergy()/GeV << " \n";
 
   static int counter = 0;//debugging purposes
   static bool inside = false;//true if previous step is inside the volume
@@ -381,17 +387,25 @@ void NPS::SamuraiFieldPropagation::RungeKuttaPropagation (const G4FastTrack& fas
   double charge = PrimaryTrack->GetParticleDefinition()->GetPDGCharge() / coulomb;
   double ConF_p = 1 / (joule * c_light / (m/s)) ; // MeV/c to kg*m/s (SI units)
 
+  if(PrimaryTrack->GetTouchable()->GetSolid()->Inside(localPosition) == kInside) cout << "INSIDE " << PrimaryTrack->GetTouchable()->GetSolid()->GetName() << " \n";
+  else if(PrimaryTrack->GetTouchable()->GetSolid()->Inside(localPosition) == kSurface) cout << "SURFACE\n";
+  else cout << "OUTSIDE\n";
+  cout << "locPos " << Cart(localPosition) << endl;
+  if (inside) cout << "inside is true\n";
+  else cout << "inside is false" << endl;
 
   if (!inside){
-    count = 1;//skip first position as it's the same as the current position
-    m_Map->SetTimeIntervalSize( m_StepSize / speed );
-    m_Map->SetStepLimit( 10.*m / m_StepSize );
+    count = 2;//skip first two positions as they are the same as the current position
     double Brho = localMomentum.mag() * ConF_p / charge;
     TVector3 pos (localPosition.x(), localPosition.y(), localPosition.z());
     TVector3 dir (localDir.x(), localDir.y(), localDir.z());
 
+    m_Map->SetTimeIntervalSize( m_StepSize / speed );
+
     trajectory.clear();
+    //cout << "before propagate\n";
     trajectory = m_Map->Propagate(Brho, pos, dir);
+    //cout << "\n Propagate \n";
 
     inside = true;
   }
@@ -404,10 +418,15 @@ void NPS::SamuraiFieldPropagation::RungeKuttaPropagation (const G4FastTrack& fas
 
     if (solid->Inside(newPosition) != kInside || count >= trajectory.size()-2){
       inside = false;
+      //cout << "///////// NOT INSIDE //////////" << endl;
       G4ThreeVector toOut = solid->DistanceToOut(localPosition, localDir) * localDir;
       newPosition = localPosition + toOut;
-      //counter++;
-      //cout << "\n" << counter << " inside = false\n";
+      //if (solid->Inside(newPosition) == kSurface) cout << "I'm surfing baby\n";
+      //else if (solid->Inside(newPosition) == kOutside) cout << "I'm outside baby\n";
+      //else cout << "I'm inside baby\n";
+      //cout << "newPos " << Cart(newPosition) << endl;
+      counter++;
+      cout << "\n" << counter << " inside = false\n";
     }
   }
 
@@ -421,6 +440,8 @@ void NPS::SamuraiFieldPropagation::RungeKuttaPropagation (const G4FastTrack& fas
     if(!inside) for(unsigned int i=0; i<trajectory.size(); i++) cout << i << " " << trajectory[i].x() << " " << trajectory[i].y() << " " << trajectory[i].z() << endl;
   }
 */
+  //cout << Cart(newPosition) << endl;
+
   G4ThreeVector newDir = (newPosition - localPosition).unit();
   G4ThreeVector newMomentum = newDir * localMomentum.mag(); 
   G4double time  = PrimaryTrack->GetGlobalTime()+(newPosition - localPosition).mag()/speed;

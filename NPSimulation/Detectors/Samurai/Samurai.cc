@@ -81,14 +81,14 @@ namespace Samurai_NS{
   const double RYTrap_Width_LTX = RYBox_Depth*0.4; //(upper_z)
   const double RYTrap_Height = RYBox_Width; //(y)
   const double RYTrap_Depth = RYBox_Height; //(x)
-  const string RYoke_Material = "G4_Fe";
+  const string RYoke_Material = "G4_AIR";//G4_Fe
   //const string Yoke_Material = "G4_Galactic";
 
   //poropagation volume
   const double pv_main_Width = Magnet_Width;
   const double pv_main_Height = RYBox_Height;
   const double pv_main_Depth = Magnet_Depth;
-  const string Propvol_Material = "G4_AIR";
+  const string Propvol_Material = "G4_Galactic";
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -420,7 +420,7 @@ void Samurai::ConstructDetector(G4LogicalVolume* world){
 
   // Set region were magnetic field is active
   SetPropagationRegion();
-
+/*
   G4ThreeVector poss(0.,0.,0.);
   G4ThreeVector velocity(0., 1*m, 3.*m);
   G4VSolid* Eliaa = BuildMagnet()->GetSolid();
@@ -430,7 +430,21 @@ void Samurai::ConstructDetector(G4LogicalVolume* world){
   cout<< "Le Distance to out:"<<dto<<endl;
   cout<<"Wx:"<<wX<<endl;
   cout<<"Wy:"<<wY<<endl;
-  cout<<"Wz:"<<wZ<<endl;
+  cout<<"Wz:"<<wZ<<endl;*/
+
+/*
+  G4Box* box = new G4Box("Samurai_Box",5*m,5*m,18*cm);
+  
+  //Material 
+  G4Material* thisMaterial = MaterialManager::getInstance()
+    ->GetMaterialFromLibrary("G4_Fe");
+
+  //Logical Volume
+  G4LogicalVolume* vol = new G4LogicalVolume(box, thisMaterial, "logic_Samurai_box",0,0,0);
+  vol->SetVisAttributes(m_VisMagnet);
+
+  new G4PVPlacement(0, G4ThreeVector(0.,0.,3*m),
+          vol, "slabby", world, false, 0);*/
 
   return;
 }
@@ -442,7 +456,7 @@ void Samurai::SetPropagationRegion(){
   
   if(!m_PropagationRegion){
     m_PropagationRegion= new G4Region("NPSamuraiFieldPropagation");
-    m_PropagationRegion -> AddRootLogicalVolume(m_Magnet);
+    m_PropagationRegion -> AddRootLogicalVolume(BuildPropvol());
     m_PropagationRegion->SetUserLimits(new G4UserLimits(m_StepSize));
   }
   
@@ -459,6 +473,12 @@ void Samurai::SetPropagationRegion(){
   ((NPS::SamuraiFieldPropagation*) fsm)->SetAngle(m_Angle);
   ((NPS::SamuraiFieldPropagation*) fsm)->SetFieldMap(m_FieldMapFile);
   ((NPS::SamuraiFieldPropagation*) fsm)->SetMethod(m_Method);
+  if(m_Method == NPS::RungeKutta){
+    double r_max = sqrt( Samurai_NS::Magnet_Width * Samurai_NS::Magnet_Width /4.
+                      +  Samurai_NS::Magnet_Height* Samurai_NS::Magnet_Height/4.
+                      +  Samurai_NS::Magnet_Depth * Samurai_NS::Magnet_Depth /4. );
+    ((NPS::SamuraiFieldPropagation*) fsm)->SetRmax(r_max);
+  }
   m_PropagationModel.push_back(fsm);
   
 }
