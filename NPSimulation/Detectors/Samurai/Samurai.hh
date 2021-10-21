@@ -42,11 +42,6 @@ using namespace std;
 
 
 class Samurai : public NPS::VDetector{
-  /*
-    enum PropagationMethod{
-      RungeKutta,
-      EliaOmar
-    };*/
   ////////////////////////////////////////////////////
   /////// Default Constructor and Destructor /////////
   ////////////////////////////////////////////////////
@@ -68,19 +63,26 @@ class Samurai : public NPS::VDetector{
 
     G4VSolid* BuildRYokeSolid();
 
-    G4LogicalVolume* BuildMagnet();//FIXME
-    G4LogicalVolume* BuildYoke();//FIXME
+    G4LogicalVolume* BuildMagnet();
+    G4LogicalVolume* BuildYoke();
     G4LogicalVolume* BuildRYoke();
     G4LogicalVolume* BuildPropvol();
   
   private:
   
+    //Solids used for the magnet construction
     G4VSolid* m_RYokeSolid;
 
     G4LogicalVolume* m_Magnet;
     G4LogicalVolume* m_Yoke;
     G4LogicalVolume* m_RYoke;
     G4LogicalVolume* m_Propvol;
+
+    // Visualisation Attributes
+    G4VisAttributes* m_VisMagnet;
+    G4VisAttributes* m_VisYokes;
+    G4VisAttributes* m_VisRYokes;
+    G4VisAttributes* m_VisPropvol;
     
     ////////////////////////////////////////////////////
     //////  Inherite from NPS::VDetector class /////////
@@ -126,8 +128,8 @@ class Samurai : public NPS::VDetector{
     ///////////////Private intern Data//////////////////
     ////////////////////////////////////////////////////
   private:
-    // Geometry
-    // Detector Coordinate
+
+    // Detector Coordinates
     double m_R;
     double m_Theta;
     double m_Phi;
@@ -140,11 +142,6 @@ class Samurai : public NPS::VDetector{
     double m_StepSize;
     string m_FieldMapFile;
     
-    // Visualisation Attributes
-    G4VisAttributes* m_VisMagnet;
-    G4VisAttributes* m_VisYokes;
-    G4VisAttributes* m_VisRYokes;
-    G4VisAttributes* m_VisPropvol;
 
   // Needed for dynamic loading of the library
   public:

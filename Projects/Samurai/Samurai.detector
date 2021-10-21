@@ -17,5 +17,5 @@ Samurai
  FIELDMAP=3T.table.bin 
  %/local/pilotto/nptool/Projects/Samurai/3T.table.bin 		
  % fieldmap path
- STEPS_PER_METER= 100000
+ STEPS_PER_METER= 100
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
