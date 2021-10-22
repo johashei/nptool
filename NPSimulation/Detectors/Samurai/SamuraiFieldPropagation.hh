@@ -79,18 +79,13 @@ namespace NPS{
 
     bool m_Initialized; //Map Loaded
     double m_StepSize;
-    double m_Angle; //Angle of rotation of the whole magnet - FIXME
     double m_Rmax;//used for the RungeKutta method
     string m_FieldMap;//FIXME
     PropagationMethod m_Meth;// "I AM THE ONE WHO KNOCKS!!!" cit. Heisenberg
     SamuraiFieldMap* m_Map;
 
-    G4ThreeVector MagField (G4ThreeVector pos);//FIXME
-
     void EliaOmarPropagation (const G4FastTrack& fastTrack, G4FastStep& fastStep);
     void RungeKuttaPropagation (const G4FastTrack& fastTrack, G4FastStep& fastStep);
-    
-    
       
     private:
     //TReactionConditions* m_ReactionConditions;
@@ -99,7 +94,6 @@ namespace NPS{
     void AttachReactionConditions();//FIXME
     
     void SetStepSize(double step){m_StepSize=step;};
-    void SetAngle(double angle){m_Angle=angle;};//FIXME
     void SetFieldMap(string fieldmap){m_FieldMap=fieldmap;};//FIXME
     void SetMethod(PropagationMethod method){m_Meth=method;};
     void SetRmax(double r_max){m_Rmax=r_max;};

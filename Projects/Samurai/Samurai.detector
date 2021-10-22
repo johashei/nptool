@@ -12,10 +12,10 @@ Samurai
  POS= 0 0 10000 mm
  ANGLE= 30 deg
  %
- METHOD= 0				
+ METHOD= 1				
  % 0=RungeKutta, 1=EliaOmar
  FIELDMAP=3T.table.bin 
- %/local/pilotto/nptool/Projects/Samurai/3T.table.bin 		
+ %fieldmap/3T.table.bin 		
  % fieldmap path
- STEPS_PER_METER= 100
+ STEPS_PER_METER= 1000
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

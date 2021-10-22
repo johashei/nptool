@@ -39,6 +39,7 @@ SamuraiFieldMap::SamuraiFieldMap(){
   m_min->SetFunction(m_func);
   m_min->SetPrintLevel(0);
 
+  //default values
   m_StepTime = 1.*nanosecond;//propagation time interval size
   m_Limit = 1000;//maximum number of steps before giving up
 
@@ -134,14 +135,13 @@ std::vector< TVector3 > SamuraiFieldMap::Propagate(double Brho, TVector3 pos, TV
     track.push_back(pos);
     pos.RotateY(m_angle);
   }
+  
   dir=dir.Unit();
   static double r;
   r = sqrt(pos.X()*pos.X()+pos.Z()*pos.Z());
   // number of step taken
   static unsigned int count;
   count = 0;
-  // maximum number of steps before giving up
-  //limit = 1000;
 
   // First propagate to r_max with one line
   while(r>m_Rmax && count<m_Limit){
@@ -172,14 +172,14 @@ std::vector< TVector3 > SamuraiFieldMap::Propagate(double Brho, TVector3 pos, TV
   py = P*dir.Y();//py
   pz = P*dir.Z();//pz
   imp = P*dir;
-  //static double h = 1*nanosecond;
+  
   while(r<=m_Rmax && count < m_Limit){
     func(N, pos           , imp            , xk1, pk1);
     func(N, pos+xk1*(m_StepTime/2.), imp+pk1*(m_StepTime/2.) , xk2, pk2);
     func(N, pos+xk2*(m_StepTime/2.), imp+pk2*(m_StepTime/2.) , xk3, pk3);
     func(N, pos+xk3*m_StepTime     , imp+pk3*m_StepTime      , xk4, pk4);
     pos +=(xk1+2*xk2+2*xk3+xk4)*(m_StepTime/6.); 
-    imp +=(pk1+2*pk2+2*pk3+pk4)*(m_StepTime/6.); 
+    imp +=(pk1+2*pk2+2*pk3+pk4)*(m_StepTime/6.);
     if(store){
       pos.RotateY(-m_angle);
       track.push_back(pos);
@@ -187,16 +187,13 @@ std::vector< TVector3 > SamuraiFieldMap::Propagate(double Brho, TVector3 pos, TV
     }
     r = sqrt(pos.X()*pos.X()+pos.Z()*pos.Z());
     count++;
-
-    //cout << count << " " << m_x_max << " " << m_y_max << " " << m_z_max << endl;
-    //cout << pos.X() << " " << pos.Y() << " " << pos.Z() << " " << endl;
   }
+  
   imp=imp.Unit();
   pos = PropagateToFDC2(pos, imp);
   pos.RotateY(-m_angle);
   track.push_back(pos);
-  //cout << "last step of propagate\n";
-
+  
   return track;
 
 }
@@ -418,8 +415,10 @@ void SamuraiFieldMap::LoadBinary(std::string file){
     if(z>m_z_max)
       m_z_max=z;  
   }
-  
+
+  //default value for m_Rmax
   m_Rmax=m_x_max;
+  
   cout << "\r  - " << count << " values loaded" << endl; 
   cout << "  - min(" << m_x_min <<";"<< m_y_min <<";" << m_z_min<< ") max(" << m_x_max <<";"<< m_y_max <<";" << m_z_max<< ")" << endl; 
   cout << "  - Rmax = " << m_Rmax << endl;

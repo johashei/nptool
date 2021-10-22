@@ -405,14 +405,12 @@ void Samurai::SetPropagationRegion(){
   G4VFastSimulationModel* fsm;
   fsm = new NPS::SamuraiFieldPropagation("SamuraiFieldPropagation", m_PropagationRegion);
   ((NPS::SamuraiFieldPropagation*) fsm)->SetStepSize(m_StepSize);
-  ((NPS::SamuraiFieldPropagation*) fsm)->SetAngle(m_Angle);
   ((NPS::SamuraiFieldPropagation*) fsm)->SetFieldMap(m_FieldMapFile);
   ((NPS::SamuraiFieldPropagation*) fsm)->SetMethod(m_Method);
   if(m_Method == NPS::RungeKutta){
     double r_max = sqrt( 
       Samurai_NS::Magnet_Width * Samurai_NS::Magnet_Width /4. + 
-      Samurai_NS::Magnet_Height* Samurai_NS::Magnet_Height/4. +
-      Samurai_NS::Magnet_Depth * Samurai_NS::Magnet_Depth /4. );
+      Samurai_NS::Magnet_Depth * Samurai_NS::Magnet_Depth /4. );//sqrt(x^2 + z^2)
     ((NPS::SamuraiFieldPropagation*) fsm)->SetRmax(r_max);
   }
   m_PropagationModel.push_back(fsm);
