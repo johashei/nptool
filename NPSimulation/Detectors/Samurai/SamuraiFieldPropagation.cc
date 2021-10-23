@@ -25,9 +25,10 @@
 //C++ libraries
 #include <iostream>
 #include <string>
-#include <iomanip>
+#include <iomanip>//FIXME
 #include <cmath>//FIXME
 #include <Randomize.hh>//FIXME
+#include <fstream>//FIXME
 //G4 libraries
 #include "G4Electron.hh"//FIXME
 #include "G4Gamma.hh"//FIXME
@@ -48,16 +49,21 @@
 #include "RootOutput.h"
 #include "TLorentzVector.h"
 
+bool single_particle = false;
+ofstream outEO    ("EliaOmar.txt"     );
+ofstream outRK    ("RungeKutta.txt"   );
+ofstream outEOsp  ("EliaOmarSP.txt"   , ios::app  );
+ofstream outRKsp  ("RungeKuttaSP.txt" , ios::app  );
 ////////////////////////////////////////////////////////////////////////////////
 NPS::SamuraiFieldPropagation::SamuraiFieldPropagation(G4String modelName, G4Region* envelope)
   : G4VFastSimulationModel(modelName, envelope) {
   //ReadConfiguration();
 
-    m_Map = NULL;
-    m_Initialized = false;
+  m_Map = NULL;
+  m_Initialized = false;
 
-    //ABLA = new G4AblaInterface();
-  }
+  //ABLA = new G4AblaInterface();
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 NPS::SamuraiFieldPropagation::SamuraiFieldPropagation(G4String modelName)
@@ -142,11 +148,9 @@ G4bool NPS::SamuraiFieldPropagation::ModelTrigger(const G4FastTrack& fastTrack) 
 void NPS::SamuraiFieldPropagation::DoIt(const G4FastTrack& fastTrack,
     G4FastStep&        fastStep) {
   //std::cout << "\nDOIT" << std::endl;
-  //std::cout << "FIELDMAP " << m_FieldMap << std::endl;
   
   if(!m_Initialized){
     m_Map = new SamuraiFieldMap();
-    //cout << "before load map\n";
     m_Map->LoadMap(0, m_FieldMap, 10);//FIXME
 
     //Needed for the RungeKutta method
@@ -194,9 +198,6 @@ void NPS::SamuraiFieldPropagation::EliaOmarPropagation (const G4FastTrack& fastT
   G4ThreeVector newPosition;
   G4ThreeVector newDir;
   G4ThreeVector newMomentum;  
-  
-  //static int count = 0;
-  // count++;
 
   G4ThreeVector B = VtoG4( m_Map->InterpolateB(G4toV(localPosition/mm)) );
   double magB = B.mag() / tesla;
@@ -243,9 +244,15 @@ void NPS::SamuraiFieldPropagation::EliaOmarPropagation (const G4FastTrack& fastT
     newMomentum = localMomentum;
   }
   
-  if (solid->Inside(newPosition) != kInside){
+  if (solid->Inside(newPosition) != kInside){//last step goes straight
       G4ThreeVector toOut = solid->DistanceToOut(localPosition, localDir) * localDir;
       newPosition = localPosition + toOut;
+      newDir = localDir;
+      newMomentum = localMomentum;
+
+      //benchmark
+      if(single_particle) PrintData(m_StepSize, newPosition, newMomentum, outEOsp);
+      else PrintData(m_StepSize, newPosition, newMomentum, outEO);
   }
   
   double time  = PrimaryTrack->GetGlobalTime()+(newPosition - localPosition).mag()/speed;
@@ -261,13 +268,16 @@ void NPS::SamuraiFieldPropagation::EliaOmarPropagation (const G4FastTrack& fastT
 /////////////////////////////////////////////////////////////////////////
 void NPS::SamuraiFieldPropagation::RungeKuttaPropagation (const G4FastTrack& fastTrack,
 							  G4FastStep& fastStep){
-  static int counter = 0;//debugging purposes
+  //static int counter = 0;//debugging purposes
   static bool inside = false;//true if previous step is inside the volume
   static vector<TVector3> trajectory;
   static int count;//keeps track of the step reached inside trajectory
 
   // Get the track info
   const G4Track* PrimaryTrack = fastTrack.GetPrimaryTrack();
+
+  static G4VSolid* solid;//Stores the current solid 
+  solid = PrimaryTrack->GetTouchable()->GetSolid();
   
   G4ThreeVector localDir = fastTrack.GetPrimaryTrackLocalDirection();
   G4ThreeVector localPosition = fastTrack.GetPrimaryTrackLocalPosition();
@@ -293,21 +303,30 @@ void NPS::SamuraiFieldPropagation::RungeKuttaPropagation (const G4FastTrack& fas
   }
 
   G4ThreeVector newPosition (trajectory[count].x(), trajectory[count].y(), trajectory[count].z());
-
-  //Check if newPosition is outside
-  if (inside){
-    G4VSolid* solid = PrimaryTrack->GetTouchable()->GetSolid();
-
-    if (solid->Inside(newPosition) != kInside){
-      inside = false;
-      G4ThreeVector toOut = solid->DistanceToOut(localPosition, localDir) * localDir;
-      newPosition = localPosition + toOut;
-      counter++;
-    }
-  }
-
+  //benchmark
   G4ThreeVector newDir = (newPosition - localPosition).unit();
   G4ThreeVector newMomentum = newDir * localMomentum.mag(); 
+
+  //Check if newPosition is not inside
+  if (solid->Inside(newPosition) != kInside){
+    inside = false;
+    G4ThreeVector toOut = solid->DistanceToOut(localPosition, localDir) * localDir;
+    newPosition = localPosition + toOut;
+    //benchmark
+    newDir = (newPosition - localPosition).unit();
+    newMomentum = newDir * localMomentum.mag();
+
+    //benchmark
+    if(single_particle) PrintData(m_StepSize, newPosition, newMomentum, outRKsp);
+    else PrintData(m_StepSize, newPosition, newMomentum, outRK);
+    //counter++;
+  }
+
+  //benchmark
+  //G4ThreeVector newDir = (newPosition - localPosition).unit();
+  //G4ThreeVector newMomentum = newDir * localMomentum.mag(); 
+
+
   double time  = PrimaryTrack->GetGlobalTime()+(newPosition - localPosition).mag()/speed;
 
   fastStep.ProposePrimaryTrackFinalPosition( newPosition );

@@ -34,9 +34,10 @@
 #include "NPQFS.h"
 #include "TReactionConditions.h"
 
-//FIXME
 #include <string>
 #include <vector>
+#include <fstream>//benchmark
+#include <iomanip>//benchmark
 
 class G4VPhysicalVolume;
 class SamuraiFieldMap;
@@ -71,18 +72,25 @@ namespace NPS{
     
     string Prt (G4ThreeVector V){//FIXME
       return to_string(V.getR()) + " " + to_string(V.getPhi()) + " " + to_string(V.getTheta());
-      }
-
+    }
     string Cart (G4ThreeVector V){//FIXME
       return to_string(V.getX()) + " " + to_string(V.getY()) + " " + to_string(V.getZ());
-      }
+    }
 
-    bool m_Initialized; //Map Loaded
-    double m_StepSize;
-    double m_Rmax;//used for the RungeKutta method
-    string m_FieldMap;//FIXME
-    PropagationMethod m_Meth;// "I AM THE ONE WHO KNOCKS!!!" cit. Heisenberg
-    SamuraiFieldMap* m_Map;
+    void PrintData(double stepsize, G4ThreeVector pos, G4ThreeVector mom, ofstream& out){
+      out << setprecision(17) << stepsize/micrometer << "\t";
+      out << setprecision(17) << pos.x() << "\t" << pos.y() << "\t" << pos.z() << "\t";
+      out << setprecision(17) << mom.x() << "\t" << mom.y() << "\t" << mom.z() << "\t";
+      out << setprecision(17) << mom.getR() << "\t" << mom.getPhi() << "\t" << mom.getTheta() << endl;
+    }
+
+
+    bool m_Initialized; //field map initialized
+    double m_StepSize;  //propagation step size
+    double m_Rmax;      //used in the RungeKutta method
+    string m_FieldMap;  //path + name of field map file
+    PropagationMethod m_Meth;//propagation method "I AM THE ONE WHO KNOCKS!!!" cit. Heisenberg
+    SamuraiFieldMap* m_Map; //field map
 
     void EliaOmarPropagation (const G4FastTrack& fastTrack, G4FastStep& fastStep);
     void RungeKuttaPropagation (const G4FastTrack& fastTrack, G4FastStep& fastStep);
