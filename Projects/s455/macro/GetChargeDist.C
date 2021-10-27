@@ -88,7 +88,7 @@ void GetChargeDist(string nucleus_name){
   cut_beam->SetName("cut_beam");
   cut_beam->SetVarX("fBeam_AoQ");
   cut_beam->SetVarY("fBeam_Z");
-  double Rx=0.005;
+  double Rx=0.006;
   double Ry=0.5;
   AoQ = AoQ;// + 0.001;
   double Zcenter = Z;// - 0.5;
@@ -307,6 +307,7 @@ void LoadRootFiles(string iso){
   if(iso=="178Hg" || iso=="179Hg" || iso=="180Hg" || iso=="181Hg"){
     chain->Add("../../../Outputs/Analysis/180Hg_1.root");
     chain->Add("../../../Outputs/Analysis/180Hg_2.root");
+    chain->Add("../../../Outputs/Analysis/175Pt.root");
   }
 
   //*** Au isotopes ***//

@@ -484,13 +484,13 @@ void Analysis::InitParameter(){
   fDCC   = -10000;
   fK_LS2 = -30e-8;
 
-  fRunID = 8;
+  fRunID = 5;
 
   // Beam parameter //
   fZBeta_p0 = 1;
   fZBeta_p1 = 0;
 
-  // FF paramter //
+  // FF parameter //
   fZff_p0 = 2.80063;
   fZff_p1 = 6.91985e-2;
   fZff_p2 = 1.01598e-7;
@@ -502,14 +502,17 @@ void Analysis::InitParameter(){
     fZbeam_p1 = 0.674945;
     fZbeam_p2 = -8.32085e-6;
   
-    fZBeta_p0 = 2.73;
-    fZBeta_p1 = 74.7153;
+    fZBeta_p0 = 72.946;
+    fZBeta_p1 = 6.0644;
   }
   if(fRunID==3){
     fBrho0 = 10.8183; // 182Hg
     fZbeam_p0 = -2737.25;
     fZbeam_p1 = 0.452017;
     fZbeam_p2 = -3.48831e-6;
+
+    fZBeta_p0 = 76.6738;
+    fZBeta_p1 = 1.60128;
   }
   if(fRunID==4){
     fBrho0 = 10.9558; // 184Hg
@@ -522,18 +525,27 @@ void Analysis::InitParameter(){
     fZbeam_p0 = -2858.72;
     fZbeam_p1 = 0.454064;
     fZbeam_p2 = -3.36443e-6;
+
+    fZBeta_p0 = 71.0975;
+    fZBeta_p1 = 10.7007;
   }
   if(fRunID==6){
     fBrho0 = 10.9476; // 189Pb
     fZbeam_p0 = 1590.66;
     fZbeam_p1 = 0.0956455;
     fZbeam_p2 = 3.84585e-6;
+  
+    fZBeta_p0 = 74.6063;
+    fZBeta_p1 = 6.4635;
   }
   if(fRunID==7){
     fBrho0 = 10.6814; // 175Pt
     fZbeam_p0 = 459.68;
     fZbeam_p1 = 0.162277;
     fZbeam_p2 = 3.10164e-6;
+
+    fZBeta_p0 = 66.9433;
+    fZBeta_p1 = 10.8664;
   }
   if(fRunID==8){
     fBrho0 = 11.0864; // 204Fr
@@ -549,24 +561,36 @@ void Analysis::InitParameter(){
     fZbeam_p0 = -1752.27;
     fZbeam_p1 = 0.346018;
     fZbeam_p2 = -8.64673e-7;
+
+    fZBeta_p0 = 63.9575;
+    fZBeta_p1 = 25.1988;
   }
   if(fRunID==10){
     fBrho0 = 11.0955; // 199At run 423 & 424
     fZbeam_p0 = -116.425;
     fZbeam_p1 = 0.218256;
     fZbeam_p2 = 1.62399e-6;
+
+    fZBeta_p0 = 61.3889;
+    fZBeta_p1 = 25.8908;
   }
   if(fRunID==11){
     fBrho0 = 10.9970; // 199At run 425 & 426
     fZbeam_p0 = -116.425;
     fZbeam_p1 = 0.218256;
     fZbeam_p2 = 1.62399e-6;
+  
+    fZBeta_p0 = 61.3889;
+    fZBeta_p1 = 25.8908;
   }
   if(fRunID==12){
     fBrho0 = 10.8697; //197At
     fZbeam_p0 = -2683.52;
     fZbeam_p1 = 0.422551;
     fZbeam_p2 = -2.44471e-6;
+
+    fZBeta_p0 = 62.9188;
+    fZBeta_p1 = 22.8827;
   }
   if(fRunID==13){
     fBrho0 = 11.3418; // 216Th
