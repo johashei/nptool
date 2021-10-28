@@ -98,7 +98,7 @@ double devE(const double * parameter) {
 
   /*** Minimize by one peak ***/
 /**/
-  double multiplier = 0.07;
+  double multiplier = 0.80; //0.08;
   double metric = abs(FitResultMatrix[mgSelect][0]-refE) + abs(multiplier*FitResultMatrix[mgSelect][2]);
 /**/
 
@@ -189,87 +189,70 @@ void MinimizeBeamSpot() {
   //Start timer
   auto start = high_resolution_clock::now();
 
-  //TESTING: Grid method of avoiding local minima
-  //for (int x = 0; x < 3; x++) { //7; x++) {
-    //for (int y = 0; y < 3; y++){ //7; y++) {
-      //for (int z = 0; z < 3; z++){ //7; z++) {
-        //for (int t = 0; t < 3; t++) {
 
-          //Start with beam (0,0,0) and 4.76um 0.5mg/c2 target
-          //double parameter[4] = {0.0, 0.0, 0.0, 4.76};   
-          double parameter[4] = {
-	    //-3.64, 0.35, -10., 10.
-	    //-3.64, 0.35, +0.11, 3.02
-	    //-3.8748, 0.0228, +1.016354, 1.650928
-	    //-3.502156, 0.391660, 0.986920, 1.147161
-	    //-4.509762, 0.179826, 1.386245, 1.398818
-	    //-4.509762, 0.179826, 1.386245, 1.081334
-	    0.0, 0.0, 0.0, 5.0 
-	    //-4.509762, 0.179826, 1.623007, 1.081334
-	    //-3.9164, +0.0550, 1.0558, 1.7685
-          };
+  //Start with beam (0,0,0) and 4.76um 0.5mg/c2 target
+  double parameter[4] = {
+    //0.0, 0.0, 0.0, 4.76 
+    -3.9164, +0.0550, 1.0151, 1.1883
+  };
 
-          //Don't draw iterations of minimizer
-          flagDraw = 0;
-          gROOT -> SetBatch(kTRUE);
+  //Don't draw iterations of minimizer
+  flagDraw = 0;
+  gROOT -> SetBatch(kTRUE);
 
-	  //Initial pass through
-          devE(parameter);
+  //Initial pass through
+  devE(parameter);
 
-          //Function with 4 parameter XYZ and Target thickness
-          auto func = ROOT::Math::Functor( & devE, 4);
+  //Function with 4 parameter XYZ and Target thickness
+  auto func = ROOT::Math::Functor( & devE, 4);
 
-          //Initilise minimizer
-          auto minim = ROOT::Math::Factory::CreateMinimizer("Minuit2", "Migrad");
-          minim -> SetMaxFunctionCalls(100000000); // used by Minuit and Minuit2 
-          minim -> SetMaxIterations(100000000); // used by GSL
-          minim -> SetPrintLevel(3);
-          minim -> SetPrecision(1e-06);
+  //Initilise minimizer
+  auto minim = ROOT::Math::Factory::CreateMinimizer("Minuit2", "Migrad");
+  minim -> SetMaxFunctionCalls(100000000); // used by Minuit and Minuit2 
+  minim -> SetMaxIterations(100000000); // used by GSL
+  minim -> SetPrintLevel(3);
+  minim -> SetPrecision(1e-08);
 
-          //Set minimizer function
-          minim -> SetFunction(func);
+  //Set minimizer function
+  minim -> SetFunction(func);
 
-          //Assign variable limits
-          //minim -> SetLimitedVariable(0, "X", parameter[0], 0.10, -5.0, -3.5);
-          minim -> SetFixedVariable(0, "X", parameter[0]); 
-          //minim -> SetLimitedVariable(1, "Y", parameter[1], 0.10, -0.5, +1.0);
-          minim -> SetFixedVariable(1, "Y", parameter[1]);
-          //minim -> SetLimitedVariable(2, "Z", parameter[2], 0.05, -0.0, +2.0);//-1.50, +1.50);
-          minim -> SetFixedVariable(2, "Z", parameter[2]);
-          //minim -> SetLimitedVariable(3, "T", parameter[3], 0.05, +0.5, +3.5);
-	  minim -> SetFixedVariable(3, "T", parameter[3]);
+  //Assign variable limits
+  minim -> SetLimitedVariable(0, "X", parameter[0], 0.10, -8.0, -0.0);
+  //minim -> SetFixedVariable(0, "X", parameter[0]); 
+  minim -> SetLimitedVariable(1, "Y", parameter[1], 0.10, -6.0, +6.0);
+  //minim -> SetFixedVariable(1, "Y", parameter[1]);
+  minim -> SetLimitedVariable(2, "Z", parameter[2], 0.05, -1.50, +1.50);
+  //minim -> SetFixedVariable(2, "Z", parameter[2]);
+  minim -> SetLimitedVariable(3, "T", parameter[3], 0.05, +1.0, +1.4); // ELASTICS VALUE = 1.2(2)
+  //minim -> SetFixedVariable(3, "T", parameter[3]);
 
-          //Don't draw iterations of minimizer
-          flagDraw = 0;
-          gROOT -> SetBatch(kTRUE);
+  //Don't draw iterations of minimizer
+  flagDraw = 0;
+  gROOT -> SetBatch(kTRUE);
 
-          //Shrink it, babeyyy
-          minim -> Minimize();
+  //Shrink it, babeyyy
+  minim -> Minimize();
 
-          //Draw minimal value
-          flagDraw = 1;
-          gROOT -> SetBatch(kFALSE);
+  //Draw minimal value
+  flagDraw = 1;
+  gROOT -> SetBatch(kFALSE);
 
-          //Pull values from minimizer
-          const double * x = minim -> X();
-          cout << "==================================================" << endl;
-          cout << "=---------------- FINAL PEAK FITS ---------------=" << endl;
-          cout << "==================================================" << endl;
-            devE(x);
-          cout << "==================================================" << endl;
-          cout << "=------------ RESULTS OF MINIMIZATION -----------=" << endl;
-            if (mgSelect == 6) { mgSelect = 7; } // Correct the input for MG7
-          cout << "=------------------- USING MG " << mgSelect << " -----------------=" << endl;
-          cout << "==================================================" << endl;
-          cout << "\t\tX = " << x[0] << " mm" << endl;
-          cout << "\t\tY = " << x[1] << " mm" << endl;
-          cout << "\t\tZ = " << x[2] << " mm" << endl;
-          cout << "\t\tT = " << x[3] << " um" << endl;
-          cout << "==================================================" << endl;
-        //}
-      //}
-    //}
-  //}
+  //Pull values from minimizer
+  const double * x = minim -> X();
+  cout << "==================================================" << endl;
+  cout << "=---------------- FINAL PEAK FITS ---------------=" << endl;
+  cout << "==================================================" << endl;
+    devE(x);
+  cout << "==================================================" << endl;
+  cout << "=------------ RESULTS OF MINIMIZATION -----------=" << endl;
+    if (mgSelect == 6) { mgSelect = 7; } // Correct the input for MG7
+  cout << "=------------------- USING MG " << mgSelect << " -----------------=" << endl;
+  cout << "==================================================" << endl;
+  cout << "\t\tX = " << x[0] << " mm" << endl;
+  cout << "\t\tY = " << x[1] << " mm" << endl;
+  cout << "\t\tZ = " << x[2] << " mm" << endl;
+  cout << "\t\tT = " << x[3] << " um" << endl;
+  cout << "==================================================" << endl;
 
   //Stop timer
   auto stop = high_resolution_clock::now();
