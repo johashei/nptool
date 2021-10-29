@@ -261,6 +261,7 @@ void SamuraiFDC2::InitializeRootOutput(){
 //FIXME
 void SamuraiFDC2::ReadSensitive(const G4Event* event){
   
+  m_Event->Clear();
   //Interaction Scorer
   InteractionScorers::PS_Interactions* Scorer= (InteractionScorers::PS_Interactions*) m_FDC2Scorer->GetPrimitive(0);
 
@@ -268,8 +269,9 @@ void SamuraiFDC2::ReadSensitive(const G4Event* event){
   for(unsigned int i = 0 ; i < size ; i++){
     //vector<unsigned int> level = Scorer->GetLevel(i); 
     //double Energy = RandGauss::shoot(Scorer->GetEnergy(i),SamuraiFDC2_NS::ResoEnergy);
-    double Energy = Scorer->GetEnergy(i);
-    cout << Energy << endl;
+    //double Energy = Scorer->GetEnergy(i);
+    m_Event->SetDetectorNumber( 2 );//2 is for FDC2
+    m_Event->SetEnergy(Scorer->GetEnergy(i));
   }
   /*
   m_Event->Clear();

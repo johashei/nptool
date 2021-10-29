@@ -39,7 +39,7 @@ using namespace std;
 #include "NPInputParser.h"
 
 #include "SamuraiFieldPropagation.hh"
-#include "TSamuraiFDC2Data.h"
+#include "TSamuraiIdealData.h"
 
 
 class SamuraiFDC2 : public NPS::VDetector{
@@ -105,8 +105,10 @@ class SamuraiFDC2 : public NPS::VDetector{
     ///////////Event class to store Data////////////////
     ////////////////////////////////////////////////////
   private:
-    TSamuraiFDC2Data* m_Event;
+    //TSamuraiFDC2Data* m_Event;
     //////////////////////////////////////////////////////////////////
+
+    TSamuraiIdealData* m_Event;
 
     ////////////////////////////////////////////////////
     ///////////////Private intern Data//////////////////
