@@ -67,13 +67,23 @@ class Analysis: public NPL::VAnalysis{
     TSofTofWPhysics* SofTofW;
     TSofBeamID* SofBeamID;
     TSofFissionFragment* SofFF;
+    int RunID;
 
   private:
+    int fRunID;
     double fLS2_0; 
     double fBrho0;
     double fDS2;
     double fDCC;
     double fK_LS2;
+    double fZbeam_p0; 
+    double fZbeam_p1; 
+    double fZbeam_p2; 
+    double fZff_p0;
+    double fZff_p1;
+    double fZff_p2;
+    double fZBeta_p0;
+    double fZBeta_p1;
 
     TRandom3 rand;
     TCutG* cutQ77[3];

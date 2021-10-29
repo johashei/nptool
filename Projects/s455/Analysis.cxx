@@ -56,6 +56,7 @@ void Analysis::Init(){
 void Analysis::TreatEvent(){
   ReInitValue();
   //cout << "************" << endl;
+  RunID = fRunID;
   BeamAnalysis();
 
   unsigned int sofsci_size = SofSci->DetectorNbr.size();
@@ -67,8 +68,6 @@ void Analysis::TreatEvent(){
 
     FissionFragmentAnalysis();
   }
-
-
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -127,7 +126,6 @@ void Analysis::FissionFragmentAnalysis(){
   int multR = mult3 + mult4;
 
   if(softwim_size>1){
-    //if( (multL>15 && multR>15) || (multR==32) || (multL==32)){
     if( (mult1>1 && mult1<17) || (mult2>1 && mult2<17) || (mult3>1 && mult3<17) || (mult4>1 && mult4<17)){
       for(unsigned int i=0; i< softwim_size; i++){
         int sec = SofTwim->SectionNbr[i];
@@ -247,9 +245,6 @@ void Analysis::FissionFragmentAnalysis(){
 
 
       // Z calibration //
-      double p0 = 2.80063;
-      double p1 = 6.91985e-2;
-      double p2 = 1.01598e-7;
       double Z1=-1;
       double Z2=-1;
       double Zsum=-1;
@@ -281,9 +276,9 @@ void Analysis::FissionFragmentAnalysis(){
       }
 
       if(Z1>0 && Z2>0){
-        Z1 = p0 + p1*Z1 + p2*Z1*Z1;
-        Z2 = p0 + p1*Z2 + p2*Z2*Z2;
-        
+        Z1 = fZff_p0 + fZff_p1*Z1 + fZff_p2*Z1*Z1;
+        Z2 = fZff_p0 + fZff_p1*Z2 + fZff_p2*Z2*Z2;
+
         Z1 = sqrt(Z1);
         Z2 = sqrt(Z2);
 
@@ -301,15 +296,6 @@ void Analysis::FissionFragmentAnalysis(){
       SofFF->SetBeta(Beta3);
       SofFF->SetBeta(Beta4);
 
-      /*SofFF->SetZ(E1);
-      SofFF->SetZ(E2);
-      SofFF->SetZ(E3);
-      SofFF->SetZ(E4);*/
-
-      /*SofFF->SetZ( sqrt(p0+p1*E1+p2*E1*E1) );
-      SofFF->SetZ( sqrt(p0+p1*E2+p2*E2*E2) );
-      SofFF->SetZ( sqrt(p0+p1*E3+p2*E3*E3) );
-      SofFF->SetZ( sqrt(p0+p1*E4+p2*E4*E4) );*/
       SofFF->SetZ(Z1);
       SofFF->SetZ(Z2);
 
@@ -322,234 +308,329 @@ void Analysis::FissionFragmentAnalysis(){
       SofFF->SetIntZsum(iZsum);
     }
   }
-  }
+}
 
-  ////////////////////////////////////////////////////////////////////////////////
-  void Analysis::BeamAnalysis(){
-    unsigned int sofsci_size = SofSci->DetectorNbr.size();
-    double Y_p0 = 23943.8;
-    double Y_p1 = 12.362;
+////////////////////////////////////////////////////////////////////////////////
+void Analysis::BeamAnalysis(){
+  unsigned int sofsci_size = SofSci->DetectorNbr.size();
+  if(sofsci_size==2){
+    double beta = SofSci->Beta[0];
+    //cout << "Set beta to " << beta << endl;
+    SofTrim->SetBeta(beta);
+    SofTrim->BuildSimplePhysicalEvent();
+    double Zbeam,Qmax,Theta;
+    if(SofTrim->EnergySection.size()>0){
+      Zbeam = SofTrim->GetMaxEnergySection();
+      Qmax = DetermineQmax();
+      Theta = SofTrim->Theta[0];
 
-    double alpha = 2.09862;
-    double beta = 0.972689;
-    double Z_p0 = alpha+beta*-9.31873;
-    double Z_p1 = beta*0.564459;
-
-    if(sofsci_size==2){
-      double beta = SofSci->Beta[0];
-      //cout << "Set beta to " << beta << endl;
-      SofTrim->SetBeta(beta);
-      SofTrim->BuildSimplePhysicalEvent();
-      double Zbeam,Qmax,Theta;
-      if(SofTrim->EnergySection.size()>0){
-        Zbeam = SofTrim->GetMaxEnergySection();
-        Qmax = DetermineQmax();
-        Theta = SofTrim->Theta[0];
-
-        double TofFromS2    = SofSci->CalTof[0];
-        double velocity_mns = SofSci->VelocityMNs[0];
-        double Beta         = SofSci->Beta[0];
-        double XS2          = SofSci->PosMm[0];
-        //double XCC          = SofSci->PosMm[1];
-        double XCC=0;
-        double YCC=0;
-        for(unsigned int i=0; i<SofMwpc->DetectorNbr.size(); i++){
-          if(SofMwpc->DetectorNbr[i]==1){
-            XCC = SofMwpc->PositionX1[i];
-            YCC = SofMwpc->PositionY[i];
-          }
+      double TofFromS2    = SofSci->CalTof[0];
+      double velocity_mns = SofSci->VelocityMNs[0];
+      double Beta         = SofSci->Beta[0];
+      double XS2          = SofSci->PosMm[0];
+      //double XCC          = SofSci->PosMm[1];
+      double XCC=0;
+      double YCC=0;
+      for(unsigned int i=0; i<SofMwpc->DetectorNbr.size(); i++){
+        if(SofMwpc->DetectorNbr[i]==1){
+          XCC = SofMwpc->PositionX1[i];
+          YCC = SofMwpc->PositionY[i];
         }
-
-        double LS2;
-        LS2 = fLS2_0;//*(1 + fK_LS2*Theta);
-        velocity_mns = LS2/TofFromS2;
-        Beta = velocity_mns * m/ns / NPUNITS::c_light;
-        double Gamma        = 1./(TMath::Sqrt(1 - TMath::Power(Beta,2)));
-        double Brho = fBrho0 * (1 - XS2/fDS2 - XCC/fDCC);
-        double AoQ  = Brho / (3.10716*Gamma*Beta);
-        double A    = AoQ * Qmax;
-
-        // Y dependence correction //
-        Zbeam = Zbeam/(Y_p0 + Y_p1*YCC)*Y_p0;
-
-        // Z calibration //
-        Zbeam = Z_p0 + Z_p1*sqrt(Zbeam);
-        //Zbeam = 2.09862 + 0.972689*Zbeam;
-
-        // Filling Beam tree
-        SofBeamID->SetZbeam(Zbeam);
-        SofBeamID->SetQmax(rand.Gaus(Qmax,0.15));
-        SofBeamID->SetAoQ(AoQ);
-        SofBeamID->SetAbeam(A);
-        SofBeamID->SetBeta(Beta);
-        SofBeamID->SetGamma(Gamma);
-        SofBeamID->SetBrho(Brho);
-        SofBeamID->SetXS2(XS2);
-        SofBeamID->SetXCC(XCC);
-        SofBeamID->SetYCC(YCC);
       }
+
+      double LS2;
+      LS2 = fLS2_0;//*(1 + fK_LS2*Theta);
+      velocity_mns = LS2/TofFromS2;
+      Beta = velocity_mns * m/ns / NPUNITS::c_light;
+      double Gamma        = 1./(TMath::Sqrt(1 - TMath::Power(Beta,2)));
+      double Brho = fBrho0 * (1 - XS2/fDS2 - XCC/fDCC);
+      double AoQ  = Brho / (3.10716*Gamma*Beta);
+      double A    = AoQ * Qmax;
+
+      // Y dependence correction //
+      double Y_p0 = 23943.8;
+      double Y_p1 = 12.362;
+      Zbeam = Zbeam/(Y_p0 + Y_p1*YCC)*Y_p0;
+
+      // Z calibration //
+      Zbeam = fZbeam_p0 + fZbeam_p1*Zbeam + fZbeam_p2*Zbeam*Zbeam;
+      Zbeam = sqrt(Zbeam);
+
+      // Last beta correction //
+      double Beta_norm = 0.8355;
+      Zbeam = Zbeam/(fZBeta_p0 + fZBeta_p1*Beta)*(fZBeta_p0 + fZBeta_p1*Beta_norm);
+
+      // Filling Beam tree
+      SofBeamID->SetZbeam(Zbeam);
+      SofBeamID->SetQmax(rand.Gaus(Qmax,0.15));
+      SofBeamID->SetAoQ(AoQ);
+      SofBeamID->SetAbeam(A);
+      SofBeamID->SetBeta(Beta);
+      SofBeamID->SetGamma(Gamma);
+      SofBeamID->SetBrho(Brho);
+      SofBeamID->SetXS2(XS2);
+      SofBeamID->SetXCC(XCC);
+      SofBeamID->SetYCC(YCC);
     }
   }
+}
 
-  ////////////////////////////////////////////////////////////////////////////////
-  void Analysis::LoadCut(){
-    TString input_path = "./calibration/SofTrim/cut/";
+////////////////////////////////////////////////////////////////////////////////
+void Analysis::LoadCut(){
+  TString input_path = "./calibration/SofTrim/cut/";
 
-    TString rootfile;
-    TString cutfile;
-    TFile* file;
-    for(int i=0; i<3; i++){
-      // Q=77
-      rootfile = Form("cutsec%iQ77.root",i+1);
-      cutfile = input_path + rootfile;
-      file = new TFile(cutfile);
-      cutQ77[i] = (TCutG*) file->Get(Form("cutsec%iQ77",i+1));
-      // Q=78
-      rootfile = Form("cutsec%iQ78.root",i+1);
-      cutfile = input_path + rootfile;
-      file = new TFile(cutfile);
-      cutQ78[i] = (TCutG*) file->Get(Form("cutsec%iQ78",i+1));
-      // Q=79
-      rootfile = Form("cutsec%iQ79.root",i+1);
-      cutfile = input_path + rootfile;
-      file = new TFile(cutfile);
-      cutQ79[i] = (TCutG*) file->Get(Form("cutsec%iQ79",i+1));
-      // Q=80
-      rootfile = Form("cutsec%iQ80.root",i+1);
-      cutfile = input_path + rootfile;
-      file = new TFile(cutfile);
-      cutQ80[i] = (TCutG*) file->Get(Form("cutsec%iQ80",i+1));
+  TString rootfile;
+  TString cutfile;
+  TFile* file;
+  for(int i=0; i<3; i++){
+    // Q=77
+    rootfile = Form("cutsec%iQ77.root",i+1);
+    cutfile = input_path + rootfile;
+    file = new TFile(cutfile);
+    cutQ77[i] = (TCutG*) file->Get(Form("cutsec%iQ77",i+1));
+    // Q=78
+    rootfile = Form("cutsec%iQ78.root",i+1);
+    cutfile = input_path + rootfile;
+    file = new TFile(cutfile);
+    cutQ78[i] = (TCutG*) file->Get(Form("cutsec%iQ78",i+1));
+    // Q=79
+    rootfile = Form("cutsec%iQ79.root",i+1);
+    cutfile = input_path + rootfile;
+    file = new TFile(cutfile);
+    cutQ79[i] = (TCutG*) file->Get(Form("cutsec%iQ79",i+1));
+    // Q=80
+    rootfile = Form("cutsec%iQ80.root",i+1);
+    cutfile = input_path + rootfile;
+    file = new TFile(cutfile);
+    cutQ80[i] = (TCutG*) file->Get(Form("cutsec%iQ80",i+1));
+  }
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+void Analysis::LoadSpline(){
+  TString input_path = "./calibration/SofTwim/spline/";
+
+  TString rootfile = input_path + "spline_beta.root";
+  TFile* ifile = new TFile(rootfile,"read");
+
+  TString splinename;
+  if(ifile->IsOpen()){
+    cout << "Loading Beta spline for fission fragment analysis..." << endl;
+    for(int i=0; i<4; i++){
+      splinename = Form("spline_beta_sec%i",i+1);
+      fcorr_z_beta[i] = (TSpline3*) ifile->FindObjectAny(splinename);
     }
+    ifile->Close();
+  }
+  else
+    cout << "File " << rootfile << " not found!" << endl;
+
+  //*** ***//
+  rootfile = input_path + "spline_dt.root";
+  ifile = new TFile(rootfile,"read");
+
+  if(ifile->IsOpen()){
+    cout << "Loading DT spline for fission fragment analysis..." << endl;
+    for(int i=0; i<4; i++){
+      splinename = Form("spline_dt_sec%i",i+1);
+      fcorr_z_dt[i] = (TSpline3*) ifile->FindObjectAny(splinename);
+    }
+    ifile->Close();
+  }
+  else
+    cout << "File " << rootfile << " not found!" << endl;
+
+}
+
+////////////////////////////////////////////////////////////////////////////////
+int Analysis::DetermineQmax(){
+  int Qmax;
+  int Qsec[3];
+
+  unsigned int size = SofTrim->EnergySection.size();
+  for(unsigned int i=0; i<size; i++){
+    int SecNbr   = SofTrim->SectionNbr[i];
+    double Theta = SofTrim->Theta[i];
+    double Esec  = SofTrim->EnergySection[i];
+
+
+    if(cutQ77[SecNbr-1]->IsInside(Theta,Esec))
+      Qsec[SecNbr-1] = 77;
+    else if(cutQ78[SecNbr-1]->IsInside(Theta,Esec))
+      Qsec[SecNbr-1] = 78;
+    else if(cutQ79[SecNbr-1]->IsInside(Theta,Esec))
+      Qsec[SecNbr-1] = 79;
+    else if(cutQ80[SecNbr-1]->IsInside(Theta,Esec))
+      Qsec[SecNbr-1] = 80;
+    //else if(cutQ81[SecNbr-1]->IsInside(Theta,Esec))
+    //Qsec[SecNbr-1] = 81;
   }
 
+  Qmax = max(Qsec[0],Qsec[1]);
+  Qmax = max(Qsec[2],Qmax);
 
-  ////////////////////////////////////////////////////////////////////////////////
-  void Analysis::LoadSpline(){
-    TString input_path = "./calibration/SofTwim/spline/";
+  return Qmax;
+}
 
-    TString rootfile = input_path + "spline_beta.root";
-    TFile* ifile = new TFile(rootfile,"read");
+////////////////////////////////////////////////////////////////////////////////
+void Analysis::End(){
+}
 
-    TString splinename;
-    if(ifile->IsOpen()){
-      cout << "Loading Beta spline for fission fragment analysis..." << endl;
-      for(int i=0; i<4; i++){
-        splinename = Form("spline_beta_sec%i",i+1);
-        fcorr_z_beta[i] = (TSpline3*) ifile->FindObjectAny(splinename);
-      }
-      ifile->Close();
-    }
-    else
-      cout << "File " << rootfile << " not found!" << endl;
+////////////////////////////////////////////////////////////////////////////////
+void Analysis::InitParameter(){
+  fLS2_0 = 135.614;
+  fDS2   = 8000;
+  fDCC   = -10000;
+  fK_LS2 = -30e-8;
 
-    //*** ***//
-    rootfile = input_path + "spline_dt.root";
-    ifile = new TFile(rootfile,"read");
+  fRunID = 5;
 
-    if(ifile->IsOpen()){
-      cout << "Loading DT spline for fission fragment analysis..." << endl;
-      for(int i=0; i<4; i++){
-        splinename = Form("spline_dt_sec%i",i+1);
-        fcorr_z_dt[i] = (TSpline3*) ifile->FindObjectAny(splinename);
-      }
-      ifile->Close();
-    }
-    else
-      cout << "File " << rootfile << " not found!" << endl;
+  // Beam parameter //
+  fZBeta_p0 = 1;
+  fZBeta_p1 = 0;
 
+  // FF parameter //
+  fZff_p0 = 2.80063;
+  fZff_p1 = 6.91985e-2;
+  fZff_p2 = 1.01598e-7;
+ 
+  if(fRunID==1 || fRunID==2){
+    //fBrho0 = 10.6813; // 180Hg
+    fBrho0 = 10.6955; // 180Hg
+    fZbeam_p0 = -5303.06;
+    fZbeam_p1 = 0.674945;
+    fZbeam_p2 = -8.32085e-6;
+  
+    fZBeta_p0 = 72.946;
+    fZBeta_p1 = 6.0644;
   }
+  if(fRunID==3){
+    fBrho0 = 10.8183; // 182Hg
+    fZbeam_p0 = -2737.25;
+    fZbeam_p1 = 0.452017;
+    fZbeam_p2 = -3.48831e-6;
 
-  ////////////////////////////////////////////////////////////////////////////////
-  int Analysis::DetermineQmax(){
-    int Qmax;
-    int Qsec[3];
-
-    unsigned int size = SofTrim->EnergySection.size();
-    for(unsigned int i=0; i<size; i++){
-      int SecNbr   = SofTrim->SectionNbr[i];
-      double Theta = SofTrim->Theta[i];
-      double Esec  = SofTrim->EnergySection[i];
-
-
-      if(cutQ77[SecNbr-1]->IsInside(Theta,Esec))
-        Qsec[SecNbr-1] = 77;
-      else if(cutQ78[SecNbr-1]->IsInside(Theta,Esec))
-        Qsec[SecNbr-1] = 78;
-      else if(cutQ79[SecNbr-1]->IsInside(Theta,Esec))
-        Qsec[SecNbr-1] = 79;
-      else if(cutQ80[SecNbr-1]->IsInside(Theta,Esec))
-        Qsec[SecNbr-1] = 80;
-      //else if(cutQ81[SecNbr-1]->IsInside(Theta,Esec))
-      //Qsec[SecNbr-1] = 81;
-    }
-
-    Qmax = max(Qsec[0],Qsec[1]);
-    Qmax = max(Qsec[2],Qmax);
-
-    return Qmax;
+    fZBeta_p0 = 76.6738;
+    fZBeta_p1 = 1.60128;
   }
-
-  ////////////////////////////////////////////////////////////////////////////////
-  void Analysis::End(){
+  if(fRunID==4){
+    fBrho0 = 10.9558; // 184Hg
+    fZbeam_p0 = -5044.61;
+    fZbeam_p1 = 0.639986;
+    fZbeam_p2 = -7.3077e-6;
   }
+  if(fRunID==5){
+    fBrho0 = 10.8138; // 187Pb
+    fZbeam_p0 = -2858.72;
+    fZbeam_p1 = 0.454064;
+    fZbeam_p2 = -3.36443e-6;
 
-  ////////////////////////////////////////////////////////////////////////////////
-  void Analysis::InitParameter(){
-    fLS2_0 = 135.614;
-    fDS2   = 8000;
-    fDCC   = -10000;
-    fK_LS2 = -30e-8;
+    fZBeta_p0 = 71.0975;
+    fZBeta_p1 = 10.7007;
+  }
+  if(fRunID==6){
+    fBrho0 = 10.9476; // 189Pb
+    fZbeam_p0 = 1590.66;
+    fZbeam_p1 = 0.0956455;
+    fZbeam_p2 = 3.84585e-6;
+  
+    fZBeta_p0 = 74.6063;
+    fZBeta_p1 = 6.4635;
+  }
+  if(fRunID==7){
+    fBrho0 = 10.6814; // 175Pt
+    fZbeam_p0 = 459.68;
+    fZbeam_p1 = 0.162277;
+    fZbeam_p2 = 3.10164e-6;
 
-
-    //fBrho0 = 14.1008; // 238U run 367
-    //fBrho0 = 12.8719; // 238U run 368
-    //fBrho0 = 12.3255; // 238U run 369
-    //fBrho0 = 12.3352; // 238U run 422
-    //fBrho0 = 10.9476; // 189Pb
-    //fBrho0 = 10.9558; // 184Hg
-    //fBrho0 = 10.8183; // 182Hg
-    //fBrho0 = 10.6814; // 180Hg
-    //fBrho0 = 10.8138; // 187Pb
-    //fBrho0 = 11.3418; // 216Th
+    fZBeta_p0 = 66.9433;
+    fZBeta_p1 = 10.8664;
+  }
+  if(fRunID==8){
     fBrho0 = 11.0864; // 204Fr
-    //fBrho0 = 11.2712; // 207Fr
-    //fBrho0 = 10.6814; // 175Pt
-    //fBrho0 = 11.5067; // 221Pa
-    //fBrho0 = 11.0955; // 199At run 423 & 424
-    //fBrho0 = 10.9970; // 199At run 425 & 426
-    //fBrho0 = 10.8697; //197At
+    fZbeam_p0 = 4122.94;
+    fZbeam_p1 = -0.119867;
+    fZbeam_p2 = 8.29115e-6;
+  
+    fZBeta_p0 = 63.9575;
+    fZBeta_p1 = 25.1988;
   }
+  if(fRunID==9){
+    fBrho0 = 11.2712; // 207Fr
+    fZbeam_p0 = -1752.27;
+    fZbeam_p1 = 0.346018;
+    fZbeam_p2 = -8.64673e-7;
 
-  ////////////////////////////////////////////////////////////////////////////////
-  void Analysis::ReInitValue(){
-    SofBeamID->Clear();
-    SofFF->Clear();
+    fZBeta_p0 = 63.9575;
+    fZBeta_p1 = 25.1988;
   }
-  ////////////////////////////////////////////////////////////////////////////////
-  void Analysis::InitOutputBranch(){
-    //RootOutput::getInstance()->GetTree()->Branch("Zbeam",&Zbeam,"Zbeam/D");
-    RootOutput::getInstance()->GetTree()->Branch("SofBeamID","TSofBeamID",&SofBeamID);
-    RootOutput::getInstance()->GetTree()->Branch("SofFissionFragment","TSofFissionFragment",&SofFF);
+  if(fRunID==10){
+    fBrho0 = 11.0955; // 199At run 423 & 424
+    fZbeam_p0 = -116.425;
+    fZbeam_p1 = 0.218256;
+    fZbeam_p2 = 1.62399e-6;
 
+    fZBeta_p0 = 61.3889;
+    fZBeta_p1 = 25.8908;
   }
-  ////////////////////////////////////////////////////////////////////////////////
-  //            Construct Method to be pass to the DetectorFactory              //
-  ////////////////////////////////////////////////////////////////////////////////
-  NPL::VAnalysis* Analysis::Construct(){
-    return (NPL::VAnalysis*) new Analysis();
+  if(fRunID==11){
+    fBrho0 = 10.9970; // 199At run 425 & 426
+    fZbeam_p0 = -116.425;
+    fZbeam_p1 = 0.218256;
+    fZbeam_p2 = 1.62399e-6;
+  
+    fZBeta_p0 = 61.3889;
+    fZBeta_p1 = 25.8908;
   }
+  if(fRunID==12){
+    fBrho0 = 10.8697; //197At
+    fZbeam_p0 = -2683.52;
+    fZbeam_p1 = 0.422551;
+    fZbeam_p2 = -2.44471e-6;
 
-  ////////////////////////////////////////////////////////////////////////////////
-  //            Registering the construct method to the factory                 //
-  ////////////////////////////////////////////////////////////////////////////////
-  extern "C"{
-    class proxy{
-      public:
-        proxy(){
-          NPL::AnalysisFactory::getInstance()->SetConstructor(Analysis::Construct);
-        }
-    };
-
-    proxy p;
+    fZBeta_p0 = 62.9188;
+    fZBeta_p1 = 22.8827;
   }
+  if(fRunID==13){
+    fBrho0 = 11.3418; // 216Th
+  }
+  if(fRunID==14){
+    fBrho0 = 11.5067; // 221Pa
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+void Analysis::ReInitValue(){
+  SofBeamID->Clear();
+  SofFF->Clear();
+}
+////////////////////////////////////////////////////////////////////////////////
+void Analysis::InitOutputBranch(){
+  RootOutput::getInstance()->GetTree()->Branch("RunID",&RunID,"RunID/I");
+  RootOutput::getInstance()->GetTree()->Branch("SofBeamID","TSofBeamID",&SofBeamID);
+  RootOutput::getInstance()->GetTree()->Branch("SofFissionFragment","TSofFissionFragment",&SofFF);
+
+}
+////////////////////////////////////////////////////////////////////////////////
+//            Construct Method to be pass to the DetectorFactory              //
+////////////////////////////////////////////////////////////////////////////////
+NPL::VAnalysis* Analysis::Construct(){
+  return (NPL::VAnalysis*) new Analysis();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+//            Registering the construct method to the factory                 //
+////////////////////////////////////////////////////////////////////////////////
+extern "C"{
+  class proxy{
+    public:
+      proxy(){
+        NPL::AnalysisFactory::getInstance()->SetConstructor(Analysis::Construct);
+      }
+  };
+
+  proxy p;
+}
+
 
