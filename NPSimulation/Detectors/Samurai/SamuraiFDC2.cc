@@ -160,7 +160,8 @@ G4LogicalVolume* SamuraiFDC2::BuildFDC2(){
 // Read stream at Configfile to pick-up parameters of detector (Position,...)
 // Called in DetecorConstruction::ReadDetectorConfiguration Method
 void SamuraiFDC2::ReadConfiguration(NPL::InputParser parser){
-  
+
+  cout << "I am inside SAMURAIFDC2 read" << endl;
   vector<NPL::InputBlock*> blocks = parser.GetAllBlocksWithToken("Samurai");
   vector<NPL::InputBlock*> blocks2 = parser.GetAllBlocksWithToken("SAMURAIFDC2");
 

@@ -59,18 +59,18 @@ class TSamuraiIdealData : public TObject {
    void   Dump() const;
 
    /////////////////////           GETTERS           ////////////////////////
-   unsigned int   GetMult()               {return Detector_Number.size();}
-   short          GetDetNumber(int i)     {return Detector_Number[i];}
-   double         GetDepEnergy(int i)     {return Dep_Energy[i];}
-   /*double         GetBrho(int i)          {return Brho[i];}
+   unsigned int   GetMult()            const {return Detector_Number.size();}
+   short          GetDetNumber(int i)  const {return Detector_Number[i];}
+   double         GetDepEnergy(int i)  const {return Dep_Energy[i];}
+   /*double         GetBrho(int i)     const {return Brho[i];}
    //Position
-   double         GetPosX(int i)          {return Pos_X[i];}
-   double         GetPosY(int i)          {return Pos_Y[i];}
-   double         GetPosZ(int i)          {return Pos_Z[i];}
+   double         GetPosX(int i)       const {return Pos_X[i];}
+   double         GetPosY(int i)       const {return Pos_Y[i];}
+   double         GetPosZ(int i)       const {return Pos_Z[i];}
    //Momentum
-   double         GetMomMag(int i)        {return Mom_Mag[i];}
-   double         GetMomTheta(int i)      {return Mom_Theta[i];}
-   double         GetMomPhi(int i)        {return Mom_Phi[i];}
+   double         GetMomMag(int i)     const {return Mom_Mag[i];}
+   double         GetMomTheta(int i)   const {return Mom_Theta[i];}
+   double         GetMomPhi(int i)     const {return Mom_Phi[i];}
 */
 
    /////////////////////           SETTERS           ////////////////////////

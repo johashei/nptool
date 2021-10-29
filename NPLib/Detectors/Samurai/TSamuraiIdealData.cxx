@@ -59,7 +59,8 @@ void TSamuraiIdealData::Dump() const
    cout << "XXXXXXXXXXXXXXXXXXXXX TSamuraiIdealData: New Event XXXXXXXXXXXXXXXXX" << endl;
 
    // Brho
-   for (unsigned short i = 0 ; i< GetMult() ; i ++) {
+   unsigned int n = GetMult();
+   for (unsigned short i = 0 ; i< n ; i++) {
       cout << "Detector Number " << Detector_Number[i] << " Deposited Energy: " << Dep_Energy[i]  << endl;
    }
    
