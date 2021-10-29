@@ -23,6 +23,7 @@
 #include <vector>
 #include <string>
 
+
 #include "TObject.h"
 using namespace std ;
 
@@ -38,7 +39,6 @@ class TSamuraiIdealData : public TObject {
       2 = FDC2
    */
    vector <double> Dep_Energy;  //Energy deposited in the detector material
-   /*
    vector <double> Brho;
    //Position
    vector <double> Pos_X; // Exit position X-axis
@@ -48,7 +48,7 @@ class TSamuraiIdealData : public TObject {
    vector <double> Mom_Mag; //Exit momentum magnitude
    vector <double> Mom_Theta; //Exit momentum Theta
    vector <double> Mom_Phi; //Exit momentum Phi
-   */
+
    
  public:
    TSamuraiIdealData();
@@ -62,7 +62,7 @@ class TSamuraiIdealData : public TObject {
    unsigned int   GetMult()            const {return Detector_Number.size();}
    short          GetDetNumber(int i)  const {return Detector_Number[i];}
    double         GetDepEnergy(int i)  const {return Dep_Energy[i];}
-   /*double         GetBrho(int i)     const {return Brho[i];}
+   double         GetBrho(int i)     const {return Brho[i];}
    //Position
    double         GetPosX(int i)       const {return Pos_X[i];}
    double         GetPosY(int i)       const {return Pos_Y[i];}
@@ -71,15 +71,15 @@ class TSamuraiIdealData : public TObject {
    double         GetMomMag(int i)     const {return Mom_Mag[i];}
    double         GetMomTheta(int i)   const {return Mom_Theta[i];}
    double         GetMomPhi(int i)     const {return Mom_Phi[i];}
-*/
+
 
    /////////////////////           SETTERS           ////////////////////////
- /*  void SetData (short detector, double energy, G4ThreeVector pos, G4ThreeVector mom, double brho){
-      SetData(detector, energy, pos.x(), pos.y(), pos.z(), mom.getR(), mom.getTheta(), mom.getPhi(), brho);
-   }
+   //void SetData (short detector, double energy, G4ThreeVector pos, G4ThreeVector //mom, double brho){
+   //   SetData(detector, energy, pos.x(), pos.y(), pos.z(), mom.getR(), mom.getTheta()//, mom.getPhi(), brho);
+   //}
    void SetData (short detector, double energy, double pos_x, double pos_y, 
          double pos_z, double mom_r, double mom_theta, double mom_phi, double brho);
-  */
+
    void SetDetectorNumber(short i)  {Detector_Number.push_back(i);}
    void SetEnergy (double energy)   {Dep_Energy.push_back(energy);}
    ClassDef(TSamuraiIdealData,1)  // TSamuraiIdealData structure

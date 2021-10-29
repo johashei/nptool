@@ -40,14 +40,13 @@ void TSamuraiIdealData::Clear()
 {
    Detector_Number.clear();
    Dep_Energy.clear(); 
-   /*
    Brho.clear();
    Pos_X.clear(); 
    Pos_Y.clear(); 
    Pos_Z.clear(); 
    Mom_Mag.clear(); 
    Mom_Theta.clear(); 
-   Mom_Phi.clear();*/
+   Mom_Phi.clear();
    return;
 }
 
@@ -65,9 +64,9 @@ void TSamuraiIdealData::Dump() const
    }
    
 }
-/*
+
 void TSamuraiIdealData::SetData (short detector, double energy, double pos_x, double pos_y, 
-   double pos_z, double mom_r, double mom_theta, double mom_phi){
+   double pos_z, double mom_r, double mom_theta, double mom_phi, double brho){
    Detector_Number.push_back(detector);
    Dep_Energy.push_back(energy);
    Pos_X.push_back(pos_x);
@@ -78,4 +77,3 @@ void TSamuraiIdealData::SetData (short detector, double energy, double pos_x, do
    Mom_Phi.push_back(mom_phi); 
    Brho.push_back(brho);
 }
-*/

@@ -6,7 +6,6 @@ add_custom_command(OUTPUT TSamuraiHodoscopePhysicsDict.cxx COMMAND ${CMAKE_BINAR
 
 add_custom_command(OUTPUT TSamuraiMagnetPhysicsDict.cxx COMMAND ${CMAKE_BINARY_DIR}/scripts/build_dict.sh TSamuraiMagnetPhysics.h TSamuraiMagnetPhysicsDict.cxx TSamuraiMagnetPhysics.rootmap libNPSamurai.dylib DEPENDS TSamuraiMagnetPhysics.h)
 
-
 add_custom_command(OUTPUT TSamuraiBDCDataDict.cxx COMMAND ${CMAKE_BINARY_DIR}/scripts/build_dict.sh TSamuraiBDCData.h TSamuraiBDCDataDict.cxx TSamuraiBDCData.rootmap libNPSamurai.dylib DEPENDS TSamuraiBDCData.h)
 
 add_custom_command(OUTPUT TSamuraiBDCPhysicsDict.cxx COMMAND ${CMAKE_BINARY_DIR}/scripts/build_dict.sh TSamuraiBDCPhysics.h TSamuraiBDCPhysicsDict.cxx TSamuraiBDCPhysics.rootmap libNPSamurai.dylib DEPENDS TSamuraiBDCPhysics.h)
@@ -19,7 +18,9 @@ add_custom_command(OUTPUT TSamuraiFDC0DataDict.cxx COMMAND ${CMAKE_BINARY_DIR}/s
 
 add_custom_command(OUTPUT TSamuraiFDC0PhysicsDict.cxx COMMAND ${CMAKE_BINARY_DIR}/scripts/build_dict.sh TSamuraiFDC0Physics.h TSamuraiFDC0PhysicsDict.cxx TSamuraiFDC0Physics.rootmap libNPSamurai.dylib DEPENDS TSamuraiFDC0Physics.h)
 
-add_library(NPSamurai SHARED TSamuraiMagnetPhysicsDict.cxx TSamuraiMagnetPhysics.cxx SamuraiFieldMapDict.cxx SamuraiFieldMap.cxx TSamuraiHodoscopeData.cxx TSamuraiBDCData.cxx TSamuraiBDCPhysics.cxx TSamuraiBDCDataDict.cxx TSamuraiBDCPhysicsDict.cxx TSamuraiFDC2Data.cxx TSamuraiFDC2DataDict.cxx TSamuraiHodoscopePhysics.cxx TSamuraiHodoscopePhysicsDict.cxx TSamuraiFDC2Physics.cxx TSamuraiHodoscopeDataDict.cxx TSamuraiFDC2PhysicsDict.cxx TSamuraiFDC0Data.cxx TSamuraiFDC0DataDict.cxx TSamuraiFDC0Physics.cxx TSamuraiFDC0PhysicsDict.cxx TSamuraiIdealData.cxx)
+add_custom_command(OUTPUT TSamuraiIdealDataDict.cxx COMMAND ${CMAKE_BINARY_DIR}/scripts/build_dict.sh TSamuraiIdealData.h TSamuraiIdealDataDict.cxx TSamuraiIdealData.rootmap libNPSamurai.dylib DEPENDS TSamuraiIdealData.h)
+
+add_library(NPSamurai SHARED TSamuraiMagnetPhysicsDict.cxx TSamuraiMagnetPhysics.cxx SamuraiFieldMapDict.cxx SamuraiFieldMap.cxx TSamuraiHodoscopeData.cxx TSamuraiBDCData.cxx TSamuraiBDCPhysics.cxx TSamuraiBDCDataDict.cxx TSamuraiBDCPhysicsDict.cxx TSamuraiFDC2Data.cxx TSamuraiFDC2DataDict.cxx TSamuraiHodoscopePhysics.cxx TSamuraiHodoscopePhysicsDict.cxx TSamuraiFDC2Physics.cxx TSamuraiHodoscopeDataDict.cxx TSamuraiFDC2PhysicsDict.cxx TSamuraiFDC0Data.cxx TSamuraiFDC0DataDict.cxx TSamuraiFDC0Physics.cxx TSamuraiFDC0PhysicsDict.cxx TSamuraiIdealData.cxx TSamuraiIdealDataDict.cxx)
 
 target_link_libraries(NPSamurai ${ROOT_LIBRARIES} NPCore NPTrackReconstruction NPPhysics) 
 install(FILES TSamuraiMagnetPhysics.h SamuraiFieldMap.h TSamuraiBDCData.h TSamuraiBDCPhysics.h TSamuraiHodoscopeData.h TSamuraiHodoscopePhysics.h TSamuraiFDC2Data.h TSamuraiFDC2Physics.h  TSamuraiFDC0Data.h TSamuraiFDC0Physics.h SamuraiDCIndex.h TSamuraiIdealData.h DESTINATION ${CMAKE_INCLUDE_OUTPUT_DIRECTORY})

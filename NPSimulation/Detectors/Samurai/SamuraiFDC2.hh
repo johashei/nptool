@@ -56,7 +56,7 @@ class SamuraiFDC2 : public NPS::VDetector{
   public:
   
     // Cartesian fdc0
-    void AddDetector(G4ThreeVector POS, double Angle, G4ThreeVector Offset);
+    void AddDetector(G4ThreeVector Mag_Pos, double Mag_Angle, G4ThreeVector Offset, double Off_Angle);
     // Spherical fdc0
     /*void AddFDC2(double R, double Theta, double Phi, double Angle, 
                   double r, double theta, double phi);*/
@@ -119,9 +119,6 @@ class SamuraiFDC2 : public NPS::VDetector{
     // Angle of Rotation
     double m_Angle;
   
-
-    
-    
 
   // Needed for dynamic loading of the library
   public:

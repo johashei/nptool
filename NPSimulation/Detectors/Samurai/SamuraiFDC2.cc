@@ -81,20 +81,20 @@ SamuraiFDC2::SamuraiFDC2(){
   //Scorer
   m_FDC2Scorer = NULL;
 
+  m_Event = new TSamuraiIdealData;
+
 }
 
 SamuraiFDC2::~SamuraiFDC2(){
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-void SamuraiFDC2::AddDetector(G4ThreeVector Mag_Pos, double Angle, G4ThreeVector Offset){
+void SamuraiFDC2::AddDetector(G4ThreeVector Mag_Pos, double Mag_Angle, G4ThreeVector Offset, double Off_Angle){
 
-  // Convert the POS value to R theta Phi as Spherical coordinate is easier in G4 
-  m_Angle = Angle;
-  Offset.rotateY(-m_Angle);
+  m_Angle = Mag_Angle + (90.*deg - Off_Angle);
+
+  Offset.rotateY(-(m_Angle));
   m_Pos = Mag_Pos + Offset;
-
-
 
   return;
 }
@@ -161,7 +161,6 @@ G4LogicalVolume* SamuraiFDC2::BuildFDC2(){
 // Called in DetecorConstruction::ReadDetectorConfiguration Method
 void SamuraiFDC2::ReadConfiguration(NPL::InputParser parser){
 
-  cout << "I am inside SAMURAIFDC2 read" << endl;
   vector<NPL::InputBlock*> blocks = parser.GetAllBlocksWithToken("Samurai");
   vector<NPL::InputBlock*> blocks2 = parser.GetAllBlocksWithToken("SAMURAIFDC2");
 
@@ -173,11 +172,11 @@ void SamuraiFDC2::ReadConfiguration(NPL::InputParser parser){
     vector<string> sphe = {"R","Theta","Phi","ANGLE"};
 
     G4ThreeVector Mag_Pos;
-    double Angle;
+    double Mag_Angle;
 
     if(blocks[0]->HasTokenList(cart)){
       Mag_Pos = NPS::ConvertVector(blocks[0]->GetTVector3("POS", "cm"));
-      Angle = blocks[0]->GetDouble("ANGLE","deg");
+      Mag_Angle = blocks[0]->GetDouble("ANGLE","deg");
     }
     else if(blocks[0]->HasTokenList(sphe)){
       double R = blocks[0]->GetDouble("R","mm");
@@ -186,16 +185,18 @@ void SamuraiFDC2::ReadConfiguration(NPL::InputParser parser){
       Mag_Pos.setMag(R);
       Mag_Pos.setTheta(Theta);
       Mag_Pos.setPhi(Phi);
-      Angle = blocks[0]->GetDouble("ANGLE","deg");
+      Mag_Angle = blocks[0]->GetDouble("ANGLE","deg");
     }
     
     G4ThreeVector Offset = NPS::ConvertVector(blocks2[0]->GetTVector3("Offset", "mm"));
+    double Off_Angle = blocks2[0]->GetDouble("OffAngle","deg");
+
     //string xml = blocks2[0]->GetString("XML");
     //bool invert_x = blocks2[0]->GetBool("InvertX");
     //bool invert_y = blocks2[0]->GetBool("InvertY");
     //bool invert_z = blocks2[0]->GetBool("InvertD");
   
-    AddDetector(Mag_Pos, Angle, Offset);
+    AddDetector(Mag_Pos, Mag_Angle, Offset, Off_Angle);
 
   }
   else{
@@ -212,28 +213,11 @@ void SamuraiFDC2::ReadConfiguration(NPL::InputParser parser){
 // Construct detector and inialise sensitive part.
 // Called After DetectorConstruction::AddDetector Method
 void SamuraiFDC2::ConstructDetector(G4LogicalVolume* world){
-  //magnet placement
-  /*G4double wX = m_R * sin(m_Theta) * cos(m_Phi);
-  G4double wY = m_R * sin(m_Theta) * sin(m_Phi);
-  G4double wZ = m_R * cos(m_Theta);
 
-  G4double mX = m_R * sin(m_Theta) * cos(m_Phi);
-  G4double mY = m_R * sin(m_Theta) * sin(m_Phi);
-  G4double mZ = m_R * cos(m_Theta);
-
-  G4ThreeVector DFC0_pos = G4ThreeVector(wX+mX, wY+mY, wZ+mZ);*/
-
-  
-
-  G4ThreeVector u ( cos(m_Angle) , 0, -sin(m_Angle) );
-  G4ThreeVector v (0,1,0);
-  G4ThreeVector w ( sin(m_Angle) , 0,  cos(m_Angle) );
-  
-  G4RotationMatrix* Rot = new G4RotationMatrix(u,v,w);
-  
+  G4RotationMatrix* Rot = new G4RotationMatrix();
+  Rot->rotateY(m_Angle);
   new G4PVPlacement(Rot, m_Pos,
           BuildFDC2(), "SamuraiFDC2", world, false, 0);
-
 
   return;
 }
@@ -248,10 +232,10 @@ void SamuraiFDC2::ConstructDetector(G4LogicalVolume* world){
 void SamuraiFDC2::InitializeRootOutput(){
   RootOutput *pAnalysis = RootOutput::getInstance();
   TTree *pTree = pAnalysis->GetTree();
-  if(!pTree->FindBranch("SamuraiFDC2")){
-    pTree->Branch("SamuraiFDC2", "TSamuraiData", &m_Event) ; //WATCH OUT !!!!!!
+  if(!pTree->FindBranch("IdealData")){
+    pTree->Branch("IdealData", "TSamuraiIdealData", &m_Event) ; //WATCH OUT !!!!!!
   }
-  pTree->SetBranchAddress("SamuraiFDC2", &m_Event) ; //WATCH OUT !!!!!!
+  pTree->SetBranchAddress("IdealData", &m_Event) ; //WATCH OUT !!!!!!
 }
 
 
@@ -271,8 +255,16 @@ void SamuraiFDC2::ReadSensitive(const G4Event* event){
     //vector<unsigned int> level = Scorer->GetLevel(i); 
     //double Energy = RandGauss::shoot(Scorer->GetEnergy(i),SamuraiFDC2_NS::ResoEnergy);
     //double Energy = Scorer->GetEnergy(i);
-    m_Event->SetDetectorNumber( 2 );//2 is for FDC2
-    m_Event->SetEnergy(Scorer->GetEnergy(i));
+    short int detector = 2;
+    double energy = Scorer->GetEnergy(i);
+    double brho = Scorer->GetBrho(i);
+    double posx = Scorer->GetPositionX(i);
+    double posy = Scorer->GetPositionY(i);
+    double posz = Scorer->GetPositionZ(i);
+    double mom_mag = brho*Scorer->GetCharge(i);
+    double theta = Scorer->GetTheta(i);
+    double phi = Scorer->GetPhi(i);
+    m_Event->SetData(detector, energy, posx, posy, posz, mom_mag, theta, phi, brho);
   }
   /*
   m_Event->Clear();
