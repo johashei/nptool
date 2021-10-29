@@ -1,2 +1,2 @@
-add_library(NPSSamurai SHARED  Samurai.cc SamuraiFieldPropagation.cc)
+add_library(NPSSamurai SHARED  Samurai.cc SamuraiFieldPropagation.cc SamuraiFDC2.cc)
 target_link_libraries(NPSSamurai NPSCore ${ROOT_LIBRARIES} ${Geant4_LIBRARIES} ${NPLib_LIBRARIES} -lNPSamurai)

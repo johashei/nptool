@@ -1,2 +1,3 @@
 /run/beamOn 1
+/vis/scene/add/axes 0 0 0 5 m
 /vis/viewer/set/viewpointThetaPhi 90 90

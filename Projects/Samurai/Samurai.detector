@@ -19,3 +19,20 @@ Samurai
  % fieldmap path
  STEPS_PER_METER= 1000
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%SAMURAIFDC0
+ %XML= db/SAMURAIFDC0_20200109.xml
+ %Offset= -0.00666226 0.102191 -3370.01 mm
+ %InvertX= 1 
+ %InvertY= 0
+ %InvertD= 1
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+SAMURAIFDC2
+ %XML= db/SAMURAIFDC2.xml
+ Offset= 0 0 5000 mm
+ %-252.416 -0.228477 4122.57 mm
+ %InvertX= 0 
+ %InvertY= 1
+ %InvertD= 1
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
