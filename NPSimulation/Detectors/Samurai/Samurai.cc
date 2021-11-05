@@ -99,7 +99,7 @@ namespace Samurai_NS{
   const double pv_main_Height = Magnet_Gap;
   const double pv_main_Depth = Magnet_Depth;
   const string Propvol_Material = "G4_Galactic";
-}
+} 
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

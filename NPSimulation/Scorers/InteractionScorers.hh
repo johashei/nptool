@@ -212,6 +212,17 @@ namespace InteractionScorers {
       int t_Charge;
       double t_Brho;
       //G4ThreeVector MOMENT;
+    public:
+      inline unsigned int  GetMult() {return m_DataVector.size();};
+      inline double GetEnergy(const unsigned int& i) {return m_DataVector[i]->GetEnergy();};
+      inline double GetBrho(const unsigned int& i) {return m_DataVector[i]->GetBrho();};
+      inline double GetPositionX(const unsigned int& i) {return m_DataVector[i]->GetPositionX();};
+      inline double GetPositionY(const unsigned int& i) {return m_DataVector[i]->GetPositionY();};
+      inline double GetPositionZ(const unsigned int& i) {return m_DataVector[i]->GetPositionZ();};
+      inline double GetCharge(const unsigned int& i) {return m_DataVector[i]->GetCharge();};
+      inline double GetTheta(const unsigned int& i) {return m_DataVector[i]->GetTheta();};
+      inline double GetPhi(const unsigned int& i) {return m_DataVector[i]->GetPhi();};
+      
   };
 
 }

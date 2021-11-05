@@ -2,7 +2,7 @@
 Beam
   Particle= 12C
   Energy= 4800 MeV
-  SigmaEnergy= 0 MeV
+  SigmaEnergy= 10 MeV
   SigmaThetaX= 0 deg
   SigmaPhiY= 0 deg
   SigmaX= 0 mm
