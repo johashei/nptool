@@ -1,8 +1,8 @@
 TChain* chain=NULL;
 
-TCutG* cut_Pb1[13];
-TCutG* cut_Pb2[13];
-TCutG* cut_C[13];
+TCutG* cut_Pb1[14];
+TCutG* cut_Pb2[14];
+TCutG* cut_C[14];
 
 int A;
 int Z;
@@ -23,14 +23,14 @@ void LoadRootFiles(string iso);
 //////////////////////////////////////
 void LoadCuts(){
 
-  TString element[13] = {"180Hg_1", "180Hg_2", "182Hg", "184Hg", "187Pb", "189Pb", "175Pt", "204Fr", "207Fr", "199At_1", "199At_2", "197At", "216Th"};
+  TString element[14] = {"180Hg_1", "180Hg_2", "182Hg", "184Hg", "187Pb", "189Pb", "175Pt", "204Fr", "207Fr", "199At_1", "199At_2", "197At", "216Th", "221Pa"};
 
 
   TFile* file;
-  TString filename1[13];
-  TString filename2[13];
-  TString filename3[13];
-  for(int i=0; i<13; i++){
+  TString filename1[14];
+  TString filename2[14];
+  TString filename3[14];
+  for(int i=0; i<14; i++){
     filename1[i]= "cuts/"+element[i]+"/cut_Pb1.root";
     filename2[i]= "cuts/"+element[i]+"/cut_Pb2.root";
     filename3[i]= "cuts/"+element[i]+"/cut_C.root";
@@ -88,10 +88,10 @@ void GetChargeDist(string nucleus_name){
   cut_beam->SetName("cut_beam");
   cut_beam->SetVarX("fBeam_AoQ");
   cut_beam->SetVarY("fBeam_Z");
-  double Rx=0.006;
+  double Rx=0.005;
   double Ry=0.5;
-  AoQ = AoQ;// + 0.001;
-  double Zcenter = Z;// - 0.5;
+  AoQ = AoQ;// + 0.002;
+  double Zcenter = Z;
   for(int i=0; i<360; i++){
     double x = AoQ+Rx*cos(i*TMath::Pi()/180);
     double y = Zcenter+Ry*sin(i*TMath::Pi()/180);
@@ -206,7 +206,20 @@ void LoadRootFiles(string iso){
   if(iso=="217Th" || iso=="216Th" || iso=="209Ra" || iso=="210Ra" || iso=="211Ra" || iso=="212Ra" || iso=="213Ra" || iso=="214Ra"){
     chain->Add("../../../Outputs/Analysis/216Th_1.root");
   }
+  if(iso=="219Th" || iso=="220Th"){
+    chain->Add("../../../Outputs/Analysis/221Pa.root");
+  }
 
+  //*** Ac isotopes ***//
+   if(iso=="212Ac" || iso=="213Ac" || iso=="214Ac" || iso=="215Ac" || iso=="216Ac"){
+    chain->Add("../../../Outputs/Analysis/216Th_1.root");
+  }
+ 
+  //*** Ra isotopes ***//
+   if(iso=="209Ra" || iso=="210Ra" || iso=="211Ra" || iso=="212Ra" || iso=="213Ra" || iso=="214Ra"){
+    chain->Add("../../../Outputs/Analysis/216Th_1.root");
+  }
+  
   //*** Fr isotopes ***//
   if(iso=="203Fr" || iso=="204Fr" || iso=="205Fr" || iso=="206Fr"){
     chain->Add("../../../Outputs/Analysis/204Fr.root");
@@ -223,7 +236,7 @@ void LoadRootFiles(string iso){
     chain->Add("../../../Outputs/Analysis/204Fr.root");
   }
   if(iso=="203Rn" || iso=="204Rn" || iso=="205Rn" || iso=="206Rn"){
-    chain->Add("../../../Outputs/Analysis/207Fr.root");
+    chain->Add("../../../Outputs/Analysis/207Fr_2.root");
   }
 
   //*** At isotopes ***//
@@ -231,7 +244,7 @@ void LoadRootFiles(string iso){
     chain->Add("../../../Outputs/Analysis/204Fr.root");
   }
   if(iso=="200At" || iso=="201At" || iso=="202At" || iso=="203At"){
-    chain->Add("../../../Outputs/Analysis/207Fr.root");
+    chain->Add("../../../Outputs/Analysis/207Fr_2.root");
   }
   if(iso=="198At" || iso=="199At" || iso=="200At" || iso=="201At"){
     chain->Add("../../../Outputs/Analysis/199At_1.root");
@@ -278,7 +291,7 @@ void LoadRootFiles(string iso){
   if(iso=="186Tl" || iso=="187Tl" || iso=="188Tl" || iso=="189Tl" || iso=="190Tl"){
     chain->Add("../../../Outputs/Analysis/197At.root");
   }
-  if(iso=="185Tl" || iso=="186Tl" || iso=="187Tl" || iso=="188Tl" || iso=="189Tl"){
+  if(iso=="185Tl" || iso=="186Tl" || iso=="187Tl" || iso=="188Tl" || iso=="189Tl" || iso=="190Tl"){
     chain->Add("../../../Outputs/Analysis/189Pb.root");
   }
   if(iso=="183Tl" || iso=="184Tl" || iso=="185Tl" || iso=="186Tl" || iso=="187Tl"){
@@ -298,7 +311,7 @@ void LoadRootFiles(string iso){
   if(iso=="180Hg" || iso=="181Hg" || iso=="182Hg" || iso=="183Hg" || iso=="184Hg" || iso=="185Hg"){
     chain->Add("../../../Outputs/Analysis/187Pb.root");
   }
-  if(iso=="183Hg" || iso=="184Hg" || iso=="185Hg" || iso=="186Hg"){
+  if(iso=="183Hg" || iso=="184Hg" || iso=="185Hg" || iso=="186Hg" || iso=="187Hg"){
     chain->Add("../../../Outputs/Analysis/184Hg.root");
   }
   if(iso=="181Hg" || iso=="182Hg" || iso=="183Hg" || iso=="184Hg"){
@@ -311,7 +324,7 @@ void LoadRootFiles(string iso){
   }
 
   //*** Au isotopes ***//
-  if(iso=="177Au" || iso=="178Au" || iso=="179Au"){
+  if(iso=="176Au" || iso=="177Au" || iso=="178Au" || iso=="179Au"){
     chain->Add("../../../Outputs/Analysis/175Pt.root");
   }
   if(iso=="180Au" || iso=="181Au" || iso=="182Au"){
@@ -326,7 +339,7 @@ void LoadRootFiles(string iso){
   if(iso=="178Au" || iso=="179Au" || iso=="180Au" || iso=="181Au" || iso=="182Au"){
     chain->Add("../../../Outputs/Analysis/182Hg.root");
   }
-  if(iso=="177Au" || iso=="178Au" || iso=="179Au" || iso=="180Au"){
+  if(iso=="176Au" || iso=="177Au" || iso=="178Au" || iso=="179Au" || iso=="180Au"){
     chain->Add("../../../Outputs/Analysis/180Hg_1.root");
     chain->Add("../../../Outputs/Analysis/180Hg_2.root");
   }

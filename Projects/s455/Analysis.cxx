@@ -320,7 +320,16 @@ void Analysis::BeamAnalysis(){
     SofTrim->BuildSimplePhysicalEvent();
     double Zbeam,Qmax,Theta;
     if(SofTrim->EnergySection.size()>0){
-      Zbeam = SofTrim->GetMaxEnergySection();
+      double Anode1 = SofTrim->EnergySection[0];
+      double Anode2 = SofTrim->EnergySection[1];
+      double Anode3 = SofTrim->EnergySection[2];
+      if(fRunID==13)
+        Zbeam = max(Anode1, Anode2);
+      else if(fRunID==14)
+        Zbeam = max(Anode2, Anode3);
+      else 
+        Zbeam = SofTrim->GetMaxEnergySection();
+
       Qmax = DetermineQmax();
       Theta = SofTrim->Theta[0];
 
@@ -484,7 +493,7 @@ void Analysis::InitParameter(){
   fDCC   = -10000;
   fK_LS2 = -30e-8;
 
-  fRunID = 5;
+  fRunID = 13;
 
   // Beam parameter //
   fZBeta_p0 = 1;
@@ -594,9 +603,19 @@ void Analysis::InitParameter(){
   }
   if(fRunID==13){
     fBrho0 = 11.3418; // 216Th
+    fZbeam_p0 = 1651.57;
+    fZbeam_p1 = 0.0876127;
+    fZbeam_p2 = 4.02563e-6;
+
+    fZBeta_p0 = 38.879;
+    fZBeta_p1 = 58.7667;
   }
   if(fRunID==14){
     fBrho0 = 11.5067; // 221Pa
+    fZbeam_p0 = 186.892;
+    fZbeam_p1 = 0.20739;
+    fZbeam_p2 = 1.61797e-6;
+
   }
 }
 
