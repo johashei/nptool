@@ -47,7 +47,7 @@
 // NPTool header
 #include "Samurai.hh"
 #include "SamuraiFieldPropagation.hh"
-#include "CalorimeterScorers.hh"
+//#include "CalorimeterScorers.hh"
 #include "InteractionScorers.hh"
 #include "RootOutput.h"
 #include "MaterialManager.hh"
@@ -69,7 +69,7 @@ namespace Samurai_NS{
   const double Magnet_Width = 6700*mm; //(x)
   const double Magnet_Height = 4640*mm;//(y)
   const double Magnet_Depth = 6000*mm;//(z)
-  const string Magnet_Material = "G4_Galactic"; 
+  const string Magnet_Material = "G4_Fe"; //G4_Galactic
 
   //Gap between top and bottom yoke slabs
   const double Magnet_Gap = 880*mm;//(y)
@@ -99,6 +99,10 @@ namespace Samurai_NS{
   const double pv_main_Height = Magnet_Gap;
   const double pv_main_Depth = Magnet_Depth;
   const string Propvol_Material = "G4_Galactic";
+
+  //Ideal Data saving location
+  const short int Magnet_DetectorNumber = -1;
+
 } 
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -122,6 +126,12 @@ Samurai::Samurai(){
 
   //Propagation region
   m_PropagationRegion = NULL;
+
+  //Scorer
+  m_SamuraiScorer = NULL;
+
+  //Data
+  m_Event = new TSamuraiIdealData;
 }
 
 Samurai::~Samurai(){
@@ -200,6 +210,8 @@ G4LogicalVolume* Samurai::BuildMagnet(){
     //Logical Volume
     m_Magnet = new G4LogicalVolume(box, VacuumMaterial, "logic_Samurai_box",0,0,0);
     m_Magnet->SetVisAttributes(m_VisMagnet);
+    m_Magnet->SetSensitiveDetector(m_SamuraiScorer);
+    cout << "ATTACHING SCORER\n";
   }
   return m_Magnet;
 }
@@ -420,70 +432,63 @@ void Samurai::SetPropagationRegion(){
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 // Add Detector branch to the EventTree.
 // Called After DetecorConstruction::AddDetector Method
-//FIXME
-/*
 void Samurai::InitializeRootOutput(){
   RootOutput *pAnalysis = RootOutput::getInstance();
   TTree *pTree = pAnalysis->GetTree();
-  if(!pTree->FindBranch("Samurai")){
-    pTree->Branch("Samurai", "TSamuraiData", &m_Event) ;
+  if(!pTree->FindBranch("IdealData")){
+    pTree->Branch("IdealData", "TSamuraiIdealData", &m_Event) ;
   }
-  pTree->SetBranchAddress("Samurai", &m_Event) ;
+  pTree->SetBranchAddress("IdealData", &m_Event) ;
 }
-*/
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 // Read sensitive part and fill the Root tree.
 // Called at in the EventAction::EndOfEventAvtion
-//FIXME
 void Samurai::ReadSensitive(const G4Event* ){
-}
-  
-/*
-//FIXME
-void Samurai::ReadSensitive(const G4Event* ){
-  m_Event->Clear();
 
-  ///////////
-  // Calorimeter scorer
-  CalorimeterScorers::PS_Calorimeter* Scorer= (CalorimeterScorers::PS_Calorimeter*) m_SamuraiScorer->GetPrimitive(0);
+  //cout << "Read Sensitive\n";
+  m_Event->Clear();
+  //Interaction Scorer
+  InteractionScorers::PS_Interactions* Scorer= (InteractionScorers::PS_Interactions*) m_SamuraiScorer->GetPrimitive(0);
 
   unsigned int size = Scorer->GetMult(); 
+  //cout << "size " << size << endl;
   for(unsigned int i = 0 ; i < size ; i++){
-    vector<unsigned int> level = Scorer->GetLevel(i); 
-    double Energy = RandGauss::shoot(Scorer->GetEnergy(i),Samurai_NS::ResoEnergy);
-    if(Energy>Samurai_NS::EnergyThreshold){
-      double Time = RandGauss::shoot(Scorer->GetTime(i),Samurai_NS::ResoTime);
-      int DetectorNbr = level[0];
-      m_Event->SetEnergy(DetectorNbr,Energy);
-      m_Event->SetTime(DetectorNbr,Time); 
-    }
+    double energy = Scorer->GetEnergy(i);
+    double brho = Scorer->GetBrho(i);
+    double posx = Scorer->GetPositionX(i);
+    double posy = Scorer->GetPositionY(i);
+    double posz = Scorer->GetPositionZ(i);
+    double mom_mag = brho*Scorer->GetCharge(i);
+    double theta = Scorer->GetTheta(i);
+    double phi = Scorer->GetPhi(i);
+    m_Event->SetData(Samurai_NS::Magnet_DetectorNumber, energy, posx, posy, posz, mom_mag, theta, phi, brho);
+    //cout << Samurai_NS::Magnet_DetectorNumber << endl;
   }
+
 }
-*/
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 ////////////////////////////////////////////////////////////////   
-/*
-//FIXME
-void Samurai::InitializeScorers() { 
+
+void Samurai::InitializeScorers() {
+  cout << "I'M IN InitializeScorers" << endl;
   // This check is necessary in case the geometry is reloaded
   bool already_exist = false; 
   m_SamuraiScorer = CheckScorer("SamuraiScorer",already_exist) ;
 
+  if (already_exist) cout << "//////////////// already exist ///////// " << endl;
+  else cout << "//////////////// does not already exist ///////// " << endl;
   if(already_exist) 
     return ;
 
   // Otherwise the scorer is initialised
   vector<int> level; level.push_back(0);
-  G4VPrimitiveScorer* Calorimeter= new CalorimeterScorers::PS_Calorimeter("Calorimeter",level, 0) ;
   G4VPrimitiveScorer* Interaction= new InteractionScorers::PS_Interactions("Interaction",ms_InterCoord, 0) ;
   //and register it to the multifunctionnal detector
-  m_SamuraiScorer->RegisterPrimitive(Calorimeter);
   m_SamuraiScorer->RegisterPrimitive(Interaction);
   G4SDManager::GetSDMpointer()->AddNewDetector(m_SamuraiScorer) ;
 }
-*/
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

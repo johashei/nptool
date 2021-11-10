@@ -39,6 +39,7 @@ using namespace std;
 #include "NPInputParser.h"
 
 #include "SamuraiFieldPropagation.hh"
+#include "TSamuraiIdealData.h"
 
 
 class Samurai : public NPS::VDetector{
@@ -92,13 +93,13 @@ class Samurai : public NPS::VDetector{
     // Called in DetecorConstruction::ReadDetectorConfiguration Method
     void ReadConfiguration(NPL::InputParser) ;
 
-    // Construct detector and inialise sensitive part.
-    // Called After DetecorConstruction::AddDetector Method
+    // Construct Magnet and inialise sensitive part.
+    // Called After DetectorConstruction::AddDetector Method
     void ConstructDetector(G4LogicalVolume* world) ;
 
-    // Add Detector branch to the EventTree.
-    // Called After DetecorConstruction::AddDetector Method
-    //void InitializeRootOutput() ;
+    // Add Magnet branch to the EventTree.
+    // Called After DetectorConstruction::AddDetector Method
+    void InitializeRootOutput() ;
 
     // Read sensitive part and fill the Root tree.
     // Called at in the EventAction::EndOfEventAction
@@ -106,18 +107,20 @@ class Samurai : public NPS::VDetector{
 
   public:
     // Scorer
-    //   Initialize all Scorer used by the MUST2Array
-    //void InitializeScorers() ;
+    // Initialize all Scorer used by the MUST2Array
+    void InitializeScorers() ;
 
     // Set region were magnetic field is active:
     void SetPropagationRegion();
 
-    //   Associated Scorer
-    //G4MultiFunctionalDetector* m_Sa//(x)muraiScorer ;
+    // Associated Scorer
+    G4MultiFunctionalDetector* m_SamuraiScorer ;
     ////////////////////////////////////////////////////
     ///////////Event class to store Data////////////////
     ////////////////////////////////////////////////////
   private:
+    // Store data
+    TSamuraiIdealData* m_Event;
 
     // Region were magnetic field is active:
     G4Region* m_PropagationRegion;
