@@ -69,6 +69,7 @@ namespace Samurai_NS{
   const double Magnet_Width = 6700*mm; //(x)
   const double Magnet_Height = 4640*mm;//(y)
   const double Magnet_Depth = 6000*mm;//(z)
+  const double Magnet_Depth_eps = 0.2*mm; //(delta-z)
   const string Magnet_Material = "G4_Fe"; //G4_Galactic
 
   //Gap between top and bottom yoke slabs
@@ -201,7 +202,7 @@ G4LogicalVolume* Samurai::BuildMagnet(){
   if(!m_Magnet){
     //Shape - G4Box
     G4Box* box = new G4Box("Samurai_Box",Samurai_NS::Magnet_Width*0.5,
-			   Samurai_NS::Magnet_Height*0.5,Samurai_NS::Magnet_Depth*0.5);
+			   Samurai_NS::Magnet_Height*0.5,Samurai_NS::Magnet_Depth*0.5 + Samurai_NS::Magnet_Depth_eps*0.5);
   
     //Material - vacuum
     G4Material* VacuumMaterial = MaterialManager::getInstance()
@@ -435,10 +436,10 @@ void Samurai::SetPropagationRegion(){
 void Samurai::InitializeRootOutput(){
   RootOutput *pAnalysis = RootOutput::getInstance();
   TTree *pTree = pAnalysis->GetTree();
-  if(!pTree->FindBranch("IdealData")){
-    pTree->Branch("IdealData", "TSamuraiIdealData", &m_Event) ;
+  if(!pTree->FindBranch("IdealDataMagnet")){
+    pTree->Branch("IdealDataMagnet", "TSamuraiIdealData", &m_Event) ;
   }
-  pTree->SetBranchAddress("IdealData", &m_Event) ;
+  pTree->SetBranchAddress("IdealDataMagnet", &m_Event) ;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

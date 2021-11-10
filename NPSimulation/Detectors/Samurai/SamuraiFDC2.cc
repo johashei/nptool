@@ -194,10 +194,10 @@ void SamuraiFDC2::ConstructDetector(G4LogicalVolume* world){
 void SamuraiFDC2::InitializeRootOutput(){
   RootOutput *pAnalysis = RootOutput::getInstance();
   TTree *pTree = pAnalysis->GetTree();
-  if(!pTree->FindBranch("IdealData")){
-    pTree->Branch("IdealData", "TSamuraiIdealData", &m_Event) ;
+  if(!pTree->FindBranch("IdealDataFDC2")){
+    pTree->Branch("IdealDataFDC2", "TSamuraiIdealData", &m_Event) ;
   }
-  pTree->SetBranchAddress("IdealData", &m_Event);
+  pTree->SetBranchAddress("IdealDataFDC2", &m_Event);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
