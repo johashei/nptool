@@ -16,16 +16,16 @@
 #include "DecodeD.h"
 #include "DecodeT.h"
 
-#define __RUN__ 7
+#define __RUN__ 3
 
 #define __OUTPUT_ALL__
 #undef __OUTPUT_ALL__
 
 #define __1DET__
-#undef __1DET__
+//#undef __1DET__
 
 #define __TEST_ZONE__
-//#undef __TEST_ZONE__
+#undef __TEST_ZONE__
 
 #define __CIRCULAR_TREE__
 #undef __CIRCULAR_TREE__
@@ -120,7 +120,9 @@ int main(int argc, char** argv)
   #if __RUN__ == 3 || __RUN__ == 7
   ifstream is;
   #if __RUN__ == 3
-  is.open("/disk/proto-data/data/20210510_Bi207/mfm_rdd_rosmap_04_mfm_rosmap_04_2021-05-10_07_41_50.raw");
+  //is.open("/disk/proto-data/data/20210510_Bi207/mfm_rdd_rosmap_04_mfm_rosmap_04_2021-05-10_07_41_50.raw");
+  //is.open("/projet/astronuc/data/ccam/data/20210210_run1/mfm_rdd_rosmap_04_mfm_rosmap_04_2021-02-10_10_04_59.raw.0001");
+  is.open("/projet/astronuc/data/ccam/data/banc_104/211109/mfm_rdd_rosmap_04_mfm_rosmap_04_2021-11-09_16_06_21.raw.0001");
   #elif __RUN__ == 7
   #endif
   is.seekg(0, ios::end);
@@ -146,7 +148,8 @@ int main(int argc, char** argv)
     m_NPDetectorManager->ClearEventPhysics();
     m_NPDetectorManager->ClearEventData();
     #if __RUN__ == 3 || __RUN__ == 7
-    ccamData -> SetCTCalorimeter(1, 4, DR->getPixelNumber(), DR->getTime(), DR->getData(), 64);
+    ccamData -> SetCTCalorimeter(1, 4, Decoder->getPixelNumber(), Decoder->getTime(), Decoder->getData(), 64);
+    //ccamData -> SetCTCalorimeter(1, 4, DR->getPixelNumber(), DR->getTime(), DR->getData(), 64);
     #elif __RUN__ == 0
     setCTTracker(ccamData, Decoder);
     //ccamData -> Dump();
