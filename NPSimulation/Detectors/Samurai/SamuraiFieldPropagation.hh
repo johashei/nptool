@@ -77,12 +77,12 @@ namespace NPS{
       return to_string(V.getX()) + " " + to_string(V.getY()) + " " + to_string(V.getZ());
     }
 
-    void PrintData(double stepsize, G4ThreeVector pos, G4ThreeVector mom, ofstream& out){
-      out << setprecision(17) << stepsize/micrometer << "\t";
-      out << setprecision(17) << pos.x() << "\t" << pos.y() << "\t" << pos.z() << "\t";
-      out << setprecision(17) << mom.x() << "\t" << mom.y() << "\t" << mom.z() << "\t";
-      out << setprecision(17) << mom.getR() << "\t" << mom.getPhi() << "\t" << mom.getTheta() << endl;
-    }
+    //void PrintData(double stepsize, G4ThreeVector pos, G4ThreeVector mom, ofstream& out){
+    //  out << setprecision(17) << stepsize/micrometer << "\t";
+    //  out << setprecision(17) << pos.x() << "\t" << pos.y() << "\t" << pos.z() << "\t";
+    //  out << setprecision(17) << mom.x() << "\t" << mom.y() << "\t" << mom.z() << "\t";
+    //  out << setprecision(17) << mom.getR() << "\t" << mom.getPhi() << "\t" << mom.getTheta() << endl;
+    //}
 
 
     bool m_Initialized; //field map initialized
