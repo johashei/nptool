@@ -61,7 +61,7 @@ namespace SamuraiFDC2_NS{
   const double FDC2_Width = 2616*mm; //(x)
   const double FDC2_Height = 1156*mm;//(y)
   const double FDC2_Depth = 876*mm;//(z)
-  const string FDC2_Material = "G4_Fe"; 
+  const string FDC2_Material = "G4_Galactic"; 
 
   //Detector Number
   const short int FDC2_DetectorNumber = 2;

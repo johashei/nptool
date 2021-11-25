@@ -70,7 +70,7 @@ namespace Samurai_NS{
   const double Magnet_Height = 4640*mm;//(y)
   const double Magnet_Depth = 6000*mm;//(z)
   const double Magnet_Depth_eps = 0.2*mm; //(delta-z)
-  const string Magnet_Material = "G4_Fe"; //G4_Galactic
+  const string Magnet_Material = "G4_Galactic"; //G4_Galactic
 
   //Gap between top and bottom yoke slabs
   const double Magnet_Gap = 880*mm;//(y)

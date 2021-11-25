@@ -61,7 +61,7 @@ namespace SamuraiFDC1_NS{
   const double FDC1_Width = 1000*mm; //(x)
   const double FDC1_Height = 696*mm;//(y)
   const double FDC1_Depth = 336*mm;//(z)
-  const string FDC1_Material = "G4_AIR"; 
+  const string FDC1_Material = "G4_Galactic"; 
 
   //Detector Number
   const short int FDC1_DetectorNumber = 1;
