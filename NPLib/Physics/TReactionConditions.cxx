@@ -72,7 +72,8 @@ void TReactionConditions::Dump() const{
     cout << "\t Phi_Y: " << fRC_Beam_Emittance_PhiY << endl;
     cout << "\t Theta: " << fRC_Beam_Emittance_Theta << endl;
     cout << "\t Phi: " << fRC_Beam_Emittance_Phi << endl;
-    
+    cout << "\t Direction: " ;
+    GetBeamDirection().Print();
     
     // Beam status at the initial interaction point
     cout << "\t ---- Interaction Point ---- " << endl;
@@ -87,17 +88,23 @@ void TReactionConditions::Dump() const{
     << fRC_Internal_Momentum.Y() << " ; "
     << fRC_Internal_Momentum.Z() << ")" << endl;
  
-    
+    TVector3 *emitted= new TVector3(); 
     // emmitted particle
     unsigned int size = fRC_Particle_Name.size();
     for(unsigned int i = 0 ; i < size; i ++){
         cout << "\t ---- Particle " << i << " ---- " << endl;
         cout << "\t Particle Name: " <<   fRC_Particle_Name[i] << endl;
-        cout << "\t Kinetic Energy: " <<   fRC_Kinetic_Energy[i] << endl;
-        cout << "\t Momentum Direction: ( "
+        cout << "\t Kinetic Energy: " <<   fRC_Kinetic_Energy[i] << endl; 
+        cout << "\t Angles in beam frame (along Z)"<< endl;
+        cout << "\t Theta: " <<   fRC_Theta[i] << endl;
+        cout << "\t Phi: " <<   fRC_Phi[i] << endl;
+        cout << "\t Momentum Direction in world frame: ( "
         << fRC_Momentum_Direction_X[i] << " ; "
         << fRC_Momentum_Direction_Y[i] << " ; "
         << fRC_Momentum_Direction_Z[i] << ")" << endl;
+        emitted->SetXYZ(fRC_Momentum_Direction_X[i],fRC_Momentum_Direction_Y[i],fRC_Momentum_Direction_Z[i]);
+        cout << "\t ThetaWorld: " << emitted->Theta()*180./pi<< endl;
+        cout << "\t PhiWorld: " << emitted->Phi()*180./pi<< endl;
     }
 
    
