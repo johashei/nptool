@@ -183,13 +183,13 @@ G4bool NPS::BeamReaction::ModelTrigger(const G4FastTrack& fastTrack) {
   // If the condition is met, the event is generated
   if (m_shoot && m_length < m_StepSize) {
     if(m_ReactionType==QFS){
-      if ( m_QFS.IsAllowed() ) {
+      //if ( m_QFS.IsAllowed() ) {
         return true;
-      }
-      else{
-        m_shoot=false;
-        std::cout << "QFS not allowed" << std::endl;
-      }
+      //}
+      //else{
+      //  m_shoot=false;
+      //  std::cout << "QFS not allowed" << std::endl;
+      //}
     }
 
     else if(m_ReactionType==TwoBody){
@@ -475,14 +475,6 @@ void NPS::BeamReaction::DoIt(const G4FastTrack& fastTrack,
     // Set the Energy of the reaction
     m_QFS.SetBeamEnergy(reac_energy);
 
-    double Beam_theta = pdirection.theta();
-    double Beam_phi   = pdirection.phi();
-
-
-    /////////////////////////////////////////////////////////////////
-    ///// Angles for emitted particles following Cross Section //////
-    ///// Angles are in the beam frame                         //////
-    /////////////////////////////////////////////////////////////////
 
     // Shoot and Set a Random ThetaCM
     double costheta = G4RandFlat::shoot() * 2 - 1;
@@ -491,45 +483,55 @@ void NPS::BeamReaction::DoIt(const G4FastTrack& fastTrack,
     m_QFS.SetThetaCM(theta);
     m_QFS.SetPhiCM(phi);
 
-    // Shoot and set internal momentum for the removed cluster
-    // if a momentum Sigma is given then shoot in 3 indep. Gaussians
-    // if input files are given for distributions use them instead
-    m_QFS.ShootInternalMomentum();
-
-    //////////////////////////////////////////////////
-    /////  Momentum and angles from  kinematics  /////
-    //////////////////////////////////////////////////
-    // Variable where to store results
+    // Lab frame variables where to store results
     double Theta1, Phi1, TKE1, Theta2, Phi2, TKE2, ThetaB, PhiB, TKEB;
 
-    // Compute Kinematic using previously defined ThetaCM
-    m_QFS.KineRelativistic(Theta1, Phi1, TKE1, Theta2, Phi2, TKE2);
+    int j=0;
+    m_QFS.SetIsAllowed(false);
+    while(!m_QFS.IsAllowed()){
+        // Shoot internal momentum for the removed cluster
+        // if a momentum Sigma is given then shoot in 3 indep. Gaussians
+        // if input files are given for distributions use them instead
+        m_QFS.ShootInternalMomentum();
 
-    G4ThreeVector U(1, 0, 0);
-    G4ThreeVector V(0, 1, 0);
-    G4ThreeVector ZZ(0, 0, 1);
+        // Go from CM to Lab
+        m_QFS.KineRelativistic(Theta1, Phi1, TKE1, Theta2, Phi2, TKE2);
+
+        j++;
+        if(j>100) cout<< "ERROR: too many iteration and QFS kinematical conditions not allowed"<<endl;    
+    }
+
+    //---------------------------------------------------------
+    //Rotations to switch from frame with beam along Z to world
+    //---------------------------------------------------------
+
+    double Beam_theta = pdirection.theta();
+    double Beam_phi   = pdirection.phi();
+    G4ThreeVector ux(1, 0, 0);
+    G4ThreeVector uy(0, 1, 0);
+    G4ThreeVector uz(0, 0, 1);
 
     // Momentum in beam and world frame for light particle 1
     G4ThreeVector momentum_kine1_beam(sin(Theta1) * cos(Phi1),
         sin(Theta1) * sin(Phi1), cos(Theta1));
     G4ThreeVector momentum_kine1_world = momentum_kine1_beam;
-    momentum_kine1_world.rotate(Beam_theta, V); // rotation of Beam_theta on Y axis
-    momentum_kine1_world.rotate(Beam_phi, ZZ); // rotation of Beam_phi on Z axis
+    momentum_kine1_world.rotate(Beam_theta, uy); // rotation of Beam_theta around Y axis
+    momentum_kine1_world.rotate(Beam_phi, uz); // rotation of Beam_phi around Z axis
 
     // Momentum in beam and world frame for light particle 2
     G4ThreeVector momentum_kine2_beam(sin(Theta2) * cos(Phi2),
         sin(Theta2) * sin(Phi2), cos(Theta2));
     G4ThreeVector momentum_kine2_world = momentum_kine2_beam;
-    momentum_kine2_world.rotate(Beam_theta, V); // rotation of Beam_theta on Y axis
-    momentum_kine2_world.rotate(Beam_phi, ZZ); // rotation of Beam_phi on Z axis
+    momentum_kine2_world.rotate(Beam_theta, uy); // rotation of Beam_theta on Y axis
+    momentum_kine2_world.rotate(Beam_phi, uz); // rotation of Beam_phi on Z axis
 
     // Momentum in beam and world frame for heavy residual
     //
     //G4ThreeVector momentum_kineB_beam(sin(ThetaB) * cos(PhiB + pi),
     //        sin(ThetaB) * sin(PhiB + pi), cos(ThetaB));
     //G4ThreeVector momentum_kineB_world =  momentum_kineB_beam;
-    //momentum_kineB_world.rotate(Beam_theta, V); // rotation of Beam_theta on Y axis
-    //momentum_kineB_world.rotate(Beam_phi, ZZ); // rotation of Beam_phi on Z axis
+    //momentum_kineB_world.rotate(Beam_theta, uy); // rotation of Beam_theta on Y axis
+    //momentum_kineB_world.rotate(Beam_phi, uz); // rotation of Beam_phi on Z axis
 
     TLorentzVector* P_A = m_QFS.GetEnergyImpulsionLab_A();
     TLorentzVector* P_B = m_QFS.GetEnergyImpulsionLab_B();
@@ -538,12 +540,13 @@ void NPS::BeamReaction::DoIt(const G4FastTrack& fastTrack,
     momentum_kineB_beam = momentum_kineB_beam.unit();
     TKEB = P_B->Energy() - m_QFS.GetParticleB()->Mass();
     G4ThreeVector momentum_kineB_world =  momentum_kineB_beam;
-    momentum_kineB_world.rotate(Beam_theta, V); // rotation of Beam_theta on Y axis
-    momentum_kineB_world.rotate(Beam_phi, ZZ); // rotation of Beam_phi on Z axis
+    momentum_kineB_world.rotate(Beam_theta, uy); // rotation of Beam_theta on Y axis
+    momentum_kineB_world.rotate(Beam_phi, uz); // rotation of Beam_phi on Z axis
 
     ThetaB = P_B->Angle(P_A->Vect());
-    if (ThetaB < 0) ThetaB += M_PI;
-    PhiB = M_PI + P_B->Vect().Phi(); 
+    //if (ThetaB < 0) ThetaB += M_PI;
+    //PhiB = M_PI + P_B->Vect().Phi(); 
+    PhiB = P_B->Vect().Phi(); 
     if (fabs(PhiB) < 1e-6) PhiB = 0;
 
 
@@ -602,44 +605,45 @@ void NPS::BeamReaction::DoIt(const G4FastTrack& fastTrack,
     m_ReactionConditions->SetVertexPositionX(localPosition.x());
     m_ReactionConditions->SetVertexPositionY(localPosition.y());
     m_ReactionConditions->SetVertexPositionZ(localPosition.z());
+
     m_ReactionConditions->SetBeamEmittanceTheta(
         PrimaryTrack->GetMomentumDirection().theta() / deg);
     m_ReactionConditions->SetBeamEmittancePhi(
         PrimaryTrack->GetMomentumDirection().phi() / deg);
     m_ReactionConditions->SetBeamEmittanceThetaX(
-        PrimaryTrack->GetMomentumDirection().angle(U) / deg);
+        PrimaryTrack->GetMomentumDirection().perpPart(uy).angle(uz) / deg);
     m_ReactionConditions->SetBeamEmittancePhiY(
-        PrimaryTrack->GetMomentumDirection().angle(V) / deg);
+        PrimaryTrack->GetMomentumDirection().perpPart(ux).angle(uz) / deg);
 
     // Names 1,2 and B//
     m_ReactionConditions->SetParticleName(Light1Name->GetParticleName());
     m_ReactionConditions->SetParticleName(Light2Name->GetParticleName());
     m_ReactionConditions->SetParticleName(HeavyName->GetParticleName());
-    // Angle 1,2 and B //
+    // Angle 1,2 and B in fram with beam along Z axis//
     m_ReactionConditions->SetTheta(Theta1 / deg);
     m_ReactionConditions->SetTheta(Theta2 / deg);
     m_ReactionConditions->SetTheta(ThetaB / deg);
     m_ReactionConditions->SetPhi(Phi1 / deg);
     m_ReactionConditions->SetPhi(Phi2 / deg);
     m_ReactionConditions->SetPhi(PhiB / deg);
-    // Energy 1,2 and B //
+    // Total Kinetic Energy 1,2 and B //
     m_ReactionConditions->SetKineticEnergy(TKE1);
     m_ReactionConditions->SetKineticEnergy(TKE2);
     m_ReactionConditions->SetKineticEnergy(TKEB);
     // ThetaCM, Ex and Internal Momentum of removed cluster//
     m_ReactionConditions->SetThetaCM(m_QFS.GetThetaCM() / deg);
     m_ReactionConditions->SetInternalMomentum(m_QFS.GetInternalMomentum());
-    //m_ReactionConditions->SetExcitationEnergy3(m_QFS.GetExcitation3());
+    //Excitation energy of reaction product B
     m_ReactionConditions->SetExcitationEnergy4(m_QFS.GetExcitationB());
-    // Momuntum X 1,2 and B //
+    // Momentum Dir. X 1,2 and B in world frame //
     m_ReactionConditions->SetMomentumDirectionX(momentum_kine1_world.x());
     m_ReactionConditions->SetMomentumDirectionX(momentum_kine2_world.x());
     m_ReactionConditions->SetMomentumDirectionX(momentum_kineB_world.x());
-    // Momuntum Y 1,2 and B //
+    // Momentum Dir. Y 1,2 and B in world frame//
     m_ReactionConditions->SetMomentumDirectionY(momentum_kine1_world.y());
     m_ReactionConditions->SetMomentumDirectionY(momentum_kine2_world.y());
     m_ReactionConditions->SetMomentumDirectionY(momentum_kineB_world.y());
-    // Momuntum Z 1,2 and B //
+    // Momentum Dir. Z 1,2 and B in world frame//
     m_ReactionConditions->SetMomentumDirectionZ(momentum_kine1_world.z());
     m_ReactionConditions->SetMomentumDirectionZ(momentum_kine2_world.z());
     m_ReactionConditions->SetMomentumDirectionZ(momentum_kineB_world.z());

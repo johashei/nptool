@@ -233,19 +233,11 @@ void Beam::GenerateRandomEvent(double& E, double& X, double& Y, double& Z, doubl
       fXThetaXHist->GetRandom2(X,ThetaX);
       fYPhiYHist->GetRandom2(Y,PhiY);
   }
-  // Direction
-  double Xdir = sin(ThetaX); // cos(90-x) = sin(x)
-  double Ydir = sin(PhiY); 
-  double Zdir = sqrt(1-Xdir*Xdir-Ydir*Ydir); // alpha^2 + beta^2 + gamma^2 = 1
-  // Stretch factor to extend unitary vector from ZEmission to ZProfile
-  double S = fZProfile-fZEmission ;
-  TVector3 BeamDir(Xdir*S/Zdir,Ydir*S/Zdir,S);
- 
-  Xdir = BeamDir.X();
-  Ydir = BeamDir.Y();
-  // POSITION/DIRECTION AT Z EMISSION// 
-  X = X0 - Xdir;
-  Y = Y0 - Ydir;
+  // Backward propagtion from ZProfile (in general on target) 
+  // to ZEmission (position where beam is generated in simulation.)
+  double dZ = fZProfile-fZEmission ; //(Z1-Z0)
+  X= X0-tan(ThetaX)*dZ;
+  Y= Y0-tan(PhiY)*dZ;
   Z = fZEmission;
 }
 

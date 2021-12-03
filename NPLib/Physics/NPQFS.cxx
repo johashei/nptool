@@ -78,7 +78,11 @@ QFS::QFS(){
     fshootB=false;
     fshoot1=true;
     fshoot2=true;
-    fisotropic = true;
+    fIsotropic = true;
+
+    fCondEcmPos = false;
+    fCondOffshellMassPos = false;
+    fIsAllowed = false;
 
     fUseExInGeant4=true;
 
@@ -220,6 +224,9 @@ Particle QFS::GetParticle(string name, NPL::InputParser parser){
 ////////////////////////////////////////////////////////////////////////////////////////////
 void QFS::CalculateVariables(){
 
+  fCondEcmPos = false;
+  fCondOffshellMassPos = false;
+
   if(fBeamEnergy < 0)
     fBeamEnergy = 0 ; 
 
@@ -250,7 +257,8 @@ void QFS::CalculateVariables(){
     // Off-shell mass of the bound nucleon from E conservation
     // in virtual dissociation of A -> B + a
     double buffer = mA*mA + mB*mB - 2*mA*sqrt(mB*mB+Pa.Mag2()) ; 
-    if(buffer<=0) { cout<<"ERROR off shell mass ma_off=\t"<<buffer<<endl; return;}
+    if(buffer>0)  {fCondOffshellMassPos = true;}
+    else{/*cout<<"ERROR off shell mass ma_off=\t"<<buffer<<endl; Dump();*/ return;}
     ma_off = sqrt(buffer);
 
     //deduced total energies of "a" and "B" in restframe of A
@@ -279,7 +287,8 @@ void QFS::CalculateVariables(){
     s = ma_off*ma_off + mT*mT + 2*mT*Ea_lab ; 
     fTotalEnergyImpulsionCM = TLorentzVector(0,0,0,sqrt(s));
     fEcm = sqrt(s) - m1 -m2;
-    if(fEcm<=0) { cout<<"ERROR Ecm negative =\t"<<fEcm<<endl;Dump(); return;}
+    if(fEcm>0)  {fCondEcmPos = true;}
+    if(fEcm<=0) { /*cout<<"ERROR Ecm negative =\t"<<fEcm<<endl;Dump();*/ return;}
 
     ECM_a = (s + ma_off*ma_off - mT*mT)/(2*sqrt(s));
     ECM_T = (s + mT*mT - ma_off*ma_off)/(2*sqrt(s));
@@ -298,8 +307,11 @@ void QFS::CalculateVariables(){
 
 void QFS::KineRelativistic(double& ThetaLab1, double& PhiLab1, double& KineticEnergyLab1, double& ThetaLab2, double& PhiLab2, double& KineticEnergyLab2){
 
+    fIsAllowed=false;
     CalculateVariables();
-
+    if(fCondOffshellMassPos && fCondEcmPos) fIsAllowed= true; 
+    else return; 
+        
     double thetaCM_1 = fThetaCM;
     double thetaCM_2 =  M_PI - thetaCM_1;
     double phiCM_2 = fPhiCM;
@@ -501,17 +513,6 @@ TGraph* QFS::GetPhi2VsPhi1(double AngleStep_CM){
   return(fPhi2VsPhi1);
 }
 
-///////////////////////////////////////////////////////////////////////////////
-// Check whenever the reaction is allowed at a given energy
-bool QFS::IsAllowed(){//double Energy){
-  //double AvailableEnergy = Energy + fParticle1.Mass() + fParticle2.Mass();
-  //double RequiredEnergy  = fParticle3.Mass() + fParticle4.Mass();
-
-  //if(AvailableEnergy>RequiredEnergy)
-    return true;
-  //else
-  //  return false;
-}
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////
