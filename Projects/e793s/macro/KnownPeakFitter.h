@@ -48,7 +48,7 @@ void FitKnownPeaks(TH1F* hist){
     nameHere +=to_string(i);
 
     allPeaks[i] = new TF1(nameHere.c_str(), function.c_str(), -1, 5);
-    allPeaks[i]->SetLineColor(kRed);  
+    allPeaks[i]->SetLineColor(kBlack);  
     allPeaks[i]->SetLineStyle(7);  
     allPeaks[i]->SetParNames("Sigma", "Mean", "Area*BinWidth");
   } 
@@ -61,18 +61,19 @@ void FitKnownPeaks(TH1F* hist){
 
   //Build total function
   TF1 *full = new TF1("fitAllPeaks", 
-    "  ([02]/([0]*sqrt(2*pi)))*exp(-0.5*pow((x-[01])/[0],2)) " 
-    "+ ([04]/([0]*sqrt(2*pi)))*exp(-0.5*pow((x-[03])/[0],2)) "
-    "+ ([06]/([0]*sqrt(2*pi)))*exp(-0.5*pow((x-[05])/[0],2)) "
-    "+ ([08]/([0]*sqrt(2*pi)))*exp(-0.5*pow((x-[07])/[0],2)) "
-    "+ ([10]/([0]*sqrt(2*pi)))*exp(-0.5*pow((x-[09])/[0],2)) "
+    "  ([2]/([0]*sqrt(2*pi)))*exp(-0.5*pow((x-[1])/[0],2)) " 
+    "+ ([4]/([0]*sqrt(2*pi)))*exp(-0.5*pow((x-[3])/[0],2)) "
+    "+ ([6]/([0]*sqrt(2*pi)))*exp(-0.5*pow((x-[5])/[0],2)) "
+    "+ ([8]/([0]*sqrt(2*pi)))*exp(-0.5*pow((x-[7])/[0],2)) "
+    "+ ([10]/([0]*sqrt(2*pi)))*exp(-0.5*pow((x-[9])/[0],2)) "
     "+ ([12]/([0]*sqrt(2*pi)))*exp(-0.5*pow((x-[11])/[0],2)) "
     "+ ([14]/([0]*sqrt(2*pi)))*exp(-0.5*pow((x-[13])/[0],2)) "
     "+ ([16]/([0]*sqrt(2*pi)))*exp(-0.5*pow((x-[15])/[0],2)) "
     "+ ([18]/([0]*sqrt(2*pi)))*exp(-0.5*pow((x-[17])/[0],2)) "
     "+ ([20]/([0]*sqrt(2*pi)))*exp(-0.5*pow((x-[19])/[0],2)) "
-    "+ [21]" , minFit, maxFit);
-  full->SetLineColor(kBlack);
+    "+ ([22]/([0]*sqrt(2*pi)))*exp(-0.5*pow((x-[21])/[0],2)) "
+    "+ [23]" , minFit, maxFit);
+  full->SetLineColor(kRed);
 
   //Annoyingly long parameter name assignment 
   //(SetParNames only works for up to 11 variables)
@@ -87,23 +88,28 @@ void FitKnownPeaks(TH1F* hist){
   full->SetParName(15,"Mean 08"); full->SetParName(16,"Area*BinWidth 08");
   full->SetParName(17,"Mean 09"); full->SetParName(18,"Area*BinWidth 09");
   full->SetParName(19,"Mean 10"); full->SetParName(20,"Area*BinWidth 10");
-  full->SetParName(21,"Background");
+  full->SetParName(21,"Mean 11"); full->SetParName(22,"Area*BinWidth 11");
+  full->SetParName(23,"Background");
 
   //Fix sigma & centroid, only allow area to vary  
+  const int numParams = (numPeaks*2)+2;
   full->FixParameter(0, sigma);
   for(int i=0; i<numPeaks; i++) {
     full->FixParameter(2*i+1,means.at(i));
     full->SetParameter(2*i+2,1.0);
     full->SetParLimits(2*i+2,0.0,1e5);
   }
+  full->FixParameter(numParams-1,0.0);
+  //full->SetParLimits(numParams-1,0.0,1e1);
+  //full->SetParLimits(numParams-1,0.0,0.0);
 
   //Fit full function to histogram
   hist->Fit(full, "WWR", "", minFit, maxFit);
   hist->Draw();
  
   //Extract fitted variables, assign them to individual fits, and draw them
-  Double_t finalPar[22];
-  Double_t finalErr[22];
+  Double_t finalPar[numParams];
+  Double_t finalErr[numParams];
   full->GetParameters(&finalPar[0]);
   for (int i=0; i<numPeaks; i++){
     finalErr[2*i+1] = full->GetParError(2*i+1);
@@ -111,7 +117,7 @@ void FitKnownPeaks(TH1F* hist){
       
     allPeaks[i]->SetParameters(sigma, means.at(i), finalPar[2*i+2]);
   }
-  bg->SetParameter(0,finalPar[21]);
+  bg->SetParameter(0,finalPar[numParams-1]);
   bg->Draw("SAME");
   full->Draw("SAME");
 
