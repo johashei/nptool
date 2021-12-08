@@ -511,7 +511,7 @@ void TStrassePhysics::PreTreat() {
       }
     }
   }
-  unsigned int sizeBack = m_EventData->GetInnerMultTEnergy();
+  unsigned int sizeBack = m_EventData->GetInnerMultLEnergy();
   for (UShort_t i = 0; i < sizeBack ; ++i) {
     if (m_EventData->GetInner_LE_Energy(i) > m_E_RAW_Threshold) {
       Double_t Energy = m_EventData->GetInner_LE_Energy(i);
@@ -534,7 +534,7 @@ void TStrassePhysics::PreTreat() {
       }
     }
   }
-  sizeBack = m_EventData->GetOuterMultTEnergy();
+  sizeBack = m_EventData->GetOuterMultLEnergy();
   for (UShort_t i = 0; i < sizeBack ; ++i) {
     if (m_EventData->GetOuter_LE_Energy(i) > m_E_RAW_Threshold) {
       Double_t Energy = m_EventData->GetOuter_LE_Energy(i);
@@ -554,7 +554,7 @@ void TStrassePhysics::ReadAnalysisConfig() {
   bool ReadingStatus = false;
 
   // path to file
-  string FileName = "./configs/ConfigStrasse.dat";
+  string FileName = "./config/ConfigStrasse.dat";
 
   // open analysis config file
   ifstream AnalysisConfigFile;
@@ -783,6 +783,8 @@ void TStrassePhysics::ReadConfiguration(NPL::InputParser parser) {
       exit(1);
     }
   }
+
+  ReadAnalysisConfig();
 
 }
 
