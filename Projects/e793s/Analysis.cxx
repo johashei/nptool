@@ -59,6 +59,29 @@ void Analysis::Init() {
     Initial = new TInitialConditions();
     ReactionConditions = new TReactionConditions(); 
     RootInput::getInstance()->GetChain()->SetBranchAddress("InitialConditions",&Initial);
+
+    // Initilize MGX histograms, because must be inside function
+    string base1 = "ThetaCM_detected_MG";
+    string base2 = "ThetaLab_detected_MG";
+    for(int i=0; i<6; i++){
+      int j=i+1;
+      if (i==6){int j=7;}
+      string name1 = base1 + to_string(j);	  
+      string name2 = base2 + to_string(j);	  
+      ThetaCM_detected_MGX[i] = new TH1F(name1.c_str(),name1.c_str(),180,0,180);
+      ThetaLab_detected_MGX[i] = new TH1F(name2.c_str(),name2.c_str(),180,0,180);
+    }
+
+    // Initilize MMX histograms
+    string base3 = "ThetaCM_detected_MM";
+    string base4 = "ThetaLab_detected_MM";
+    for(int i=0; i<5; i++){
+      int j=i+1;
+      string name1 = base3 + to_string(j);	  
+      string name2 = base4 + to_string(j);	  
+      ThetaCM_detected_MMX[i] = new TH1F(name1.c_str(),name1.c_str(),180,0,180);
+      ThetaLab_detected_MMX[i] = new TH1F(name2.c_str(),name2.c_str(),180,0,180);
+    }
   }
 
   // initialize input and output branches
@@ -210,31 +233,13 @@ void Analysis::TreatEvent(){
     // MUST2
     int TelescopeNumber = M2->TelescopeNumber[countMust2];
 
-
     if(isSim){
-      if(TelescopeNumber==5){
-        //ThetaCM_detected->Fill(Initial->GetThetaCM(0));
-        ThetaCM_detected_MM->Fill(ReactionConditions->GetThetaCM());
-	//ThetaLab_detected->Fill(Initial->GetThetaLab_WorldFrame(0));
-        ThetaLab_detected_MM->Fill(ReactionConditions->GetTheta(0));
-        /*
-        TVector3 labDir = Initial->GetParticleDirection(0);
-        TVector3 comDir = labDir;
+      ThetaCM_detected_MM->Fill(ReactionConditions->GetThetaCM());
+      ThetaLab_detected_MM->Fill(ReactionConditions->GetTheta(0));
 
-        comDir.SetZ( cos(0.5*Initial->GetThetaLab_WorldFrame(0)*deg) );
-        comDir.SetX( labDir.X() / (2*comDir.Z()) );
-        comDir.SetY( labDir.Y() / (2*comDir.Z()) );
-
-        
-	// Check the angles agree
-        cout << Initial->GetThetaLab_WorldFrame(0) << "  " 
-	     << labDir.Theta()/deg << " "
-	     << comDir.Theta()/deg << " "
-	     << endl;
-
-        ThetaCM_detected->Fill(comDir.Theta()/deg);
-	*/
-      }
+      int MMX = TelescopeNumber-1;
+      ThetaCM_detected_MMX[MMX]->Fill(ReactionConditions->GetThetaCM());
+      ThetaLab_detected_MMX[MMX]->Fill(ReactionConditions->GetTheta(0));
     }
 
     /************************************************/
@@ -245,36 +250,6 @@ void Analysis::TreatEvent(){
     philab_tmp = 0;
     TVector3 HitDirection = M2 -> GetPositionOfInteraction(countMust2) - BeamImpact ;
     thetalab_tmp = HitDirection.Angle(BeamDirection);
-    
-    /******************************************************************************/
-    /*** THIS SECTION IS FOR USE WHEN CONVERTING ISOTROPIC LAB TO ISOTROPIC CoM ***/
-//      if(writetoscreen){
-//        cout << "====================================" << endl;
-//        cout << "   CONVERTING ISO LAB TO ISO CoM!   " << endl;
-//        cout << "====================================" << endl;
-//	writetoscreen=false;
-//      }
-      /* Generate a normalized vector/unit vector for use in theta calculation*/
-//        TVector3 NormHitDir = HitDirection.Unit();
-
-      /* thetaCM = 0.5 thetaLab = 0.5 acos(zLab) */
-//        thetalab_tmp = 0.5 * acos(NormHitDir.Z());
-        /* Now, thetalab_tmp is in CoM frame */
-
-      /* zCM = cos(thetaCM) */
-//        HitDirection.SetZ(cos(thetalab_tmp));
-        /* Now, (xLab, yLab,  zCM) */
-
-      /* xCM = xLab/(2 zCM) */
-//        HitDirection.SetX(HitDirection.X()/(2*HitDirection.Z()));
-        /* Now, (xCM,  yLab,  zCM) */
-
-      /* yCM = yLab/(2 zCM) */
-//        HitDirection.SetY(HitDirection.Y()/(2*HitDirection.Z()));
-        /* Now, (xCM,  yCM,  zCM) */
-    /******************************************************************************/
-    /******************************************************************************/
-    
     philab_tmp = HitDirection.Phi();
 
     X.push_back(M2->GetPositionOfInteraction(countMust2).X());
@@ -348,10 +323,15 @@ void Analysis::TreatEvent(){
 
 
     if(isSim){
-//      if(TelescopeNumber==5){
-        ThetaCM_detected_MG->Fill(ReactionConditions->GetThetaCM());
-        ThetaLab_detected_MG->Fill(ReactionConditions->GetTheta(0));
-//      }
+      int MGX = MG->TelescopeNumber[0];
+      MGX = MGX-1;
+      if(MGX==6){MGX=5;}
+
+      ThetaCM_detected_MG->Fill(ReactionConditions->GetThetaCM());
+      ThetaCM_detected_MGX[MGX]->Fill(ReactionConditions->GetThetaCM());
+
+      ThetaLab_detected_MG->Fill(ReactionConditions->GetTheta(0));
+      ThetaLab_detected_MGX[MGX]->Fill(ReactionConditions->GetTheta(0));
     }
 
     // Part 1 : Impact Angle
@@ -517,8 +497,8 @@ void Analysis::End(){
 
   if(isSim){
 
-    TObjArray HistList(0);
-
+    //TObjArray HistList(0);
+    TList *HistList = new TList();
 
     // MUST 2 DETECTOR #5
     auto Efficiency_CM_MM = new TH1F(*ThetaCM_detected_MM);
@@ -549,15 +529,15 @@ void Analysis::End(){
     SolidAngle_Lab_MM->Divide(ThetaLab_emmitted);
     SolidAngle_Lab_MM->Divide(Cline_MM,1);
 
-    HistList.Add(ThetaCM_emmitted);
-    HistList.Add(ThetaLab_emmitted);
-    HistList.Add(ThetaCM_detected_MM);
-    HistList.Add(ThetaLab_detected_MM);
-    HistList.Add(Efficiency_CM_MM);
-    HistList.Add(Efficiency_Lab_MM);
-    HistList.Add(SolidAngle_CM_MM);
-    HistList.Add(SolidAngle_Lab_MM);
-    HistList.Add(Cline_MM);
+    HistList->Add(ThetaCM_emmitted);
+    HistList->Add(ThetaLab_emmitted);
+    HistList->Add(ThetaCM_detected_MM);
+    HistList->Add(ThetaLab_detected_MM);
+    HistList->Add(Efficiency_CM_MM);
+    HistList->Add(Efficiency_Lab_MM);
+    HistList->Add(SolidAngle_CM_MM);
+    HistList->Add(SolidAngle_Lab_MM);
+    HistList->Add(Cline_MM);
 
 
     // MUGAST
@@ -589,18 +569,78 @@ void Analysis::End(){
     SolidAngle_Lab_MG->Divide(ThetaLab_emmitted);
     SolidAngle_Lab_MG->Divide(Cline_MG,1);
 
-    HistList.Add(ThetaCM_detected_MG);
-    HistList.Add(ThetaLab_detected_MG);
-    HistList.Add(Efficiency_CM_MG);
-    HistList.Add(Efficiency_Lab_MG);
-    HistList.Add(SolidAngle_CM_MG);
-    HistList.Add(SolidAngle_Lab_MG);
-    HistList.Add(Cline_MG);
+    HistList->Add(ThetaCM_detected_MG);
+    HistList->Add(ThetaLab_detected_MG);
+    HistList->Add(Efficiency_CM_MG);
+    HistList->Add(Efficiency_Lab_MG);
+    HistList->Add(SolidAngle_CM_MG);
+    HistList->Add(SolidAngle_Lab_MG);
+    HistList->Add(Cline_MG);
 
+    // MUGAST INDIVIDUAL
+    TH1F *SolidAngle_CM_MGX[6];
+    string base1 = "SolidAngle_CM_MG";
+    for(int i=0;i<6;i++){
+      int j=i+1;
+      if(j==6){int j=7;}
+      string name = base1 + to_string(j);	  
+      SolidAngle_CM_MGX[i] = new TH1F(*ThetaCM_detected_MGX[i]);
+      SolidAngle_CM_MGX[i]->SetName(name.c_str());
+      SolidAngle_CM_MGX[i]->SetTitle(name.c_str());
+      SolidAngle_CM_MGX[i]->Divide(ThetaCM_emmitted);
+      SolidAngle_CM_MGX[i]->Divide(Cline_MG,1);
+    }
 
-    //HistoFile->Write();
-    auto HistoFile = new TFile("SolidAngle_HistFile_06Oct.root","RECREATE");
-    HistList.Write();
+    TH1F *SolidAngle_Lab_MGX[6];
+    string base2 = "SolidAngle_Lab_MG";
+    for(int i=0;i<6;i++){
+      int j=i+1;
+      if(j==6){int j=7;}
+      string name = base2 + to_string(j);	  
+      SolidAngle_Lab_MGX[i] = new TH1F(*ThetaLab_detected_MGX[i]);
+      SolidAngle_Lab_MGX[i]->SetName(name.c_str());
+      SolidAngle_Lab_MGX[i]->SetTitle(name.c_str());
+      SolidAngle_Lab_MGX[i]->Divide(ThetaLab_emmitted);
+      SolidAngle_Lab_MGX[i]->Divide(Cline_MG,1);
+    }
+
+    // MUST2 INDIVIDUAL
+    TH1F *SolidAngle_CM_MMX[6];
+    string base3 = "SolidAngle_CM_MM";
+    for(int i=0;i<5;i++){
+      int j=i+1;
+      string name = base3 + to_string(j);	  
+      SolidAngle_CM_MMX[i] = new TH1F(*ThetaCM_detected_MMX[i]);
+      SolidAngle_CM_MMX[i]->SetName(name.c_str());
+      SolidAngle_CM_MMX[i]->SetTitle(name.c_str());
+      SolidAngle_CM_MMX[i]->Divide(ThetaCM_emmitted);
+      SolidAngle_CM_MMX[i]->Divide(Cline_MM,1);
+    }
+
+    TH1F *SolidAngle_Lab_MMX[6];
+    string base4 = "SolidAngle_Lab_MM";
+    for(int i=0;i<5;i++){
+      int j=i+1;
+      string name = base4 + to_string(j);	  
+      SolidAngle_Lab_MMX[i] = new TH1F(*ThetaLab_detected_MMX[i]);
+      SolidAngle_Lab_MMX[i]->SetName(name.c_str());
+      SolidAngle_Lab_MMX[i]->SetTitle(name.c_str());
+      SolidAngle_Lab_MMX[i]->Divide(ThetaLab_emmitted);
+      SolidAngle_Lab_MMX[i]->Divide(Cline_MM,1);
+    }
+
+    for(int i=0; i<6; i++){HistList->Add(ThetaCM_detected_MGX[i]);}
+    for(int i=0; i<6; i++){HistList->Add(ThetaLab_detected_MGX[i]);}
+    for(int i=0; i<5; i++){HistList->Add(ThetaCM_detected_MMX[i]);}
+    for(int i=0; i<5; i++){HistList->Add(ThetaLab_detected_MMX[i]);}
+
+    for(int i=0; i<6; i++){HistList->Add(SolidAngle_CM_MGX[i]);}
+    for(int i=0; i<6; i++){HistList->Add(SolidAngle_Lab_MGX[i]);}
+    for(int i=0; i<5; i++){HistList->Add(SolidAngle_CM_MMX[i]);}
+    for(int i=0; i<5; i++){HistList->Add(SolidAngle_Lab_MMX[i]);}
+    
+    auto HistoFile = new TFile("SolidAngle_HistFile_06Dec.root","RECREATE");
+    HistList->Write();
     HistoFile->Close();
   }
 }

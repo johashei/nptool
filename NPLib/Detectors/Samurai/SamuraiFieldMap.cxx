@@ -70,7 +70,7 @@ double SamuraiFieldMap::FindBrho(TVector3 p_fdc0,TVector3 d_fdc0,TVector3 p_fdc2
     BrhoScan(1,10,0.1);
   // do a first guess based on fdc2 pos
   double b0[1] ={m_BrhoScan->Eval(p_fdc2.X())};
-  //cout << "First guess Brho " << b0[0] << endl;
+  //cout << "First guess Brho " << b0[0] << " "; //endl;
 
   
   m_min->Clear();

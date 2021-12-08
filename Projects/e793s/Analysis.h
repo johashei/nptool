@@ -45,10 +45,19 @@
 auto ThetaCM_emmitted = new TH1F("ThetaCM_emmitted","ThetaCM_emmitted",180,0,180);
 auto ThetaCM_detected_MM = new TH1F("ThetaCM_detected_MM","ThetaCM_detected_MM",180,0,180);
 auto ThetaCM_detected_MG = new TH1F("ThetaCM_detected_MG","ThetaCM_detected_MG",180,0,180);
+
 auto ThetaLab_emmitted = new TH1F("ThetaLab_emmitted","ThetaLab_emmitted",180,0,180);
 auto ThetaLab_detected_MM = new TH1F("ThetaLab_detected_MM","ThetaLab_detected_MM",180,0,180);
 auto ThetaLab_detected_MG = new TH1F("ThetaLab_detected_MG","ThetaLab_detected_MG",180,0,180);
- 
+
+TH1F *ThetaCM_detected_MGX[6];
+TH1F *ThetaCM_detected_MMX[5];
+TH1F *ThetaLab_detected_MGX[6];
+TH1F *ThetaLab_detected_MMX[5];
+
+
+
+
 class Analysis: public NPL::VAnalysis{
   public:
     Analysis();

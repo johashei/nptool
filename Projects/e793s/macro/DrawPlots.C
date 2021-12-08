@@ -1,9 +1,371 @@
-#include "DoubleGausHeader.h"
+#include "GausFit.h"
+#include "KnownPeakFitter.h"
 #include "DrawPlots.h"
 
-
 /* USE THIS SPACE TO TEST NEW FEATURES */
-/* ONCE HAPPY, MOVE TO HEADER          */
+
+void thickness(){
+
+  std::ifstream infile("thicknessTheory4.txt");
+  
+  // THEORY -------------------------------------
+  double x, pCH, dHSS, pBG, pPer, dKD, d79D, dPer, dLH, dBel;
+  vector<double> vx, vpCH, vdHSS, vpBG, vpPer, vdKD, vd79D, vdPer, vdLH, vdBel;
+  int count = 0;
+
+  while (infile >> x >> pCH >> dHSS >> pBG >> pPer >> dKD >> d79D >> dPer >> dLH >> dBel)
+  {
+    vx.push_back(x);
+    vpBG.push_back(pBG);
+    vdHSS.push_back(dHSS);
+    vpCH.push_back(pCH);
+    vpPer.push_back(pPer);
+    vdKD.push_back(dKD);
+    vd79D.push_back(d79D);
+    vdPer.push_back(dPer);
+    vdLH.push_back(dLH);
+    vdBel.push_back(dBel);
+
+    count++;
+  }
+  // --------------------------------------------
+
+  // EXPERIMENT ---------------------------------
+
+double expDx[20]= {22.5	,
+23.5	,
+24.5	,
+25.5	,
+26.5	,
+27.5	,
+28.5	,
+29.5	,
+30.5	,
+31.5	,
+32.5	,
+33.5	,
+34.5	,
+35.5	,
+36.5	,
+37.5	,
+38.5	,
+39.5	,
+40.5	,
+41.5	};
+
+double expDy[20]={
+0.595726876922256	,
+0.543213473232366	,
+0.494283286886849	,
+0.421774881771817	,
+0.341156378590349	,
+0.307099360773692	,
+0.262569839264486	,
+0.232682384534885	,
+0.216888228577843	,
+0.23470124429325	,
+0.240399882846714	,
+0.228134082861555	,
+0.32920533438895	,
+0.296543336595945	,
+0.367649491313769	,
+0.413065289661424	,
+0.437192259660495	,
+0.440938347607344	,
+0.378811580496408	,
+0.404394227640296	};
+
+
+
+double expDyErr[20]={
+0.028324914039265	,
+0.0218144191759532	,
+0.0142504076860264	,
+0.0146454365657758	,
+0.0088989334482194	,
+0.00824524006184739	,
+0.0108064634609478	,
+0.0111948065344291	,
+0.00904509721171868	,
+0.0119548919107791	,
+0.0180227167275249	,
+0.0201388245171666	,
+0.0213346009360056	,
+0.0193056550679402	,
+0.0155440903197556	,
+0.0136119544115286	,
+0.0204840651640718	,
+0.0248743996273666	,
+0.023151640426499	,
+0.0183223089693594	};
+
+
+
+
+
+
+double expDyErr2[20]={0.5,
+	0.5,
+	0.5,
+	0.5,
+	0.5,
+	0.5,
+	0.5,
+	0.5,
+	0.5,
+	0.5,
+	0.5,
+	0.5,
+	0.5,
+	0.5,
+	0.5,
+	0.5,
+	0.5,
+	0.5,
+	0.5,
+	0.5};
+
+double expPx[15]={31.5	,
+32.5	,
+33.5	,
+34.5	,
+35.5	,
+36.5	,
+37.5	,
+38.5	,
+39.5	,
+40.5	,
+41.5	,
+42.5	,
+43.5	,
+44.5	,
+45.5	};
+
+double expPy[15]={
+0.927940963711002	,
+0.886373091269099	,
+0.997232654140559	,
+0.850828825193078	,
+0.975515571786442	,
+0.799588217203809	,
+0.816607420458171	,
+0.982225026964146	,
+0.888146409552698	,
+0.901367241759583	,
+1.07321471789101	,
+1.0011298892341	,
+0.966230221622026	,
+1.1926071484492	,
+0.865315617070875	};
+
+
+
+
+
+double expPyErr[15]={
+0.0990008372934202	,
+0.14013781860333	,
+0.0725936416502272	,
+0.066957912885687	,
+0.0518874166956934	,
+0.0314030147725784	,
+0.0396294675991484	,
+0.0474887746673471	,
+0.0504518388646933	,
+0.0432543357898785	,
+0.0509856961378907	,
+0.0376160621523655	,
+0.043968910197424	,
+0.0649913895880728	,
+0.0576066735490418	};
+
+
+
+
+
+
+
+double expPyErr2[15]={0.5,
+	0.5,
+	0.5,
+	0.5,
+	0.5,
+	0.5,
+	0.5,
+	0.5,
+	0.5,
+	0.5,
+	0.5,
+	0.5,
+	0.5,
+	0.5,
+	0.5};
+
+
+
+
+  /*  double expDx[16] =   {22.8659168020674,
+			24.4932387071222,
+			25.4884605201683,
+			26.4478963605459,
+			27.8768790582849,
+			30.0521503123866,
+			31.6308395766488,
+			32.4198704973062,
+
+			34.0083546157897,
+			35.4165962236503,
+			36.4835938795446,
+			37.5238982330089,
+			38.5397371697557,
+			39.5330583015003,
+			40.5055760670275,
+			41.3};
+
+  double expDy[16] =   {9.52350198819289,
+			5.64694896708287,
+			3.57621524475264,
+			2.22306813461932,
+			1.84242236351724,
+			0.839564977947224,
+			0.533641048642503,
+			0.811298146594814,
+			0.452491201918824,
+			0.628258484221101,
+			0.700018256426215,
+			0.598634895567586,
+			0.510176367468261,
+			0.457345826343762,
+			0.341874900915227,
+			0.41491476578731};
+
+  double expPx[9] =    {30.6251132222237,
+			32.9493281027741,
+			34.6378972639558,
+			37.6049166106808,
+			39.1281033807373,
+			41.0541710577087,
+			43.6797461320023,
+			43.5133105051628,
+			45.6589118858263};
+
+  double expPy[9] =    {15.4053624168101,
+			10.0326697910848,
+			11.2010890871452,
+			6.28484827873840,
+			5.93048525466625,
+			5.18590383783819,
+			4.93601112583176,
+			3.77917031974004,
+			6.32306635135636};
+  */
+  // --------------------------------------------
+
+  //cout << vx.front() << " to " << vx.back() << "   count " << count << endl;
+
+  TCanvas *canvThick = new TCanvas("canvThick","canvThick",1000,1000);
+  canvThick->SetLogy();
+
+  int HSS = 10, Perey = 4, BGreen = 1;
+
+
+  TGraph* gp1 = new TGraph(vx.size(), &vx[0], &vpBG[0]);
+    gp1->GetXaxis()->SetLimits(10.,80.);
+    gp1->SetLineColor(kRed);
+    gp1->SetLineStyle(BGreen);
+    gp1->SetLineWidth(2);
+    gp1->SetTitle("(p,p) Bechetti-Greenlees");
+
+  TGraph* gp2 = new TGraph(vx.size(), &vx[0], &vpCH[0]);
+    gp2->GetXaxis()->SetLimits(10.,80.);
+    gp2->SetLineColor(kRed);
+    gp2->SetLineStyle(Perey);
+    gp2->SetLineWidth(2);
+    gp2->SetTitle("(p,p) Chapel-Hill");
+
+  TGraph* gp3 = new TGraph(vx.size(), &vx[0], &vpPer[0]);
+    gp3->GetXaxis()->SetLimits(10.,80.);
+    gp3->SetLineColor(kRed);
+    gp3->SetLineStyle(HSS);
+    gp3->SetLineWidth(2);
+    gp3->SetTitle("(p,p) Perey");
+
+  TGraph* gd1 = new TGraph(vx.size(), &vx[0], &vdHSS[0]);
+    gd1->GetXaxis()->SetLimits(10.,80.);
+    gd1->SetLineColor(kBlue);
+    gd1->SetLineStyle(HSS);
+    gd1->SetLineWidth(2);
+    gd1->SetTitle("(d,d) HSS");
+
+  TGraph* gd2 = new TGraph(vx.size(), &vx[0], &vdKD[0]);
+    gd2->GetXaxis()->SetLimits(10.,80.);
+    gd2->SetLineColor(kBlue);
+    gd2->SetLineStyle(1);
+    gd2->SetLineWidth(2);
+    gd2->SetTitle("(d,d) Koning-Delaroche");
+
+  TGraph* gd3 = new TGraph(vx.size(), &vx[0], &vd79D[0]);
+    gd3->GetXaxis()->SetLimits(10.,80.);
+    gd3->SetLineColor(kBlue);
+    gd3->SetLineStyle(6);
+    gd3->SetLineWidth(2);
+    gd3->SetTitle("(d,d) 79DCV");
+
+  TGraph* gd4 = new TGraph(vx.size(), &vx[0], &vdPer[0]);
+    gd4->GetXaxis()->SetLimits(10.,80.);
+    gd4->SetLineColor(kBlue);
+    gd4->SetLineStyle(Perey);
+    gd4->SetLineWidth(2);
+    gd4->SetTitle("(d,d) Perey");
+
+  TGraph* gd5 = new TGraph(vx.size(), &vx[0], &vdLH[0]);
+    gd5->GetXaxis()->SetLimits(10.,80.);
+    gd5->SetLineColor(kBlue);
+    gd5->SetLineStyle(2);
+    gd5->SetLineWidth(2);
+    gd5->SetTitle("(d,d) Lohr-Haeberli");
+
+  TGraph* gd6 = new TGraph(vx.size(), &vx[0], &vdBel[0]);
+    gd6->GetXaxis()->SetLimits(10.,80.);
+    gd6->SetLineColor(kBlue);
+    gd6->SetLineStyle(9);
+    gd6->SetLineWidth(2);
+    gd6->SetTitle("(d,d) Belote 48Ca");
+
+  TGraphErrors* expP = new TGraphErrors( 15, expPx, expPy, expPyErr2, expPyErr);
+  expP->SetTitle("(p,p) Experiment");
+    //expP->SetMarkerStyle(22);
+  TGraphErrors* expD = new TGraphErrors(20, expDx, expDy, expDyErr2, expDyErr);
+  expD->SetTitle("(d,d) Experiment");
+    //expD->SetMarkerStyle(20);
+
+  TMultiGraph* mg = new TMultiGraph();
+  mg->Add(gp1);
+  mg->Add(gp2);
+  mg->Add(gp3);
+  mg->Add(gd1);
+  mg->Add(gd2);
+  mg->Add(gd3);
+  mg->Add(gd4);
+  mg->Add(gd5);
+  mg->Add(gd6);
+  //mg->GetXaxis()->SetTitle("{#theta}_{CM}");
+  //mg->GetYaxis()->SetTitle("Elastic counts [mb/sr]");
+  mg->Draw("AC");
+  mg->GetXaxis()->SetTitle("#theta_{CM} [deg]");
+  mg->GetYaxis()->SetTitle("Ratio #sigma/#sigma_{Rutherford}");
+  expP->Draw("same*");
+  expD->Draw("same*");
+
+  canvThick->BuildLegend();
+
+}
+
+void temptemp(){
+
+chain->Draw("T_MUGAST_VAMOS>>hist(500,0,10000)","","");
+
+}
 
 void tempRunMe(double gamma, double width){
 
@@ -32,7 +394,6 @@ void tempRunMe(double gamma, double width){
 
 }
 
-//void ExThetaAnalysis(int version){
 void ExThetaAnalysis(double gamma, double width, int version){
 //  int version;
 //  bool running = 1;
@@ -96,9 +457,6 @@ void ExThetaAnalysis(double gamma, double width, int version){
 
 }
 
-
-
-
 void ForPoster_DiffCrossSec(){
   ifstream infile("DiffCrossSecInputfile.txt");
   vector<double> theta, p32, p32Pos, p32Neg, f72, f72Pos, f72Neg, zero;
@@ -153,54 +511,8 @@ void ForPoster_DiffCrossSec(){
 
 }
 
+/* MAIN FUNCTION */
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-///////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
 void DrawPlots(){
   gStyle->SetOptStat("nei");
   LoadChainNP();
@@ -235,198 +547,11 @@ cout << " 2D Matrices " << endl;
   cout << "\t- MM5_ELabThetaLab() "<< endl;
   cout << "\t- MM5_ExThetaLab() "<< endl;
   cout << ""<< endl;
-  cout << " ExPhiLab_ForPoster()!!!!!!!!!!!!!!!!!"<< endl;
+  cout << " Analysis functions" << endl;
+  cout << "\t- FitKnownPeaks(histogram) "<< endl;
+  cout << "\t\t-- Fits Ex peaks to an excitation spectrum "<< endl;
+  cout << ""<< endl;
   cout << "==========================================" << endl;
-
-
-
-
-  /************** OLD STUFF! Make these into functions, eventually ***************/
-
-  /*
-  TCanvas *cF = new TCanvas("cF","cF",1000,1000);
-  gPad->SetLogz();
-  chain->Draw("ELab:ThetaLab>>hcF(130,50,180,600,0,12)","abs(T_MUGAST_VAMOS-2777)<600","col");
-  TH2F* hcF = (TH2F*) gDirectory->Get("hcF");
-  hcF->GetXaxis()->SetTitle("#theta_{lab} [deg]");
-  hcF->GetYaxis()->SetTitle("E_{lab} [MeV]");
-  plot_kine(Kdp, 0, kBlack, 2, 9);
-  plot_kine(Kdp, 2, kRed, 2, 9);
-  plot_kine(Kdp, 4, kBlue, 2, 9);
-  plot_kine(Kdd, 0, kGreen+2, 2, 9);
-  plot_kine(Kpp, 0, kYellow, 2, 9);
-  */
-
-
-  /* MUGAST testing phi dependance */
-  //TCanvas *diagnose = new TCanvas("diagnose","diagnose",1000,1000);
-//  chain->Draw("PhiLab","abs(T_MUGAST_VAMOS-2777)<600 && (Mugast.TelescopeNumber==1 ||  Mugast.TelescopeNumber==2 || Mugast.TelescopeNumber==3 || Mugast.TelescopeNumber==4 || Mugast.TelescopeNumber==5 || Mugast.TelescopeNumber==7)","");
-//  chain->Draw("PhiLab>>h1","abs(T_MUGAST_VAMOS-2777)<600 && Mugast.TelescopeNumber==1","");
-//  chain->Draw("PhiLab>>h2","abs(T_MUGAST_VAMOS-2777)<600 && Mugast.TelescopeNumber==2","same");
-//  chain->Draw("PhiLab>>h3","abs(T_MUGAST_VAMOS-2777)<600 && Mugast.TelescopeNumber==3","same");
-//  chain->Draw("PhiLab>>h4","abs(T_MUGAST_VAMOS-2777)<600 && Mugast.TelescopeNumber==4","same");
-//  chain->Draw("PhiLab>>h5","abs(T_MUGAST_VAMOS-2777)<600 && Mugast.TelescopeNumber==5","same");
-//  chain->Draw("PhiLab>>h7","abs(T_MUGAST_VAMOS-2777)<600 && Mugast.TelescopeNumber==7","same");
-//  TH2F* histDiag = (TH2F*) gDirectory->Get("histDiag");
-  
-
-//  TH1F* h1 = (TH1F*) gDirectory->Get("h1");
-//  h1->SetTitle("Phi of MUGAST telescopes");
-//  h1->GetXaxis()->SetTitle("PhiLab [deg]");
-//  h1->GetYaxis()->SetTitle("Counts");
-//  h1->SetLineColor(kRed);
-  //h1->SetFillStyle(3001);
-  //h1->SetFillColor(kRed);
-//  TH1F* h2 = (TH1F*) gDirectory->Get("h2");
-//  h2->SetLineColor(kOrange);
-  //h2->SetFillStyle(3001);
-  //h2->SetFillColor(kOrange);
-//  TH1F* h3 = (TH1F*) gDirectory->Get("h3");
-//  h3->SetLineColor(kGreen);
-  //h3->SetFillStyle(3001);
-  //h3->SetFillColor(kGreen);
-//  TH1F* h4 = (TH1F*) gDirectory->Get("h4");
-//  h4->SetLineColor(kTeal);
-  //h4->SetFillStyle(3001);
-  //h4->SetFillColor(kTeal);
-//  TH1F* h5 = (TH1F*) gDirectory->Get("h5");
-//  h5->SetLineColor(kBlue);
-  //h5->SetFillStyle(3001);
-  //h5->SetFillColor(kBlue);
-//  TH1F* h7 = (TH1F*) gDirectory->Get("h7");
-//  h7->SetLineColor(kViolet);
-  //h7->SetFillStyle(3001);
-  //h7->SetFillColor(kViolet);
-//  h7->GetYaxis()->SetRangeUser(0.,4000.);
-//  h7->GetXaxis()->SetRangeUser(-180.,180.);
-
-  //auto legend = new TLegend(0.1,0.7,0.48,0.9);
-  //legend->AddEntry(h1,"MUGAST 1","f");
-  //legend->AddEntry(h2,"MUGAST 2","f");
-  //legend->AddEntry(h3,"MUGAST 3","f");
-  //legend->AddEntry(h4,"MUGAST 4","f");
-  //legend->AddEntry(h5,"MUGAST 5","f");
-  //legend->AddEntry(h7,"MUGAST 7","f");
-  //legend->Draw();
-
-  /* MUGAST good Phi-Ex histogram*/
-  /* MUGAST testing theta dependance by detector */
-//  TCanvas *diagnose = new TCanvas("diagnose","diagnose",1000,1000);
-//  chain->Draw("Ex:ThetaLab>>histDiag(36,0,180,200,-3,7)","abs(T_MUGAST_VAMOS-2777)<600","colz");
-//  chain->Draw("Ex:ThetaLab>>histDiag(36,0,180,200,-3,7)","abs(T_MUGAST_VAMOS-2777)<600 && Mugast.TelescopeNumber==1","colz");
-//  chain->Draw("Ex:ThetaLab>>histDiag(36,0,180,200,-3,7)","abs(T_MUGAST_VAMOS-2777)<600 && Mugast.TelescopeNumber==2","colz");
-//  chain->Draw("Ex:ThetaLab>>histDiag(36,0,180,200,-3,7)","abs(T_MUGAST_VAMOS-2777)<600 && Mugast.TelescopeNumber==3","colz");
-//  chain->Draw("Ex:ThetaLab>>histDiag(36,0,180,200,-3,7)","abs(T_MUGAST_VAMOS-2777)<600 && Mugast.TelescopeNumber==4","colz");
-//  chain->Draw("Ex:ThetaLab>>histDiag(36,0,180,200,-3,7)","abs(T_MUGAST_VAMOS-2777)<600 && Mugast.TelescopeNumber==5","colz");
-//  chain->Draw("Ex:ThetaLab>>histDiag(36,0,180,200,-3,7)","abs(T_MUGAST_VAMOS-2777)<600 && Mugast.TelescopeNumber==7","colz");
-//  TH2F* histDiag = (TH2F*) gDirectory->Get("histDiag");
-
-  /*
-  TCanvas *cG = new TCanvas("cG","cG",1000,1000);
-  chain->Draw("Ex>>hcG(200,-3,7)","");
-  chain->Draw("Ex>>hcG_T1(200,-3,7)","abs(T_MUGAST_VAMOS-2777)<600 && Mugast.TelescopeNumber==1","");
-  chain->Draw("Ex>>hcG_T2(200,-3,7)","abs(T_MUGAST_VAMOS-2777)<600 && Mugast.TelescopeNumber==2","same");
-  chain->Draw("Ex>>hcG_T3(200,-3,7)","abs(T_MUGAST_VAMOS-2777)<600 && Mugast.TelescopeNumber==3","same");
-  chain->Draw("Ex>>hcG_T4(200,-3,7)","abs(T_MUGAST_VAMOS-2777)<600 && Mugast.TelescopeNumber==4","same");
-  chain->Draw("Ex>>hcG_T5(200,-3,7)","abs(T_MUGAST_VAMOS-2777)<600 && Mugast.TelescopeNumber==5","same");
-  chain->Draw("Ex>>hcG_T7(200,-3,7)","abs(T_MUGAST_VAMOS-2777)<600 && Mugast.TelescopeNumber==7","same");
-  TH1F* hcG = (TH1F*) gDirectory->Get("hcG");
-  hcG->GetXaxis()->SetTitle("E_{x} [MeV]");
-  hcG->GetYaxis()->SetTitle("Counts / (50 keV)");
-  hcG->SetLineColor(kBlack);
-  TH1F* hcG_T1 = (TH1F*) gDirectory->Get("hcG_T1");
-  hcG_T1->SetLineColor(kRed);
-  hcG_T1->SetFillStyle(3001);
-  hcG_T1->SetFillColor(kRed);
-  TH1F* hcG_T2 = (TH1F*) gDirectory->Get("hcG_T2");
-  hcG_T2->SetLineColor(kOrange);
-  hcG_T2->SetFillStyle(3001);
-  hcG_T2->SetFillColor(kOrange);
-  TH1F* hcG_T3 = (TH1F*) gDirectory->Get("hcG_T3");
-  hcG_T3->SetLineColor(kGreen);
-  hcG_T3->SetFillStyle(3001);
-  hcG_T3->SetFillColor(kGreen);
-  TH1F* hcG_T4 = (TH1F*) gDirectory->Get("hcG_T4");
-  hcG_T4->SetLineColor(kTeal);
-  hcG_T4->SetFillStyle(3001);
-  hcG_T4->SetFillColor(kTeal);
-  TH1F* hcG_T5 = (TH1F*) gDirectory->Get("hcG_T5");
-  hcG_T5->SetTitle("Misalignment of MUGAST telescopes");
-  hcG_T5->GetXaxis()->SetTitle("E_{x} [MeV]");
-  hcG_T5->GetYaxis()->SetTitle("Counts / (50 keV)");
-  hcG_T5->SetLineColor(kBlue);
-  hcG_T5->SetFillStyle(3001);
-  hcG_T5->SetFillColor(kBlue);
-  TH1F* hcG_T7 = (TH1F*) gDirectory->Get("hcG_T7");
-  hcG_T7->SetLineColor(kViolet);
-  hcG_T7->SetFillStyle(3001);
-  hcG_T7->SetFillColor(kViolet);
-  hcG_T5->GetYaxis()->SetRangeUser(0.,500.);
-  hcG_T5->GetXaxis()->SetRangeUser(-3.,7.);
- */
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-/*
-  // MUGAST Displacement Ex histogram //
-  TCanvas *cMisaligned = new TCanvas("cMisaligned","cMisaligned",1000,1000);
-//  chain->Draw("Ex>>hcG(200,-3,7)","");
-  chain->Draw("Ex>>hcG_T1(200,-3,7)","abs(T_MUGAST_VAMOS-2777)<600 && Mugast.TelescopeNumber==1","");
-  chain->Draw("Ex>>hcG_T2(200,-3,7)","abs(T_MUGAST_VAMOS-2777)<600 && Mugast.TelescopeNumber==2","same");
-  chain->Draw("Ex>>hcG_T3(200,-3,7)","abs(T_MUGAST_VAMOS-2777)<600 && Mugast.TelescopeNumber==3","same");
-  chain->Draw("Ex>>hcG_T4(200,-3,7)","abs(T_MUGAST_VAMOS-2777)<600 && Mugast.TelescopeNumber==4","same");
-  chain->Draw("Ex>>hcG_T5(200,-3,7)","abs(T_MUGAST_VAMOS-2777)<600 && Mugast.TelescopeNumber==5","same");
-  chain->Draw("Ex>>hcG_T7(200,-3,7)","abs(T_MUGAST_VAMOS-2777)<600 && Mugast.TelescopeNumber==7","same");
-//  TH1F* hcG = (TH1F*) gDirectory->Get("hcG");
-//  hcG->GetXaxis()->SetTitle("E_{x} [MeV]");
-//  hcG->GetYaxis()->SetTitle("Counts / (50 keV)");
-//  hcG->SetLineColor(kBlack);
-  TH1F* hcG_T1 = (TH1F*) gDirectory->Get("hcG_T1");
-  hcG_T1->SetTitle("Misalignment of MUGAST telescopes");
-  hcG_T1->GetXaxis()->SetTitle("E_{x} [MeV]");
-  hcG_T1->GetYaxis()->SetTitle("Counts / (50 keV)");
-  hcG_T1->SetLineColor(kRed);
-  hcG_T1->SetFillStyle(3244);
-  hcG_T1->SetFillColor(kRed);
-  hcG_T1->GetYaxis()->SetRangeUser(0.,200.);
-  TH1F* hcG_T2 = (TH1F*) gDirectory->Get("hcG_T2");
-  hcG_T2->SetLineColor(kOrange);
-  hcG_T2->SetFillStyle(3344);
-  hcG_T2->SetFillColor(kOrange);
-  TH1F* hcG_T3 = (TH1F*) gDirectory->Get("hcG_T3");
-  hcG_T3->SetLineColor(kGreen);
-  hcG_T3->SetFillStyle(3444);
-  hcG_T3->SetFillColor(kGreen);
-  TH1F* hcG_T4 = (TH1F*) gDirectory->Get("hcG_T4");
-  hcG_T4->SetLineColor(kTeal);
-  hcG_T4->SetFillStyle(3544);
-  hcG_T4->SetFillColor(kTeal);
-  TH1F* hcG_T5 = (TH1F*) gDirectory->Get("hcG_T5");
-  hcG_T5->SetLineColor(kBlue);
-  hcG_T5->SetFillStyle(3644);
-  hcG_T5->SetFillColor(kBlue);
-  TH1F* hcG_T7 = (TH1F*) gDirectory->Get("hcG_T7");
-  hcG_T7->SetLineColor(kViolet);
-  hcG_T7->SetFillStyle(3644);
-  hcG_T7->SetFillColor(kViolet);
-//  hcG_T7->GetYaxis()->SetRangeUser(0.,750.);
-
-  TLine *line = new TLine(0,0,0,200);
-  line->SetLineColor(kBlack);
-  line->Draw();
-
-  auto legend = new TLegend(0.1,0.7,0.48,0.9);
-  legend->AddEntry(hcG_T1,"MUGAST 1","f");
-  legend->AddEntry(hcG_T2,"MUGAST 2","f");
-  legend->AddEntry(hcG_T3,"MUGAST 3","f");
-  legend->AddEntry(hcG_T4,"MUGAST 4","f");
-  legend->AddEntry(hcG_T5,"MUGAST 5","f");
-  legend->AddEntry(hcG_T7,"MUGAST 7","f");
-  legend->Draw();
-*/
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 
 
 /* ORIGINAL - DO NOT EDIT
@@ -501,7 +626,9 @@ cout << " 2D Matrices " << endl;
   c0->cd(3);
   chain->Draw("AddBack_EDC:Ex>>hEgEx(300,-1,7,5000,0,5)","abs(T_MUGAST_VAMOS-2777)<600","col");
 */
-/*  chain->Draw("AddBack_EDC:Ex>>hEgEx(150,0,6,1000,0,5)","abs(T_MUGAST_VAMOS-2777)<600 && Mugast.TelescopeNumber==5","col");
+
+/*
+  chain->Draw("AddBack_EDC:Ex>>hEgEx(150,0,6,1000,0,5)","abs(T_MUGAST_VAMOS-2777)<600 && Mugast.TelescopeNumber==5","col");
   TH2F* hEgEx = (TH2F*) gDirectory->Get("hEgEx");
   hEgEx->SetTitle("MUGAST#5 only");
   hEgEx->GetXaxis()->SetTitle("E_{x} [MeV]");
@@ -511,8 +638,6 @@ cout << " 2D Matrices " << endl;
   line->SetLineColor(kRed);
   line->Draw();
 */
-
-  //  plot_state(0.143, ymax, kYellow, 2, 9);
   
 /*
   c0->cd(4);
@@ -528,7 +653,6 @@ cout << " 2D Matrices " << endl;
   //plot_state(1.863, ymax, kOrange, 2, 9);
 */
 
-
 /*
   TCanvas *gammaspec = new TCanvas("gammaSpec", "gammaSpec", 1000, 1000);
   chain->Draw("AddBack_EDC>>hEg(4000,0,4)","abs(T_MUGAST_VAMOS-2777)<600");
@@ -542,10 +666,6 @@ cout << " 2D Matrices " << endl;
   //plot_state(0.279, ymax, kCyan, 2, 9);
   //plot_state(1.863, ymax, kOrange, 2, 9);
 */
-
-
-
-
 
 /*  
   TCanvas *c1 = new TCanvas("c1", "Egamma, gated on Ex", 1000, 1000);
@@ -580,9 +700,8 @@ cout << " 2D Matrices " << endl;
   
 */
 
-
-  // K states
-  /*auto gr = K.GetKinematicLine3();
+/*
+  auto gr = K.GetKinematicLine3();
   gr->SetLineColor(kAzure+7);
   gr->SetLineWidth(3);
   gr->Draw("ac");
@@ -605,5 +724,6 @@ cout << " 2D Matrices " << endl;
   AddTiStates(4.719); 
   AddTiStates(4.852); 
   AddTiStates(5.151); 
-  */   
+*/   
+
 }
