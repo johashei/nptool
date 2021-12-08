@@ -162,6 +162,8 @@ void Analyse207Bi(const char* name = "bb7_3309-7_bi207_20210126_13h09_run5_conv_
                                   : Form("h_D%d_BACK_E%d",DETECTOR_ID,n+1);
          auto h = (TH1F*) f->Get(hname.c_str());
          h->Sumw2();
+         //h->GetXaxis()->SetLimits(10,1024);
+         h->SetAxisRange(1,1024,"X");
          // draw histogram
          can->cd(1);
          auto pad = (TPad*) can->FindObject("can_1");                                  

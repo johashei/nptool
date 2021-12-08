@@ -48,27 +48,33 @@ private:
     
     // Beam beam parameter
     string fRC_Beam_Particle_Name;
-    double fRC_Beam_Emittance_ThetaX;
-    double fRC_Beam_Emittance_PhiY;
-    double fRC_Beam_Emittance_Theta;
-    double fRC_Beam_Emittance_Phi;
-    double fRC_Beam_Reaction_Energy;
-
+    double fRC_Beam_Emittance_ThetaX;   //beam angle between Pxz and Z axis 
+    double fRC_Beam_Emittance_PhiY;     //beam angle between Pyz and Z axis
+    double fRC_Beam_Emittance_Theta;    //spher. theta (betw. beam dir. and Z axis)
+    double fRC_Beam_Emittance_Phi;      //spher. phi (betw. Pyz and X axis)
+    double fRC_Beam_Reaction_Energy;    //beam kinetic energy at vertex
+    
+    //Reaction vertex coordinates
     double fRC_Vertex_Position_X;
     double fRC_Vertex_Position_Y;
     double fRC_Vertex_Position_Z;
+    //Center of mass angle for the reaction
+    double fRC_ThetaCM;
+
+    //Two-Body reaction: Exc. energy of the two products
     double fRC_ExcitationEnergy3;
     double fRC_ExcitationEnergy4;
-    double fRC_ThetaCM;
+    //QFS reacion only: Internal mom. of the removed particle
     TVector3 fRC_Internal_Momentum;
-    // emmitted particles
+
+    // Emitted reaction products properties
     vector<string> fRC_Particle_Name;
-    vector<double> fRC_Theta;
-    vector<double> fRC_Phi;
+    vector<double> fRC_Theta;                 //in the frame with beam on Z axis
+    vector<double> fRC_Phi;                   //in the frame with beam on Z axis
     vector<double> fRC_Kinetic_Energy;
-    vector<double> fRC_Momentum_Direction_X;
-    vector<double> fRC_Momentum_Direction_Y;
-    vector<double> fRC_Momentum_Direction_Z;
+    vector<double> fRC_Momentum_Direction_X;  //in the world frame
+    vector<double> fRC_Momentum_Direction_Y;  //in the world frame
+    vector<double> fRC_Momentum_Direction_Z;  //in the world frame
     
 public:
     TReactionConditions();
@@ -139,31 +145,29 @@ public:
     double GetMomentumDirectionX  (const int &i) const {return fRC_Momentum_Direction_X[i];}//!
     double GetMomentumDirectionY  (const int &i) const {return fRC_Momentum_Direction_Y[i];}//!
     double GetMomentumDirectionZ  (const int &i) const {return fRC_Momentum_Direction_Z[i];}//!
-    TVector3 GetParticleMomentum  (const int &i) const {
-      return TVector3(fRC_Momentum_Direction_X[i],fRC_Momentum_Direction_Y[i],fRC_Momentum_Direction_Z[i]).Unit();}//!
-
     TVector3 GetBeamDirection         () const ;
     TVector3 GetParticleDirection     (const int i) const ; 
 
-
-    double GetThetaLab_WorldFrame(const int i) const{
+    double GetTheta_WorldFrame(const int i) const{
       return (GetParticleDirection(i).Theta())/deg;
     }
-    double GetThetaLab_BeamFrame (const int i) const{
-      return (GetParticleDirection(i).Angle(GetBeamDirection()))/deg;
-    } 
- 
-    double GetPhiLab_WorldFrame (const int i) const {
+    double GetPhi_WorldFrame (const int i) const {
       return (M_PI + GetParticleDirection(i).Phi())/deg;
       // to have Phi in [0,2pi]] and not [-pi,pi]]
     }
-   double GetPhiLab_BeamFrame (const int i) const{  
+
+    //Two following methods should return angles identical as GetTheta() and GetPhi()
+    //spherical angles when beam axis along Z
+    // Only used for consistency checks
+    double GetTheta_BeamFrame (const int i) const{
+      return (GetParticleDirection(i).Angle(GetBeamDirection()))/deg;
+    } 
+   double GetPhi_BeamFrame (const int i) const{  
       TVector3 rot = GetParticleDirection(i);
       rot.RotateUz(GetBeamDirection());
       return (M_PI + rot.Phi())/deg;
     } 
  
-    
     unsigned int GetEmittedMult() const {return fRC_Particle_Name.size();} 
     
     ClassDef(TReactionConditions, 1) // TReactionConditions structure

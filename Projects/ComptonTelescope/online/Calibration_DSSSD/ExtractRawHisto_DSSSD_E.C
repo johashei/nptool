@@ -91,14 +91,19 @@ void ExtractRawHisto_DSSSD_E(const char* filename = "20200128_10h44_bi207_conv")
            switch (i) {
              case 0: //Assuming 0 is front - to be checked
                for (int k = 0; k < NBSTRIPS; k++) { // strips         
-                 hFrontEnergy[j][k]->Fill(event->sample[i][j][k]);
-                 hFront[j]->Fill(k, event->sample[i][j][k]);                 
+                 //if (event->sample[i][j][k] != 0) {
+                   hFrontEnergy[j][k]->Fill(event->sample[i][j][k]);
+                   hFront[j]->Fill(k, event->sample[i][j][k]);                 
+                   //cout << "E = " << event->sample[i][j][k] << endl;
+                 //}
                }
                break;
              case 1://Assuming 1 is back - to be checked
-               for (int k = 0; k < NBSTRIPS; k++) { // strips   
-                 hBackEnergy[j][k]->Fill(event->sample[i][j][k]);
-                 hBack[j]->Fill(k, event->sample[i][j][k]);
+               for (int k = 0; k < NBSTRIPS; k++) { // strips  
+                 //if (event->sample[i][j][k] != 0) {
+                   hBackEnergy[j][k]->Fill(event->sample[i][j][k]);
+                   hBack[j]->Fill(k, event->sample[i][j][k]);
+                 //}
                }
            }
          }

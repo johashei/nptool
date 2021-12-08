@@ -49,11 +49,11 @@
 #include "RootOutput.h"
 #include "TLorentzVector.h"
 
-bool single_particle = false;
-ofstream outEO    ("EliaOmar.txt"     );
-ofstream outRK    ("RungeKutta.txt"   );
-ofstream outEOsp  ("EliaOmarSP.txt"   , ios::app  );
-ofstream outRKsp  ("RungeKuttaSP.txt" , ios::app  );
+//bool single_particle = false;
+//ofstream outEO    ("EliaOmar.txt"     );
+//ofstream outRK    ("RungeKutta.txt"   );
+//ofstream outEOsp  ("EliaOmarSP.txt"   , ios::app  );
+//ofstream outRKsp  ("RungeKuttaSP.txt" , ios::app  );
 ////////////////////////////////////////////////////////////////////////////////
 NPS::SamuraiFieldPropagation::SamuraiFieldPropagation(G4String modelName, G4Region* envelope)
   : G4VFastSimulationModel(modelName, envelope) {
@@ -251,8 +251,8 @@ void NPS::SamuraiFieldPropagation::EliaOmarPropagation (const G4FastTrack& fastT
       newMomentum = localMomentum;
 
       //benchmark
-      if(single_particle) PrintData(m_StepSize, newPosition, newMomentum, outEOsp);
-      else PrintData(m_StepSize, newPosition, newMomentum, outEO);
+      //if(single_particle) PrintData(m_StepSize, newPosition, newMomentum, outEOsp);
+      //else PrintData(m_StepSize, newPosition, newMomentum, outEO);
   }
   
   double time  = PrimaryTrack->GetGlobalTime()+(newPosition - localPosition).mag()/speed;
@@ -287,7 +287,7 @@ void NPS::SamuraiFieldPropagation::RungeKuttaPropagation (const G4FastTrack& fas
   double charge = PrimaryTrack->GetParticleDefinition()->GetPDGCharge() / coulomb;
   double ConF_p = 1 / (joule * c_light / (m/s)) ; // MeV/c to kg*m/s (SI units)
 
-  //Initially inside is false
+  //Initially inside is false -> calculate trajectory
   if (!inside){
     count = 2;//skip first two positions as they are the same as the current position
     double Brho = localMomentum.mag() * ConF_p / charge;
@@ -304,8 +304,8 @@ void NPS::SamuraiFieldPropagation::RungeKuttaPropagation (const G4FastTrack& fas
 
   G4ThreeVector newPosition (trajectory[count].x(), trajectory[count].y(), trajectory[count].z());
   //benchmark
-  G4ThreeVector newDir = (newPosition - localPosition).unit();
-  G4ThreeVector newMomentum = newDir * localMomentum.mag(); 
+  //G4ThreeVector newDir = (newPosition - localPosition).unit();
+  //G4ThreeVector newMomentum = newDir * localMomentum.mag(); 
 
   //Check if newPosition is not inside
   if (solid->Inside(newPosition) != kInside){
@@ -313,18 +313,18 @@ void NPS::SamuraiFieldPropagation::RungeKuttaPropagation (const G4FastTrack& fas
     G4ThreeVector toOut = solid->DistanceToOut(localPosition, localDir) * localDir;
     newPosition = localPosition + toOut;
     //benchmark
-    newDir = (newPosition - localPosition).unit();
-    newMomentum = newDir * localMomentum.mag();
+    //newDir = (newPosition - localPosition).unit();
+    //newMomentum = newDir * localMomentum.mag();
 
     //benchmark
-    if(single_particle) PrintData(m_StepSize, newPosition, newMomentum, outRKsp);
-    else PrintData(m_StepSize, newPosition, newMomentum, outRK);
+    //if(single_particle) PrintData(m_StepSize, newPosition, newMomentum, outRKsp);
+    //else PrintData(m_StepSize, newPosition, newMomentum, outRK);
     //counter++;
   }
 
   //benchmark
-  //G4ThreeVector newDir = (newPosition - localPosition).unit();
-  //G4ThreeVector newMomentum = newDir * localMomentum.mag(); 
+  G4ThreeVector newDir = (newPosition - localPosition).unit();
+  G4ThreeVector newMomentum = newDir * localMomentum.mag(); 
 
 
   double time  = PrimaryTrack->GetGlobalTime()+(newPosition - localPosition).mag()/speed;

@@ -9,7 +9,7 @@ Target
  Z= -10000 mm
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 Samurai
- POS= 0 0 0 mm
+ POS= 0 0 10000 mm
  ANGLE= 30 deg
  %
  METHOD= 1				
@@ -19,9 +19,10 @@ Samurai
  % fieldmap path
  STEPS_PER_METER= 1000
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%SAMURAIFDC0
+SAMURAIFDC1
  %XML= db/SAMURAIFDC0_20200109.xml
  %Offset= -0.00666226 0.102191 -3370.01 mm
+ Offset= -0.00666226 0.102191 -4370.01 mm
  %InvertX= 1 
  %InvertY= 0
  %InvertD= 1
@@ -29,7 +30,7 @@ Samurai
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 SAMURAIFDC2
  %XML= db/SAMURAIFDC2.xml
- Offset= 1000 1000 5000 mm
+ Offset= 1000 200 5000 mm
  OffAngle= 59.930 deg
  %-252.416 -0.228477 4122.57 mm
  %InvertX= 0 

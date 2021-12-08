@@ -89,7 +89,7 @@ void TComptonTelescopePhysics::BuildSimplePhysicalEvent()
   //// DSSSD analysis ////
 
   // Check event type
-  Int_t evtType = CheckEvent();
+  //Int_t evtType = CheckEvent();
   //cout << "event type = " << evtType << endl;
  
   // check possible interstrip
@@ -192,7 +192,7 @@ void TComptonTelescopePhysics::BuildSimplePhysicalEvent()
     //cout << "couple " << i << " CT" << Tower << " D" << N << " SF" << Front << " SB" << Back << " EF " << Front_E << " EB " << Back_E << " TF " << Front_T << " TB " << Back_T << endl;
 
     // Fill TComptonTelescopePhysics members
-    EventType.push_back(evtType);
+    //EventType.push_back(evtType);
     TowerNumber.push_back(Tower);
     DetectorNumber.push_back(N);
     Strip_Front.push_back(Front);

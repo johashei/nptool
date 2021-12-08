@@ -47,16 +47,19 @@ SamuraiFieldMap::SamuraiFieldMap(){
 }
 ////////////////////////////////////////////////////////////////////////////////
 double SamuraiFieldMap::Delta(const double* parameter){
-    static vector<TVector3>pos ;
-    static TVector3 diff;
-    pos =Propagate(parameter[0],m_FitPosFDC0,m_FitDirFDC0,false); 
-    // Move the fdc2 pos from lab frame to fdc2 frame 
-    pos.back().RotateY(-m_fdc2angle+m_angle); 
+  static vector<TVector3>pos ;
+  static TVector3 diff;
+  static int i = 0;
+  //pos =Propagate(parameter[0],m_FitPosFDC0,m_FitDirFDC0,false); 
+  pos =Propagate(parameter[0],m_FitPosFDC0,m_FitDirFDC0,true); 
+  // Move the fdc2 pos from lab frame to fdc2 frame 
+  pos.back().RotateY(-m_fdc2angle+m_angle); 
 
-    //double d = (pos.back().X()-m_FitPosFDC2.X())*(pos.back().X()-m_FitPosFDC2.X());
-   // return d;
-    diff = pos.back()-m_FitPosFDC2;
-    return diff.Mag2();
+
+  //double d = (pos.back().X()-m_FitPosFDC2.X())*(pos.back().X()-m_FitPosFDC2.X());
+  // return d;
+  diff = pos.back()-m_FitPosFDC2;
+  return diff.Mag2();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -69,7 +72,9 @@ double SamuraiFieldMap::FindBrho(TVector3 p_fdc0,TVector3 d_fdc0,TVector3 p_fdc2
   if(!m_BrhoScan)
     BrhoScan(1,10,0.1);
   // do a first guess based on fdc2 pos
-  double b0[1] ={m_BrhoScan->Eval(p_fdc2.X())}; 
+  double b0[1] ={m_BrhoScan->Eval(p_fdc2.X())};
+  //cout << "First guess Brho " << b0[0] << " "; //endl;
+
   
   m_min->Clear(); 
   m_min->SetPrecision(1e-6);

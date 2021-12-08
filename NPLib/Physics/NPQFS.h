@@ -83,7 +83,11 @@ namespace NPL{
     TVector3 fInternalMomentum;        // Internal momentum of the removed cluster            
     TH1F*    fPerpMomentumHist;        // Perpendicular momentum distribution in beam at rest frame
     TH1F*    fParMomentumHist;         // Parallel momentum distribution in beam at rest frame
-    double   fisotropic;               
+    double   fIsotropic;               
+
+    bool fCondEcmPos;
+    bool fCondOffshellMassPos;
+    bool fIsAllowed;
 
     TGraph* fTheta2VsTheta1;
     TGraph* fPhi2VsPhi1;
@@ -103,7 +107,6 @@ namespace NPL{
     void TestR3B();
     void KineRelativistic(double &ThetaLab1, double &PhiLab1, double &KineticEnergyLab1, double &ThetaLab2, double &PhiLab2, double &KineticEnergyLab2);
     TVector3 ShootInternalMomentum();
-    bool IsAllowed();
     void Dump();
 
     private: // intern precompute variable
@@ -169,6 +172,7 @@ namespace NPL{
     void SetPhiCM(const double& angle) {fPhiCM = angle;}
     void SetInternalMomentum(const TVector3& mom) {fInternalMomentum = mom;}
     void SetMomentumSigma(const double& sigma) {fMomentumSigma = sigma;}
+    void SetIsAllowed(const bool& val) {fIsAllowed = val;}
     void SetPerpMomentumHist  (TH1F*  PerpMomentumHist)
         {delete fPerpMomentumHist; fPerpMomentumHist   = PerpMomentumHist;}
     void SetParMomentumHist  (TH1F*  ParMomentumHist)
@@ -187,7 +191,8 @@ namespace NPL{
     double   GetThetaCM()        const        {return fThetaCM;}
     double   GetPhiCM()          const        {return fPhiCM;}
     double   GetMomentumSigma()  const        {return fMomentumSigma;}
-    bool      GetUseExInGeant4() const { return fUseExInGeant4; }
+    bool     IsAllowed()         const        {return fIsAllowed;}
+    bool     GetUseExInGeant4() const { return fUseExInGeant4; }
     double   GetExcitationA() const           {return fExcitationA;}
     double   GetExcitationB() const           {return fExcitationB;}
     TVector3 GetInternalMomentum() const   {return fInternalMomentum;}

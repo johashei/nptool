@@ -97,12 +97,13 @@ void EventGeneratorBeam::GenerateEvent(G4Event* anEvent){
   double InitialBeamEnergy, x0, y0, z0, Beam_thetaX, Beam_phiY;
 
   m_Beam->GenerateRandomEvent(InitialBeamEnergy, x0, y0, z0, Beam_thetaX, Beam_phiY);
-  //Set the direction cosines: alpha=90-Beam_thetaX, beta=90-Beam_phiY
-  double Xdir = sin(Beam_thetaX); // cos(90-x) = sin(x)
-  double Ydir = sin(Beam_phiY); 
-  double Zdir = sqrt(1-Xdir*Xdir-Ydir*Ydir); // alpha^2 + beta^2 + gamma^2 = 1
+  double Xdir = tan(Beam_thetaX); //tan(thetax)= px/pz
+  double Ydir = tan(Beam_phiY); //tan(phiy)= py/pz
+  double Zdir = 1; // fix pz=1 arbitrarily
   G4ThreeVector BeamDir(Xdir,Ydir,Zdir);
+  BeamDir = BeamDir.unit();
   G4ThreeVector BeamPos(x0,y0,z0);
+
   ///////////////////////////////////////////////////////
   ///// Add the Beam particle to the particle Stack /////
   ///////////////////////////////////////////////////////

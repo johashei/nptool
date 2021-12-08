@@ -42,30 +42,30 @@ using namespace std;
 #include "TSamuraiIdealData.h"
 
 
-class SamuraiFDC2 : public NPS::VDetector{
+class SamuraiFDC1 : public NPS::VDetector{
   ////////////////////////////////////////////////////
   /////// Default Constructor and Destructor /////////
   ////////////////////////////////////////////////////
   public:
-    SamuraiFDC2() ;
-    virtual ~SamuraiFDC2() ;
+    SamuraiFDC1() ;
+    virtual ~SamuraiFDC1() ;
 
     ////////////////////////////////////////////////////
     /////// Specific Function of this Class ///////////
     ////////////////////////////////////////////////////
   public:
   
-    // Cartezian FDC2
-    void AddDetector(G4ThreeVector Mag_Pos, double Mag_Angle, G4ThreeVector Offset, double Off_Angle);
+    // Cartezian FDC1
+    void AddDetector(G4ThreeVector Mag_Pos, G4ThreeVector Offset);
 
-    G4LogicalVolume* BuildFDC2();
+    G4LogicalVolume* BuildFDC1();
   private:
   
     //Logical Volume
-    G4LogicalVolume* m_FDC2;
+    G4LogicalVolume* m_FDC1;
 
     // Visualisation Attributes
-    G4VisAttributes* m_VisFDC2;
+    G4VisAttributes* m_VisFDC1;
 
     
     ////////////////////////////////////////////////////
@@ -90,17 +90,17 @@ class SamuraiFDC2 : public NPS::VDetector{
 
   public:
     // Scorer
-    // Initialize the scorer(s) used by the FDC2 detector
+    // Initialize the scorer(s) used by the FDC1 detector
     void InitializeScorers() ;
 
 
     //   Associated Scorer
-    G4MultiFunctionalDetector* m_FDC2Scorer ;
+    G4MultiFunctionalDetector* m_FDC1Scorer ;
     ////////////////////////////////////////////////////
     ///////////Event class to store Data////////////////
     ////////////////////////////////////////////////////
   private:
-    //TSamuraiFDC2Data* m_Event;
+    //TSamuraiFDC1Data* m_Event;
     //////////////////////////////////////////////////////////////////
 
     TSamuraiIdealData* m_Event;
@@ -111,8 +111,6 @@ class SamuraiFDC2 : public NPS::VDetector{
   private:
     //Detector coordinates
     G4ThreeVector m_Pos;
-    // Angle of Rotation
-    double m_Angle;
   
 
   // Needed for dynamic loading of the library
