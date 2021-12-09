@@ -74,10 +74,11 @@ double MinosUtility::Calibrate(const std::vector<unsigned short>* T,const std::v
     return -10000;
   }
 
-  sample_signal();
   m_guess_t0_bin = m_qmaxbin-20;
   m_minbin = m_guess_t0_bin;
   m_maxbin = std::min(m_guess_t0_bin+40,m_signal_size);
+
+  sample_signal();
   m_signal_min->Clear();
   m_signal_min->SetLimitedVariable(0,"A",m_qmax*10,100,0,m_qmax*20);
   m_signal_min->SetLimitedVariable(1,"t0",(*m_fitSignalT)[m_guess_t0_bin],1,0,(*m_fitSignalT)[m_qmaxbin]);
