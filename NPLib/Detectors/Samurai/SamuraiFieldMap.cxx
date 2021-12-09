@@ -37,8 +37,7 @@ SamuraiFieldMap::SamuraiFieldMap(){
   m_min=ROOT::Math::Factory::CreateMinimizer("Minuit", "Migrad"); 
   m_func=ROOT::Math::Functor(this,&SamuraiFieldMap::Delta,1); 
   m_min->SetFunction(m_func);
-  m_min->SetPrintLevel(0);
-
+  m_min->SetPrintLevel(-1);
   //default values
   m_StepTime = 1.*nanosecond;//propagation time interval size
   m_Limit = 1000;//maximum number of steps before giving up
@@ -49,12 +48,10 @@ SamuraiFieldMap::SamuraiFieldMap(){
 double SamuraiFieldMap::Delta(const double* parameter){
   static vector<TVector3>pos ;
   static TVector3 diff;
-  static int i = 0;
   //pos =Propagate(parameter[0],m_FitPosFDC0,m_FitDirFDC0,false); 
   pos =Propagate(parameter[0],m_FitPosFDC0,m_FitDirFDC0,true); 
   // Move the fdc2 pos from lab frame to fdc2 frame 
   pos.back().RotateY(-m_fdc2angle+m_angle); 
-
 
   //double d = (pos.back().X()-m_FitPosFDC2.X())*(pos.back().X()-m_FitPosFDC2.X());
   // return d;
@@ -76,11 +73,11 @@ double SamuraiFieldMap::FindBrho(TVector3 p_fdc0,TVector3 d_fdc0,TVector3 p_fdc2
   //cout << "First guess Brho " << b0[0] << " "; //endl;
 
   
-  m_min->Clear(); 
+  m_min->Clear();
   m_min->SetPrecision(1e-6);
   m_min->SetMaxFunctionCalls(1000);
   m_min->SetLimitedVariable(0,"B",b0[0],0.1,1,10);
-  m_min->Minimize(); 
+  m_min->Minimize();
   return m_min->X()[0];
 }
 
