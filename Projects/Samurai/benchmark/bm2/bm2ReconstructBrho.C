@@ -20,10 +20,10 @@ void findbrho(string path_to_file, int time_int, SamuraiFieldMap* Map, double ma
 
 void bm2ReconstructBrho (){
 
-    //vector<string> paths ={"spm1000/1cm_E0/", "spm1000/1cm_E480/", "spm1000/5cm_E480/", 
+    vector<string> paths ={"spm1000/1cm_E0/", "spm1000/1cm_E480/", "spm1000/5cm_E480/", 
     //                     "spm10000/1cm_E0/", "spm10000/1cm_E480/", "spm10000/5cm_E480/"};
     //vector<string> paths ={"spm1000/1cm_E0/", "spm1000/1cm_E480/", "spm1000/5cm_E480/"};
-    vector<string> paths ={"spm10000/1cm_E0/", "spm10000/1cm_E480/", "spm10000/5cm_E480/"};
+    //vector<string> paths ={"spm10000/1cm_E0/", "spm10000/1cm_E480/", "spm10000/5cm_E480/"};
     for(auto p:paths) Brhos(p);
 
     //Brhos("spm1000/1cm_E0/");
@@ -35,7 +35,7 @@ void Brhos(string path_to_file){
     cout << "Read from " << path_to_file << endl;
 
     string filenameIn = path_to_file + "testanalysis.root";
-    string filenameOut = path_to_file + "brhos.root";
+    string filenameOut = path_to_file + "brhos_test.root";
     string fieldmap_file = "../../field_map/3T.table.bin";    
 
     TFile* fileIn = new TFile(filenameIn.c_str(), "read");
@@ -75,7 +75,7 @@ void Brhos(string path_to_file){
     TVector3 Mag_Pos (0,0,10000*mm);
     TVector3 Pos_FDC1, Dir_FDC1, Pos_FDC2, Dir_FDC2;
     for (int i=0; i<entries; i++){
-        cout << path_to_file << i << " ";
+        cout << i << " " << path_to_file  << " ";
         for (auto j=0; j<time.size(); j++) br_recs[j]=-1;
         input->GetEntry(i);
         if (FDC2->GetMult() == 1 && FDC1->GetMult() == 1){
@@ -100,7 +100,7 @@ void Brhos(string path_to_file){
     fileOut->Close();
 }
 
-
+/*
 void findbrho(string path_to_file, int time_int, SamuraiFieldMap* Map, double mag_angle, double fdc2_angle,
             const vector<double>& Brho, const vector<TVector3>& Pos_FDC1,
             const vector<TVector3>& Pos_FDC2, const vector<TVector3>& Dir_FDC1,
@@ -129,4 +129,4 @@ void findbrho(string path_to_file, int time_int, SamuraiFieldMap* Map, double ma
     }
     file2->Write();
     file2->Close();
-}
+}*/
