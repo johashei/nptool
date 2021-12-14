@@ -1,32 +1,15 @@
 
-double mean(vector<double>V){
-    double s = 0;
-    for (auto x:V) s += x;
-    return s / V.size();
-}
-double var(vector<double>V){
-    double s = 0, m=mean(V);
-    for (auto x:V) s += (x-m)*(x-m);
-    return s / (V.size()-1);
-}
-
-
 void Brhos(string path_to_file);
-void findbrho(string path_to_file, int time_int, SamuraiFieldMap* Map, double mag_angle, double fdc2_angle,
-            const vector<double>& Brho, const vector<TVector3>& Pos_FDC1,
-            const vector<TVector3>& Pos_FDC2, const vector<TVector3>& Dir_FDC1,
-            const vector<TVector3>& Dir_FDC2);
-
 
 void bm2ReconstructBrho (){
 
-    vector<string> paths ={"spm1000/1cm_E0/", "spm1000/1cm_E480/", "spm1000/5cm_E480/", 
+    //vector<string> paths ={"spm1000/1cm_E0/", "spm1000/1cm_E480/", "spm1000/5cm_E480/", 
     //                     "spm10000/1cm_E0/", "spm10000/1cm_E480/", "spm10000/5cm_E480/"};
     //vector<string> paths ={"spm1000/1cm_E0/", "spm1000/1cm_E480/", "spm1000/5cm_E480/"};
     //vector<string> paths ={"spm10000/1cm_E0/", "spm10000/1cm_E480/", "spm10000/5cm_E480/"};
-    for(auto p:paths) Brhos(p);
+    //for(auto p:paths) Brhos(p);
 
-    //Brhos("spm1000/1cm_E0/");
+    Brhos("spm1000/1cm_E0/");
 
 }
 
@@ -35,7 +18,7 @@ void Brhos(string path_to_file){
     cout << "Read from " << path_to_file << endl;
 
     string filenameIn = path_to_file + "testanalysis.root";
-    string filenameOut = path_to_file + "brhos_test.root";
+    string filenameOut = path_to_file + "brhos.root";
     string fieldmap_file = "../../field_map/3T.table.bin";    
 
     TFile* fileIn = new TFile(filenameIn.c_str(), "read");
@@ -87,7 +70,7 @@ void Brhos(string path_to_file){
             Dir_FDC2.Unit();
             Dir_FDC2.RotateY(mag_angle-fdc2_angle);
             Pos_FDC2.RotateY(mag_angle-fdc2_angle);
-            
+
             for (auto j=0; j<time.size(); j++){
                 Map->SetTimeIntervalSize(time[j]*picosecond);
                 br_recs[j] = Map->FindBrho(Pos_FDC1, Dir_FDC1, Pos_FDC2, Dir_FDC2);
@@ -99,34 +82,3 @@ void Brhos(string path_to_file){
     fileOut->Write();
     fileOut->Close();
 }
-
-/*
-void findbrho(string path_to_file, int time_int, SamuraiFieldMap* Map, double mag_angle, double fdc2_angle,
-            const vector<double>& Brho, const vector<TVector3>& Pos_FDC1,
-            const vector<TVector3>& Pos_FDC2, const vector<TVector3>& Dir_FDC1,
-            const vector<TVector3>& Dir_FDC2)
-{
-    Map->SetTimeIntervalSize(time_int*picosecond);
-
-    TVector3 posF2, dirF2;
-    vector <double> Br_rec;
-    for (auto i=0; i<Brho.size();i++){
-        cout<<i<<" ";
-        posF2 = Pos_FDC2[i];
-        posF2.RotateY(mag_angle-fdc2_angle);
-        dirF2 = Dir_FDC2[i];
-        dirF2.RotateY(mag_angle-fdc2_angle);
-        double brs = Map->FindBrho(Pos_FDC1[i], Dir_FDC1[i], posF2, dirF2);
-        Br_rec.push_back(brs);
-    }
-    double brho;
-    TFile* file2 = new TFile((path_to_file + "brho_" + to_string(time_int) + "ps.root").c_str(), "recreate");
-    TTree* brhos = new TTree("tree", "brhos");
-    brhos->Branch("Brho", &brho, "brho/D");
-    for(auto i=0; i<Br_rec.size(); i++) {
-        brho = Br_rec[i];
-        brhos->Fill();
-    }
-    file2->Write();
-    file2->Close();
-}*/
