@@ -60,8 +60,7 @@ class Minos : public NPS::VDetector{
     ////////////////////////////////////////////////////
   public:
   // With TargetLenght
-    void AddDetector(G4ThreeVector POS, double TargetLength, G4String MaterialOfTarget,G4String MaterialOfCell, int TPCOnly);
-    /* void AddDetector(G4ThreeVector POS, double TargetLength, int TPCOnly); */
+    void AddDetector(G4ThreeVector POS, double TargetZOffset, double TargetLength, G4String MaterialOfTarget,G4String MaterialOfCell, int TPCOnly);
  
   private:
   //For material definition
@@ -130,9 +129,6 @@ class Minos : public NPS::VDetector{
      G4LogicalVolume*   logicKapton;   
   // G4VPhysicalVolume* physiKapton;   
     
-     G4double TargetLength;
-     G4int    TPCOnly;
-
      G4double start,end,time, DriftTime;
      TH1F* Raw_Signal ;      
      TH1F* Elec_Signal;
@@ -190,9 +186,11 @@ class Minos : public NPS::VDetector{
   // Detector Coordinate 
   vector<G4ThreeVector>  m_POS; 
   vector<double>         m_TargetLength;
+  vector<double>         m_TargetZOffset;
   vector<G4String>       m_TargetMaterial;
   vector<G4String>       m_CellMaterial;
   vector<int>            m_TPCOnly;
+  bool TPCOnly;
 
   // Visualisation Attribute
   G4VisAttributes* m_VisTarget;

@@ -148,10 +148,11 @@ Minos::~Minos(){
 
 
 /* void Minos::AddDetector(G4ThreeVector POS, double LengthOfTarget, int PresenceOfMinos){ */
-void Minos::AddDetector(G4ThreeVector POS, double LengthOfTarget, G4String MaterialOfTarget,G4String MaterialOfCell, int PresenceOfMinos){
+void Minos::AddDetector(G4ThreeVector POS,double TargetZOffset, double LengthOfTarget, G4String MaterialOfTarget,G4String MaterialOfCell, int PresenceOfMinos){
   m_POS.push_back(POS);
   m_TargetLength.push_back(LengthOfTarget);
   m_TargetMaterial.push_back(MaterialOfTarget);
+  m_TargetZOffset.push_back(TargetZOffset);
   m_CellMaterial.push_back(MaterialOfCell);
   m_TPCOnly.push_back(PresenceOfMinos);
 }
@@ -172,7 +173,7 @@ G4LogicalVolume* Minos::BuildTarget(){
     // Target
     //  
     solidTarget = new G4Tubs("Target",		//its name
-        0.,TargetRadius,TargetLength/2.,0,360.);//size
+        0.,TargetRadius,m_TargetLength[0]/2.,0,360.);//size 
     logicTarget = new G4LogicalVolume(solidTarget,	//its solid
         TargetMaterial,	//its material
         "Target");	//its name    
@@ -276,7 +277,7 @@ G4LogicalVolume* Minos::BuildOuterKapton(){
 G4LogicalVolume* Minos::BuildWindow0(){
   if(!logicWindow0){
     solidWindow0 = new G4Tubs("WindowTube",		//its name
-        0.,TargetRadius+WindowThickness,TargetLength/2.+WindowThickness,0,360.);  
+        0.,TargetRadius+WindowThickness,m_TargetLength[0]/2.+WindowThickness,0,360.);  
     logicWindow0 = new G4LogicalVolume(solidWindow0,    //its solid
         WindowMaterial, //its material
         "WindowTube"); //name
@@ -297,14 +298,15 @@ void Minos::ReadConfiguration(NPL::InputParser parser){
     cout << "//// " << blocks.size() << " detectors found " << endl; 
 
   vector<string> simu = {"TPCOnly"};
-  vector<string> token= {"XML","Position","TargetMaterial","TargetLength","CellMaterial","TimeBin","ShapingTime","Baseline","Sampling","ZOffset"};
+  vector<string> token= {"XML","Position","TargetZOffset","TargetMaterial","TargetLength","CellMaterial","TimeBin","ShapingTime","Baseline","Sampling","ZOffset"};
 
   for(unsigned int i = 0 ; i < blocks.size() ; i++){
     if(blocks[i]->HasTokenList(token)){
       if(NPOptionManager::getInstance()->GetVerboseLevel())
         cout << endl << "////  Minos " << i+1 <<  endl;
       G4ThreeVector Pos = NPS::ConvertVector(blocks[i]->GetTVector3("Position","mm"));
-      TargetLength = blocks[i]->GetDouble("TargetLength","mm");
+      double TargetLength = blocks[i]->GetDouble("TargetLength","mm");
+      double TargetZOffset= blocks[i]->GetDouble("TargetZOffset","mm");  
       G4String TargetMaterialname = blocks[i]->GetString("TargetMaterial");
       G4String CellMaterial = blocks[i]->GetString("CellMaterial");
       m_ShapingTime = blocks[i]->GetDouble("ShapingTime","ns")/ns;   
@@ -320,7 +322,7 @@ void Minos::ReadConfiguration(NPL::InputParser parser){
       TPCOnly=1;
       if(blocks[i]->HasTokenList(simu))
         TPCOnly = blocks[i]->GetInt("TPCOnly");
-      AddDetector(Pos,TargetLength,TargetMaterialname, CellMaterial, TPCOnly);
+      AddDetector(Pos,TargetZOffset,TargetLength,TargetMaterialname, CellMaterial, TPCOnly);
       
     }
     else{
@@ -336,8 +338,7 @@ void Minos::ReadConfiguration(NPL::InputParser parser){
 // Called After DetecorConstruction::AddDetector Method
 void Minos::ConstructDetector(G4LogicalVolume* world){
   for (unsigned short i = 0 ; i < m_POS.size() ; i++) {
-    TargetLength = m_TargetLength[i]; 
-    TPCOnly = m_TPCOnly[i];
+    bool TPCOnly = m_TPCOnly[i];
 
     /* TargetMaterial = MaterialManager::getInstance()->GetMaterialFromLibrary("Vacuum"); */ 
     TargetMaterial = MaterialManager::getInstance()->GetMaterialFromLibrary("LH2"); 
@@ -482,7 +483,7 @@ void Minos::ConstructDetector(G4LogicalVolume* world){
 
     if(TPCOnly!=1){   
       new G4PVPlacement(0,		//its name
-          G4ThreeVector(MinosX,MinosY,MinosZ),	//at (0,0,0)
+          G4ThreeVector(MinosX,MinosY,MinosZ+m_TargetZOffset[0]),	//at (0,0,TargetZOffset)
           BuildWindow0(),	//its logical volume
           "WindowTube",	//its name
           world,	//its mother  volume
@@ -490,7 +491,7 @@ void Minos::ConstructDetector(G4LogicalVolume* world){
           0);
 
       new G4PVPlacement(0,//no rotation
-          G4ThreeVector(0,0,0/*m_TargetLength[i]*/),	//at (0,0,0)
+          G4ThreeVector(0,0,0),	//at (0,0,0)
           BuildTarget(),	//its logical volume
           "Target",	//its name
           logicWindow0,	//its mother  volume
