@@ -35,7 +35,7 @@ class TSofFissionFragment : public TObject {
   // to allow multiplicity treatment
   private:
     vector<double> fFF_Z; 
-    vector<double> fFF_Qmax;
+    vector<int> fFF_iZ;
     vector<double> fFF_AoQ;
     vector<double> fFF_A;
     vector<double> fFF_Beta;
@@ -43,6 +43,11 @@ class TSofFissionFragment : public TObject {
     vector<double> fFF_Gamma;
     vector<double> fFF_Brho;
     vector<double> fFF_DT;
+    vector<double> fFF_ThetaIn;
+    vector<double> fFF_TofPosX;
+    vector<double> fFF_TofPosY;
+    vector<double> fFF_MwpcPosX;
+    vector<double> fFF_MwpcPosY;
     double fFF_Zsum;
     int fFF_IntZsum;
 
@@ -71,7 +76,7 @@ class TSofFissionFragment : public TObject {
     inline void SetZsum(double val){fFF_Zsum = val;};//!
     inline void SetIntZsum(int val){fFF_IntZsum = val;};//!
     inline void SetZ(double val){fFF_Z.push_back(val);};//!
-    inline void SetQmax(double val){fFF_Qmax.push_back(val);};//!
+    inline void SetiZ(int val){fFF_iZ.push_back(val);};//!
     inline void SetAoQ(double val){fFF_AoQ.push_back(val);};//!
     inline void SetA(double val){fFF_A.push_back(val);};//!
     inline void SetBeta(double val){fFF_Beta.push_back(val);};//!
@@ -79,13 +84,19 @@ class TSofFissionFragment : public TObject {
     inline void SetGamma(double val){fFF_Gamma.push_back(val);};//!
     inline void SetBrho(double val){fFF_Brho.push_back(val);};//!
     inline void SetDT(double val){fFF_DT.push_back(val);};//!
+    inline void SetThetaIn(double val){fFF_ThetaIn.push_back(val);};//!
+    inline void SetTofPosX(double val){fFF_TofPosX.push_back(val);};//!
+    inline void SetTofPosY(double val){fFF_TofPosY.push_back(val);};//!
+    inline void SetMwpcPosX(double val){fFF_MwpcPosX.push_back(val);};//!
+    inline void SetMwpcPosY(double val){fFF_MwpcPosY.push_back(val);};//!
+
 
     //////////////////////    GETTERS    ////////////////////////
     int GetMult() {return fFF_Z.size();}//!
     inline double GetZsum() const {return fFF_Zsum;}//! 
     inline int GetIntZsum() const {return fFF_IntZsum;}//! 
     inline double GetZ(int i) const {return fFF_Z[i];}//! 
-    inline double GetQmax(int i) const {return fFF_Qmax[i];}//! 
+    inline int GetiZ(int i) const {return fFF_iZ[i];}//! 
     inline double GetAoQ(int i) const {return fFF_AoQ[i];}//! 
     inline double GetA(int i) const {return fFF_A[i];}//! 
     inline double GetBeta(int i) const {return fFF_Beta[i];}//! 
@@ -93,6 +104,12 @@ class TSofFissionFragment : public TObject {
     inline double GetGamma(int i) const {return fFF_Gamma[i];}//! 
     inline double GetBrho(int i) const {return fFF_Brho[i];}//! 
     inline double GetDT(int i) const {return fFF_DT[i];}//! 
+    inline double GetThetaIn(int i) const {return fFF_ThetaIn[i];}//! 
+    inline double GetTofPosX(int i) const {return fFF_TofPosX[i];}//! 
+    inline double GetTofPosY(int i) const {return fFF_TofPosY[i];}//! 
+    inline double GetMwpcPosX(int i) const {return fFF_MwpcPosX[i];}//! 
+    inline double GetMwpcPosY(int i) const {return fFF_MwpcPosY[i];}//! 
+
 
   //////////////////////////////////////////////////////////////
   // Required for ROOT dictionnary

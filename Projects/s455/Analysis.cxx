@@ -77,7 +77,6 @@ void Analysis::FissionFragmentAnalysis(){
 
   double TOF_CC[2];
   double Plastic[2];
-  double PosY[2];
   double Plastic_left = -1;
   double Plastic_right = -1;
   double TOF_left = -1;
@@ -102,18 +101,76 @@ void Analysis::FissionFragmentAnalysis(){
   double Beta3 = -1;
   double Beta4 = -1;
   double Beta_norm = 0.745;
+  double Gamma1 = -1;
+  double Gamma2 = -1;
+  double Beta_Z1 = -1;
+  double Beta_Z2 = -1;
+  double Brho1 = -1;
+  double Brho2 = -1;
+  double AoQ1 = -1;
+  double AoQ2 = -1;
+  double A1 = -1;
+  double A2 = -1;
+  double Z1 = -1;
+  double Z2 = -1;
+  double Zsum = -1;
+  int iZ1 = -1;
+  int iZ2 = -1;
+  int iZsum = -1;
+  double ThetaIn1 = -1000;
+  double ThetaIn2 = -1000;
 
   for(int i = 0; i<2; i++){
     TOF_CC[i] = -1;
     Plastic[i] = -1;
-    PosY[i] = -1;
   }
 
+  vector<double> PosY;
+  vector<double> PosX;
   if(softofw_size==2){
     for(unsigned int i=0; i<softofw_size; i++){
       TOF_CC[i] = SofTofW->CalTof[i];
       Plastic[i] = SofTofW->PlasticNbr[i];
-      PosY[i] = SofTofW->CalPosY[i];
+      PosX.push_back(SofTofW->CalPosX[i]);
+      PosY.push_back(SofTofW->CalPosY[i]);
+
+      //SofFF->SetTofPosX(SofTofW->CalPosX[i]);
+      //SofFF->SetTofPosY(SofTofW->CalPosY[i]);
+    }
+  }
+
+  vector<double> Xmwpc4;
+  vector<double> Ymwpc4;
+  for(unsigned int i=0; i<SofMwpc->DetectorNbr.size(); i++){
+    if(SofMwpc->DetectorNbr[i]==4){
+      Xmwpc4.push_back(SofMwpc->PositionX1[i]);
+      Ymwpc4.push_back(SofMwpc->PositionY[i]);
+
+      //SofFF->SetMwpcPosX(SofMwpc->PositionX1[i]);
+      //SofFF->SetMwpcPosY(SofMwpc->PositionY[i]);
+    }
+  }
+
+  vector<double> good_posx;
+  vector<double> good_posy;
+  for(unsigned int i=0; i<PosX.size(); i++){
+    double tofx = PosX[i];
+    double tofy = PosY[i];
+    for(unsigned int k=0; k<Xmwpc4.size(); k++){
+      double posx = Xmwpc4[k];
+      if(abs(posx-tofx) < 100){
+        good_posx.push_back(posx);
+        SofFF->SetMwpcPosX(posx);
+        SofFF->SetTofPosX(tofx);
+      }
+    }
+    for(unsigned int p=0; p<Ymwpc4.size(); p++){
+      double posy = Ymwpc4[p];
+      if(abs(posy-tofy) < 20){
+        good_posy.push_back(posy);
+        SofFF->SetMwpcPosY(posy);
+        SofFF->SetTofPosY(tofy);
+      }
     }
   }
 
@@ -181,13 +238,15 @@ void Analysis::FissionFragmentAnalysis(){
         TOF_right = TOF_CC[0];
       }
 
-      if(PosY[0]>PosY[1]){
-        TOF_up = TOF_CC[0];
-        TOF_down = TOF_CC[1];
-      }
-      if(PosY[0]<PosY[1]){
-        TOF_up = TOF_CC[1];
-        TOF_down = TOF_CC[0];
+      if(PosY.size()==2){
+        if(PosY[0]>PosY[1]){
+          TOF_up = TOF_CC[0];
+          TOF_down = TOF_CC[1];
+        }
+        if(PosY[0]<PosY[1]){
+          TOF_up = TOF_CC[1];
+          TOF_down = TOF_CC[0];
+        }
       }
 
       double velocity_left = L_CC/TOF_left;
@@ -245,34 +304,41 @@ void Analysis::FissionFragmentAnalysis(){
 
 
       // Z calibration //
-      double Z1=-1;
-      double Z2=-1;
-      double Zsum=-1;
-      int iZsum=-1;
-
       if(E1>0 && E2>0 && E3==-1 && E4==-1){
         Z1 = E1;
         Z2 = E2;
+        Beta_Z1 = Beta1;
+        Beta_Z2 = Beta2;
       }
       if(E1>0 && E2==-1 && E3>0 && E4==-1){
         Z1 = E1;
         Z2 = E3;
+        Beta_Z1 = Beta1;
+        Beta_Z2 = Beta3;
       }
       if(E1>0 && E2==-1 && E3==-1 && E4>0){
         Z1 = E1;
         Z2 = E4;
+        Beta_Z1 = Beta1;
+        Beta_Z2 = Beta4;
       }
       if(E1==-1 && E2>0 && E3>0 && E4==-1){
         Z1 = E2;
         Z2 = E3;
+        Beta_Z1 = Beta2;
+        Beta_Z2 = Beta3;
       }
       if(E1==-1 && E2>0 && E3==-1 && E4>0){
         Z1 = E2;
         Z2 = E4;
+        Beta_Z1 = Beta2;
+        Beta_Z2 = Beta4;
       }
       if(E1==-1 && E2==-1 && E3>0 && E4>0){
         Z1 = E3;
         Z2 = E4;
+        Beta_Z1 = Beta3;
+        Beta_Z2 = Beta4;
       }
 
       if(Z1>0 && Z2>0){
@@ -284,20 +350,37 @@ void Analysis::FissionFragmentAnalysis(){
 
         Zsum = Z1+Z2;
 
-        int iZ1 = (int) round(Z1);
-        int iZ2 = (int) round(Z2);
+        iZ1 = (int) round(Z1);
+        iZ2 = (int) round(Z2);
         iZsum = iZ1 + iZ2;
       }
 
+      Gamma1 = 1. / sqrt(1 - Beta_Z1 * Beta_Z1);
+      Gamma2 = 1. / sqrt(1 - Beta_Z2 * Beta_Z2);
+
+      AoQ1 = Brho1 / (3.10761 * Beta_Z1 * Gamma1);
+      AoQ2 = Brho2 / (3.10761 * Beta_Z2 * Gamma2);
+
+      A1 = AoQ1 * iZ1;
+      A2 = AoQ2 * iZ2;
+
+      //*** Filling the Fission Fragment Tree ***//
       SofFF->SetTOF(TOF_left);
       SofFF->SetTOF(TOF_right);
-      SofFF->SetBeta(Beta1);
-      SofFF->SetBeta(Beta2);
-      SofFF->SetBeta(Beta3);
-      SofFF->SetBeta(Beta4);
-
+      SofFF->SetBeta(Beta_Z1);
+      SofFF->SetBeta(Beta_Z2);
+      SofFF->SetGamma(Gamma1);
+      SofFF->SetGamma(Gamma2);
+      SofFF->SetiZ(iZ1);
+      SofFF->SetiZ(iZ2);
       SofFF->SetZ(Z1);
       SofFF->SetZ(Z2);
+      SofFF->SetAoQ(AoQ1);
+      SofFF->SetAoQ(AoQ1);
+      SofFF->SetA(A1);
+      SofFF->SetA(A2);
+      SofFF->SetBrho(Brho1);
+      SofFF->SetBrho(Brho2);
 
       SofFF->SetDT(DT1);
       SofFF->SetDT(DT2);
@@ -325,12 +408,10 @@ void Analysis::BeamAnalysis(){
       double Anode3 = SofTrim->EnergySection[2];
       if(fRunID==13)
         Zbeam = max(Anode1, Anode2);
-      else if(fRunID==14)
-        Zbeam = max(Anode2, Anode3);
       else 
         Zbeam = SofTrim->GetMaxEnergySection();
 
-      Qmax = DetermineQmax();
+      //Qmax = DetermineQmax();
       Theta = SofTrim->Theta[0];
 
       double TofFromS2    = SofSci->CalTof[0];
@@ -371,7 +452,7 @@ void Analysis::BeamAnalysis(){
 
       // Filling Beam tree
       SofBeamID->SetZbeam(Zbeam);
-      SofBeamID->SetQmax(rand.Gaus(Qmax,0.15));
+      //SofBeamID->SetQmax(rand.Gaus(Qmax,0.15));
       SofBeamID->SetAoQ(AoQ);
       SofBeamID->SetAbeam(A);
       SofBeamID->SetBeta(Beta);
@@ -493,7 +574,7 @@ void Analysis::InitParameter(){
   fDCC   = -10000;
   fK_LS2 = -30e-8;
 
-  fRunID = 13;
+  fRunID = 6;
 
   // Beam parameter //
   fZBeta_p0 = 1;
@@ -503,14 +584,14 @@ void Analysis::InitParameter(){
   fZff_p0 = 2.80063;
   fZff_p1 = 6.91985e-2;
   fZff_p2 = 1.01598e-7;
- 
+
   if(fRunID==1 || fRunID==2){
     //fBrho0 = 10.6813; // 180Hg
     fBrho0 = 10.6955; // 180Hg
     fZbeam_p0 = -5303.06;
     fZbeam_p1 = 0.674945;
     fZbeam_p2 = -8.32085e-6;
-  
+
     fZBeta_p0 = 72.946;
     fZBeta_p1 = 6.0644;
   }
@@ -543,7 +624,7 @@ void Analysis::InitParameter(){
     fZbeam_p0 = 1590.66;
     fZbeam_p1 = 0.0956455;
     fZbeam_p2 = 3.84585e-6;
-  
+
     fZBeta_p0 = 74.6063;
     fZBeta_p1 = 6.4635;
   }
@@ -561,7 +642,7 @@ void Analysis::InitParameter(){
     fZbeam_p0 = 4122.94;
     fZbeam_p1 = -0.119867;
     fZbeam_p2 = 8.29115e-6;
-  
+
     fZBeta_p0 = 63.9575;
     fZBeta_p1 = 25.1988;
   }
@@ -588,7 +669,7 @@ void Analysis::InitParameter(){
     fZbeam_p0 = -116.425;
     fZbeam_p1 = 0.218256;
     fZbeam_p2 = 1.62399e-6;
-  
+
     fZBeta_p0 = 61.3889;
     fZBeta_p1 = 25.8908;
   }

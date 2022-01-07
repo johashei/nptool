@@ -90,7 +90,7 @@ void GetChargeDist(string nucleus_name){
   cut_beam->SetVarY("fBeam_Z");
   double Rx=0.005;
   double Ry=0.5;
-  AoQ = AoQ;// + 0.002;
+  AoQ = AoQ + 0.003;
   double Zcenter = Z;
   for(int i=0; i<360; i++){
     double x = AoQ+Rx*cos(i*TMath::Pi()/180);
@@ -202,8 +202,13 @@ void GetChargeDist(string nucleus_name){
 void LoadRootFiles(string iso){
   chain = new TChain("PhysicsTree");
 
+  //*** Pa isotopes ***//
+  if(iso=="221Pa" || iso=="222Pa"){
+    chain->Add("../../../Outputs/Analysis/221Pa.root");
+  }
+ 
   //*** Th isotopes ***//
-  if(iso=="217Th" || iso=="216Th" || iso=="209Ra" || iso=="210Ra" || iso=="211Ra" || iso=="212Ra" || iso=="213Ra" || iso=="214Ra"){
+  if(iso=="217Th" || iso=="216Th"){
     chain->Add("../../../Outputs/Analysis/216Th_1.root");
   }
   if(iso=="219Th" || iso=="220Th"){
@@ -211,12 +216,15 @@ void LoadRootFiles(string iso){
   }
 
   //*** Ac isotopes ***//
-   if(iso=="212Ac" || iso=="213Ac" || iso=="214Ac" || iso=="215Ac" || iso=="216Ac"){
+  if(iso=="212Ac" || iso=="213Ac" || iso=="214Ac" || iso=="215Ac" || iso=="216Ac"){
     chain->Add("../../../Outputs/Analysis/216Th_1.root");
   }
- 
+  if(iso=="214Ac" || iso=="215Ac" || iso=="216Ac" || iso=="217Ac" || iso=="218Ac"){
+    chain->Add("../../../Outputs/Analysis/221Pa.root");
+  }
+
   //*** Ra isotopes ***//
-   if(iso=="209Ra" || iso=="210Ra" || iso=="211Ra" || iso=="212Ra" || iso=="213Ra" || iso=="214Ra"){
+  if(iso=="209Ra" || iso=="210Ra" || iso=="211Ra" || iso=="212Ra" || iso=="213Ra" || iso=="214Ra"){
     chain->Add("../../../Outputs/Analysis/216Th_1.root");
   }
   
@@ -354,11 +362,19 @@ void LoadRootFiles(string iso){
   }
 
   //*** Ir isotopes ***//
-  if(iso=="172Ir" || iso=="173Ir" || iso=="174Ir" || iso=="175Ir" || iso=="176It"){
+  if(iso=="171Ir" ||iso=="172Ir" || iso=="173Ir" || iso=="174Ir" || iso=="175Ir" || iso=="176Ir"){
     chain->Add("../../../Outputs/Analysis/175Pt.root");
     chain->Add("../../../Outputs/Analysis/180Hg_1.root");
     chain->Add("../../../Outputs/Analysis/180Hg_2.root");
   }
+
+  //*** Os isotopes ***//
+  if(iso=="169Os" ||iso=="170Os" || iso=="171Os" || iso=="172Os" || iso=="173Os" || iso=="174Os"){
+    chain->Add("../../../Outputs/Analysis/175Pt.root");
+    chain->Add("../../../Outputs/Analysis/180Hg_1.root");
+    chain->Add("../../../Outputs/Analysis/180Hg_2.root");
+  }
+
 
   cout << "Number of entries: " << chain->GetEntries() << endl;
 }

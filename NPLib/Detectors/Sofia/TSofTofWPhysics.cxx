@@ -120,16 +120,18 @@ void TSofTofWPhysics::BuildPhysicalEvent() {
   static CalibrationManager* Cal = CalibrationManager::getInstance();
   for(int p=0; p<m_NumberOfPlastics; p++){
     if(mult1[p]==1 && mult2[p]==1){
+      double calposX = -(p*PlasticWidth + rand.Uniform(0,PlasticWidth) - (double)m_NumberOfPlastics/2*PlasticWidth);
+
       double time_ns = 0.5*(T1[p][0] + T2[p][0]);
-      double rawpos = T1[p][0] - T2[p][0];
-      double calpos = Cal->ApplyCalibration("SofTofW/TOFW"+NPL::itoa(p+1)+"_POSPAR",rawpos);
+      double rawposY = T1[p][0] - T2[p][0];
+      double calposY = Cal->ApplyCalibration("SofTofW/TOFW"+NPL::itoa(p+1)+"_POSPAR",rawposY);
       double rawtof = time_ns - m_StartTime;
       double caltof = Cal->ApplyCalibration("SofTofW/TOFW"+NPL::itoa(p+1)+"_TOFPAR",rawtof) + m_TofAlignedValue;
 
       PlasticNbr.push_back(p+1);
       TimeNs.push_back(time_ns);
-      RawPosY.push_back(rawpos);
-      CalPosY.push_back(calpos);
+      CalPosX.push_back(calposX);
+      CalPosY.push_back(calposY);
       RawTof.push_back(rawtof);
       CalTof.push_back(caltof);
     }
@@ -256,7 +258,7 @@ void TSofTofWPhysics::ReadAnalysisConfig() {
 void TSofTofWPhysics::Clear() {
   PlasticNbr.clear();
   TimeNs.clear();
-  RawPosY.clear();
+  CalPosX.clear();
   CalPosY.clear();
   RawTof.clear();
   CalTof.clear();

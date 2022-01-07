@@ -41,6 +41,7 @@ using namespace std;
 
 ClassImp(TSofMwpcPhysics)
 
+  bool compare_charge(pair<int,int> p1, pair<int,int> p2) {return p1.second < p2.second;}
 
   ///////////////////////////////////////////////////////////////////////////
 TSofMwpcPhysics::TSofMwpcPhysics()
@@ -80,7 +81,6 @@ void TSofMwpcPhysics::BuildSimplePhysicalEvent() {
 
 ///////////////////////////////////////////////////////////////////////////
 void TSofMwpcPhysics::BuildPhysicalEvent() {
-
   PreTreat();
 
   unsigned int mysizeE = m_PreTreatedData->GetMultiplicity();
@@ -95,6 +95,8 @@ void TSofMwpcPhysics::BuildPhysicalEvent() {
   double ChargeMaxX2[4]={0,0,0,0};
   double ChargeMaxY[4] ={0,0,0,0};
 
+  fPairX.reserve(50);
+  fPairY.reserve(50);
 
   for(int i=0; i<m_NumberOfDetectors; i++){
     Buffer_X1_Q.push_back(ChargeArray);
@@ -103,11 +105,10 @@ void TSofMwpcPhysics::BuildPhysicalEvent() {
   }
 
   for (UShort_t e = 0; e < mysizeE ; e++) {
-    int det = m_PreTreatedData->GetDetectorNbr(e);
+    int det = m_PreTreatedData->GetDetectorNbr(e);//start at 1
     int plane = m_PreTreatedData->GetPlane(e);
     int strip = m_PreTreatedData->GetPad(e);// starts at 0
     double charge = m_PreTreatedData->GetCharge(e);
-
     // Xup for MWPC2 and 3 and X for MWPC1 and 4
     if(plane==1){
       Buffer_X1_Q[det-1][strip] = charge;
@@ -116,9 +117,14 @@ void TSofMwpcPhysics::BuildPhysicalEvent() {
         ChargeMaxX1[det-1] = charge;
         StripMaxX1[det-1] = strip;
       }
+      if(det==4){
+        pair<int, int> hit_pair = make_pair(strip,charge);
+        fPairX.push_back(hit_pair);
+      }
     }
+
     // Xdown for MWPC2 and 3 and nothing for MWPC1 and 4
-    else if(plane==2){
+    if(plane==2){
       Buffer_X2_Q[det-1][strip] = charge;
 
       if(charge>ChargeMaxX2[det-1]){
@@ -126,6 +132,7 @@ void TSofMwpcPhysics::BuildPhysicalEvent() {
         StripMaxX2[det-1] = strip;
       }
     }
+
     // Y for all MWPCx
     if(plane==3){
       Buffer_Y_Q[det-1][strip] = charge;
@@ -134,62 +141,167 @@ void TSofMwpcPhysics::BuildPhysicalEvent() {
         ChargeMaxY[det-1] = charge;
         StripMaxY[det-1] = strip;
       }
+      if(det==4){
+        pair<int, int> hit_pair = make_pair(strip,charge);
+        fPairY.push_back(hit_pair);
+      }
     }
   }
 
-  double X1 = -100;
-  double X2 = -100;
-  double Y  = -100;
+  double X1 = -1000;
+  double X2 = -1000;
+  double Y  = -1000;
   for(int i=0; i<m_NumberOfDetectors; i++){
-    double qleft  = Buffer_X1_Q[i][StripMaxX1[i]-1];
-    double qright = Buffer_X1_Q[i][StripMaxX1[i]+1];
-    if(qleft>0 && qright>0){
-      X1 = GetPositionX(ChargeMaxX1[i], StripMaxX1[i], qleft, qright);
-      X1 = X1 - DetPosX[i];
-    }
-    qleft  = Buffer_X2_Q[i][StripMaxX2[i]-1];
-    qright = Buffer_X2_Q[i][StripMaxX2[i]+1];
-    if(qleft>0 && qright>0){
-      X2 = GetPositionX(ChargeMaxX2[i], StripMaxX2[i], qleft, qright);
-      X2 = X2 - DetPosX[i];
-    }
-    double qdown  = Buffer_Y_Q[i][StripMaxY[i]-1];
-    double qup = Buffer_Y_Q[i][StripMaxY[i]+1];
-    if(qdown>0 && qup>0){
-      Y = GetPositionY(ChargeMaxY[i], StripMaxY[i], qdown, qup);
-      Y = Y - DetPosY[i];
+    int det_num = i+1;
+    if(det_num<4){
+      double qleft  = Buffer_X1_Q[i][StripMaxX1[i]-1];
+      double qright = Buffer_X1_Q[i][StripMaxX1[i]+1];
+      if(qleft>0 && qright>0){
+        X1 = GetPositionX(det_num, ChargeMaxX1[i], StripMaxX1[i], qleft, qright);
+        X1 = X1 - DetPosX[i];
+      }
+      qleft  = Buffer_X2_Q[i][StripMaxX2[i]-1];
+      qright = Buffer_X2_Q[i][StripMaxX2[i]+1];
+      if(qleft>0 && qright>0){
+        X2 = GetPositionX(det_num, ChargeMaxX2[i], StripMaxX2[i], qleft, qright);
+        X2 = X2 - DetPosX[i];
+      }
+      double qdown  = Buffer_Y_Q[i][StripMaxY[i]-1];
+      double qup = Buffer_Y_Q[i][StripMaxY[i]+1];
+      if(qdown>0 && qup>0){
+        Y = GetPositionY(det_num, ChargeMaxY[i], StripMaxY[i], qdown, qup);
+        Y = Y - DetPosY[i];
+      }
+
+      DetectorNbr.push_back(det_num);
+      PositionX1.push_back(X1);
+      PositionX2.push_back(X2);
+      PositionY.push_back(Y);
     }
 
-    DetectorNbr.push_back(i+1);
-    PositionX1.push_back(X1);
-    PositionX2.push_back(X2);
-    PositionY.push_back(Y);
+    if(det_num==4 && fPairX.size()>0 && fPairY.size()>0){
+      sort(fPairX.begin(), fPairX.end());
+      sort(fPairY.begin(), fPairY.end());
+
+      fThresholdX = max(0.2 * GetChargeMax(fPairX), 500.);
+      fThresholdY = max(0.2 * GetChargeMax(fPairY), 500.);
+
+      // *** Finding X clusters *** //
+      while(GetChargeMax(fPairX) > fThresholdX && fPairX.size()>4){
+        const auto pelt = max_element(fPairX.begin(), fPairX.end(), compare_charge);
+        int indice = distance(fPairX.begin(), pelt);
+
+        if(indice>0 && indice<fPairX.size()-1){
+          fClusterX.push_back(FindCluster(fPairX));
+        }
+        else break;
+      }
+      
+      // *** Finding Y clusters *** //
+      while(GetChargeMax(fPairY) > fThresholdY && fPairY.size() > 4){
+        const auto pelt = max_element(fPairY.begin(), fPairY.end(), compare_charge);
+        int indice = distance(fPairY.begin(), pelt);
+        
+        if(indice>0 && indice<fPairY.size()-1){
+          fClusterY.push_back(FindCluster(fPairY));
+        }
+        else break;
+      }
+
+
+      if(fClusterX.size()==fClusterY.size()){
+        int size = fClusterX.size();
+        vector<double> Xpos;
+        vector<double> Ypos;
+        for(unsigned int i=0; i<size; i++){
+          // *** strip X *** //
+          vector<pair<int,int>> hitX;
+          hitX = fClusterX[i];
+          double x = -1000;
+          int qleft = hitX[0].second;
+          int qmax = hitX[1].second;
+          int qright = hitX[2].second;
+          int padmax = hitX[2].first;
+          if(padmax>0 && padmax+1<288 && qmax>0 && qleft>0 && qright>0){
+            x = GetPositionX(det_num, qmax, padmax, qleft, qright);
+            Xpos.push_back(x);
+          }
+
+          // *** strip Y *** //
+          vector<pair<int,int>> hitY;
+          hitY = fClusterY[i];
+          double y = -1000;
+          int qdown = hitY[0].second;
+          qmax = hitY[1].second;
+          int qup = hitY[2].second;
+          padmax = hitY[2].first;
+          if(padmax>0 && padmax+1<120 && qmax>0 && qdown>0 && qup>0){
+            y = GetPositionY(det_num, qmax, padmax, qdown, qup);
+            Ypos.push_back(y);
+          }
+          DetectorNbr.push_back(det_num);
+          PositionX1.push_back(x);
+          PositionX2.push_back(-1000);
+          PositionY.push_back(y);
+        }
+      }
+    }
   }
 }
 
 ///////////////////////////////////////////////////////////////////////////
-double TSofMwpcPhysics::GetPositionX(double qmax, int padmax, double qleft, double qright){
-  double fwx = 3.125;
-  double fSize = 200.0;
+vector<pair<int,int>> TSofMwpcPhysics::FindCluster(vector<pair<int,int>>& p1){
+  vector<pair<int,int>> hit;
+  hit.clear();
+  pair<int,int> couple;
 
-  double a3 = TMath::Pi() * fwx / (TMath::ACosH(0.5 * (TMath::Sqrt(qmax / qleft) + TMath::Sqrt(qmax / qright))));
+  const auto pelt = max_element(p1.begin(), p1.end(), compare_charge);
+  int padmax = pelt->first;
+  int qmax = pelt->second;
+  int imax = distance(p1.begin(), pelt);
+
+  couple = {p1[imax - 1].first, p1[imax - 1].second};
+  //cout << "pad= " << p1[imax-1].first << " / Q= " << p1[imax-1].second << endl;
+  hit.push_back(couple);
+  couple = {p1[imax].first, p1[imax].second};
+  //cout << "pad= " << p1[imax].first << " / Q= " << p1[imax].second << endl;
+  hit.push_back(couple);
+  couple = {p1[imax + 1].first, p1[imax + 1].second};
+  //cout << "pad= " << p1[imax+1].first << " / Q= " << p1[imax+1].second << endl;
+  hit.push_back(couple);
+  // Removing those three points from fPair
+  p1.erase(p1.begin() + imax -1, p1.begin() + imax);
+  p1.erase(p1.begin() + imax -1, p1.begin() + imax);
+  p1.erase(p1.begin() + imax -1, p1.begin() + imax);
+
+
+  return hit;
+}
+///////////////////////////////////////////////////////////////////////////
+double TSofMwpcPhysics::GetChargeMax(vector<pair<int,int>> p1){
+  const auto comp = max_element(p1.begin(), p1.end(), compare_charge);
+  double Qmax = comp->second;
+  return Qmax;
+}
+
+///////////////////////////////////////////////////////////////////////////
+double TSofMwpcPhysics::GetPositionX(int det, double qmax, int padmax, double qleft, double qright){
+  double a3 = TMath::Pi() * fwx[det-1] / (TMath::ACosH(0.5 * (TMath::Sqrt(qmax / qleft) + TMath::Sqrt(qmax / qright))));
 
   Double_t a2 = (a3 / TMath::Pi()) * TMath::ATanH((TMath::Sqrt(qmax / qleft) - TMath::Sqrt(qmax / qright)) /
-                                                    (2 * TMath::SinH(TMath::Pi() * fwx / a3)));
+      (2 * TMath::SinH(TMath::Pi() * fwx[det-1] / a3)));
 
-  return (-1. * padmax * fwx + (fSize / 2) - (fwx / 2) - a2); // Left is positive and right negative
+  return (-1. * padmax * fwx[det-1] + (fSizeX[det-1] / 2) - (fwx[det-1] / 2) - a2); // Left is positive and right negative
 }
 
 ///////////////////////////////////////////////////////////////////////////
-double TSofMwpcPhysics::GetPositionY(double qmax, int padmax, double qdown, double qup){
-  double fwy = 3.125;
-  double fSize = 200.0;
-  double a3 = TMath::Pi() * fwy / (TMath::ACosH(0.5 * (TMath::Sqrt(qmax / qdown) + TMath::Sqrt(qmax / qup))));
+double TSofMwpcPhysics::GetPositionY(int det, double qmax, int padmax, double qdown, double qup){
+  double a3 = TMath::Pi() * fwy[det-1] / (TMath::ACosH(0.5 * (TMath::Sqrt(qmax / qdown) + TMath::Sqrt(qmax / qup))));
 
   Double_t a2 = (a3 / TMath::Pi()) * TMath::ATanH((TMath::Sqrt(qmax / qdown) - TMath::Sqrt(qmax / qup)) /
-                                                    (2 * TMath::SinH(TMath::Pi() * fwy / a3)));
+      (2 * TMath::SinH(TMath::Pi() * fwy[det-1] / a3)));
 
-  return (padmax * fwy - (fSize / 2) + (fwy / 2) + a2);
+  return (padmax * fwy[det-1] - (fSizeY[det-1] / 2) + (fwy[det-1] / 2) + a2);
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -281,6 +393,11 @@ void TSofMwpcPhysics::Clear() {
   Buffer_X1_Q.clear();
   Buffer_X2_Q.clear();
   Buffer_Y_Q.clear();
+
+  fPairX.clear();
+  fPairY.clear();
+  fClusterX.clear();
+  fClusterY.clear();
 }
 
 

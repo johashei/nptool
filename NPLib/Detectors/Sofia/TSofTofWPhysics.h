@@ -39,7 +39,8 @@ using namespace std;
 #include "NPVDetector.h"
 #include "NPInputParser.h"
 
-
+#define PlasticWidth 32
+#define PlasticHeight 660
 
 class TSofTofWPhysics : public TObject, public NPL::VDetector {
   //////////////////////////////////////////////////////////////
@@ -62,7 +63,7 @@ class TSofTofWPhysics : public TObject, public NPL::VDetector {
   public:
     vector<int>      PlasticNbr;
     vector<double>   TimeNs;
-    vector<double>   RawPosY;
+    vector<double>   CalPosX;
     vector<double>   CalPosY;
     vector<double>   RawTof;
     vector<double>   CalTof;

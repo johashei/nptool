@@ -131,9 +131,25 @@ class TSofMwpcPhysics : public TObject, public NPL::VDetector {
     // needed for online analysis for example
     void SetRawDataPointer(TSofMwpcData* rawDataPointer) {m_EventData = rawDataPointer;}
 
-    double GetPositionX(double qmax, int padmax, double qleft, double qright);
-    double GetPositionY(double qmax, int padmax, double qdown, double qup);
+    double fwx[4]={3.125, 3.125, 3.125, 3.125};
+    double fwy[4]={3.125, 5.000, 5.000, 5.000};
+    double fSizeX[4]={200, 200, 200, 900};
+    double fSizeY[4]={200, 200, 200, 600};
+  
+    vector<pair<int, int>> fPairX;
+    vector<pair<int, int>> fPairY;
+    vector<vector<pair<int,int>>> fClusterX;
+    vector<vector<pair<int,int>>> fClusterY;
+    
+    double fThresholdX;
+    double fThresholdY;
 
+    double GetChargeMax(vector<pair<int,int>> p1);
+    vector<pair<int,int>> FindCluster(vector<pair<int,int>>& p1);
+
+    double GetPositionX(int det, double qmax, int padmax, double qleft, double qright);
+    double GetPositionY(int det, double qmax, int padmax, double qdown, double qup);
+    
   // objects are not written in the TTree
   private:
     TSofMwpcData*         m_EventData;        //!
