@@ -47,7 +47,6 @@ void Analysis::Init(){
 
   InitParameter();
   InitOutputBranch();
-  LoadCut();
   LoadSpline();
 
 }
@@ -148,29 +147,6 @@ void Analysis::FissionFragmentAnalysis(){
 
       //SofFF->SetMwpcPosX(SofMwpc->PositionX1[i]);
       //SofFF->SetMwpcPosY(SofMwpc->PositionY[i]);
-    }
-  }
-
-  vector<double> good_posx;
-  vector<double> good_posy;
-  for(unsigned int i=0; i<PosX.size(); i++){
-    double tofx = PosX[i];
-    double tofy = PosY[i];
-    for(unsigned int k=0; k<Xmwpc4.size(); k++){
-      double posx = Xmwpc4[k];
-      if(abs(posx-tofx) < 100){
-        good_posx.push_back(posx);
-        SofFF->SetMwpcPosX(posx);
-        SofFF->SetTofPosX(tofx);
-      }
-    }
-    for(unsigned int p=0; p<Ymwpc4.size(); p++){
-      double posy = Ymwpc4[p];
-      if(abs(posy-tofy) < 20){
-        good_posy.push_back(posy);
-        SofFF->SetMwpcPosY(posy);
-        SofFF->SetTofPosY(tofy);
-      }
     }
   }
 
@@ -364,6 +340,38 @@ void Analysis::FissionFragmentAnalysis(){
       A1 = AoQ1 * iZ1;
       A2 = AoQ2 * iZ2;
 
+      vector<double> good_posx;
+      vector<double> good_posy;
+      for(unsigned int i=0; i<PosX.size(); i++){
+        double tofx = PosX[i];
+        double tofy = PosY[i];
+        for(unsigned int k=0; k<Xmwpc4.size(); k++){
+          double posx = Xmwpc4[k];
+          if(abs(posx-tofx) < 100){
+            good_posx.push_back(posx);
+            //SofFF->SetMwpcPosX(posx);
+            //SofFF->SetTofPosX(tofx);
+          }
+        }
+        for(unsigned int p=0; p<Ymwpc4.size(); p++){
+          double posy = Ymwpc4[p];
+          if(abs(posy-tofy) < 20){
+            //good_posy.push_back(posy);
+            good_posy.push_back(tofy);
+            //SofFF->SetMwpcPosY(posy);
+            //SofFF->SetTofPosY(tofy);
+          }
+        }
+      }
+
+      if(good_posx.size()==2 && good_posy.size()==2){
+        SofFF->SetTofPosX(good_posx[0]);
+        SofFF->SetTofPosX(good_posx[1]);
+ 
+        SofFF->SetTofPosY(good_posy[0]);
+        SofFF->SetTofPosY(good_posy[1]);
+      }
+
       //*** Filling the Fission Fragment Tree ***//
       SofFF->SetTOF(TOF_left);
       SofFF->SetTOF(TOF_right);
@@ -401,7 +409,7 @@ void Analysis::BeamAnalysis(){
     //cout << "Set beta to " << beta << endl;
     SofTrim->SetBeta(beta);
     SofTrim->BuildSimplePhysicalEvent();
-    double Zbeam,Qmax,Theta;
+    double Zbeam,Theta;
     if(SofTrim->EnergySection.size()>0){
       double Anode1 = SofTrim->EnergySection[0];
       double Anode2 = SofTrim->EnergySection[1];
@@ -411,7 +419,6 @@ void Analysis::BeamAnalysis(){
       else 
         Zbeam = SofTrim->GetMaxEnergySection();
 
-      //Qmax = DetermineQmax();
       Theta = SofTrim->Theta[0];
 
       double TofFromS2    = SofSci->CalTof[0];
@@ -435,7 +442,6 @@ void Analysis::BeamAnalysis(){
       double Gamma        = 1./(TMath::Sqrt(1 - TMath::Power(Beta,2)));
       double Brho = fBrho0 * (1 - XS2/fDS2 - XCC/fDCC);
       double AoQ  = Brho / (3.10716*Gamma*Beta);
-      double A    = AoQ * Qmax;
 
       // Y dependence correction //
       double Y_p0 = 23943.8;
@@ -445,6 +451,7 @@ void Analysis::BeamAnalysis(){
       // Z calibration //
       Zbeam = fZbeam_p0 + fZbeam_p1*Zbeam + fZbeam_p2*Zbeam*Zbeam;
       Zbeam = sqrt(Zbeam);
+      double A = AoQ * round(Zbeam);
 
       // Last beta correction //
       double Beta_norm = 0.8355;
@@ -452,7 +459,6 @@ void Analysis::BeamAnalysis(){
 
       // Filling Beam tree
       SofBeamID->SetZbeam(Zbeam);
-      //SofBeamID->SetQmax(rand.Gaus(Qmax,0.15));
       SofBeamID->SetAoQ(AoQ);
       SofBeamID->SetAbeam(A);
       SofBeamID->SetBeta(Beta);
@@ -462,37 +468,6 @@ void Analysis::BeamAnalysis(){
       SofBeamID->SetXCC(XCC);
       SofBeamID->SetYCC(YCC);
     }
-  }
-}
-
-////////////////////////////////////////////////////////////////////////////////
-void Analysis::LoadCut(){
-  TString input_path = "./calibration/SofTrim/cut/";
-
-  TString rootfile;
-  TString cutfile;
-  TFile* file;
-  for(int i=0; i<3; i++){
-    // Q=77
-    rootfile = Form("cutsec%iQ77.root",i+1);
-    cutfile = input_path + rootfile;
-    file = new TFile(cutfile);
-    cutQ77[i] = (TCutG*) file->Get(Form("cutsec%iQ77",i+1));
-    // Q=78
-    rootfile = Form("cutsec%iQ78.root",i+1);
-    cutfile = input_path + rootfile;
-    file = new TFile(cutfile);
-    cutQ78[i] = (TCutG*) file->Get(Form("cutsec%iQ78",i+1));
-    // Q=79
-    rootfile = Form("cutsec%iQ79.root",i+1);
-    cutfile = input_path + rootfile;
-    file = new TFile(cutfile);
-    cutQ79[i] = (TCutG*) file->Get(Form("cutsec%iQ79",i+1));
-    // Q=80
-    rootfile = Form("cutsec%iQ80.root",i+1);
-    cutfile = input_path + rootfile;
-    file = new TFile(cutfile);
-    cutQ80[i] = (TCutG*) file->Get(Form("cutsec%iQ80",i+1));
   }
 }
 
@@ -533,35 +508,6 @@ void Analysis::LoadSpline(){
 
 }
 
-////////////////////////////////////////////////////////////////////////////////
-int Analysis::DetermineQmax(){
-  int Qmax;
-  int Qsec[3];
-
-  unsigned int size = SofTrim->EnergySection.size();
-  for(unsigned int i=0; i<size; i++){
-    int SecNbr   = SofTrim->SectionNbr[i];
-    double Theta = SofTrim->Theta[i];
-    double Esec  = SofTrim->EnergySection[i];
-
-
-    if(cutQ77[SecNbr-1]->IsInside(Theta,Esec))
-      Qsec[SecNbr-1] = 77;
-    else if(cutQ78[SecNbr-1]->IsInside(Theta,Esec))
-      Qsec[SecNbr-1] = 78;
-    else if(cutQ79[SecNbr-1]->IsInside(Theta,Esec))
-      Qsec[SecNbr-1] = 79;
-    else if(cutQ80[SecNbr-1]->IsInside(Theta,Esec))
-      Qsec[SecNbr-1] = 80;
-    //else if(cutQ81[SecNbr-1]->IsInside(Theta,Esec))
-    //Qsec[SecNbr-1] = 81;
-  }
-
-  Qmax = max(Qsec[0],Qsec[1]);
-  Qmax = max(Qsec[2],Qmax);
-
-  return Qmax;
-}
 
 ////////////////////////////////////////////////////////////////////////////////
 void Analysis::End(){

@@ -1,5 +1,5 @@
-#ifndef Sofia_h
-#define Sofia_h 1
+#ifndef SofTofW_h
+#define SofTofW_h 1
 /*****************************************************************************
  * Copyright (C) 2009-2020   this file is part of the NPTool Project       *
  *                                                                           *
@@ -14,7 +14,7 @@
  * Last update    :                                                          *
  *---------------------------------------------------------------------------*
  * Decription:                                                               *
- *  This class describe  Sofia simulation                             *
+ *  This class describe  SofTofW simulation                             *
  *                                                                           *
  *---------------------------------------------------------------------------*
  * Comment:                                                                  *
@@ -38,13 +38,13 @@ using namespace std;
 #include "TSofTofWData.h"
 #include "NPInputParser.h"
 
-class Sofia : public NPS::VDetector{
+class SofTofW : public NPS::VDetector{
   ////////////////////////////////////////////////////
   /////// Default Constructor and Destructor /////////
   ////////////////////////////////////////////////////
   public:
-    Sofia() ;
-    virtual ~Sofia() ;
+    SofTofW() ;
+    virtual ~SofTofW() ;
 
     ////////////////////////////////////////////////////
     /////// Specific Function of this Class ///////////
@@ -58,14 +58,11 @@ class Sofia : public NPS::VDetector{
 
     G4AssemblyVolume* BuildTOFDetector();
     G4LogicalVolume* BuildGLAD();
-    G4LogicalVolume* BuildTwinMusic();
   
   private:
     G4LogicalVolume* m_PlasticTof;
     G4LogicalVolume* m_GLAD;
     G4AssemblyVolume* m_TofWall;
-    G4LogicalVolume* m_TwinMusic;
-    G4LogicalVolume* m_AnodeDriftArea;
     
     ////////////////////////////////////////////////////
     //////  Inherite from NPS::VDetector class /////////
@@ -93,7 +90,6 @@ class Sofia : public NPS::VDetector{
 
     //   Associated Scorer
     G4MultiFunctionalDetector* m_TofScorer ;
-    G4MultiFunctionalDetector* m_TwinScorer ;
     ////////////////////////////////////////////////////
     ///////////Event class to store Data////////////////
     ////////////////////////////////////////////////////
@@ -114,15 +110,9 @@ class Sofia : public NPS::VDetector{
     double m_GLAD_MagField;
     double m_GLAD_DistanceFromTarget;
   
-    // Twin Music //
-    int m_Build_Twin_Music;
-    double m_Twin_Music_DistanceFromTarget;
-    string m_Twin_Music_Gas;
-
     // Visualisation Attribute
     G4VisAttributes* m_VisSquare;
     G4VisAttributes* m_VisGLAD;
-    G4VisAttributes* m_VisTwin;
 
   // Needed for dynamic loading of the library
   public:

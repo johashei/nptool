@@ -27,8 +27,9 @@ TwoBodyReaction
  ShootHeavy= 1
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 FissionDecay 
-  CompoundNucleus= 236U
-  FissionModel= GEF
-  Shoot_FF= 1
-  Shoot_neutron= 0
-  Shoot_gamma= 0
+ CompoundNucleus= 236U
+ FissionModel= GEF
+ VamosChargeStates= 1
+ Shoot_FF= 1
+ Shoot_neutron= 0
+ Shoot_gamma= 0

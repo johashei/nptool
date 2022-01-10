@@ -12,7 +12,7 @@
  * Last update    :                                                           *
  *----------------------------------------------------------------------------*
  * Decription:                                                                *
- *  This class describe a simple Sofia setup for simulation                   *
+ *  This class describe a simple SofTofW setup for simulation                   *
  *                                                                            *
  *----------------------------------------------------------------------------*
  * Comment:                                                                   *
@@ -42,7 +42,7 @@
 #include "G4TransportationManager.hh"
 
 // NPTool header
-#include "Sofia.hh"
+#include "SofTofW.hh"
 #include "CalorimeterScorers.hh"
 #include "InteractionScorers.hh"
 #include "RootOutput.h"
@@ -58,12 +58,12 @@ using namespace CLHEP;
 
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-namespace Sofia_NS{
+namespace SofTofW_NS{
   // Energy and time Resolution
   const double EnergyThreshold       = 0.1*MeV;
   const double ResoTime              = 0.007*ns;
   const double ResoEnergy            = 1.0*MeV;
-  const double TwinResoEnergy        = 0*keV;
+  //const double TwinResoEnergy        = 0*keV;
   const double tof_plastic_height    = 660*mm;
   const double tof_plastic_width     = 32*mm;
   const double tof_plastic_thickness = 0.5*mm;
@@ -73,48 +73,46 @@ namespace Sofia_NS{
   const double GLAD_width            = 5*m;
   const double GLAD_length           = 2*m;
 
-  const double twin_anode_width = 10.*cm;
-  const double twin_anode_height = 10.*cm;
-  const double twin_anode_thickness = 3.1*cm;
+  //const double twin_anode_width = 10.*cm;
+  //const double twin_anode_height = 10.*cm;
+  //const double twin_anode_thickness = 3.1*cm;
 
-  const double twin_cathode_width = 30*um;
-  const double twin_cathode_height = 20*cm;
-  const double twin_cathode_thickness = 50*cm;
+  //const double twin_cathode_width = 30*um;
+  //const double twin_cathode_height = 20*cm;
+  //const double twin_cathode_thickness = 50*cm;
 
 
 }
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-// Sofia Specific Method
-Sofia::Sofia(){
+// SofTofW Specific Method
+SofTofW::SofTofW(){
   m_Event = new TSofTofWData() ;
   m_TofScorer = 0;
-  m_TwinScorer = 0;
   m_PlasticTof = 0;
-  m_AnodeDriftArea= 0;
-  m_TwinMusic= 0;
+  //m_AnodeDriftArea= 0;
+  //m_TwinMusic= 0;
   m_TofWall = 0;
 
   m_Build_GLAD= 0;
   m_GLAD_MagField = 0;
   m_GLAD_DistanceFromTarget = 0;
 
-  m_Build_Twin_Music= 0;
-  m_Twin_Music_DistanceFromTarget= 0;
-  m_Twin_Music_Gas= "P10_1atm";
+  //m_Build_Twin_Music= 0;
+  //m_Twin_Music_DistanceFromTarget= 0;
+  //m_Twin_Music_Gas= "P10_1atm";
 
   // RGB Color + Transparency
   m_VisSquare = new G4VisAttributes(G4Colour(0.53, 0.81, 0.98, 0.5));   
   m_VisGLAD = new G4VisAttributes(G4Colour(0.5, 0.5, 0.5, 0.5));   
-  m_VisTwin = new G4VisAttributes(G4Colour(0.7, 0.5, 0.5, 0.5));   
 
 }
 
-Sofia::~Sofia(){
+SofTofW::~SofTofW(){
 }
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-void Sofia::AddDetector(G4ThreeVector POS){
+void SofTofW::AddDetector(G4ThreeVector POS){
   // Convert the POS value to R theta Phi as Spherical coordinate is easier in G4 
   m_R.push_back(POS.mag());
   m_Theta.push_back(POS.theta());
@@ -123,22 +121,22 @@ void Sofia::AddDetector(G4ThreeVector POS){
 
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-void Sofia::AddDetector(double  R, double  Theta, double  Phi){
+void SofTofW::AddDetector(double  R, double  Theta, double  Phi){
   m_R.push_back(R);
   m_Theta.push_back(Theta);
   m_Phi.push_back(Phi);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-G4AssemblyVolume* Sofia::BuildTOFDetector(){
+G4AssemblyVolume* SofTofW::BuildTOFDetector(){
   m_TofWall = new G4AssemblyVolume();
 
   if(!m_PlasticTof){
-    G4Box* box = new G4Box("Sofia_Box",Sofia_NS::tof_plastic_height*0.5,
-        Sofia_NS::tof_plastic_width*0.5,Sofia_NS::tof_plastic_thickness*0.5);
+    G4Box* box = new G4Box("SofTofW_Box",SofTofW_NS::tof_plastic_height*0.5,
+        SofTofW_NS::tof_plastic_width*0.5,SofTofW_NS::tof_plastic_thickness*0.5);
 
-    G4Material* DetectorMaterial = MaterialManager::getInstance()->GetMaterialFromLibrary(Sofia_NS::Material);
-    m_PlasticTof = new G4LogicalVolume(box,DetectorMaterial,"logic_Sofia_Box",0,0,0);
+    G4Material* DetectorMaterial = MaterialManager::getInstance()->GetMaterialFromLibrary(SofTofW_NS::Material);
+    m_PlasticTof = new G4LogicalVolume(box,DetectorMaterial,"logic_SofTofW_Box",0,0,0);
     m_PlasticTof->SetVisAttributes(m_VisSquare);
     m_PlasticTof->SetSensitiveDetector(m_TofScorer);
 
@@ -149,7 +147,7 @@ G4AssemblyVolume* Sofia::BuildTOFDetector(){
     Tv.setZ(0);
     for(unsigned int i=0; i<28; i++){
       int k = -14+i;
-      Tv.setY(k*(Sofia_NS::tof_plastic_width+0.5));
+      Tv.setY(k*(SofTofW_NS::tof_plastic_width+0.5));
       m_TofWall->AddPlacedVolume(m_PlasticTof, Tv, Rv);
     }
 
@@ -158,7 +156,7 @@ G4AssemblyVolume* Sofia::BuildTOFDetector(){
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-G4LogicalVolume* Sofia::BuildTwinMusic(){
+/*G4LogicalVolume* SofTofW::BuildTwinMusic(){
 
   double twin_width = 21*cm;
   double twin_height = 21*cm;
@@ -184,7 +182,7 @@ G4LogicalVolume* Sofia::BuildTwinMusic(){
       G4LogicalVolume* LogicalSector = new G4LogicalVolume(Sectorbox, TwinMaterial, "logic_twin", 0,0,0);
       LogicalSector->SetVisAttributes(G4VisAttributes::GetInvisible());
       // Drift Anode Area //
-      G4Box* Anodebox = new G4Box("Anode_Box", Sofia_NS::twin_anode_width*0.5, Sofia_NS::twin_anode_height*0.5, Sofia_NS::twin_anode_thickness*0.5);
+      G4Box* Anodebox = new G4Box("Anode_Box", SofTofW_NS::twin_anode_width*0.5, SofTofW_NS::twin_anode_height*0.5, SofTofW_NS::twin_anode_thickness*0.5);
 
       G4Material* DetectorMaterial = MaterialManager::getInstance()->GetMaterialFromLibrary(m_Twin_Music_Gas);
       m_AnodeDriftArea = new G4LogicalVolume(Anodebox, DetectorMaterial, "logic_twin_anode", 0, 0, 0);
@@ -192,7 +190,7 @@ G4LogicalVolume* Sofia::BuildTwinMusic(){
       m_AnodeDriftArea->SetSensitiveDetector(m_TwinScorer);
 
       // Cathode plane in the middle //
-      G4Box* cathode_box = new G4Box("Cathode_box", Sofia_NS::twin_cathode_width*0.5, Sofia_NS::twin_cathode_height*0.5, Sofia_NS::twin_cathode_thickness*0.5);
+      G4Box* cathode_box = new G4Box("Cathode_box", SofTofW_NS::twin_cathode_width*0.5, SofTofW_NS::twin_cathode_height*0.5, SofTofW_NS::twin_cathode_thickness*0.5);
       G4Material* CathodeMaterial = MaterialManager::getInstance()->GetMaterialFromLibrary("Al");
       G4VisAttributes* m_VisCathode = new G4VisAttributes(G4Colour(0.7,0.4,0,1));
       G4LogicalVolume* LogicalCathode = new G4LogicalVolume(cathode_box, CathodeMaterial, "logic_cathode", 0,0,0);
@@ -213,7 +211,7 @@ G4LogicalVolume* Sofia::BuildTwinMusic(){
       int anode_nbr= 0;
       for(unsigned int j=0; j<16; j++){
         anode_nbr++;
-        Tv.setZ(j*Sofia_NS::twin_anode_thickness -7.5*Sofia_NS::twin_anode_thickness);
+        Tv.setZ(j*SofTofW_NS::twin_anode_thickness -7.5*SofTofW_NS::twin_anode_thickness);
         new G4PVPlacement(0,Tv,
             m_AnodeDriftArea,
             "Anode",
@@ -222,20 +220,20 @@ G4LogicalVolume* Sofia::BuildTwinMusic(){
 
       for(unsigned int i=0; i<4; i++){
         if(i==0){
-          Tv.setX(0.5*Sofia_NS::twin_anode_width+Sofia_NS::twin_cathode_width);
-          Tv.setY(0.5*Sofia_NS::twin_anode_height);
+          Tv.setX(0.5*SofTofW_NS::twin_anode_width+SofTofW_NS::twin_cathode_width);
+          Tv.setY(0.5*SofTofW_NS::twin_anode_height);
         }
         if(i==1){
-          Tv.setX(-0.5*Sofia_NS::twin_anode_width-Sofia_NS::twin_cathode_width);
-          Tv.setY(0.5*Sofia_NS::twin_anode_height);
+          Tv.setX(-0.5*SofTofW_NS::twin_anode_width-SofTofW_NS::twin_cathode_width);
+          Tv.setY(0.5*SofTofW_NS::twin_anode_height);
         }
         if(i==2){
-          Tv.setX(-0.5*Sofia_NS::twin_anode_width-Sofia_NS::twin_cathode_width);
-          Tv.setY(-0.5*Sofia_NS::twin_anode_height);
+          Tv.setX(-0.5*SofTofW_NS::twin_anode_width-SofTofW_NS::twin_cathode_width);
+          Tv.setY(-0.5*SofTofW_NS::twin_anode_height);
         }
         if(i==3){
-          Tv.setX(0.5*Sofia_NS::twin_anode_width+Sofia_NS::twin_cathode_width);
-          Tv.setY(-0.5*Sofia_NS::twin_anode_height);
+          Tv.setX(0.5*SofTofW_NS::twin_anode_width+SofTofW_NS::twin_cathode_width);
+          Tv.setY(-0.5*SofTofW_NS::twin_anode_height);
         }
 
         Tv.setZ(0);
@@ -248,13 +246,13 @@ G4LogicalVolume* Sofia::BuildTwinMusic(){
   }
 
   return m_TwinMusic;
-}
+}*/
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-G4LogicalVolume* Sofia::BuildGLAD()
+G4LogicalVolume* SofTofW::BuildGLAD()
 {
-  G4Box* box = new G4Box("glad_Box",Sofia_NS::GLAD_width*0.5,
-      Sofia_NS::GLAD_height*0.5,Sofia_NS::GLAD_length*0.5);
+  G4Box* box = new G4Box("glad_Box",SofTofW_NS::GLAD_width*0.5,
+      SofTofW_NS::GLAD_height*0.5,SofTofW_NS::GLAD_length*0.5);
 
   G4Material* GLADMaterial = MaterialManager::getInstance()->GetMaterialFromLibrary("Vaccuum");
   m_GLAD = new G4LogicalVolume(box,GLADMaterial,"logic_GLAD_Box",0,0,0);
@@ -281,37 +279,32 @@ G4LogicalVolume* Sofia::BuildGLAD()
 
 // Read stream at Configfile to pick-up parameters of detector (Position,...)
 // Called in DetecorConstruction::ReadDetextorConfiguration Method
-void Sofia::ReadConfiguration(NPL::InputParser parser){
-  vector<NPL::InputBlock*> blocks = parser.GetAllBlocksWithToken("Sofia");
+void SofTofW::ReadConfiguration(NPL::InputParser parser){
+  vector<NPL::InputBlock*> blocks = parser.GetAllBlocksWithToken("SofTofW");
   if(NPOptionManager::getInstance()->GetVerboseLevel())
     cout << "//// " << blocks.size() << " detectors found " << endl; 
 
-  vector<string> cart = {"POS","Build_GLAD","Build_Twin_Music"};
-  vector<string> sphe = {"R","Theta","Phi","Build_GLAD","Build_Twin_Music"};
+  vector<string> cart = {"POS","Build_GLAD"};
+  vector<string> sphe = {"R","Theta","Phi","Build_GLAD"};
 
   for(unsigned int i = 0 ; i < blocks.size() ; i++){
     if(blocks[i]->HasTokenList(cart)){
       if(NPOptionManager::getInstance()->GetVerboseLevel())
-        cout << endl << "////  Sofia " << i+1 <<  endl;
+        cout << endl << "////  SofTofW " << i+1 <<  endl;
 
       G4ThreeVector Pos = NPS::ConvertVector(blocks[i]->GetTVector3("POS","mm"));
       m_Build_GLAD = blocks[i]->GetInt("Build_GLAD");
-      m_Build_Twin_Music = blocks[i]->GetInt("Build_Twin_Music");
       AddDetector(Pos);
     }
     else if(blocks[i]->HasTokenList(sphe)){
       if(NPOptionManager::getInstance()->GetVerboseLevel())
-        cout << endl << "////  Sofia " << i+1 <<  endl;
+        cout << endl << "////  SofTofW " << i+1 <<  endl;
       double R = blocks[i]->GetDouble("R","mm");
       double Theta = blocks[i]->GetDouble("Theta","deg");
       double Phi = blocks[i]->GetDouble("Phi","deg");
       m_Build_GLAD = blocks[i]->GetInt("Build_GLAD");
       m_GLAD_MagField = blocks[i]->GetDouble("GLAD_MagField","T");
       m_GLAD_DistanceFromTarget = blocks[i]->GetDouble("GLAD_DistanceFromTarget", "m");
-
-      m_Build_Twin_Music = blocks[i]->GetInt("Build_Twin_Music");
-      m_Twin_Music_DistanceFromTarget = blocks[i]->GetDouble("Twin_Music_DistanceFromTarget", "m");
-      m_Twin_Music_Gas = blocks[i]->GetString("Twin_Music_Gas");
 
       AddDetector(R,Theta,Phi);
     }
@@ -327,7 +320,7 @@ void Sofia::ReadConfiguration(NPL::InputParser parser){
 
 // Construct detector and inialise sensitive part.
 // Called After DetecorConstruction::AddDetector Method
-void Sofia::ConstructDetector(G4LogicalVolume* world){
+void SofTofW::ConstructDetector(G4LogicalVolume* world){
   for (unsigned short i = 0 ; i < m_R.size() ; i++) {
 
     G4double wX = m_R[i] * sin(m_Theta[i] ) * cos(m_Phi[i] ) ;
@@ -335,7 +328,7 @@ void Sofia::ConstructDetector(G4LogicalVolume* world){
     G4double wZ = m_R[i] * cos(m_Theta[i] ) ;
     G4ThreeVector Det_pos = G4ThreeVector(wX, wY, wZ) ;
     // So the face of the detector is at R instead of the middle
-    Det_pos+=Det_pos.unit()*Sofia_NS::tof_plastic_thickness*0.5;
+    Det_pos+=Det_pos.unit()*SofTofW_NS::tof_plastic_thickness*0.5;
     // Building Detector reference frame
     G4double ii = cos(m_Theta[i]) * cos(m_Phi[i]);
     G4double jj = cos(m_Theta[i]) * sin(m_Phi[i]);
@@ -353,14 +346,14 @@ void Sofia::ConstructDetector(G4LogicalVolume* world){
     BuildTOFDetector()->MakeImprint(world,Det_pos,Rot);
 
     if(m_Build_GLAD==1){
-      G4ThreeVector GLAD_pos = G4ThreeVector(0,0,m_GLAD_DistanceFromTarget+0.5*Sofia_NS::GLAD_length);
+      G4ThreeVector GLAD_pos = G4ThreeVector(0,0,m_GLAD_DistanceFromTarget+0.5*SofTofW_NS::GLAD_length);
       new G4PVPlacement(0, GLAD_pos,
           BuildGLAD(),
           "GLAD",
           world, false, 0);
     }
 
-    if(m_Build_Twin_Music==1){
+    /*if(m_Build_Twin_Music==1){
       G4ThreeVector Tv = G4ThreeVector(0,0,0);
       Tv.setZ(m_Twin_Music_DistanceFromTarget);
 
@@ -368,16 +361,16 @@ void Sofia::ConstructDetector(G4LogicalVolume* world){
           BuildTwinMusic(),
           "Twin",
            world, false, 0);
-    }
+    }*/
   }
 }
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 // Add Detector branch to the EventTree.
 // Called After DetecorConstruction::AddDetector Method
-void Sofia::InitializeRootOutput(){
+void SofTofW::InitializeRootOutput(){
   RootOutput *pAnalysis = RootOutput::getInstance();
   TTree *pTree = pAnalysis->GetTree();
-  if(!pTree->FindBranch("Sofia")){
+  if(!pTree->FindBranch("SofTofW")){
     pTree->Branch("SofTofW", "TSofTofWData", &m_Event) ;
   }
   pTree->SetBranchAddress("SofTofW", &m_Event) ;
@@ -386,7 +379,7 @@ void Sofia::InitializeRootOutput(){
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 // Read sensitive part and fill the Root tree.
 // Called at in the EventAction::EndOfEventAvtion
-void Sofia::ReadSensitive(const G4Event* ){
+void SofTofW::ReadSensitive(const G4Event* ){
   m_Event->Clear();
 
   ///////////
@@ -396,9 +389,9 @@ void Sofia::ReadSensitive(const G4Event* ){
   unsigned int size = Scorer->GetMult(); 
   for(unsigned int i = 0 ; i < size ; i++){
     vector<unsigned int> level = Scorer->GetLevel(i); 
-    double Energy = RandGauss::shoot(Scorer->GetEnergy(i),Sofia_NS::ResoEnergy);
-    if(Energy>Sofia_NS::EnergyThreshold){
-      double Time = RandGauss::shoot(Scorer->GetTime(i),Sofia_NS::ResoTime);
+    double Energy = RandGauss::shoot(Scorer->GetEnergy(i),SofTofW_NS::ResoEnergy);
+    if(Energy>SofTofW_NS::EnergyThreshold){
+      double Time = RandGauss::shoot(Scorer->GetTime(i),SofTofW_NS::ResoTime);
       int DetectorNbr = level[0];
       int PlasticNbr = level[1]-1;
       //m_Event->SetDetectorNbr(DetectorNbr);
@@ -413,7 +406,7 @@ void Sofia::ReadSensitive(const G4Event* ){
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 ////////////////////////////////////////////////////////////////   
-void Sofia::InitializeScorers() { 
+void SofTofW::InitializeScorers() { 
   // This check is necessary in case the geometry is reloaded
   bool already_exist = false; 
   m_TofScorer = CheckScorer("TofScorer",already_exist) ;
@@ -426,15 +419,12 @@ void Sofia::InitializeScorers() {
   level.push_back(1);
   level.push_back(0);
   G4VPrimitiveScorer* Calorimeter= new CalorimeterScorers::PS_Calorimeter("Calorimeter",level, 0) ;
-  G4VPrimitiveScorer* TwinCalorimeter= new CalorimeterScorers::PS_Calorimeter("TwinCalorimeter",level, 0) ;
+  //G4VPrimitiveScorer* TwinCalorimeter= new CalorimeterScorers::PS_Calorimeter("TwinCalorimeter",level, 0) ;
   G4VPrimitiveScorer* Interaction= new InteractionScorers::PS_Interactions("Interaction",ms_InterCoord, 0) ;
   //and register it to the multifunctionnal detector
   m_TofScorer->RegisterPrimitive(Calorimeter);
   m_TofScorer->RegisterPrimitive(Interaction);
   G4SDManager::GetSDMpointer()->AddNewDetector(m_TofScorer) ;
-
-  m_TwinScorer->RegisterPrimitive(TwinCalorimeter);
-  G4SDManager::GetSDMpointer()->AddNewDetector(m_TwinScorer) ;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -443,8 +433,8 @@ void Sofia::InitializeScorers() {
 ////////////////////////////////////////////////////////////////////////////////
 //            Construct Method to be pass to the DetectorFactory              //
 ////////////////////////////////////////////////////////////////////////////////
-NPS::VDetector* Sofia::Construct(){
-  return  (NPS::VDetector*) new Sofia();
+NPS::VDetector* SofTofW::Construct(){
+  return  (NPS::VDetector*) new SofTofW();
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -452,13 +442,13 @@ NPS::VDetector* Sofia::Construct(){
 //            Registering the construct method to the factory                 //
 ////////////////////////////////////////////////////////////////////////////////
 extern"C" {
-  class proxy_nps_Sofia{
+  class proxy_nps_SofTofW{
     public:
-      proxy_nps_Sofia(){
-        NPS::DetectorFactory::getInstance()->AddToken("Sofia","Sofia");
-        NPS::DetectorFactory::getInstance()->AddDetector("Sofia",Sofia::Construct);
+      proxy_nps_SofTofW(){
+        NPS::DetectorFactory::getInstance()->AddToken("SofTofW","SofTofW");
+        NPS::DetectorFactory::getInstance()->AddDetector("SofTofW",SofTofW::Construct);
       }
   };
 
-  proxy_nps_Sofia p_nps_Sofia;
+  proxy_nps_SofTofW p_nps_SofTofW;
 }

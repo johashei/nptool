@@ -8,9 +8,9 @@
  *****************************************************************************/
 
 /*****************************************************************************
- * Original Author: XAUTHORX  contact address: XMAILX                        *
- *                                                                           *
- * Creation Date  : XMONTHX XYEARX                                           *
+ * Original Author: Pierre Morfouace  contact address: pierre.morfouace@cea.fr *
+ *                                                                             *
+ * Creation Date  : 06/2021                                             *
  * Last update    :                                                          *
  *---------------------------------------------------------------------------*
  * Decription:                                                               *
@@ -54,9 +54,7 @@ class Analysis: public NPL::VAnalysis{
     static NPL::VAnalysis* Construct();
 
   public:
-    void LoadCut();
     void LoadSpline();
-    int DetermineQmax();
 
   private:
     TSofSciPhysics* SofSci;
@@ -86,11 +84,6 @@ class Analysis: public NPL::VAnalysis{
     double fZBeta_p1;
 
     TRandom3 rand;
-    TCutG* cutQ77[3];
-    TCutG* cutQ78[3];
-    TCutG* cutQ79[3];
-    TCutG* cutQ80[3];
-    TCutG* cutQ81[3];
     
     TSpline3* fcorr_z_beta[4];
     TSpline3* fcorr_z_dt[4];
