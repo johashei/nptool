@@ -72,7 +72,7 @@ double SamuraiFieldMap::FindBrho(TVector3 p_fdc0,TVector3 d_fdc0,TVector3 p_fdc2
   double b0[1] ={m_BrhoScan->Eval(p_fdc2.X())};
   //cout << "First guess Brho " << b0[0] << " "; //endl;
 
-  
+
   m_min->Clear();
   m_min->SetPrecision(1e-6);
   m_min->SetMaxFunctionCalls(1000);
@@ -137,7 +137,7 @@ std::vector< TVector3 > SamuraiFieldMap::Propagate(double Brho, TVector3 pos, TV
     track.push_back(pos);
     pos.RotateY(m_angle);
   }
-  
+
   dir=dir.Unit();
   static double r;
   r = sqrt(pos.X()*pos.X()+pos.Z()*pos.Z());
@@ -174,7 +174,7 @@ std::vector< TVector3 > SamuraiFieldMap::Propagate(double Brho, TVector3 pos, TV
   py = P*dir.Y();//py
   pz = P*dir.Z();//pz
   imp = P*dir;
-  
+
   while(r<=m_Rmax && count < m_Limit){
     func(N, pos           , imp            , xk1, pk1);
     func(N, pos+xk1*(m_StepTime/2.), imp+pk1*(m_StepTime/2.) , xk2, pk2);
@@ -190,12 +190,12 @@ std::vector< TVector3 > SamuraiFieldMap::Propagate(double Brho, TVector3 pos, TV
     r = sqrt(pos.X()*pos.X()+pos.Z()*pos.Z());
     count++;
   }
-  
+
   imp=imp.Unit();
   pos = PropagateToFDC2(pos, imp);
   pos.RotateY(-m_angle);
   track.push_back(pos);
-  
+
   return track;
 
 }
@@ -255,7 +255,6 @@ std::vector<double> SamuraiFieldMap::GetB(std::vector<double>& pos){
   else 
     return nullv;
 }
-
 ////////////////////////////////////////////////////////////////////////////////
 std::vector<double> SamuraiFieldMap::InterpolateB(const std::vector<double>& pos){
   static vector<double> nullv ={0,0,0};
@@ -282,7 +281,153 @@ std::vector<double> SamuraiFieldMap::InterpolateB(const std::vector<double>& pos
   if(z<m_z_min || z>m_z_max)
     return nullv;
 
+  double x0 = (double)((int)(x)/m_bin)*m_bin;
+  if(x<=x0)
+    x0=(double)((int)(x-m_bin)/m_bin)*m_bin; 
 
+  double x1 = (double)((int)(x)/m_bin)*m_bin;
+  if(x>=x1)
+    x1=(double)((int)(x+m_bin)/m_bin)*m_bin; 
+
+  double y0 = (double)((int)(y)/m_bin)*m_bin;
+  if(y<=y0)
+    y0=(double)((int)(y-m_bin)/m_bin)*m_bin; 
+
+  double y1 = (double)((int)(y)/m_bin)*m_bin;
+  if(y>=y1)
+    y1=(double)((int)(y+m_bin)/m_bin)*m_bin; 
+
+  double z0 = (double)((int)(z)/m_bin)*m_bin;
+  if(z<=z0)
+    z0=(double)((int)(z-m_bin)/m_bin)*m_bin; 
+
+  double z1 = (double)((int)(z)/m_bin)*m_bin;
+  if(z>=z1)
+    z1=(double)((int)(z+m_bin)/m_bin)*m_bin; 
+
+  // Apply symmetry
+  // corrected coordinate for the symmetrised map
+  double xx0,xx1,zz0,zz1;
+  if(x0<0)
+    xx0 = -x0;
+  else 
+    xx0 = x0;
+  if(z0<0)
+    zz0 = -z0;
+  else
+    zz0 = z0;
+  if(x1<0)
+    xx1 = -x1;
+  else
+    xx1 = x1;
+  if(z1<0)
+    zz1 = -z1;
+  else
+    zz1 = z1;
+
+  //vector<double> X={xm,ym,zm};
+  vector<double> X000={xx0,y0,zz0};
+  vector<double> X111={xx1,y1,zz1};
+  vector<double> X100={xx1,y0,zz0};
+  vector<double> X010={xx0,y1,zz0};
+  vector<double> X001={xx0,y0,zz1};
+  vector<double> X101={xx1,y0,zz1};
+  vector<double> X011={xx0,y1,zz1};
+  vector<double> X110={xx1,y1,zz0};
+
+  vector<double> C000;
+  vector<double> C111;
+  vector<double> C100;
+  vector<double> C010;
+  vector<double> C001;
+  vector<double> C101;
+  vector<double> C011;
+  vector<double> C110;
+
+  if(m_field.lower_bound(X000)!=m_field.end())
+    C000=m_field.lower_bound(X000)->second;
+  else 
+    return nullv;
+
+  if(m_field.lower_bound(X111)!=m_field.end())
+    C111=m_field.lower_bound(X111)->second;
+  else 
+    return nullv;
+
+  if(m_field.lower_bound(X100)!=m_field.end())
+    C100=m_field.lower_bound(X100)->second;
+  else 
+    return nullv;
+
+  if(m_field.lower_bound(X010)!=m_field.end())
+    C010=m_field.lower_bound(X010)->second;
+  else 
+    return nullv;
+
+  if(m_field.lower_bound(X001)!=m_field.end())
+    C001=m_field.lower_bound(X001)->second;
+  else 
+    return nullv;
+
+  if(m_field.lower_bound(X101)!=m_field.end())
+    C101=m_field.lower_bound(X101)->second;
+  else 
+    return nullv;
+
+  if(m_field.lower_bound(X011)!=m_field.end())
+    C011=m_field.lower_bound(X011)->second;
+  else 
+    return nullv;
+
+  if(m_field.lower_bound(X110)!=m_field.end())
+    C110=m_field.lower_bound(X110)->second;
+  else 
+    return nullv;
+
+  double xd = (x-x0)/(x1-x0);    
+  double yd = (y-y0)/(y1-y0);    
+  double zd = (z-z0)/(z1-z0);    
+  double alphaX = 1-xd;
+  double alphaY = 1-yd;
+  double alphaZ = 1-zd;
+  // X 
+  vector<double> C00 = {C000[0]*alphaX+C100[0]*xd,C000[1]*alphaX+C100[1]*xd,C000[2]*alphaX+C100[2]*xd};
+  vector<double> C01 = {C001[0]*alphaX+C101[0]*xd,C001[1]*alphaX+C101[1]*xd,C001[2]*alphaX+C101[2]*xd};
+  vector<double> C10 = {C010[0]*alphaX+C110[0]*xd,C010[1]*alphaX+C110[1]*xd,C010[2]*alphaX+C110[2]*xd};
+  vector<double> C11 = {C011[0]*alphaX+C111[0]*xd,C011[1]*alphaX+C111[1]*xd,C011[2]*alphaX+C111[2]*xd};
+  // Y
+  vector<double> C0  = {C00[0] *alphaY+C10[0] *yd,C00[1] *alphaY+C10[1] *yd,C00[2] *alphaY+C10[2] *yd};
+  vector<double> C1  = {C01[0] *alphaY+C11[0] *yd,C01[1] *alphaY+C11[1] *yd,C01[2] *alphaY+C11[2] *yd};
+  // Z
+  vector<double> res = {C0[0]  *alphaZ+C1[0]  *zd,C0[1]  *alphaZ+C1[1]  *zd,C0[2]  *alphaZ+C1[2]  *zd};
+
+  return res;
+}
+////////////////////////////////////////////////////////////////////////////////
+std::vector<double> SamuraiFieldMap::InterpolateBalt(const std::vector<double>& pos){
+  static vector<double> nullv ={0,0,0};
+  // the map is only 1/4 of the detector so we apply symetrie:
+  double x,y,z ;
+
+  if(pos[0]>0)
+    x = pos[0];
+  else
+    x = -pos[0];
+
+  y = pos[1];
+
+  if(pos[2]>0)
+    z = pos[2];
+  else
+    z = -pos[2];
+
+  // out of bound 
+  if(x<m_x_min || x>m_x_max)
+    return nullv;
+  if(y<m_y_min || y>m_y_max)
+    return nullv;
+  if(z<m_z_min || z>m_z_max)
+    return nullv;
 
   double xm = (double)((int)x/m_bin*m_bin);
   double ym = (double)((int)y/m_bin*m_bin);
@@ -309,7 +454,8 @@ std::vector<double> SamuraiFieldMap::InterpolateB(const std::vector<double>& pos
   unsigned int size = it.size();
   for(unsigned int i = 0 ; i < size; i++){
     if(it[i]!=end){
-      double d = 1e-6+sqrt( (x-it[i]->first[0])*(x-it[i]->first[0])+
+      double d = 1e-6+sqrt( 
+          (x-it[i]->first[0])*(x-it[i]->first[0])+
           (y-it[i]->first[1])*(y-it[i]->first[1])+
           (z-it[i]->first[2])*(z-it[i]->first[2]));
 
@@ -420,7 +566,7 @@ void SamuraiFieldMap::LoadBinary(std::string file){
 
   //default value for m_Rmax
   m_Rmax=m_x_max;
-  
+
   cout << "\r  - " << count << " values loaded" << endl; 
   cout << "  - min(" << m_x_min <<";"<< m_y_min <<";" << m_z_min<< ") max(" << m_x_max <<";"<< m_y_max <<";" << m_z_max<< ")" << endl; 
   cout << "  - Rmax = " << m_Rmax << endl;
