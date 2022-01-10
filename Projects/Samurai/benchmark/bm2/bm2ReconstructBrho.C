@@ -3,13 +3,18 @@ void Brhos(string path_to_file);
 
 void bm2ReconstructBrho (){
 
-    //vector<string> paths ={"spm1000/1cm_E0/", "spm1000/1cm_E480/", "spm1000/5cm_E480/", 
-    //                     "spm10000/1cm_E0/", "spm10000/1cm_E480/", "spm10000/5cm_E480/"};
-    //vector<string> paths ={"spm1000/1cm_E0/", "spm1000/1cm_E480/", "spm1000/5cm_E480/"};
-    //vector<string> paths ={"spm10000/1cm_E0/", "spm10000/1cm_E480/", "spm10000/5cm_E480/"};
+    //vector<string> paths ={"field_10mm/spm1000/1cm_E0/", "field_10mm/spm1000/1cm_E480/", "field_10mm/spm1000/5cm_E480/", 
+    //                     "field_10mm/spm10000/1cm_E0/", "field_10mm/spm10000/1cm_E480/", "field_10mm/spm10000/5cm_E480/"};
+    //vector<string> paths ={"field_10mm/1x5y/", "field_20mm/"};
     //for(auto p:paths) Brhos(p);
 
-    Brhos("spm1000/1cm_E0/");
+    //Brhos("field_10mm/1x5y/");
+    //Brhos("field_10mm/5x1y/");
+    //Brhos("field_20mm/");
+    //Brhos("field_10mm/spm1000/1cm_E0/");
+
+    //vector<string> paths ={"field_10mm/1x5y/", "field_20mm/"};
+    //for(auto p:paths) Brhos(p);
 
 }
 
@@ -19,7 +24,9 @@ void Brhos(string path_to_file){
 
     string filenameIn = path_to_file + "testanalysis.root";
     string filenameOut = path_to_file + "brhos.root";
+    //string fieldmap_file = "../../field_map/3T_20mm.table.bin";
     string fieldmap_file = "../../field_map/3T.table.bin";    
+
 
     TFile* fileIn = new TFile(filenameIn.c_str(), "read");
     TTree* input = (TTree*)fileIn->Get("SimulatedTree");
@@ -57,13 +64,19 @@ void Brhos(string path_to_file){
 
     TVector3 Mag_Pos (0,0,10000*mm);
     TVector3 Pos_FDC1, Dir_FDC1, Pos_FDC2, Dir_FDC2;
+    double fx1, fx2, fy1, fy2;
+    static const Res_FDC1 = 110*um, Res_FDC2 = 120*um;
     for (int i=0; i<entries; i++){
         cout << i << " " << path_to_file  << " ";
         for (auto j=0; j<time.size(); j++) br_recs[j]=-1;
         input->GetEntry(i);
         if (FDC2->GetMult() == 1 && FDC1->GetMult() == 1){
-            Pos_FDC1 = TVector3(FDC1->GetPosX(0), FDC1->GetPosY(0), FDC1->GetPosZ(0)) - Mag_Pos;
-            Pos_FDC2 = TVector3(FDC2->GetPosX(0), FDC2->GetPosY(0), FDC2->GetPosZ(0)) - Mag_Pos;
+            fx1 = G4RandGauss::shoot(FDC1->GetPosX(0), Res_FDC1);
+            fy1 = G4RandGauss::shoot(FDC1->GetPosY(0), Res_FDC1);
+            fx2 = G4RandGauss::shoot(FDC2->GetPosX(0), Res_FDC2);
+            fy2 = G4RandGauss::shoot(FDC2->GetPosY(0), Res_FDC2);
+            Pos_FDC1 = TVector3(fx1, fy1, FDC1->GetPosZ(0)) - Mag_Pos;
+            Pos_FDC2 = TVector3(fx2, fy2, FDC2->GetPosZ(0)) - Mag_Pos;
             Dir_FDC1.SetMagThetaPhi(FDC1->GetMomMag(0), FDC1->GetMomTheta(0), FDC1->GetMomPhi(0));
             Dir_FDC2.SetMagThetaPhi(FDC2->GetMomMag(0), FDC2->GetMomTheta(0), FDC2->GetMomPhi(0));
             Dir_FDC1.Unit();
