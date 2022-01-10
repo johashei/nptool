@@ -3,7 +3,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%Beam energy given in MeV ; Excitation in MeV ; emmitance in rad
 Beam
- Particle= 238U
+ Particle= 179Hg
  Energy= 166000
  SigmaEnergy= 2
  SigmaX= 1 cm
@@ -16,10 +16,10 @@ Beam
  MeanY= 0
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 TwoBodyReaction
- Beam= 238U
- Target= 208Pb
- Light= 208Pb
- Heavy= 238U
+ Beam= 179Hg
+ Target= 12C
+ Light= 11C
+ Heavy= 180Hg
  ExcitationEnergyLight= 0.0
  ExcitationEnergyHeavy= 15.0
  CrossSectionPath= sofia.txt CS
@@ -27,8 +27,9 @@ TwoBodyReaction
  ShootHeavy= 1
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 FissionDecay 
- CompoundNucleus= 238U
+ CompoundNucleus= 180Hg
  FissionModel= GEF
+ VamosChargeStates= 0
  Shoot_FF= 1
  Shoot_neutron= 0
  Shoot_gamma= 0
