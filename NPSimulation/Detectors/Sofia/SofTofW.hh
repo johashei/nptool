@@ -32,6 +32,7 @@ using namespace std;
 #include "G4LogicalVolume.hh"
 #include "G4MultiFunctionalDetector.hh"
 #include "G4AssemblyVolume.hh"
+#include "G4GDMLParser.hh"
 
 // NPTool header
 #include "NPSVDetector.hh"
@@ -57,11 +58,13 @@ class SofTofW : public NPS::VDetector{
 
 
     G4AssemblyVolume* BuildTOFDetector();
-    G4LogicalVolume* BuildGLAD();
+    G4AssemblyVolume* BuildGLAD();
   
   private:
+    G4GDMLParser m_gdmlparser;
     G4LogicalVolume* m_PlasticTof;
-    G4LogicalVolume* m_GLAD;
+    //G4LogicalVolume* m_GLAD;
+    G4AssemblyVolume* m_GLAD;
     G4AssemblyVolume* m_TofWall;
     
     ////////////////////////////////////////////////////

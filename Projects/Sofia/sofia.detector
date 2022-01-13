@@ -15,7 +15,7 @@ SofTofW
  Build_GLAD= 1
  GLAD_DistanceFromTarget= 3.3 m
  GLAD_MagField= 1.8 T 
- Build_Twin_Music= 0
+ %Build_Twin_Music= 0
  %Twin_Music_DistanceFromTarget= 1.5 m
  %Twin_Music_Gas= P10_1atm
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
