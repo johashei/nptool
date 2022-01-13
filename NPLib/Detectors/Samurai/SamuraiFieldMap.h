@@ -67,6 +67,7 @@ class SamuraiFieldMap{
     
     // interpolate B witin volume (0 outside volume)
     std::vector<double> InterpolateB(const std::vector<double>& pos);
+    std::vector<double> InterpolateBalt(const std::vector<double>& pos);
     // interpolate B witin volume (0 outside volume)
     inline std::vector<double> InterpolateB(const TVector3& pos){
       std::vector<double> p={(double)pos.X(),(double)pos.Y(),(double)pos.Z()};
