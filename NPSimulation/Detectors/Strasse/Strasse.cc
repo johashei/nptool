@@ -633,7 +633,9 @@ G4LogicalVolume* Strasse::BuildOuterDetector(){
 G4LogicalVolume* Strasse::BuildChamber(){
   if(!m_Chamber){
     // Needed Element
-    G4Material* Material = MaterialManager::getInstance()->GetMaterialFromLibrary("Al");
+    // G4Material* Material = MaterialManager::getInstance()->GetMaterialFromLibrary("Al");
+    G4Material* Material = MaterialManager::getInstance()->GetMaterialFromLibrary("Al5754");
+    // G4Material* Material = MaterialManager::getInstance()->GetMaterialFromLibrary("Al1050");
     G4RotationMatrix* Rot = new G4RotationMatrix();
 
     // Main Cylinder
@@ -693,7 +695,6 @@ G4LogicalVolume* Strasse::BuildChamber(){
       Rot,G4ThreeVector(0,0,Chamber_Sphere_Shift+Chamber_Sphere_Radius+Chamber_ExitTube_Length*0.5-2*cm));
 
     m_Chamber = new G4LogicalVolume(Chamber3,Material,"logic_Strasse_Chamber",0,0,0);
-
 
     m_Chamber->SetVisAttributes(ChamberVisAtt);
   }
@@ -1023,7 +1024,7 @@ void Strasse::ConstructDetector(G4LogicalVolume* world){
   }
 
   // Chamber 
-  /*
+  
   for (unsigned short i = 0 ; i < m_Chamber_Z.size() ; i++) {
     G4ThreeVector Det_pos = G4ThreeVector(0,0,-m_Chamber_Z[i]) ;
     G4RotationMatrix* Rot =  new G4RotationMatrix();
@@ -1032,7 +1033,7 @@ void Strasse::ConstructDetector(G4LogicalVolume* world){
         BuildChamber(),
         "Strasse",world,false,i+1);
   }
-  */
+  
 
 
     //G4ThreeVector Det_pos = G4ThreeVector(0,0,+11.5) ;

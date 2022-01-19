@@ -6,7 +6,8 @@
  *****************************************************************************/
 
 /*****************************************************************************
- * Original Author: ValerianAlcindor  contact address: valcindor@@ikp.tu-darmstadt.de
+ * Original Author: ValerianAlcindor  contact address:
+ *valcindor@@ikp.tu-darmstadt.de
  *                                                                           *
  * Creation Date  : September 2021                                             *
  * Last update    :                                                          *
