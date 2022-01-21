@@ -257,8 +257,7 @@ G4AssemblyVolume* SofTofW::BuildVacuumPipe(){
   if(!m_VacuumPipe){
     m_VacuumPipe = new G4AssemblyVolume;
 
-    //G4Tubs* tube = new G4Tubs("tube",8.*cm,15*cm,155./2*cm,0,360*deg);
-    G4Box* tube = new G4Box("tube",20.*cm,20*cm,10*cm);
+    G4Tubs* tube = new G4Tubs("tube",8.*cm,15*cm,155./2*cm,0,360*deg);
 
     G4Material* tube_mat = MaterialManager::getInstance()->GetMaterialFromLibrary("Al");
 

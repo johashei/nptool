@@ -11,7 +11,7 @@ Beam
  SigmaThetaX= 0 
  SigmaPhiY= 0
  MeanThetaX= 0
- MeanPhiY= 0
+ MeanPhiY= 0.17 deg
  MeanX= 11 mm
  MeanY= -1.4 mm
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
