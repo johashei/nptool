@@ -1,7 +1,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 Target
  THICKNESS= 2 mm
- RADIUS=	40 mm
+ RADIUS= 50 mm
  MATERIAL= Pb
  ANGLE= 0 deg
  X= 0 mm
@@ -9,13 +9,17 @@ Target
  Z= 0 m
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 SofTofW
- R= 8 m
+ R= 9 m
  THETA= -9 deg
  PHI= 0 deg
  Build_GLAD= 1
- GLAD_DistanceFromTarget= 3.3 m
+ GLAD_DistanceFromTarget= 3. m
  GLAD_MagField= 1.8 T 
- %Build_Twin_Music= 0
+ Build_VacuumPipe= 1
+ VacuumPipeX= 0 cm
+ VacuumPipeY= -22.2 cm
+ VacuumPipeZ= 1 m
+%Build_Twin_Music= 0
  %Twin_Music_DistanceFromTarget= 1.5 m
  %Twin_Music_Gas= P10_1atm
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -174,7 +174,6 @@ void FissionDecay::DoIt(const G4FastTrack& fastTrack,G4FastStep& fastStep){
 
   G4ParticleDefinition* FissionFragmentDef; 
   unsigned int size = FissionFragment.size();
-
   if(size == 0)
     return;
 
