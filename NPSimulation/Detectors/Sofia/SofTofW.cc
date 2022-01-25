@@ -26,6 +26,7 @@
 //G4 Geometry object
 #include "G4Tubs.hh"
 #include "G4Box.hh"
+#include "G4SubtractionSolid.hh"
 
 //G4 sensitive
 #include "G4SDManager.hh"
@@ -258,10 +259,20 @@ G4AssemblyVolume* SofTofW::BuildVacuumPipe(){
     m_VacuumPipe = new G4AssemblyVolume;
 
     G4Tubs* tube = new G4Tubs("tube",8.*cm,15*cm,155./2*cm,0,360*deg);
+    
+    G4Box* box_int = new G4Box("box_int",25./2*cm,22./2*cm,14.1/2*cm);
+    G4Box* box_ext = new G4Box("box_ext",50./2*cm,50./2*cm,14./2*cm);
+
+    G4VSolid* box_subtract = new G4SubtractionSolid("box_subtract",box_ext,box_int,0,G4ThreeVector(0,0,0));
 
     G4Material* tube_mat = MaterialManager::getInstance()->GetMaterialFromLibrary("Al");
 
-    G4LogicalVolume* tube_vol = new G4LogicalVolume(tube,tube_mat,"logic_tube",0,0,0);
+    //G4LogicalVolume* tube_vol = new G4LogicalVolume(tube,tube_mat,"logic_tube",0,0,0);
+    G4LogicalVolume* tube_vol = new G4LogicalVolume(box_subtract,tube_mat,"logic_tube",0,0,0);
+
+    G4VisAttributes* VisTube = new G4VisAttributes(G4Colour(0., 0.7, 0.7));   
+    tube_vol->SetVisAttributes(VisTube);
+
     G4ThreeVector Pos = G4ThreeVector(0,0,0);
     G4RotationMatrix* Rot = new G4RotationMatrix();
     m_VacuumPipe->AddPlacedVolume(tube_vol,Pos,Rot);
