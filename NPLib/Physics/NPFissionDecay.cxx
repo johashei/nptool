@@ -92,8 +92,8 @@ bool NPL::FissionDecay::GenerateEvent(string CompoundName, double MEx,double MEK
 
   TVector3 Momentum(MPx,MPy,MPz);
   Momentum.Unit();
-  double Theta = Momentum.Theta();
-  double Phi = Momentum.Phi();
+  double ThetaCN = Momentum.Theta();
+  double PhiCN = Momentum.Phi();
   double Lfis = 0;
 
   m_Compound = NPL::Particle(CompoundName);
@@ -102,7 +102,7 @@ bool NPL::FissionDecay::GenerateEvent(string CompoundName, double MEx,double MEK
   if(m_FissionModelName=="GEF"){
     if(m_FissionModel->IsValid(m_Compound.GetZ(), m_Compound.GetA())){
       worked=true;
-      m_FissionModel->InitCompound(MEx,MEK,Lfis,Theta,Phi);
+      m_FissionModel->InitCompound(MEx,MEK,Lfis,ThetaCN,PhiCN);
       m_FissionModel->Treat();
 
       int Ah = m_FissionModel->GetAffh();
@@ -146,14 +146,17 @@ bool NPL::FissionDecay::GenerateEvent(string CompoundName, double MEx,double MEK
       double Phil   = m_FissionModel->GetPhffl();
       double Phih   = m_FissionModel->GetPhffh();
 
+      TVector3 uxy = TVector3(cos(TMath::Pi()/2-PhiCN), -sin(TMath::Pi()/2-PhiCN), 0);
       TVector3 Momentuml = Pl * TVector3(sin(Thetal)*cos(Phil),
           sin(Thetal)*sin(Phil),
           cos(Thetal));
+      //Momentuml.Rotate(-ThetaCN, uxy);
 
       TVector3 Momentumh = Ph * TVector3(sin(Thetah)*cos(Phih),
           sin(Thetah)*sin(Phih),
           cos(Thetah));
-
+      //Momentumh.Rotate(-ThetaCN, uxy);
+      
       DPx.push_back(Momentuml.X());
       DPx.push_back(Momentumh.X());
       DPy.push_back(Momentuml.Y());

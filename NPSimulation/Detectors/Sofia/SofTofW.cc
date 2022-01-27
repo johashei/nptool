@@ -260,8 +260,8 @@ G4AssemblyVolume* SofTofW::BuildVacuumPipe(){
 
     G4Tubs* tube = new G4Tubs("tube",8.*cm,15*cm,155./2*cm,0,360*deg);
     
-    G4Box* box_int = new G4Box("box_int",25./2*cm,22./2*cm,14.1/2*cm);
-    G4Box* box_ext = new G4Box("box_ext",50./2*cm,50./2*cm,14./2*cm);
+    G4Box* box_int = new G4Box("box_int",22./2*cm,22./2*cm,14.1/2*cm);
+    G4Box* box_ext = new G4Box("box_ext",150./2*cm,150./2*cm,14./2*cm);
 
     G4VSolid* box_subtract = new G4SubtractionSolid("box_subtract",box_ext,box_int,0,G4ThreeVector(0,0,0));
 
