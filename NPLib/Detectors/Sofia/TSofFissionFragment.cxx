@@ -55,8 +55,12 @@ void TSofFissionFragment::Clear() {
   fFF_ThetaIn.clear();
   fFF_TofPosX.clear();
   fFF_TofPosY.clear();
-  fFF_MwpcPosX.clear();
-  fFF_MwpcPosY.clear();
+  fFF_PosX1.clear();
+  fFF_PosX2.clear();
+  fFF_PosX3.clear();
+  fFF_PosY1.clear();
+  fFF_PosY2.clear();
+  fFF_PosY3.clear();
 
   fFF_Zsum = -1;
   fFF_IntZsum = -1;

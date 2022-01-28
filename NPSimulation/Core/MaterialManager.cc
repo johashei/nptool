@@ -985,6 +985,48 @@ G4Material* MaterialManager::GetMaterialFromLibrary(string Name,
       return material;
     }
 
+    else if (Name == "Al1050") {
+      if (!density)
+        density = 2.71 * g / cm3;
+      G4Material* material = new G4Material("NPS_" + Name, density, 2);
+      material->AddElement(GetElementFromLibrary("Al"), 99.5/100.);
+      // To get to 100%
+      material->AddElement(GetElementFromLibrary("Fe"), 0.5/100.);
+      // Not 100% from wiki...
+      // material->AddElement(GetElementFromLibrary("Cu"), 0.05/100.);
+      // material->AddElement(GetElementFromLibrary("Fe"), 0.4/100.);
+      // material->AddElement(GetElementFromLibrary("Mg"), 0.05/100.);
+      // material->AddElement(GetElementFromLibrary("Mn"), 0.05/100.);
+      // material->AddElement(GetElementFromLibrary("Si"), 0.25/100.);
+      // material->AddElement(GetElementFromLibrary("Ti"), 0.03/100.);
+      // material->AddElement(GetElementFromLibrary("V"), 0.05/100.);
+      // material->AddElement(GetElementFromLibrary("Zn"), 0.05/100.);
+      m_Material[Name] = material;
+      return material;
+    }
+
+    else if (Name == "Al5754") {
+      if (!density)
+        density = 2.67 * g / cm3;
+      G4Material* material = new G4Material("NPS_" + Name, density, 2);
+      //Realistic
+      material->AddElement(GetElementFromLibrary("Al"), 97/100.);
+      material->AddElement(GetElementFromLibrary("Mg"), 3/100.);
+      // Not 100% from Wiki...
+      // material->AddElement(GetElementFromLibrary("Al"), 97.4/100.);
+      // material->AddElement(GetElementFromLibrary("Cr"), 0.3/100.);
+      // material->AddElement(GetElementFromLibrary("Cu"), 0.1/100.);
+      // material->AddElement(GetElementFromLibrary("Fe"), 0.4/100.);
+      // material->AddElement(GetElementFromLibrary("Mg"), 3.6/100.);
+      // material->AddElement(GetElementFromLibrary("Mn"), 0.5/100.);
+      // material->AddElement(GetElementFromLibrary("Si"), 0.4/100.);
+      // material->AddElement(GetElementFromLibrary("Ti"), 0.15/100.);
+      // material->AddElement(GetElementFromLibrary("Zn"), 0.2/100.);
+      m_Material[Name] = material;
+      return material;
+    }
+
+
     else if (Name == "NE213") {
       if (!density)
         density = 0.874 * g / cm3;
@@ -1193,7 +1235,6 @@ G4Material* MaterialManager::GetGasFromLibrary(string Name, double Pressure,
       m_Material[newName] = material;
       return material;
     }
-
 
     else {
       exit(1);

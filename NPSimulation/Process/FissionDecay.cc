@@ -174,7 +174,6 @@ void FissionDecay::DoIt(const G4FastTrack& fastTrack,G4FastStep& fastStep){
 
   G4ParticleDefinition* FissionFragmentDef; 
   unsigned int size = FissionFragment.size();
-
   if(size == 0)
     return;
 
@@ -205,8 +204,8 @@ void FissionDecay::DoIt(const G4FastTrack& fastTrack,G4FastStep& fastStep){
     m_FissionConditions->SetFragmentTheta(Momentum.theta()/deg);
     m_FissionConditions->SetFragmentPhi(Momentum.phi()/deg);
     m_FissionConditions->SetFragmentMomentumX(DPx[i]);
-    m_FissionConditions->SetFragmentMomentumX(DPy[i]);
-    m_FissionConditions->SetFragmentMomentumX(DPz[i]);
+    m_FissionConditions->SetFragmentMomentumY(DPy[i]);
+    m_FissionConditions->SetFragmentMomentumZ(DPz[i]);
 
     // neutral particle
     if(FFZ==0){

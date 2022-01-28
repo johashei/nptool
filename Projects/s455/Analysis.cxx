@@ -133,22 +133,58 @@ void Analysis::FissionFragmentAnalysis(){
       PosX.push_back(SofTofW->CalPosX[i]);
       PosY.push_back(SofTofW->CalPosY[i]);
 
-      //SofFF->SetTofPosX(SofTofW->CalPosX[i]);
-      //SofFF->SetTofPosY(SofTofW->CalPosY[i]);
+      SofFF->SetTofPosX(SofTofW->CalPosX[i]);
+      SofFF->SetTofPosY(SofTofW->CalPosY[i]);
     }
   }
 
-  vector<double> Xmwpc4;
-  vector<double> Ymwpc4;
+  vector<double> X1;
+  vector<double> X2;
+  vector<double> X3;
+  vector<double> Y1;
+  vector<double> Y2;
+  vector<double> Y3;
   for(unsigned int i=0; i<SofMwpc->DetectorNbr.size(); i++){
+    if(SofMwpc->DetectorNbr[i]==2){
+      SofFF->SetPosX1(SofMwpc->PositionX1[i]);
+      SofFF->SetPosY1(SofMwpc->PositionY[i]);
+    }
+    if(SofMwpc->DetectorNbr[i]==3){
+      SofFF->SetPosX2(SofMwpc->PositionX1[i]);
+      SofFF->SetPosY2(SofMwpc->PositionY[i]);
+    }
     if(SofMwpc->DetectorNbr[i]==4){
-      Xmwpc4.push_back(SofMwpc->PositionX1[i]);
-      Ymwpc4.push_back(SofMwpc->PositionY[i]);
+      X3.push_back(SofMwpc->PositionX1[i]);
+      Y3.push_back(SofMwpc->PositionY[i]);
 
-      //SofFF->SetMwpcPosX(SofMwpc->PositionX1[i]);
-      //SofFF->SetMwpcPosY(SofMwpc->PositionY[i]);
+      SofFF->SetPosX3(SofMwpc->PositionX1[i]);
+      SofFF->SetPosY3(SofMwpc->PositionY[i]);
     }
   }
+
+  vector<double> good_posx;
+  vector<double> good_posy;
+  for(unsigned int i=0; i<PosX.size(); i++){
+    double tofx = PosX[i];
+    double tofy = PosY[i];
+    for(unsigned int k=0; k<X3.size(); k++){
+      double posx = X3[k];
+      if(abs(posx-tofx) < 100){
+        good_posx.push_back(posx);
+        good_posy.push_back(tofy);   
+      }
+    }
+  }
+
+
+  /*if(good_posx.size()==2 && good_posy.size()==2){
+    SofFF->SetTofPosX(good_posx[0]);
+    SofFF->SetTofPosX(good_posx[1]);
+
+    SofFF->SetTofPosY(good_posy[0]);
+    SofFF->SetTofPosY(good_posy[1]);
+    }*/
+
 
   int mult1 = SofTwim->mult1;
   int mult2 = SofTwim->mult2;
@@ -340,39 +376,7 @@ void Analysis::FissionFragmentAnalysis(){
       A1 = AoQ1 * iZ1;
       A2 = AoQ2 * iZ2;
 
-      vector<double> good_posx;
-      vector<double> good_posy;
-      for(unsigned int i=0; i<PosX.size(); i++){
-        double tofx = PosX[i];
-        double tofy = PosY[i];
-        for(unsigned int k=0; k<Xmwpc4.size(); k++){
-          double posx = Xmwpc4[k];
-          if(abs(posx-tofx) < 100){
-            good_posx.push_back(posx);
-            //SofFF->SetMwpcPosX(posx);
-            //SofFF->SetTofPosX(tofx);
-          }
-        }
-        for(unsigned int p=0; p<Ymwpc4.size(); p++){
-          double posy = Ymwpc4[p];
-          if(abs(posy-tofy) < 20){
-            //good_posy.push_back(posy);
-            good_posy.push_back(tofy);
-            //SofFF->SetMwpcPosY(posy);
-            //SofFF->SetTofPosY(tofy);
-          }
-        }
-      }
-
-      if(good_posx.size()==2 && good_posy.size()==2){
-        SofFF->SetTofPosX(good_posx[0]);
-        SofFF->SetTofPosX(good_posx[1]);
- 
-        SofFF->SetTofPosY(good_posy[0]);
-        SofFF->SetTofPosY(good_posy[1]);
-      }
-
-      //*** Filling the Fission Fragment Tree ***//
+      // *** Filling the Fission Fragment Tree *** //
       SofFF->SetTOF(TOF_left);
       SofFF->SetTOF(TOF_right);
       SofFF->SetBeta(Beta_Z1);
@@ -520,7 +524,7 @@ void Analysis::InitParameter(){
   fDCC   = -10000;
   fK_LS2 = -30e-8;
 
-  fRunID = 6;
+  fRunID = 12;
 
   // Beam parameter //
   fZBeta_p0 = 1;

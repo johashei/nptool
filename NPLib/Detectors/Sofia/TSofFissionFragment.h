@@ -46,8 +46,12 @@ class TSofFissionFragment : public TObject {
     vector<double> fFF_ThetaIn;
     vector<double> fFF_TofPosX;
     vector<double> fFF_TofPosY;
-    vector<double> fFF_MwpcPosX;
-    vector<double> fFF_MwpcPosY;
+    vector<double> fFF_PosX1;
+    vector<double> fFF_PosX2;
+    vector<double> fFF_PosX3;
+    vector<double> fFF_PosY1;
+    vector<double> fFF_PosY2;
+    vector<double> fFF_PosY3;
     double fFF_Zsum;
     int fFF_IntZsum;
 
@@ -87,12 +91,20 @@ class TSofFissionFragment : public TObject {
     inline void SetThetaIn(double val){fFF_ThetaIn.push_back(val);};//!
     inline void SetTofPosX(double val){fFF_TofPosX.push_back(val);};//!
     inline void SetTofPosY(double val){fFF_TofPosY.push_back(val);};//!
-    inline void SetMwpcPosX(double val){fFF_MwpcPosX.push_back(val);};//!
-    inline void SetMwpcPosY(double val){fFF_MwpcPosY.push_back(val);};//!
+    inline void SetPosX1(double val){fFF_PosX1.push_back(val);};//!
+    inline void SetPosX2(double val){fFF_PosX2.push_back(val);};//!
+    inline void SetPosX3(double val){fFF_PosX3.push_back(val);};//!
+    inline void SetPosY1(double val){fFF_PosY1.push_back(val);};//!
+    inline void SetPosY2(double val){fFF_PosY2.push_back(val);};//!
+    inline void SetPosY3(double val){fFF_PosY3.push_back(val);};//!
 
 
     //////////////////////    GETTERS    ////////////////////////
     int GetMult() {return fFF_Z.size();}//!
+    int GetMultTofPos() {return fFF_TofPosY.size();}//!
+    int GetMultMwpc1() {return fFF_PosY1.size();}//!
+    int GetMultMwpc2() {return fFF_PosY2.size();}//!
+    int GetMultMwpc3() {return fFF_PosY3.size();}//!
     inline double GetZsum() const {return fFF_Zsum;}//! 
     inline int GetIntZsum() const {return fFF_IntZsum;}//! 
     inline double GetZ(int i) const {return fFF_Z[i];}//! 
@@ -107,8 +119,12 @@ class TSofFissionFragment : public TObject {
     inline double GetThetaIn(int i) const {return fFF_ThetaIn[i];}//! 
     inline double GetTofPosX(int i) const {return fFF_TofPosX[i];}//! 
     inline double GetTofPosY(int i) const {return fFF_TofPosY[i];}//! 
-    inline double GetMwpcPosX(int i) const {return fFF_MwpcPosX[i];}//! 
-    inline double GetMwpcPosY(int i) const {return fFF_MwpcPosY[i];}//! 
+    inline double GetPosX1(int i) const {return fFF_PosX1[i];}//! 
+    inline double GetPosX2(int i) const {return fFF_PosX2[i];}//! 
+    inline double GetPosX3(int i) const {return fFF_PosX3[i];}//! 
+    inline double GetPosY1(int i) const {return fFF_PosY1[i];}//! 
+    inline double GetPosY2(int i) const {return fFF_PosY2[i];}//! 
+    inline double GetPosY3(int i) const {return fFF_PosY3[i];}//! 
 
 
   //////////////////////////////////////////////////////////////

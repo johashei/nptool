@@ -26,6 +26,7 @@
 //G4 Geometry object
 #include "G4Tubs.hh"
 #include "G4Box.hh"
+#include "G4SubtractionSolid.hh"
 
 //G4 sensitive
 #include "G4SDManager.hh"
@@ -92,9 +93,14 @@ SofTofW::SofTofW(){
   m_TofScorer = 0;
   m_PlasticTof = 0;
   m_GLAD= 0;
+  m_VacuumPipe= 0;
   m_TofWall = 0;
 
   m_Build_GLAD= 0;
+  m_Build_VacuumPipe= 0;
+  m_VacuumPipeX= 0;
+  m_VacuumPipeY= 0;
+  m_VacuumPipeZ= 0;
   m_GLAD_MagField = 0;
   m_GLAD_DistanceFromTarget = 0;
 
@@ -248,17 +254,47 @@ return m_TwinMusic;
 }*/
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+G4AssemblyVolume* SofTofW::BuildVacuumPipe(){
+  if(!m_VacuumPipe){
+    m_VacuumPipe = new G4AssemblyVolume;
+
+    G4Tubs* tube = new G4Tubs("tube",8.*cm,15*cm,155./2*cm,0,360*deg);
+    
+    G4Box* box_int = new G4Box("box_int",22./2*cm,22./2*cm,14.1/2*cm);
+    G4Box* box_ext = new G4Box("box_ext",150./2*cm,150./2*cm,14./2*cm);
+
+    G4VSolid* box_subtract = new G4SubtractionSolid("box_subtract",box_ext,box_int,0,G4ThreeVector(0,0,0));
+
+    G4Material* tube_mat = MaterialManager::getInstance()->GetMaterialFromLibrary("Al");
+
+    //G4LogicalVolume* tube_vol = new G4LogicalVolume(tube,tube_mat,"logic_tube",0,0,0);
+    G4LogicalVolume* tube_vol = new G4LogicalVolume(box_subtract,tube_mat,"logic_tube",0,0,0);
+
+    G4VisAttributes* VisTube = new G4VisAttributes(G4Colour(0., 0.7, 0.7));   
+    tube_vol->SetVisAttributes(VisTube);
+
+    G4ThreeVector Pos = G4ThreeVector(0,0,0);
+    G4RotationMatrix* Rot = new G4RotationMatrix();
+    m_VacuumPipe->AddPlacedVolume(tube_vol,Pos,Rot);
+  }
+  
+  return m_VacuumPipe;
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 G4AssemblyVolume* SofTofW::BuildGLAD()
 {
   if(!m_GLAD){
     m_GLAD = new G4AssemblyVolume;
     string basepath = getenv("NPTOOL");
-    string path = basepath + "/NPSimulation/Detectors/Sofia/gdml/glad.gdml";
-    m_gdmlparser.Read(path);
+    //string path = basepath + "/NPSimulation/Detectors/Sofia/gdml/glad.gdml";
+    //m_gdmlparser.Read(path);
 
     //G4LogicalVolume* vol1 = m_gdmlparser.GetVolume("GEcrans");
     //G4LogicalVolume* vol2 = m_gdmlparser.GetVolume("G2202001_Demi_Ecran_thermique_interne");
-    G4LogicalVolume* vol3 = m_gdmlparser.GetVolume("G2402001_Enceinte_interne");
+    
+    //G4LogicalVolume* vol3 = m_gdmlparser.GetVolume("G2402001_Enceinte_interne");
+    
     //G4LogicalVolume* vol4 = m_gdmlparser.GetVolume("GEnceinte_externe");
     //G4LogicalVolume* vol5 = m_gdmlparser.GetVolume("G2403002_Fonf_cote_sortie");
     //G4LogicalVolume* vol6 = m_gdmlparser.GetVolume("G2403001_Fond_cote_entree");
@@ -291,11 +327,11 @@ G4AssemblyVolume* SofTofW::BuildGLAD()
     //m_GLAD->AddPlacedVolume(vol2,Pos2,Rot2);
    
     // *** vol3 *** //
-    G4ThreeVector Pos3 = G4ThreeVector(0,0,0);
+    /*G4ThreeVector Pos3 = G4ThreeVector(0,0,0);
     G4RotationMatrix* Rot3 = new G4RotationMatrix();
     Rot3->rotateX(90*deg);
     Rot3->rotateY(90*deg);
-    m_GLAD->AddPlacedVolume(vol3,Pos3,Rot3);
+    m_GLAD->AddPlacedVolume(vol3,Pos3,Rot3);*/
    
     // *** vol4 *** //
     //G4ThreeVector Pos4 = G4ThreeVector(0*cm,0,0*cm);
@@ -371,8 +407,8 @@ void SofTofW::ReadConfiguration(NPL::InputParser parser){
   if(NPOptionManager::getInstance()->GetVerboseLevel())
     cout << "//// " << blocks.size() << " detectors found " << endl; 
 
-  vector<string> cart = {"POS","Build_GLAD"};
-  vector<string> sphe = {"R","Theta","Phi","Build_GLAD"};
+  vector<string> cart = {"POS","Build_GLAD","Build_VacuumPipe"};
+  vector<string> sphe = {"R","Theta","Phi","Build_GLAD","Build_VacuumPipe"};
 
   for(unsigned int i = 0 ; i < blocks.size() ; i++){
     if(blocks[i]->HasTokenList(cart)){
@@ -381,6 +417,7 @@ void SofTofW::ReadConfiguration(NPL::InputParser parser){
 
       G4ThreeVector Pos = NPS::ConvertVector(blocks[i]->GetTVector3("POS","mm"));
       m_Build_GLAD = blocks[i]->GetInt("Build_GLAD");
+      m_Build_VacuumPipe = blocks[i]->GetInt("Build_VacuumPipe");
       AddDetector(Pos);
     }
     else if(blocks[i]->HasTokenList(sphe)){
@@ -390,8 +427,12 @@ void SofTofW::ReadConfiguration(NPL::InputParser parser){
       double Theta = blocks[i]->GetDouble("Theta","deg");
       double Phi = blocks[i]->GetDouble("Phi","deg");
       m_Build_GLAD = blocks[i]->GetInt("Build_GLAD");
+      m_Build_VacuumPipe = blocks[i]->GetInt("Build_VacuumPipe");
       m_GLAD_MagField = blocks[i]->GetDouble("GLAD_MagField","T");
       m_GLAD_DistanceFromTarget = blocks[i]->GetDouble("GLAD_DistanceFromTarget", "m");
+      m_VacuumPipeX = blocks[i]->GetDouble("VacuumPipeX","m");
+      m_VacuumPipeY = blocks[i]->GetDouble("VacuumPipeY","m");
+      m_VacuumPipeZ = blocks[i]->GetDouble("VacuumPipeZ","m");
 
       AddDetector(R,Theta,Phi);
     }
@@ -442,6 +483,10 @@ void SofTofW::ConstructDetector(G4LogicalVolume* world){
       "GLAD",
       world, false, 0);
      */
+  }
+  if(m_Build_VacuumPipe==1){
+    G4ThreeVector Tube_Pos = G4ThreeVector(m_VacuumPipeX,m_VacuumPipeY,m_VacuumPipeZ);
+    BuildVacuumPipe()->MakeImprint(world,Tube_Pos,0);
   }
 }
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

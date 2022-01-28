@@ -3,31 +3,31 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%Beam energy given in MeV ; Excitation in MeV ; emmitance in rad
 Beam
- Particle= 238U
+ Particle= 189Pb
  Energy= 166000
  SigmaEnergy= 2
- SigmaX= 1 cm
- SigmaY= 1 cm
+ SigmaX= 11 mm
+ SigmaY= 5 mm
  SigmaThetaX= 0 
  SigmaPhiY= 0
  MeanThetaX= 0
- MeanPhiY= 0
- MeanX= 0
- MeanY= 0
+ MeanPhiY= 0.17 deg
+ MeanX= 11 mm
+ MeanY= -1.4 mm
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 TwoBodyReaction
- Beam= 238U
+ Beam= 189Pb
  Target= 208Pb
- Light= 208Pb
- Heavy= 238U
- ExcitationEnergyLight= 0.0
- ExcitationEnergyHeavy= 15.0
+ Light= 189Pb
+ Heavy= 208Pb
+ ExcitationEnergyLight= 15.0
+ ExcitationEnergyHeavy= 0.0
  CrossSectionPath= sofia.txt CS
  ShootLight= 1
  ShootHeavy= 1
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 FissionDecay 
- CompoundNucleus= 238U
+ CompoundNucleus= 189Pb
  FissionModel= GEF
  VamosChargeStates= 0
  Shoot_FF= 1
