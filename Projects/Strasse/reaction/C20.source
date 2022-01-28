@@ -1,0 +1,18 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Beam
+  Particle= 20C
+  Energy= 3000 MeV
+  SigmaEnergy= 0 MeV
+  SigmaThetaX= 0.1 deg
+  SigmaPhiY= 0.1 deg
+  SigmaX= 5 mm
+  SigmaY= 5 mm
+  MeanThetaX= 0 deg
+  MeanPhiY= 0 deg
+  MeanX= 0 mm
+  MeanY= 0 mm
+  ExcitationEnergy= 1600 keV 
+  ZEmission= 0 mm 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%LevelData 54Ca
+% Path= reaction/54Ca.dat 

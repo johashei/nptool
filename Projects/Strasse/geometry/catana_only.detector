@@ -1,0 +1,18 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Target
+ THICKNESS= 8 mm
+ ANGLE= 0 deg
+ RADIUS= 15 mm
+ MATERIAL= C
+ X= 0 mm
+ Y= 0 mm
+ Z= 0 mm
+ NbSlices= 150
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%1
+Catana CSV
+ Path= geometry/Catana.csv 
+ Pos= 0 0 100 mm
+ Rshift= 100 micrometer
+
+
