@@ -60,11 +60,12 @@ class SofTofW : public NPS::VDetector{
     G4AssemblyVolume* BuildTOFDetector();
     G4AssemblyVolume* BuildGLAD();
     G4AssemblyVolume* BuildVacuumPipe();
-  
+    G4LogicalVolume* BuildGLADFromSTL();
+
   private:
     G4GDMLParser m_gdmlparser;
     G4LogicalVolume* m_PlasticTof;
-    //G4LogicalVolume* m_GLAD;
+    G4LogicalVolume* m_GLAD_STL;
     G4AssemblyVolume* m_GLAD;
     G4AssemblyVolume* m_TofWall;
     G4AssemblyVolume* m_VacuumPipe;
@@ -115,6 +116,7 @@ class SofTofW : public NPS::VDetector{
     int m_Build_VacuumPipe;
     double m_GLAD_MagField;
     double m_GLAD_DistanceFromTarget;
+    double m_GLAD_TiltAngle;
     double m_VacuumPipeX;
     double m_VacuumPipeY;
     double m_VacuumPipeZ;
@@ -122,6 +124,7 @@ class SofTofW : public NPS::VDetector{
     // Visualisation Attribute
     G4VisAttributes* m_VisSquare;
     G4VisAttributes* m_VisGLAD;
+    G4VisAttributes* m_VisField;
 
   // Needed for dynamic loading of the library
   public:
