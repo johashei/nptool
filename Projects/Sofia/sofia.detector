@@ -8,7 +8,7 @@ Target
  Y= 0 mm
  Z= 0 m
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-SofTofW
+%SofTofW
  R= 8 m
  THETA= -10.2 deg
  PHI= 0 deg
@@ -19,8 +19,11 @@ SofTofW
  VacuumPipeX= 0 cm
  VacuumPipeY= 0 cm
  VacuumPipeZ= 0.9 m
-%Build_Twin_Music= 0
- %Twin_Music_DistanceFromTarget= 1.5 m
- %Twin_Music_Gas= P10_1atm
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+SofTwim
+ R= 1.85 m
+ THETA= 0
+ PHI= 0
+ TwimGas= P10_1atm
+ Pressure= 1 bar
 

@@ -1,5 +1,5 @@
-#ifndef SofTofW_h
-#define SofTofW_h 1
+#ifndef SofTwim_h
+#define SofTwim_h 1
 /*****************************************************************************
  * Copyright (C) 2009-2020   this file is part of the NPTool Project       *
  *                                                                           *
@@ -14,7 +14,7 @@
  * Last update    :                                                          *
  *---------------------------------------------------------------------------*
  * Decription:                                                               *
- *  This class describe  SofTofW simulation                             *
+ *  This class describe  SofTwim simulation                             *
  *                                                                           *
  *---------------------------------------------------------------------------*
  * Comment:                                                                  *
@@ -35,16 +35,16 @@ using namespace std;
 
 // NPTool header
 #include "NPSVDetector.hh"
-#include "TSofTofWData.h"
+#include "TSofTwimData.h"
 #include "NPInputParser.h"
 
-class SofTofW : public NPS::VDetector{
+class SofTwim : public NPS::VDetector{
   ////////////////////////////////////////////////////
   /////// Default Constructor and Destructor /////////
   ////////////////////////////////////////////////////
   public:
-    SofTofW() ;
-    virtual ~SofTofW() ;
+    SofTwim() ;
+    virtual ~SofTwim() ;
 
     ////////////////////////////////////////////////////
     /////// Specific Function of this Class ///////////
@@ -55,19 +55,12 @@ class SofTofW : public NPS::VDetector{
     // Spherical
     void AddDetector(double R,double Theta,double Phi);  
 
-
-    G4AssemblyVolume* BuildTOFDetector();
-    G4AssemblyVolume* BuildGLAD();
-    G4AssemblyVolume* BuildVacuumPipe();
-    G4LogicalVolume* BuildGLADFromSTL();
+    G4AssemblyVolume* BuildTwinMusic();
 
   private:
-    G4LogicalVolume* m_PlasticTof;
-    G4LogicalVolume* m_GLAD_STL;
-    G4AssemblyVolume* m_GLAD;
-    G4AssemblyVolume* m_TofWall;
-    G4AssemblyVolume* m_VacuumPipe;
-    
+    G4AssemblyVolume* m_TwinMusic;
+    double m_Pressure;
+    string m_TwimGas;
     ////////////////////////////////////////////////////
     //////  Inherite from NPS::VDetector class /////////
     ////////////////////////////////////////////////////
@@ -93,12 +86,12 @@ class SofTofW : public NPS::VDetector{
     void InitializeScorers() ;
 
     //   Associated Scorer
-    G4MultiFunctionalDetector* m_TofScorer ;
+    G4MultiFunctionalDetector* m_TwimScorer ;
     ////////////////////////////////////////////////////
     ///////////Event class to store Data////////////////
     ////////////////////////////////////////////////////
   private:
-    TSofTofWData* m_Event ;
+    TSofTwimData* m_Event ;
 
     ////////////////////////////////////////////////////
     ///////////////Private intern Data//////////////////
@@ -109,20 +102,9 @@ class SofTofW : public NPS::VDetector{
     vector<double>  m_Theta;
     vector<double>  m_Phi; 
     
-    // GLAD //
-    int m_Build_GLAD;
-    int m_Build_VacuumPipe;
-    double m_GLAD_MagField;
-    double m_GLAD_DistanceFromTarget;
-    double m_GLAD_TiltAngle;
-    double m_VacuumPipeX;
-    double m_VacuumPipeY;
-    double m_VacuumPipeZ;
-
     // Visualisation Attribute
     G4VisAttributes* m_VisSquare;
-    G4VisAttributes* m_VisGLAD;
-    G4VisAttributes* m_VisField;
+    G4VisAttributes* m_VisCathode;
 
   // Needed for dynamic loading of the library
   public:

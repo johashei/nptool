@@ -67,7 +67,7 @@ namespace SofTofW_NS{
   const double EnergyThreshold       = 0.1*MeV;
   const double ResoTime              = 0.007*ns;
   const double ResoEnergy            = 1.0*MeV;
-  //const double TwinResoEnergy        = 0*keV;
+  
   const double tof_plastic_height    = 660*mm;
   const double tof_plastic_width     = 32*mm;
   const double tof_plastic_thickness = 0.5*mm;
@@ -76,15 +76,6 @@ namespace SofTofW_NS{
   const double GLAD_height           = 1.5*m;
   const double GLAD_width            = 10*m;
   const double GLAD_Leff             = 2*m;
-
-  //const double twin_anode_width = 10.*cm;
-  //const double twin_anode_height = 10.*cm;
-  //const double twin_anode_thickness = 3.1*cm;
-
-  //const double twin_cathode_width = 30*um;
-  //const double twin_cathode_height = 20*cm;
-  //const double twin_cathode_thickness = 50*cm;
-
 
 }
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -108,9 +99,6 @@ SofTofW::SofTofW(){
   m_GLAD_MagField = 0;
   m_GLAD_DistanceFromTarget= 0;
   m_GLAD_TiltAngle= 7.;
-  //m_Build_Twin_Music= 0;
-  //m_Twin_Music_DistanceFromTarget= 0;
-  //m_Twin_Music_Gas= "P10_1atm";
 
   // RGB Color + Transparency
   m_VisSquare = new G4VisAttributes(G4Colour(0.53, 0.81, 0.98, 1));   
@@ -164,99 +152,6 @@ G4AssemblyVolume* SofTofW::BuildTOFDetector(){
   }
   return m_TofWall;
 }
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-/*G4LogicalVolume* SofTofW::BuildTwinMusic(){
-
-  double twin_width = 21*cm;
-  double twin_height = 21*cm;
-  double twin_thickness = 51*cm;
-
-  double sector_width = 10*cm;
-  double sector_height = 10*cm;
-  double sector_thickness = 50*cm;
-
-  if(m_Build_Twin_Music==1){
-  if(!m_TwinMusic){
-// Full Twin volume
-G4Box* Twinbox = new G4Box("Twin_Box", twin_width*0.5, twin_height*0.5, twin_thickness*0.5);
-G4Material* TwinMaterial = MaterialManager::getInstance()->GetMaterialFromLibrary("Vacuum");
-m_TwinMusic = new G4LogicalVolume(Twinbox, TwinMaterial, "logic_twin", 0,0,0);
-
-G4VisAttributes* m_VisDet = new G4VisAttributes(G4Colour(0.5,0.5,0.5,0.3));
-m_VisDet->SetForceWireframe(1);
-m_TwinMusic->SetVisAttributes(m_VisDet);
-
-// Sector Twin volume
-G4Box* Sectorbox = new G4Box("Sector_Box", sector_width*0.5, sector_height*0.5, sector_thickness*0.5);
-G4LogicalVolume* LogicalSector = new G4LogicalVolume(Sectorbox, TwinMaterial, "logic_twin", 0,0,0);
-LogicalSector->SetVisAttributes(G4VisAttributes::GetInvisible());
-// Drift Anode Area //
-G4Box* Anodebox = new G4Box("Anode_Box", SofTofW_NS::twin_anode_width*0.5, SofTofW_NS::twin_anode_height*0.5, SofTofW_NS::twin_anode_thickness*0.5);
-
-G4Material* DetectorMaterial = MaterialManager::getInstance()->GetMaterialFromLibrary(m_Twin_Music_Gas);
-m_AnodeDriftArea = new G4LogicalVolume(Anodebox, DetectorMaterial, "logic_twin_anode", 0, 0, 0);
-m_AnodeDriftArea->SetVisAttributes(m_VisTwin);
-m_AnodeDriftArea->SetSensitiveDetector(m_TwinScorer);
-
-// Cathode plane in the middle //
-G4Box* cathode_box = new G4Box("Cathode_box", SofTofW_NS::twin_cathode_width*0.5, SofTofW_NS::twin_cathode_height*0.5, SofTofW_NS::twin_cathode_thickness*0.5);
-G4Material* CathodeMaterial = MaterialManager::getInstance()->GetMaterialFromLibrary("Al");
-G4VisAttributes* m_VisCathode = new G4VisAttributes(G4Colour(0.7,0.4,0,1));
-G4LogicalVolume* LogicalCathode = new G4LogicalVolume(cathode_box, CathodeMaterial, "logic_cathode", 0,0,0);
-LogicalCathode->SetVisAttributes(m_VisCathode);
-
-//G4RotationMatrix* Rv = new G4RotationMatrix(0,0,0);
-G4ThreeVector Tv;
-Tv.setX(0);
-Tv.setY(0);
-Tv.setZ(0);
-
-
-new G4PVPlacement(0, Tv,
-LogicalCathode,
-"Cathode",
-m_TwinMusic, false, 0);
-
-int anode_nbr= 0;
-for(unsigned int j=0; j<16; j++){
-anode_nbr++;
-Tv.setZ(j*SofTofW_NS::twin_anode_thickness -7.5*SofTofW_NS::twin_anode_thickness);
-new G4PVPlacement(0,Tv,
-m_AnodeDriftArea,
-"Anode",
-LogicalSector, false, anode_nbr);
-}
-
-for(unsigned int i=0; i<4; i++){
-if(i==0){
-Tv.setX(0.5*SofTofW_NS::twin_anode_width+SofTofW_NS::twin_cathode_width);
-Tv.setY(0.5*SofTofW_NS::twin_anode_height);
-}
-if(i==1){
-Tv.setX(-0.5*SofTofW_NS::twin_anode_width-SofTofW_NS::twin_cathode_width);
-Tv.setY(0.5*SofTofW_NS::twin_anode_height);
-}
-if(i==2){
-  Tv.setX(-0.5*SofTofW_NS::twin_anode_width-SofTofW_NS::twin_cathode_width);
-  Tv.setY(-0.5*SofTofW_NS::twin_anode_height);
-}
-if(i==3){
-  Tv.setX(0.5*SofTofW_NS::twin_anode_width+SofTofW_NS::twin_cathode_width);
-  Tv.setY(-0.5*SofTofW_NS::twin_anode_height);
-}
-
-Tv.setZ(0);
-new G4PVPlacement(0,Tv,
-    LogicalSector,
-    "Sector",
-    m_TwinMusic,false,i+1);
-}
-}
-}
-
-return m_TwinMusic;
-}*/
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 G4AssemblyVolume* SofTofW::BuildVacuumPipe(){
@@ -330,34 +225,6 @@ G4AssemblyVolume* SofTofW::BuildGLAD()
   }
   return m_GLAD;
 }
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-/*G4AssemblyVolume* SofTofW::BuildGLAD(){
-  if(!m_GLAD){
-  m_GLAD = new G4AssemblyVolume;
-  G4Box* box = new G4Box("glad_Box",SofTofW_NS::GLAD_width*0.5,
-  SofTofW_NS::GLAD_height*0.5,SofTofW_NS::GLAD_Leff*0.5);
-
-  G4Material* GLADMaterial = MaterialManager::getInstance()->GetMaterialFromLibrary("Vaccuum");
-  G4LogicalVolume* vol1 = new G4LogicalVolume(box,GLADMaterial,"logic_GLAD_Box",0,0,0);
-  vol1->SetVisAttributes(m_VisGLAD);
-
-  G4UniformMagField* magField = new G4UniformMagField(G4ThreeVector(0,m_GLAD_MagField,0));
-//G4FieldManager* fieldMgr = G4TransportationManager::GetTransportationManager()->GetFieldManager();
-G4FieldManager* fieldMgr = new G4FieldManager(magField);
-
-//fieldMgr->SetDetectorField(magField);
-
-fieldMgr->CreateChordFinder(magField);
-
-vol1->SetFieldManager(fieldMgr,true);
-
-G4ThreeVector Pos1 = G4ThreeVector(0,0,0);
-G4RotationMatrix* Rot1 = new G4RotationMatrix(0,0,0);
-m_GLAD->AddPlacedVolume(vol1,Pos1,Rot1);
-}
-return m_GLAD;
-}*/
-
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -511,7 +378,6 @@ void SofTofW::InitializeScorers() {
   level.push_back(1);
   level.push_back(0);
   G4VPrimitiveScorer* Calorimeter= new CalorimeterScorers::PS_Calorimeter("Calorimeter",level, 0) ;
-  //G4VPrimitiveScorer* TwinCalorimeter= new CalorimeterScorers::PS_Calorimeter("TwinCalorimeter",level, 0) ;
   G4VPrimitiveScorer* Interaction= new InteractionScorers::PS_Interactions("Interaction",ms_InterCoord, 0) ;
   //and register it to the multifunctionnal detector
   m_TofScorer->RegisterPrimitive(Calorimeter);
