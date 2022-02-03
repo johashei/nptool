@@ -86,9 +86,17 @@ SofTwim::SofTwim(){
   m_Pressure= 1*bar;
 
   // RGB Color + Transparency
+  m_VisTwimMother = new G4VisAttributes(G4Colour(0.5, 0.5, 0.5, 0.5));   
   m_VisCathode = new G4VisAttributes(G4Colour(0.7, 0.4, 0.1, 1));   
   m_VisSquare = new G4VisAttributes(G4Colour(0.5, 0.5, 0.5, 1));   
+  m_VisKapton = new G4VisAttributes(G4Colour(1, 0.4, 0.0, 0.7));   
+  m_VisMylar = new G4VisAttributes(G4Colour(0.8, 0.8, 0.8, 1));   
 
+  // Material Definition
+  m_Vacuum = MaterialManager::getInstance()->GetMaterialFromLibrary("Vacuum");
+  m_Mylar  = MaterialManager::getInstance()->GetMaterialFromLibrary("Mylar");
+  m_Kapton = MaterialManager::getInstance()->GetMaterialFromLibrary("Kapton");
+  m_Al     = MaterialManager::getInstance()->GetMaterialFromLibrary("Al");
 }
 
 SofTwim::~SofTwim(){
@@ -110,7 +118,7 @@ void SofTwim::AddDetector(double  R, double  Theta, double  Phi){
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-G4AssemblyVolume* SofTwim::BuildTwinMusic(){
+G4LogicalVolume* SofTwim::BuildTwinMusic(){
 
   double twim_width_out = 22*cm;
   double twim_height_out = 22*cm;
@@ -119,82 +127,138 @@ G4AssemblyVolume* SofTwim::BuildTwinMusic(){
   double twim_height_in = 21*cm;
   double twim_thickness_in = 55.1*cm;
 
+  double mylar_width = 21.5*cm;
+  double mylar_height = 21.5*cm;
+  double mylar_thickness = 2*25*um;
+
+  G4ThreeVector Tv;
+  G4RotationMatrix* Rv = new G4RotationMatrix(0,0,0);
+
+  if(!m_TwinMusic){
+    // *** Full Twin volume *** //
+    G4Box* Twimbox1 = new G4Box("Twim_Box1", twim_width_in*0.5, twim_height_in*0.5, twim_thickness_in*0.5);
+    G4Box* Twimbox2 = new G4Box("Twim_Box2", twim_width_out*0.5, twim_height_out*0.5, twim_thickness_out*0.5);
+    G4VSolid* Twimbox = new G4SubtractionSolid("Twim_Box",Twimbox2,Twimbox1);
+
+    m_TwinMusic = new G4LogicalVolume(Twimbox2, m_Vacuum, "logic_twim", 0,0,0);
+
+    G4LogicalVolume* LogicTwimBox = new G4LogicalVolume(Twimbox, m_Al, "logic_twim", 0,0,0);
+    LogicTwimBox->SetVisAttributes(m_VisSquare);
+
+    m_VisTwimMother->SetForceWireframe(true);
+    m_TwinMusic->SetVisAttributes(m_VisTwimMother);
+
+    new G4PVPlacement(0,G4ThreeVector(0,0,0),
+        LogicTwimBox,"TwimAlBox",
+        m_TwinMusic,
+        false,0);
+
+    // *** Cathode plane in the middle *** //
+    G4Box* cathode_box = new G4Box("Cathode_box", SofTwim_NS::twim_cathode_width*0.5, SofTwim_NS::twim_cathode_height*0.5, SofTwim_NS::twim_cathode_length*0.5);
+    G4LogicalVolume* LogicalCathode = new G4LogicalVolume(cathode_box, m_Al, "logic_cathode", 0,0,0);
+    LogicalCathode->SetVisAttributes(m_VisCathode);
+
+    Rv->rotateZ(90*deg);
+    Tv.setX(0);
+    Tv.setY(0);
+    Tv.setZ(0);
+
+    // *** Cathode Placement *** //
+    new G4PVPlacement(Rv,Tv,
+        LogicalCathode,"TwimCathode",
+        m_TwinMusic,false,0);
+
+    // *** Section Placement *** //
+    Tv.setZ(0);
+    int section_nbr=0;
+    for(unsigned int i=0; i<4; i++){
+      section_nbr++;
+      if(i==0){
+        Tv.setX(0.5*SofTwim_NS::twim_anode_width+SofTwim_NS::twim_cathode_width);
+        Tv.setY(0.5*SofTwim_NS::twim_anode_height);
+      }
+      if(i==1){
+        Tv.setX(-0.5*SofTwim_NS::twim_anode_width-SofTwim_NS::twim_cathode_width);
+        Tv.setY(0.5*SofTwim_NS::twim_anode_height);
+      }
+
+      if(i==2){
+        Tv.setX(-0.5*SofTwim_NS::twim_anode_width-SofTwim_NS::twim_cathode_width);
+        Tv.setY(-0.5*SofTwim_NS::twim_anode_height);
+      }
+      if(i==3){
+        Tv.setX(0.5*SofTwim_NS::twim_anode_width+SofTwim_NS::twim_cathode_width);
+        Tv.setY(-0.5*SofTwim_NS::twim_anode_height);
+      }
+
+      new G4PVPlacement(0,Tv,
+          BuildTwinSection(),"TwimSection",
+          m_TwinMusic,
+          false,section_nbr);
+    }
+
+    // *** Mylar windows *** //
+    G4Box* Mylarbox = new G4Box("Mylar_Box", mylar_width*0.5, mylar_height*0.5, mylar_thickness*0.5);
+    G4LogicalVolume* LogicMylarBox = new G4LogicalVolume(Mylarbox, m_Mylar, "logic_mylar", 0,0,0);
+    LogicMylarBox->SetVisAttributes(m_VisMylar);
+
+
+    // *** Entrance Windows *** //
+    Tv.setX(0);
+    Tv.setY(0);
+    Tv.setZ(-0.5*twim_thickness_out-0.5*mylar_thickness);
+    new G4PVPlacement(0,Tv,
+          LogicMylarBox,"Mylar1",
+          m_TwinMusic,
+          false,0);
+
+    // Exit Mylar
+    Tv.setZ(0.5*twim_thickness_out+0.5*mylar_thickness);
+    new G4PVPlacement(0,Tv,
+          LogicMylarBox,"Mylar2",
+          m_TwinMusic,
+          false,0);
+  }
+
+  return m_TwinMusic;
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+G4LogicalVolume* SofTwim::BuildTwinSection(){
 
   double sector_width = 10*cm;
   double sector_height = 10*cm;
   double sector_thickness = 50*cm;
 
-  if(!m_TwinMusic){
-    m_TwinMusic = new G4AssemblyVolume();
-    
-    // Full Twin volume
-    G4Box* Twimbox1 = new G4Box("Twim_Box1", twim_width_in*0.5, twim_height_in*0.5, twim_thickness_in*0.5);
-    G4Box* Twimbox2 = new G4Box("Twim_Box2", twim_width_out*0.5, twim_height_out*0.5, twim_thickness_out*0.5);
-    G4VSolid* Twimbox = new G4SubtractionSolid("Twim_Box",Twimbox2,Twimbox1);
-    G4Material* TwimMaterial = MaterialManager::getInstance()->GetMaterialFromLibrary("Al");
-    G4LogicalVolume* LogicTwimBox = new G4LogicalVolume(Twimbox, TwimMaterial, "logic_twim", 0,0,0);
+  G4ThreeVector Tv;
+  G4RotationMatrix* Rv = new G4RotationMatrix(0,0,0);
 
-    //m_VisSquare->SetForceWireframe(1);
-    LogicTwimBox->SetVisAttributes(m_VisSquare);
+  // Section volume
+  G4Box* Sectorbox = new G4Box("Sector_Box", sector_width*0.5, sector_height*0.5, sector_thickness*0.5);
 
-    // Sector Twin volume
-    G4Box* Sectorbox = new G4Box("Sector_Box", sector_width*0.5, sector_height*0.5, sector_thickness*0.5);
-    G4LogicalVolume* LogicalSector = new G4LogicalVolume(Sectorbox, TwimMaterial, "logic_twim", 0,0,0);
-    LogicalSector->SetVisAttributes(G4VisAttributes::GetInvisible());
-    // Drift Anode Area //
-    G4Box* Anodebox = new G4Box("Anode_Box", SofTwim_NS::twim_anode_width*0.5, SofTwim_NS::twim_anode_height*0.5, SofTwim_NS::twim_anode_thickness*0.5);
+  m_TwinSection = new G4LogicalVolume(Sectorbox, m_Vacuum, "logic_section", 0,0,0);
+  m_TwinSection->SetVisAttributes(G4VisAttributes::GetInvisible());
 
-    G4Material* DetectorMaterial = MaterialManager::getInstance()->GetMaterialFromLibrary(m_TwimGas);
-    G4LogicalVolume* m_AnodeDriftArea = new G4LogicalVolume(Anodebox, DetectorMaterial, "logic_twim_anode", 0, 0, 0);
-    G4VisAttributes* m_VisTwimAnode = new G4VisAttributes(G4Colour(0.3,0.4,0.5,0.5));
-    m_AnodeDriftArea->SetVisAttributes(m_VisTwimAnode);
-    m_AnodeDriftArea->SetSensitiveDetector(m_TwimScorer);
+  // Drift Anode Area //
+  G4Box* Anodebox = new G4Box("Anode_Box", SofTwim_NS::twim_anode_width*0.5, SofTwim_NS::twim_anode_height*0.5, SofTwim_NS::twim_anode_thickness*0.5);
 
-    // Cathode plane in the middle //
-    G4Box* cathode_box = new G4Box("Cathode_box", SofTwim_NS::twim_cathode_width*0.5, SofTwim_NS::twim_cathode_height*0.5, SofTwim_NS::twim_cathode_length*0.5);
-    G4Material* CathodeMaterial = MaterialManager::getInstance()->GetMaterialFromLibrary("Al");
-    G4LogicalVolume* LogicalCathode = new G4LogicalVolume(cathode_box, CathodeMaterial, "logic_cathode", 0,0,0);
-    LogicalCathode->SetVisAttributes(m_VisCathode);
+  m_AnodeDriftArea = new G4LogicalVolume(Anodebox, m_Gas, "logic_twim_anode", 0, 0, 0);
+  G4VisAttributes* m_VisTwimAnode = new G4VisAttributes(G4Colour(0.3,0.4,0.5,0.5));
+  m_AnodeDriftArea->SetVisAttributes(m_VisTwimAnode);
+  m_AnodeDriftArea->SetSensitiveDetector(m_TwimScorer);
 
-    G4RotationMatrix* Rv = new G4RotationMatrix(0,0,0);
-    Rv->rotateZ(90*deg);
-    G4ThreeVector Tv;
-    Tv.setX(0);
-    Tv.setY(0);
-    Tv.setZ(0);
-
-    m_TwinMusic->AddPlacedVolume(LogicTwimBox,Tv,0);
-    m_TwinMusic->AddPlacedVolume(LogicalCathode,Tv,Rv);
-
-    for(unsigned int i=0; i<4; i++){
-      if(i==2){
-        Tv.setX(0.5*SofTwim_NS::twim_anode_width+SofTwim_NS::twim_cathode_width);
-        Tv.setY(0.5*SofTwim_NS::twim_anode_height);
-      }
-      if(i==3){
-        Tv.setX(-0.5*SofTwim_NS::twim_anode_width-SofTwim_NS::twim_cathode_width);
-        Tv.setY(0.5*SofTwim_NS::twim_anode_height);
-      }
-      if(i==0){
-        Tv.setX(-0.5*SofTwim_NS::twim_anode_width-SofTwim_NS::twim_cathode_width);
-        Tv.setY(-0.5*SofTwim_NS::twim_anode_height);
-      }
-      if(i==1){
-        Tv.setX(0.5*SofTwim_NS::twim_anode_width+SofTwim_NS::twim_cathode_width);
-        Tv.setY(-0.5*SofTwim_NS::twim_anode_height);
-      }
-
-      Tv.setZ(0);
-      int anode_nbr= 0;
-      for(unsigned int j=0; j<16; j++){
-        anode_nbr++;
-        Tv.setZ(j*SofTwim_NS::twim_anode_thickness -7.5*SofTwim_NS::twim_anode_thickness);
-        m_TwinMusic->AddPlacedVolume(m_AnodeDriftArea,Tv,0);
-      }
-    }
+  Tv.setZ(0);
+  int anode_nbr= 0;
+  for(unsigned int j=0; j<16; j++){
+    anode_nbr++;
+    Tv.setZ(j*SofTwim_NS::twim_anode_thickness -7.5*SofTwim_NS::twim_anode_thickness);
+    new G4PVPlacement(Rv,Tv,
+        m_AnodeDriftArea,"AnodeDriftRegion",
+        m_TwinSection,
+        false,anode_nbr);
   }
 
-  return m_TwinMusic;
+   return m_TwinSection;
 }
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -219,6 +283,8 @@ void SofTwim::ReadConfiguration(NPL::InputParser parser){
       G4ThreeVector Pos = NPS::ConvertVector(blocks[i]->GetTVector3("POS","mm"));
       m_TwimGas = blocks[i]->GetString("TwimGas");
       m_Pressure = blocks[i]->GetDouble("Pressure","bar");
+      
+      m_Gas = MaterialManager::getInstance()->GetMaterialFromLibrary(m_TwimGas);
       AddDetector(Pos);
     }
     else if(blocks[i]->HasTokenList(sphe)){
@@ -230,6 +296,7 @@ void SofTwim::ReadConfiguration(NPL::InputParser parser){
       m_TwimGas = blocks[i]->GetString("TwimGas");
       m_Pressure = blocks[i]->GetDouble("Pressure","bar");
 
+      m_Gas = MaterialManager::getInstance()->GetMaterialFromLibrary(m_TwimGas);
       AddDetector(R,Theta,Phi);
     }
     else{
@@ -264,7 +331,9 @@ void SofTwim::ConstructDetector(G4LogicalVolume* world){
     u = u.unit();
 
     G4RotationMatrix* Rot = new G4RotationMatrix(u,v,w);
-    BuildTwinMusic()->MakeImprint(world,Det_pos,Rot);
+    new G4PVPlacement(Rot, Det_pos,
+        BuildTwinMusic(),"TwinMusic",world,
+        false,0);
   }
 }
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -295,24 +364,9 @@ void SofTwim::ReadSensitive(const G4Event* ){
     double Energy = RandGauss::shoot(Scorer->GetEnergy(i),SofTwim_NS::ResoEnergy);
     if(Energy>SofTwim_NS::EnergyThreshold){
       double Time = RandGauss::shoot(Scorer->GetTime(i),SofTwim_NS::ResoTime);
-      int SectionNbr;
-      int AnodeNbr = level[1]-2;
-      if(AnodeNbr<17){
-        SectionNbr = 1;
-        AnodeNbr = AnodeNbr;
-      }
-      else if(AnodeNbr>16 && AnodeNbr<33){
-        SectionNbr = 2;
-        AnodeNbr = AnodeNbr-(SectionNbr-1)*16;
-      }
-      else if(AnodeNbr>32 && AnodeNbr<49){  
-        SectionNbr = 3;
-        AnodeNbr = AnodeNbr-(SectionNbr-1)*16;
-      }
-      else if(AnodeNbr>48){
-        SectionNbr = 4;
-        AnodeNbr = AnodeNbr-(SectionNbr-1)*16;
-      }
+      int SectionNbr=level[0];
+      int AnodeNbr = level[1];
+      
       m_Event->SetSectionNbr(SectionNbr);
       m_Event->SetAnodeNbr(AnodeNbr);
       m_Event->SetEnergy(Energy);

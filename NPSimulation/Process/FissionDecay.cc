@@ -109,7 +109,7 @@ G4bool FissionDecay::ModelTrigger(const G4FastTrack& fastTrack) {
   int Parent_ID = PrimaryTrack->GetParentID();
 
   m_FissionConditions->Clear();
-  if(Parent_ID>0){
+  if(Parent_ID>=0){
     Trigger = true;
 
     m_PreviousEnergy=fastTrack.GetPrimaryTrack()->GetKineticEnergy();

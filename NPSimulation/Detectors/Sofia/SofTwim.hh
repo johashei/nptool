@@ -55,10 +55,14 @@ class SofTwim : public NPS::VDetector{
     // Spherical
     void AddDetector(double R,double Theta,double Phi);  
 
-    G4AssemblyVolume* BuildTwinMusic();
+    G4LogicalVolume* BuildTwinMusic();
+    G4LogicalVolume* BuildTwinSection();
 
   private:
-    G4AssemblyVolume* m_TwinMusic;
+    G4LogicalVolume* m_TwinMusic;
+    G4LogicalVolume* m_TwinSection;
+    G4LogicalVolume* m_AnodeDriftArea;
+
     double m_Pressure;
     string m_TwimGas;
     ////////////////////////////////////////////////////
@@ -103,8 +107,17 @@ class SofTwim : public NPS::VDetector{
     vector<double>  m_Phi; 
     
     // Visualisation Attribute
+    G4VisAttributes* m_VisTwimMother;
     G4VisAttributes* m_VisSquare;
     G4VisAttributes* m_VisCathode;
+    G4VisAttributes* m_VisMylar;
+    G4VisAttributes* m_VisKapton;
+
+    G4Material* m_Vacuum;
+    G4Material* m_Mylar;
+    G4Material* m_Kapton;
+    G4Material* m_Al;
+    G4Material* m_Gas;
 
   // Needed for dynamic loading of the library
   public:
