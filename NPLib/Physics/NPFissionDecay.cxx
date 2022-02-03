@@ -146,16 +146,16 @@ bool NPL::FissionDecay::GenerateEvent(string CompoundName, double MEx,double MEK
       double Phil   = m_FissionModel->GetPhffl();
       double Phih   = m_FissionModel->GetPhffh();
 
-      TVector3 uxy = TVector3(cos(TMath::Pi()/2-PhiCN), -sin(TMath::Pi()/2-PhiCN), 0);
+      TVector3 uxy = TVector3(cos(TMath::Pi()/2-PhiCN), sin(TMath::Pi()/2-PhiCN), 0);
       TVector3 Momentuml = Pl * TVector3(sin(Thetal)*cos(Phil),
           sin(Thetal)*sin(Phil),
           cos(Thetal));
-      //Momentuml.Rotate(-ThetaCN, uxy);
+      Momentuml.Rotate(-ThetaCN, uxy);
 
       TVector3 Momentumh = Ph * TVector3(sin(Thetah)*cos(Phih),
           sin(Thetah)*sin(Phih),
           cos(Thetah));
-      //Momentumh.Rotate(-ThetaCN, uxy);
+      Momentumh.Rotate(-ThetaCN, uxy);
       
       DPx.push_back(Momentuml.X());
       DPx.push_back(Momentumh.X());
