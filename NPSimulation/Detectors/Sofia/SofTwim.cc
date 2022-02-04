@@ -82,7 +82,7 @@ SofTwim::SofTwim(){
   m_TwimScorer = 0;
 
   m_TwinMusic= 0;
-  m_TwimGas= "P10_1atm";
+  m_TwimGas= "P80";
   m_Pressure= 1*bar;
 
   // RGB Color + Transparency
@@ -90,7 +90,7 @@ SofTwim::SofTwim(){
   m_VisCathode = new G4VisAttributes(G4Colour(0.7, 0.4, 0.1, 1));   
   m_VisSquare = new G4VisAttributes(G4Colour(0.5, 0.5, 0.5, 1));   
   m_VisKapton = new G4VisAttributes(G4Colour(1, 0.4, 0.0, 0.7));   
-  m_VisMylar = new G4VisAttributes(G4Colour(0.8, 0.8, 0.8, 1));   
+  m_VisMylar = new G4VisAttributes(G4Colour(0.85, 0.85, 0.85, 0.8));   
 
   // Material Definition
   m_Vacuum = MaterialManager::getInstance()->GetMaterialFromLibrary("Vacuum");
@@ -127,8 +127,8 @@ G4LogicalVolume* SofTwim::BuildTwinMusic(){
   double twim_height_in = 21*cm;
   double twim_thickness_in = 55.1*cm;
 
-  double mylar_width = 21.5*cm;
-  double mylar_height = 21.5*cm;
+  double mylar_width = 22*cm;
+  double mylar_height = 22*cm;
   double mylar_thickness = 2*25*um;
 
   G4ThreeVector Tv;
@@ -238,7 +238,7 @@ G4LogicalVolume* SofTwim::BuildTwinSection(){
 
   m_TwinSection = new G4LogicalVolume(Sectorbox, m_Vacuum, "logic_section", 0,0,0);
   m_TwinSection->SetVisAttributes(G4VisAttributes::GetInvisible());
-
+  
   // Drift Anode Area //
   G4Box* Anodebox = new G4Box("Anode_Box", SofTwim_NS::twim_anode_width*0.5, SofTwim_NS::twim_anode_height*0.5, SofTwim_NS::twim_anode_thickness*0.5);
 
@@ -284,7 +284,7 @@ void SofTwim::ReadConfiguration(NPL::InputParser parser){
       m_TwimGas = blocks[i]->GetString("TwimGas");
       m_Pressure = blocks[i]->GetDouble("Pressure","bar");
       
-      m_Gas = MaterialManager::getInstance()->GetMaterialFromLibrary(m_TwimGas);
+      m_Gas = MaterialManager::getInstance()->GetGasFromLibrary(m_TwimGas,m_Pressure,293);
       AddDetector(Pos);
     }
     else if(blocks[i]->HasTokenList(sphe)){
@@ -296,7 +296,7 @@ void SofTwim::ReadConfiguration(NPL::InputParser parser){
       m_TwimGas = blocks[i]->GetString("TwimGas");
       m_Pressure = blocks[i]->GetDouble("Pressure","bar");
 
-      m_Gas = MaterialManager::getInstance()->GetMaterialFromLibrary(m_TwimGas);
+      m_Gas = MaterialManager::getInstance()->GetGasFromLibrary(m_TwimGas,m_Pressure,293);
       AddDetector(R,Theta,Phi);
     }
     else{

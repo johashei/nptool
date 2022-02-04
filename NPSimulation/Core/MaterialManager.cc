@@ -435,7 +435,8 @@ G4Material* MaterialManager::GetMaterialFromLibrary(string Name,
       material->AddElement(GetElementFromLibrary("O"), 1);
       m_Material[Name] = material;
       return material;
-    } else if (Name == "mixMINOS") { // cyril
+    } 
+    else if (Name == "mixMINOS") { // cyril
       if (!density)
         density = 0.0019836 * g / cm3;
       G4Material* material = new G4Material("NPS_" + Name, density, 3);
@@ -444,7 +445,8 @@ G4Material* MaterialManager::GetMaterialFromLibrary(string Name,
       material->AddElement(GetElementFromLibrary("Ar"), .82);
       m_Material[Name] = material;
       return material;
-    } else if (Name == "mumetal") { // cyril
+    } 
+    else if (Name == "mumetal") { // cyril
       if (!density)
         density = 8.7 * g / cm3;
       G4Material* material = new G4Material("NPS_" + Name, density, 3);
@@ -1206,6 +1208,18 @@ G4Material* MaterialManager::GetGasFromLibrary(string Name, double Pressure,
       return material;
     }
 
+    if (Name == "P80") {
+      density              = ((0.2*36 + 0.8*(12.0107 + 4 * 1.00794) )/ Vm) * mg / cm3;
+      G4Material* material = new G4Material("NPS_" + newName, density, 3,
+                                            kStateGas, Temperature, Pressure);
+      material->AddElement(GetElementFromLibrary("Ar"), 0.2);
+      material->AddElement(GetElementFromLibrary("C"), 0.64);
+      material->AddElement(GetElementFromLibrary("H"), 0.16);
+      m_Material[newName] = material;
+      return material;
+    }
+
+
     if (Name == "CO2") {
       density              = ((12.0107 + 2 * 16) / Vm) * mg / cm3;
       G4Material* material = new G4Material("NPS_" + newName, density, 2,
@@ -1236,6 +1250,18 @@ G4Material* MaterialManager::GetGasFromLibrary(string Name, double Pressure,
       return material;
     }
 
+    if (Name == "MixTwinMusic") { 
+      density              = ((0.01*(12.0107 + 2*16.) + 0.2*36 + 0.79*(12.0107 + 4 * 1.00794) )/ Vm) * mg / cm3;
+      G4Material* material = new G4Material("NPS_" + newName, density, 3,
+                                            kStateGas, Temperature, Pressure);
+      
+      material->AddMaterial(GetGasFromLibrary("CH4",Pressure,Temperature),0.79);
+      material->AddMaterial(GetGasFromLibrary("CO2",Pressure,Temperature),0.01);
+      material->AddElement(GetElementFromLibrary("Ar"), .20);
+      m_Material[Name] = material;
+      return material;
+    } 
+ 
     else {
       exit(1);
     }
