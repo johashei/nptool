@@ -160,7 +160,7 @@ void FitKnownPeaks(TH1F* hist){
 
 }
 
-double* FitKnownPeaks_RtrnArry(TH1F* hist){
+vector<vector<double>> FitKnownPeaks_RtrnArry(TH1F* hist){
   double minFit=-1.0, maxFit=5.0; 
   double binWidth = hist->GetXaxis()->GetBinWidth(3);
   double sigma = 0.14;
@@ -274,7 +274,7 @@ double* FitKnownPeaks_RtrnArry(TH1F* hist){
   full->SetParLimits(numParams-1,0.0,1e1);
 
   //Fit full function to histogram
-  hist->Fit(full, "WWR", "", minFit, maxFit);
+  hist->Fit(full, "WWRQ", "", minFit, maxFit);
   hist->Draw();
  
   //Extract fitted variables, assign them to individual fits, and draw them
@@ -307,16 +307,19 @@ double* FitKnownPeaks_RtrnArry(TH1F* hist){
   cout << "===========================" << endl;
   cout << "== PEAK =========== AREA ==" << endl;
   
-  double areas[numPeaks];
+  vector<vector<double>> allpeaks;
   for(int i=0; i<numPeaks; i++){
     cout << fixed << setprecision(3) << finalPar[2*i+1] 
 	 << "\t" << setprecision(0)<< finalPar[2*i+2]/binWidth 
 	 << "\t+- " << (finalPar[2*i+2]/binWidth)*(finalErr[2*i+2]/finalPar[2*i+2]) 
-	 << endl;
+	 << setprecision(3) << endl;
 
-    areas[i] = finalPar[2*i+2]/binWidth;
+    vector<double> onepeak; //energy, area and error for one peak
+    onepeak.push_back(finalPar[2*i+1]);
+    onepeak.push_back(finalPar[2*i+2]/binWidth);
+    onepeak.push_back((finalPar[2*i+2]/binWidth)*(finalErr[2*i+2]/finalPar[2*i+2]));
+    allpeaks.push_back(onepeak);
   }
-
-  return areas;
+  return allpeaks;
 }
 

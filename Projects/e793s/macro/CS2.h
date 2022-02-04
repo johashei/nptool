@@ -1,163 +1,147 @@
-//TGraph* ExpDiffCross(double Energy);
-double* ExpDiffCross(double Energy);
-TH1F* GateThetaLab_RtrnHist(double minTheta, double maxTheta, double binsize);
+vector<vector<double>> ExpDiffCross(double Energy);
 TH1F* PullThetaLabHist(int i, double minTheta, double gatesize);
 void Scale(TGraph* g , TGraphErrors* ex);
 TGraph* TWOFNR(double E, double J0, double J, double n, double l, double j);
 double ToMininize(const double* parameter);
-//TGraph* FindNormalisation(TGraph* cs1, TH1* hexp);
-TGraph* FindNormalisation(TGraph* cs1, double* hexp);
+TGraph* FindNormalisation(TGraph* theory, TGraphErrors* experiment);
 
-TGraph* g1;
-//TH1* current;
-double* current;
-TH1F* SolidAngle;
-//auto diffcrossexp = new TGraph("diffcrossexp","diffcrossexp",180,0,180);
+vector<Double_t> anglecentres, anglewidth;
+TGraph* currentThry;
+TGraphErrors* staticExp;
+
+//BASIC RUN: CS(0.143,2,1,1.5,1)
 
 ////////////////////////////////////////////////////////////////////////////////
 void CS(double Energy, double Spin, double spdf, double angmom, double nodes){
-  auto file = new TFile("../SolidAngle_HistFile_06Dec_47Kdp.root");
-  SolidAngle = (TH1F*) file->FindObjectAny("SolidAngle_Lab_MG");
-
   // p3/5 -> spdf = 1, angmom = 1.5
-
   // J0 is incident spin, which is 47K g.s. therefore J0 = 1/2
   double J0 = 0.5;
 
-  // Solid Angle
+  /* Solid Angle (from simulation) */
+  auto file = new TFile("../SolidAngle_HistFile_06Dec_47Kdp.root");
+  TH1F* SolidAngle = (TH1F*) file->FindObjectAny("SolidAngle_Lab_MG");
   TCanvas* c_SolidAngle = new TCanvas("c_SolidAngle","c_SolidAngle",1000,1000);
   SolidAngle->Draw();
  
-  // 
+  /* Area of experimental peaks */
+  TCanvas* c_PeakArea = new TCanvas("c_PeakArea","c_PeakArea",1000,1000);
+  vector<vector<double>> areaArray = ExpDiffCross(0.143);
+  //cout << std::setprecision(3) << std::fixed;
+  delete c_PeakArea;
+
+  // Array: i, peakenergy, peakarea, areaerror, anglemin, anglemax
+//  for(int i=0; i<areaArray.size();i++){
+//    cout << i << " " 
+//	 << areaArray[i][0] << " " 
+//	 << areaArray[i][1] << " "
+//	 << areaArray[i][2] << " "
+//	 << areaArray[i][3] << " "
+//	 << areaArray[i][4] << endl;
+//  }
+
+  /* Area over Solid Angle */
+  vector<Double_t> AoSA, AoSAerr;
+  for(int i=0; i<areaArray.size();i++){
+    int binmin = SolidAngle->FindBin(areaArray[i][3]+0.0001);
+    int binmax = SolidAngle->FindBin(areaArray[i][4]-0.0001);
+
+    anglecentres.push_back(((areaArray[i][4]-areaArray[i][3])/2.)+areaArray[i][3]);
+    anglewidth.push_back(areaArray[i][4]-areaArray[i][3]);
+
+    double SAerr; // IS THIS IN MSR OR SR????
+    double SA = 1000. * SolidAngle->IntegralAndError(binmin,binmax,SAerr);
+    //SAerr = SAerr*1000.; //????
+
+    AoSA.push_back(areaArray[i][1] / SA);
+    AoSAerr.push_back((areaArray[i][1]/SA) 
+		    * sqrt( pow(areaArray[i][2]/areaArray[i][1],2) + pow(SAerr/SA,2) ) );
+
+    cout << "Angle " << areaArray[i][3] << " to " << areaArray[i][4] 
+	 << ", centre " << anglecentres[i]
+	 << ": SA = " << SA << " +- " << SAerr 
+         << "  Area/SA = " << AoSA[i] << " +- " << AoSAerr[i] << " counts/msr"<< endl;
+  }
+  
+  TCanvas* c_AoSA = new TCanvas("c_AoSA","c_AoSA",1000,1000);
+  TGraphErrors* gAoSA = new TGraphErrors(
+		  anglecentres.size(),
+		  &(anglecentres[0]), &(AoSA[0]),
+		  //&(anglewidth[0]), &(AoSAerr[0]) );
+		  0, &(AoSAerr[0]) );
+  gAoSA->SetTitle("Area/SolidAngle");
+  gAoSA->GetXaxis()->SetTitle("ThetaLab [deg]");
+  gAoSA->GetYaxis()->SetTitle("___ [counts/msr]");
+  gAoSA->Draw();
+
+  /* TWOFNR diff. cross section */ 
   TCanvas* c_TWOFNR = new TCanvas("c_TWOFNR","c_TWOFNR",1000,1000);
+  TGraph* DiffCross = TWOFNR(Energy, J0, Spin, nodes, spdf, angmom); 
+  DiffCross->Draw();
 
-  // some work around here.
-  // TWOFNR is calling the ADWA calculation
-  auto diffcross = TWOFNR(Energy, J0, Spin, nodes, spdf, angmom); 
-  diffcross->Draw();
-  // need to define hexp, best to have to have some function that take Ex and Edc 
-  // min and max, make the angular distrib, divide by solid angle and return the 
-  // normalised CS.
-  //
-  //
+  /* Scaled and compared on same plot */ 
+/* 
+  cout << "USING BASIC SCALING METHOD..." << endl;
+  TGraph* ScaledTWOFNR = DiffCross;
+  TCanvas* c_Compare = new TCanvas("c_Compare","c_Compare",1000,1000);
+  Scale(ScaledTWOFNR,gAoSA);
+  c_Compare->SetLogy();
+  gAoSA->SetLineColor(kRed);
+  gAoSA->SetMarkerColor(kRed);
+  gAoSA->SetMarkerStyle(21);
+  gAoSA->Draw("AP");
+  ScaledTWOFNR->Draw("SAME");
+*/
 
-  //TCanvas* c_ExpDiffCross = new TCanvas("c_ExpDiffCross","c_ExpDiffCross",1000,1000);
-  auto temp = ExpDiffCross(0.143);
-  //TCanvas* c_ExpDiffCross = new TCanvas("c_ExpDiffCross","c_ExpDiffCross",1000,1000);
-  //temp->Draw();  
-
-//  TCanvas* c_Final = new TCanvas("c_Final","c_Final",1000,1000);
-//  temp->Divide(SolidAngle);
-//  temp->Draw();
-
-  //GateThetaLab(105,110,0.1);FitKnownPeaks(Ex_ThetaLabGate)
-  //
-  FindNormalisation(diffcross,temp);
+  /* Using Chi2 minimizaiton */
+  cout << "USING CHI2 MINIMIZAITON..." << endl;
+  TCanvas* c_Chi2Min = new TCanvas("c_Chi2Min","c_Chi2Min",1000,1000);
+  TGraph* Final = FindNormalisation(DiffCross,gAoSA);
+  gAoSA->SetLineColor(kRed);
+  gAoSA->SetMarkerColor(kRed);
+  gAoSA->SetMarkerStyle(21);
+  gAoSA->Draw("AP");
+  Final->Draw("SAME");
 }
 
-//TGraph* ExpDiffCross(double Energy){
-double* ExpDiffCross(double Energy){
+
+
+////////////////////////////////////////////////////////////////////////////////
+vector<vector<double>> ExpDiffCross(double Energy){
+  cout << "========================================================" << endl;
   // Implement some kind of energy selection later, for now, hard code that we are selecting 0.143, array index 1
+  vector<vector<double>> AllPeaks_OneGate;
+  vector<vector<double>> OnePeak_AllGates;
   int numbins = 10;
   double x[numbins], y[numbins];
-  //for(int i=0; i<10;i++){
   for(int i=0; i<numbins;i++){
-    double* peakAreas;
     double bin = 5.;
     double min = 105. + (i*bin);
     double max = min + bin;
+    cout << "===================================" << endl;
     cout << "min: " << min << " max: " << max << endl;
 
     TH1F* gate = PullThetaLabHist(i,105.,5.);
-    peakAreas = FitKnownPeaks_RtrnArry(gate);
-    cout << "area of 0.143 = " << peakAreas[1] << endl;
-//    delete gate;
-    //diffcrossexp->Fill(min+(bin/2.),peakAreas[1]);    
-
-//    x[i] = min+(bin/2.);
-    y[i] = peakAreas[1];
+    AllPeaks_OneGate = FitKnownPeaks_RtrnArry(gate);
+    //cout << "area of " << peakAreas[1][0] << " = " << peakAreas[1][1] 
+    cout << "area of 0.143 = " << AllPeaks_OneGate[1][1] 
+	 << " +- " << AllPeaks_OneGate[1][2] 
+	 << endl;
+    AllPeaks_OneGate[1].push_back(min);
+    AllPeaks_OneGate[1].push_back(max);
+    OnePeak_AllGates.push_back(AllPeaks_OneGate[1]);
   }
-
-//  TGraph* diffcrossexp = new TGraph(numbins,x,y);
-
-//  return diffcrossexp;
-  return y;
+  return OnePeak_AllGates;
 }
 
-/*
-TH1F* GateThetaLab_RtrnHist(double minTheta, double maxTheta, double binsize){
-  string gating = "abs(T_MUGAST_VAMOS-2777)<600 && Mugast.TelescopeNumber>0 && Mugast.TelescopeNumber<8 && ThetaLab > " 
-      + to_string(minTheta)
-      + " && ThetaLab < "
-      + to_string(maxTheta);
-
-  string title = to_string(minTheta)+" < ThetaLab < "+to_string(maxTheta);
-  string ytitle = "Counts / " + to_string(binsize) + " MeV";
-  string draw = "Ex>>Ex_ThetaLabGate(" + to_string(8.0/binsize) + ",-1,7)";
-
-  TCanvas *cEx_ThetaLabGate = new TCanvas("cEx_ThetaLabGate","cEx_ThetaLabGate",1000,1000);
-  chain->Draw(draw.c_str(),gating.c_str(),"colz");
-  TH1F* Ex_ThetaLabGate = (TH1F*) gDirectory->Get("Ex_ThetaLabGate");
-  Ex_ThetaLabGate->GetXaxis()->SetTitle("Ex [MeV]");
-  Ex_ThetaLabGate->GetYaxis()->SetTitle(ytitle.c_str());
-  Ex_ThetaLabGate->SetTitle(title.c_str());
-
-  return Ex_ThetaLabGate;
-}
-*/
-
+////////////////////////////////////////////////////////////////////////////////
 TH1F* PullThetaLabHist(int i, double minTheta, double gatesize){
   TFile* file = new TFile("GateThetaLabHistograms.root","READ");
-
-  string histname = "cThetaLabGate_" + to_string(minTheta+(i*gatesize)) + "-" + to_string(minTheta+((i+1)*gatesize));
+  string histname = "cThetaLabGate_" 
+	          + to_string(minTheta+(i*gatesize)) + "-" 
+		  + to_string(minTheta+((i+1)*gatesize));
   TList *list = (TList*)file->Get("GateThetaLabHistograms");
   TH1F* hist = (TH1F*)list->FindObject(histname.c_str());
   return hist;
-}
-
-
-////////////////////////////////////////////////////////////////////////////////
-/*
- double Chi2(TGraph* g , TH1* h){
- double Chi2 = 0 ;
- double chi;
-
-  for(int i = 1 ; i < h->GetNbinsX() ; i++){
-    if(h->GetBinContent(i)>0)  {
-      chi = (h->GetBinContent(i) - g->Eval(h->GetBinCenter(i)) ) / (h->GetBinError(i));
-      Chi2 +=chi*chi;
-    }
-  }
-
- return Chi2;
-}
-*/
-
-double Chi2(TGraph* g , double* h){
- double Chi2 = 0 ;
- double chi;
-
-  for(int i = 1 ; i < 10 ; i++){
-    if(h[i]>0)  {
-      chi = (h[i] - g->Eval(h[i]) ); // DIVIDE BY ERROR!!!   /(h->GetBinError(i));
-      Chi2 +=chi*chi;
-    }
-  }
-
- return Chi2;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-double ToMininize(const double* parameter){
-static int f = 0 ;
-  TGraph* g = new TGraph();
-  double* X = g1->GetX();
-  double* Y = g1->GetY();
-  for(int i = 0 ; i < g1->GetN() ; i++){
-    g->SetPoint(g->GetN(),X[i],parameter[0]*Y[i]);
-  }
-  double chi2  = Chi2(g,current);  
-  return chi2;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -178,14 +162,20 @@ void Scale(TGraph* g , TGraphErrors* ex){
     }
   }
 
+  //scaleTWOFNR = mean;
+  cout << "SCALED THEORY BY " << mean << endl;
+  cout << " therefore S = " << 1/mean << " ??" << endl;  
+
   double* x = g->GetX();
   double* y = g->GetY();
   for(unsigned int i = 0 ; i < g->GetN() ; i++)
     g->SetPoint(i,x[i],y[i]*mean);
 }
+
 ////////////////////////////////////////////////////////////////////////////////
 TGraph* TWOFNR(double E, double J0, double J, double n, double l, double j){
-  cout << " ==================================== " << endl;
+
+  cout << "========================================================" << endl;
   char origDirchar[200];
   getcwd(origDirchar,200);
   string origDir{origDirchar};
@@ -196,7 +186,7 @@ TGraph* TWOFNR(double E, double J0, double J, double n, double l, double j){
   chdir(twofnrDir.c_str());
   //Check
   system("pwd"); 
-  cout << " ==================================== " << endl;
+  cout << "===================================" << endl;
 
   double BeamEnergy =  7.7;
   double QValue = 2.274 - E;
@@ -246,44 +236,68 @@ TGraph* TWOFNR(double E, double J0, double J, double n, double l, double j){
 
   TGraph* CS = new TGraph("24.jjj");
 
-  cout << " ==================================== " << endl;
+  cout << "===================================" << endl;
   cout << "Current directory    " << twofnrDir << endl;
 
   cout << "Moving to directory  " << origDir << endl;
-//  string line = "cd ";
-//  line += twofnrDir;
-//  system(line.c_str()); 
   chdir(origDir.c_str());
-  //Check
   system("pwd"); 
-  cout << " ==================================== " << endl;
+  cout << "========================================================" << endl;
 
 
   return CS;
-  //return 0;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-//TGraph* FindNormalisation(TGraph* cs1, TH1* hexp){
-TGraph* FindNormalisation(TGraph* cs1, double* hexp){
-  // Set global variable
-  g1 = cs1;
-  current = hexp;
+double Chi2(TGraph* theory , TGraphErrors* exper){
+  double Chi2 = 0 ;
+  double chi;
+  //for(int i = 1 ; i < exper->GetN() ; i++){
+  for(int i = 0 ; i < exper->GetN() ; i++){
+    if(exper->Eval(anglecentres[i])>0)  {
+      chi=(exper->Eval(anglecentres[i])-theory->Eval(anglecentres[i]) ) / (exper->GetErrorY(i));
+      Chi2 +=chi*chi;
+    }
+  }
+  cout << "Chi2 = " << Chi2 << endl;
+  return Chi2;
+}
 
-  const char* minName ="Minuit";
-  const char* algoName="Migrad";
+
+////////////////////////////////////////////////////////////////////////////////
+double ToMininize(const double* parameter){
+  static int f = 0 ;
+  TGraph* g = new TGraph();
+  double* X = currentThry->GetX(); // gets valies from global g1 = tgraph passed to find norm
+  double* Y = currentThry->GetY();
+  for(int i = 0 ; i < currentThry->GetN() ; i++){
+    g->SetPoint(g->GetN(),X[i],parameter[0]*Y[i]); // scales this tgraph by parameter
+  }
+  double chi2  = Chi2(g,staticExp);  //compares theory tgraph to experimental tgrapherrors by chi2
+  return chi2;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TGraph* FindNormalisation(TGraph* theory, TGraphErrors* experiment){
+  // Set global variable
+  currentThry = theory;
+  staticExp = experiment;
+
+  // Construct minimiser
+  const char* minName ="Minuit";const char* algoName="Migrad";
   ROOT::Math::Minimizer* min =
     ROOT::Math::Factory::CreateMinimizer(minName, algoName);
   min->SetValidError(true);
 
   // Number of parameter
-  int mysize = 2;
+  int mysize = 1; // Originally 2 - why??
 
-  // create funciton wrapper for minimizer
+  // Create funciton wrapper for minimizer
   // a IMultiGenFunction type
   ROOT::Math::Functor f(&ToMininize,mysize);
   min->SetFunction(f);
   
+  // Set range of paramenter(??)
   double* parameter = new double[mysize];
   for(unsigned int i = 0 ; i < mysize ; i++){
     parameter[i] = 0.5;
@@ -292,22 +306,22 @@ TGraph* FindNormalisation(TGraph* cs1, double* hexp){
     min->SetLimitedVariable(i,name,parameter[i],0.1,0,1000);
   }
   
-  // do the minimization
+  // Minimise
   min->Minimize();
   const double *xs = min->X();
   const double *err = min->Errors(); 
 
+  // Write out
   for(int i = 0  ; i < mysize ; i++){
     cout << Form("S%d=",i+1) << xs[i] <<"("<<err[i] << ") "; 
   }
   cout << endl;
+
   // Return the Fitted CS
   TGraph* g = new TGraph(); 
-  double* X = cs1->GetX();
-  double* Y = cs1->GetY();
-  for(int i = 0 ; i < cs1->GetN() ; i++){
-    g->SetPoint(g->GetN(),X[i],xs[0]*Y[i]);
-  }
+  double* X = theory->GetX();
+  double* Y = theory->GetY();
+  for(int i=0; i<theory->GetN(); i++){ g->SetPoint(g->GetN(),X[i],xs[0]*Y[i]); }
+
   return g;
 }
-
