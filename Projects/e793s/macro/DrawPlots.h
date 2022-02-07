@@ -1,3 +1,4 @@
+#include <math.h>
 #include "NPReaction.h"
 #include <string>
 #include <sstream>

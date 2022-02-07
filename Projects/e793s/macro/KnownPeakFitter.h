@@ -117,7 +117,7 @@ void FitKnownPeaks(TH1F* hist){
   full->SetParameter(numParams-1,1.0);
   full->SetParLimits(numParams-1,0.0,1e1);
 
-  //Fit full function to histogram
+  //Fit full function tohistogram
   hist->Fit(full, "WWR", "", minFit, maxFit);
   hist->Draw();
  
@@ -159,6 +159,52 @@ void FitKnownPeaks(TH1F* hist){
   }
 
 }
+
+
+
+
+
+
+Double_t f_bg(Double_t *x, Double_t *par){
+  // Flat bg [0] + semicircle [1]*sqrt(6.183^2 - (x-10.829)^2) 
+  Float_t xx = x[0];
+  Double_t f;
+  Double_t a = TMath::Power(6.183,2);
+  Double_t b = TMath::Power(xx-10.829,2);
+  if(a > b){ f = par[0] + (par[1]*TMath::Sqrt(a-b)); }
+  else{ f = par[0]; }
+  return f;
+}
+
+Double_t f_full(Double_t *x, Double_t *par){
+  Float_t xx = x[0];
+  Double_t f;
+  Double_t peaks = (par[2]/(par[0]*sqrt(2*pi)))*exp(-0.5*pow((xx-par[1])/par[0],2))  
+    + (par[4]/(par[0]*sqrt(2*pi)))*exp(-0.5*pow((xx-par[3])/par[0],2)) 
+    + (par[6]/(par[0]*sqrt(2*pi)))*exp(-0.5*pow((xx-par[5])/par[0],2)) 
+    + (par[8]/(par[0]*sqrt(2*pi)))*exp(-0.5*pow((xx-par[7])/par[0],2)) 
+    + (par[10]/(par[0]*sqrt(2*pi)))*exp(-0.5*pow((xx-par[9])/par[0],2)) 
+    + (par[12]/(par[0]*sqrt(2*pi)))*exp(-0.5*pow((xx-par[11])/par[0],2))
+    + (par[14]/(par[0]*sqrt(2*pi)))*exp(-0.5*pow((xx-par[13])/par[0],2)) 
+    + (par[16]/(par[0]*sqrt(2*pi)))*exp(-0.5*pow((xx-par[15])/par[0],2)) 
+    + (par[18]/(par[0]*sqrt(2*pi)))*exp(-0.5*pow((xx-par[17])/par[0],2)) 
+    + (par[20]/(par[0]*sqrt(2*pi)))*exp(-0.5*pow((xx-par[19])/par[0],2)) 
+    + (par[22]/(par[0]*sqrt(2*pi)))*exp(-0.5*pow((xx-par[21])/par[0],2)) 
+    + (par[24]/(par[0]*sqrt(2*pi)))*exp(-0.5*pow((xx-par[23])/par[0],2)) 
+    + (par[26]/(par[0]*sqrt(2*pi)))*exp(-0.5*pow((xx-par[25])/par[0],2)) 
+    + (par[28]/(par[0]*sqrt(2*pi)))*exp(-0.5*pow((xx-par[27])/par[0],2));
+
+  Double_t bg;
+  Double_t a = TMath::Power(6.183,2);
+  Double_t b = TMath::Power(xx-10.829,2);
+  if(a > b){ bg = par[29] + (par[30]*TMath::Sqrt(a-b)); }
+  else{ bg = par[29]; }
+
+  f = peaks + bg;
+  return f;
+}
+
+
 
 vector<vector<double>> FitKnownPeaks_RtrnArry(TH1F* hist){
   double minFit=-1.0, maxFit=5.0; 
@@ -223,6 +269,12 @@ vector<vector<double>> FitKnownPeaks_RtrnArry(TH1F* hist){
   bg->SetLineStyle(9);
   bg->SetParNames("Background");
 
+  //Build IMPROVED background function
+  //TF1 *bg = new TF1 ("bg",f_bg, minFit, maxFit);
+  //bg->SetLineColor(kGreen);
+  //bg->SetLineStyle(9);
+  //bg->SetParNames("Background","BreakupScale");
+
   //Build total function
   TF1 *full = new TF1("fitAllPeaks", 
     "  ([2]/([0]*sqrt(2*pi)))*exp(-0.5*pow((x-[1])/[0],2)) " 
@@ -242,6 +294,11 @@ vector<vector<double>> FitKnownPeaks_RtrnArry(TH1F* hist){
     "+ [29]" , minFit, maxFit);
   full->SetLineColor(kRed);
 
+  //Build IMPROVED total function
+  //TF1 *full = new TF1("fitAllPeaks", f_full, minFit, maxFit);
+  //full->SetLineColor(kRed);
+
+
   //Annoyingly long parameter name assignment 
   //(SetParNames only works for up to 11 variables)
   full->SetParName(0,"Sigma");
@@ -260,6 +317,7 @@ vector<vector<double>> FitKnownPeaks_RtrnArry(TH1F* hist){
   full->SetParName(25,"Mean 13"); full->SetParName(26,"Area*BinWidth 13");
   full->SetParName(27,"Mean 14"); full->SetParName(28,"Area*BinWidth 14");
   full->SetParName(29,"Background");
+  full->SetParName(30,"BreakupScale");
 
   //Fix sigma & centroid, only allow area to vary  
   const int numParams = (numPeaks*2)+2;
@@ -295,7 +353,6 @@ vector<vector<double>> FitKnownPeaks_RtrnArry(TH1F* hist){
     allPeaks[i]->Draw("SAME");
   }
 
-
  /* Error propogation:
   * (Abin) +- deltaAbin, B+-0 (no uncertainty)
   * A = Abin/B
@@ -323,3 +380,4 @@ vector<vector<double>> FitKnownPeaks_RtrnArry(TH1F* hist){
   return allpeaks;
 }
 
+ 
