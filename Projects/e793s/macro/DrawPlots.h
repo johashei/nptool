@@ -21,6 +21,11 @@ NPL::Reaction Ti12C12C("47Ti(12C,12C)47Ti@355");
 void KnownLines_Ex(bool isVertical, double rangemin, double rangemax, Style_t lType, Color_t lColour);
 
 /* BASE FUNCTIONS */
+TF1* f_efficAGATA(){
+  TF1 *f_E = new TF1("fit_1","TMath::Exp([0]+[1]*TMath::Log(x)+[2]*pow(TMath::Log(x),2.0)+[3]*pow(TMath::Log(x),3.0)+[4]*pow(TMath::Log(x),4.0))",10,6000);
+  f_E->SetParameters(-6.34543e+01, +4.24746e+01, -1.00304e+01, +1.03468e+00, -3.97076e-02);
+  return f_E; 
+}
 
 TChain* Chain(std::string TreeName, std::vector<std::string>& file, bool EventList){
   TChain*  chain = new TChain(TreeName.c_str());
@@ -52,6 +57,24 @@ void LoadChainNP(){
   files.push_back("../../../Outputs/Analysis/47Kdp_08Nov_PartII.root");
 
   chain = Chain("PhysicsTree",files,true);
+}
+
+void CorrectForAGATAEffic(TH1F* hist){
+  int nbins = hist->GetNbinsX();
+  TF1* effic_keV = f_efficAGATA();
+
+  for(int i=1;i<nbins+1;i++){
+    double x = hist->GetBinCenter(i);
+    double val = effic_keV->Eval(x*1000.);
+//    cout << x << "  " << val << endl;
+
+    double bincontent = hist->GetBinContent(i);
+    bincontent = bincontent/(val/100.);
+    hist->SetBinContent(i,bincontent);
+  }
+  hist->SetFillStyle(3244);
+  hist->SetFillColor(kBlue);
+  hist->Draw();
 }
 
 void DrawParticleStates(TCanvas* canvas){
@@ -1134,17 +1157,10 @@ void AGATA_efficiency(){
 }
 
 void AGATA_efficiency(double Energy_keV){
-  TF1 *fit_1 = new TF1("fit_1","TMath::Exp([0]+[1]*TMath::Log(x)+[2]*pow(TMath::Log(x),2.0)+[3]*pow(TMath::Log(x),3.0)+[4]*pow(TMath::Log(x),4.0))",10,5000);
-  fit_1->SetParameters(-6.34543e+01,
-		       +4.24746e+01,
-		       -1.00304e+01,
-		       +1.03468e+00,
-		       -3.97076e-02);
-  fit_1->Draw();
-  cout << "At E = " 
-       << Energy_keV 
-       << " keV, AGATA efficiency = " 
-       << fit_1->Eval(Energy_keV)
+  TF1* func = f_efficAGATA();
+  func->Draw();
+  cout << "At E = " << Energy_keV 
+       << " keV, AGATA efficiency = " << func->Eval(Energy_keV)
        << " %" << endl;
 }
 

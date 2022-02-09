@@ -554,8 +554,8 @@ cout << " 2D Matrices " << endl;
   cout << ""<< endl;
   cout << " Analysis functions" << endl;
   cout << "\t- FitKnownPeaks(histogram) "<< endl;
-  cout << "\t\t-- Fits Ex peaks to an excitation spectrum "<< endl;
   cout << "\t- AGATA_efficiency(double Energy_kev) "<< endl;
+  cout << "\t- CorrectForAGATAEffic(TH1F* hist) "<< endl;
   cout << ""<< endl;
   cout << "==========================================" << endl;
 

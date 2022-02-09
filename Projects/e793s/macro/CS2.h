@@ -9,35 +9,58 @@ vector<Double_t> anglecentres, anglewidth;
 TGraph* currentThry;
 TGraphErrors* staticExp;
 
-//BASIC RUN: CS(0.143,2,1,1.5,1)
+int indexE;
+bool loud = 0;
 
 ////////////////////////////////////////////////////////////////////////////////
 void CS(double Energy, double Spin, double spdf, double angmom, double nodes){
+
+  /* BASIC RUN: CS(0.143,2,1,1.5,1) */
+
   // p3/5 -> spdf = 1, angmom = 1.5
   // J0 is incident spin, which is 47K g.s. therefore J0 = 1/2
   double J0 = 0.5;
+
+  /* Retrieve array index of the entered peak energy */
+  /* numpeaks and Energy[] defined globally in KnownPeakFitter.h */
+  bool found = 0;
+  for(int i=0;i<numPeaks;i++){
+    if(abs(Energy-means[i])<0.01){
+      cout << "========================================================" << endl;
+      cout << "Identified as state #" << i << ", E = " << means[i] << endl;
+      indexE = i;
+      found = 1;
+    }
+  }
+  if(!found){
+    cout << "========================================================" << endl;
+    cout << "NO STATE AT THAT ENERGY INDENTIFIED!! CHECK KNOWN PEAKS!!" << endl;
+    return;
+  }
 
   /* Solid Angle (from simulation) */
   auto file = new TFile("../SolidAngle_HistFile_06Dec_47Kdp.root");
   TH1F* SolidAngle = (TH1F*) file->FindObjectAny("SolidAngle_Lab_MG");
   TCanvas* c_SolidAngle = new TCanvas("c_SolidAngle","c_SolidAngle",1000,1000);
   SolidAngle->Draw();
+  // canvas deleted after Area/SA calculation
  
   /* Area of experimental peaks */
   TCanvas* c_PeakArea = new TCanvas("c_PeakArea","c_PeakArea",1000,1000);
-  vector<vector<double>> areaArray = ExpDiffCross(0.143);
-  //cout << std::setprecision(3) << std::fixed;
+  vector<vector<double>> areaArray = ExpDiffCross(means[indexE]);
   delete c_PeakArea;
 
-  // Array: i, peakenergy, peakarea, areaerror, anglemin, anglemax
-//  for(int i=0; i<areaArray.size();i++){
-//    cout << i << " " 
-//	 << areaArray[i][0] << " " 
-//	 << areaArray[i][1] << " "
-//	 << areaArray[i][2] << " "
-//	 << areaArray[i][3] << " "
-//	 << areaArray[i][4] << endl;
-//  }
+  // Array: peakenergy, peakarea, areaerror, anglemin, anglemax
+  if(loud){
+    for(int i=0; i<areaArray.size();i++){
+      cout << i << " " 
+    	   << areaArray[i][0] << " " 
+	   << areaArray[i][1] << " "
+	   << areaArray[i][2] << " "
+	   << areaArray[i][3] << " "
+	   << areaArray[i][4] << endl;
+    }
+  }
 
   /* Area over Solid Angle */
   vector<Double_t> AoSA, AoSAerr;
@@ -52,15 +75,19 @@ void CS(double Energy, double Spin, double spdf, double angmom, double nodes){
     double SA = 1000. * SolidAngle->IntegralAndError(binmin,binmax,SAerr);
     //SAerr = SAerr*1000.; //????
 
-    AoSA.push_back(areaArray[i][1] / SA);
+    AoSA.push_back(areaArray[i][1]/SA);
     AoSAerr.push_back((areaArray[i][1]/SA) 
 		    * sqrt( pow(areaArray[i][2]/areaArray[i][1],2) + pow(SAerr/SA,2) ) );
 
-    cout << "Angle " << areaArray[i][3] << " to " << areaArray[i][4] 
-	 << ", centre " << anglecentres[i]
-	 << ": SA = " << SA << " +- " << SAerr 
-         << "  Area/SA = " << AoSA[i] << " +- " << AoSAerr[i] << " counts/msr"<< endl;
+    if(loud){
+      cout << "Angle " << areaArray[i][3] << " to " << areaArray[i][4] 
+	   << ", centre " << anglecentres[i]
+	   << ": Area = " << areaArray[i][1] << " +- " << areaArray[i][2] 
+	   << "  SA = " << SA << " +- " << SAerr 
+           << "  Area/SA = " << AoSA[i] << " +- " << AoSAerr[i] << " counts/msr"<< endl;
+    }
   }
+  delete c_SolidAngle;
   
   TCanvas* c_AoSA = new TCanvas("c_AoSA","c_AoSA",1000,1000);
   TGraphErrors* gAoSA = new TGraphErrors(
@@ -75,7 +102,7 @@ void CS(double Energy, double Spin, double spdf, double angmom, double nodes){
 
   /* TWOFNR diff. cross section */ 
   TCanvas* c_TWOFNR = new TCanvas("c_TWOFNR","c_TWOFNR",1000,1000);
-  TGraph* DiffCross = TWOFNR(Energy, J0, Spin, nodes, spdf, angmom); 
+  TGraph* DiffCross = TWOFNR(means[indexE], J0, Spin, nodes, spdf, angmom); 
   DiffCross->Draw();
 
   /* Scaled and compared on same plot */ 
@@ -103,12 +130,9 @@ void CS(double Energy, double Spin, double spdf, double angmom, double nodes){
   Final->Draw("SAME");
 }
 
-
-
 ////////////////////////////////////////////////////////////////////////////////
 vector<vector<double>> ExpDiffCross(double Energy){
   cout << "========================================================" << endl;
-  // Implement some kind of energy selection later, for now, hard code that we are selecting 0.143, array index 1
   vector<vector<double>> AllPeaks_OneGate;
   vector<vector<double>> OnePeak_AllGates;
   int numbins = 10;
@@ -120,15 +144,27 @@ vector<vector<double>> ExpDiffCross(double Energy){
     cout << "===================================" << endl;
     cout << "min: " << min << " max: " << max << endl;
 
+    /* Retrieve theta-gated Ex TH1F from file GateThetaLabHistograms.root */
+    /* To change angle gates, run GateThetaLab_MultiWrite() */
     TH1F* gate = PullThetaLabHist(i,105.,5.);
+
+    /* Retrieve array containing all fits, for one angle gate. *
+     * Specific peak of interest selected from the vector by   *
+     * global variable indexE                                  */
     AllPeaks_OneGate = FitKnownPeaks_RtrnArry(gate);
-    //cout << "area of " << peakAreas[1][0] << " = " << peakAreas[1][1] 
-    cout << "area of 0.143 = " << AllPeaks_OneGate[1][1] 
-	 << " +- " << AllPeaks_OneGate[1][2] 
+    
+    /* Check correct OneGate vector is selected */
+    cout << "area of " << means[indexE] << " = "
+	 << AllPeaks_OneGate[indexE][1] 
+	 << " +- " << AllPeaks_OneGate[indexE][2] 
 	 << endl;
-    AllPeaks_OneGate[1].push_back(min);
-    AllPeaks_OneGate[1].push_back(max);
-    OnePeak_AllGates.push_back(AllPeaks_OneGate[1]);
+
+    /* Add min and max angle to end of relevant OneGate vector */
+    AllPeaks_OneGate[indexE].push_back(min);
+    AllPeaks_OneGate[indexE].push_back(max);
+
+    /* Push relevant OneGate vector to end of AllGates vector */
+    OnePeak_AllGates.push_back(AllPeaks_OneGate[indexE]);
   }
   return OnePeak_AllGates;
 }
@@ -174,6 +210,8 @@ void Scale(TGraph* g , TGraphErrors* ex){
 
 ////////////////////////////////////////////////////////////////////////////////
 TGraph* TWOFNR(double E, double J0, double J, double n, double l, double j){
+  /* This function mved between directories in order to run TWOFNR in proper *
+   * location. This is, weirdly, the least tempremental way of doing this.   */
 
   cout << "========================================================" << endl;
   char origDirchar[200];
@@ -181,7 +219,6 @@ TGraph* TWOFNR(double E, double J0, double J, double n, double l, double j){
   string origDir{origDirchar};
   string twofnrDir = "/home/charlottepaxman/Programs/TWOFNR";
   cout << "Current directory    " << origDir << endl;
-
   cout << "Moving to directory  " << twofnrDir << endl;
   chdir(twofnrDir.c_str());
   //Check
@@ -228,22 +265,19 @@ TGraph* TWOFNR(double E, double J0, double J, double n, double l, double j){
   cout << "Filled front input file." << endl;
   cout << "Executing front20..." << endl;
   system("(exec ~/Programs/TWOFNR/front20 < in.front > /dev/null)"); 
+  cout << "-> front20 complete!" << endl;
   cout << "Executing twofnr20..." << endl;
   system("(exec ~/Programs/TWOFNR/twofnr20 < in.twofnr > /dev/null)");
-
-  cout << "twofnr20 complete." << endl;
-
+  cout << "-> twofnr20 complete!" << endl;
 
   TGraph* CS = new TGraph("24.jjj");
 
   cout << "===================================" << endl;
   cout << "Current directory    " << twofnrDir << endl;
-
   cout << "Moving to directory  " << origDir << endl;
   chdir(origDir.c_str());
   system("pwd"); 
   cout << "========================================================" << endl;
-
 
   return CS;
 }
@@ -259,7 +293,7 @@ double Chi2(TGraph* theory , TGraphErrors* exper){
       Chi2 +=chi*chi;
     }
   }
-  cout << "Chi2 = " << Chi2 << endl;
+  if(loud){cout << "Chi2 = " << Chi2 << endl;}
   return Chi2;
 }
 
