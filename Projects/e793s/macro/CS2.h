@@ -1,3 +1,4 @@
+/* Predefine functions */
 vector<vector<double>> ExpDiffCross(double Energy);
 TH1F* PullThetaLabHist(int i, double minTheta, double gatesize);
 void Scale(TGraph* g , TGraphErrors* ex);
@@ -5,11 +6,13 @@ TGraph* TWOFNR(double E, double J0, double J, double n, double l, double j);
 double ToMininize(const double* parameter);
 TGraph* FindNormalisation(TGraph* theory, TGraphErrors* experiment);
 
+/* Global variables */
 vector<Double_t> anglecentres, anglewidth;
 TGraph* currentThry;
 TGraphErrors* staticExp;
-
 int indexE;
+
+/* Output volume toggle */
 bool loud = 0;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -20,6 +23,12 @@ void CS(double Energy, double Spin, double spdf, double angmom, double nodes){
   // p3/5 -> spdf = 1, angmom = 1.5
   // J0 is incident spin, which is 47K g.s. therefore J0 = 1/2
   double J0 = 0.5;
+
+  /* Clean global variables, in case of multiple runs */
+  indexE = 100;
+  anglecentres.clear();
+  anglewidth.clear();
+
 
   /* Retrieve array index of the entered peak energy */
   /* numpeaks and Energy[] defined globally in KnownPeakFitter.h */
