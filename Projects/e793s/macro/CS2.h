@@ -1,5 +1,5 @@
 /* Predefine functions */
-vector<vector<double>> ExpDiffCross(double Energy);
+vector<vector<double>> GetExpDiffCross(double Energy);
 TH1F* PullThetaLabHist(int i, double minTheta, double gatesize);
 void Scale(TGraph* g , TGraphErrors* ex);
 TGraph* TWOFNR(double E, double J0, double J, double n, double l, double j);
@@ -13,22 +13,52 @@ TGraphErrors* staticExp;
 int indexE;
 
 /* Output volume toggle */
-bool loud = 0;
+bool loud = 1;
 
 ////////////////////////////////////////////////////////////////////////////////
-void CS(double Energy, double Spin, double spdf, double angmom, double nodes){
+void CS(){
+/* Overload function */
+ cout << " Inputs:\n Experimental...\n\t - Energy of state\n\t - Spin of state" << endl;
+ cout << " Theory...\n\t - Orbital l\n\t - Orbital j\n\t - Orbital n\n\n" << endl;
 
+ cout << "  0f5/2 | -----  |  --?-- |   l=3, j=2.5, n=0" << endl;
+ cout << "        |        |        |" << endl;
+ cout << "  1p1/2 | -----  |  --?-- |   l=1, j=0.5, n=1" << endl;
+ cout << "  1p3/2 | -----  |  --?-- |   l=1, j=1.5, n=1" << endl;
+ cout << "  0f7/2 | -----  |  ===== |" << endl;
+ cout << "        |        |        |" << endl;
+ cout << "  0d3/2 | -----  |  ===== |" << endl;
+ cout << "  1s1/2 | --x--  |  ===== |" << endl;
+ cout << "        |        |        |" << endl;
+ cout << "        |   p    |    n   |" << endl;
+
+}
+
+////////////////////////////////////////////////////////////////////////////////
+void CS(double Energy, double Spin, double spdf, double angmom){
   /* BASIC RUN: CS(0.143,2,1,1.5,1) */
-
+ 
   // p3/5 -> spdf = 1, angmom = 1.5
   // J0 is incident spin, which is 47K g.s. therefore J0 = 1/2
   double J0 = 0.5;
+  double ElasticNorm = 5.8, ElasticNormErr = 1.3; // DeuteronNorm in elastics, 5.6 +- 1.3
+  double nodes;
+
+  if(spdf==1){
+    nodes=1;
+  }
+  else if(spdf==3){
+    nodes=0;
+  }
+  else{
+    cout << " INPUT NODES::" << endl;
+    cin >> nodes;
+  }
 
   /* Clean global variables, in case of multiple runs */
   indexE = 100;
   anglecentres.clear();
   anglewidth.clear();
-
 
   /* Retrieve array index of the entered peak energy */
   /* numpeaks and Energy[] defined globally in KnownPeakFitter.h */
@@ -48,7 +78,8 @@ void CS(double Energy, double Spin, double spdf, double angmom, double nodes){
   }
 
   /* Solid Angle (from simulation) */
-  auto file = new TFile("../SolidAngle_HistFile_06Dec_47Kdp.root");
+//  auto file = new TFile("../SolidAngle_HistFile_06Dec_47Kdp.root");
+  auto file = new TFile("../SolidAngle_HistFile_15Feb_47Kdp.root");
   TH1F* SolidAngle = (TH1F*) file->FindObjectAny("SolidAngle_Lab_MG");
   TCanvas* c_SolidAngle = new TCanvas("c_SolidAngle","c_SolidAngle",1000,1000);
   SolidAngle->Draw();
@@ -56,7 +87,7 @@ void CS(double Energy, double Spin, double spdf, double angmom, double nodes){
  
   /* Area of experimental peaks */
   TCanvas* c_PeakArea = new TCanvas("c_PeakArea","c_PeakArea",1000,1000);
-  vector<vector<double>> areaArray = ExpDiffCross(means[indexE]);
+  vector<vector<double>> areaArray = GetExpDiffCross(means[indexE]);
   delete c_PeakArea;
 
   // Array: peakenergy, peakarea, areaerror, anglemin, anglemax
@@ -71,8 +102,10 @@ void CS(double Energy, double Spin, double spdf, double angmom, double nodes){
     }
   }
 
-  /* Area over Solid Angle */
+  /* AoSA = Area/Solid Angle [#/msr] */
+  /* dSdO = Experimental Diff. Cross Sect. (Area/Solid Angle *Norm) [mb/msr] */
   vector<Double_t> AoSA, AoSAerr;
+  vector<Double_t> expDCS, expDCSerr;
   for(int i=0; i<areaArray.size();i++){
     int binmin = SolidAngle->FindBin(areaArray[i][3]+0.0001);
     int binmax = SolidAngle->FindBin(areaArray[i][4]-0.0001);
@@ -80,25 +113,35 @@ void CS(double Energy, double Spin, double spdf, double angmom, double nodes){
     anglecentres.push_back(((areaArray[i][4]-areaArray[i][3])/2.)+areaArray[i][3]);
     anglewidth.push_back(areaArray[i][4]-areaArray[i][3]);
 
-    double SAerr; // IS THIS IN MSR OR SR????
-    double SA = 1000. * SolidAngle->IntegralAndError(binmin,binmax,SAerr);
-    //SAerr = SAerr*1000.; //????
+    double SAerr;
+    double SA = SolidAngle->IntegralAndError(binmin,binmax,SAerr);
+    SA = SA*1000.;       //sr->msr
+    SAerr = SAerr*1000.; //sr->msr
 
     AoSA.push_back(areaArray[i][1]/SA);
     AoSAerr.push_back((areaArray[i][1]/SA) 
-		    * sqrt( pow(areaArray[i][2]/areaArray[i][1],2) + pow(SAerr/SA,2) ) );
+		    * sqrt( pow(areaArray[i][2]/areaArray[i][1],2) 
+			    + pow(SAerr/SA,2)));
+
+    expDCS.push_back((areaArray[i][1]/SA)*ElasticNorm);
+    expDCSerr.push_back((areaArray[i][1]/SA)*ElasticNorm
+		    * sqrt( pow(areaArray[i][2]/areaArray[i][1],2)
+		            + pow(SAerr/SA,2)
+			    + pow(ElasticNormErr/ElasticNorm,2)));
 
     if(loud){
       cout << "Angle " << areaArray[i][3] << " to " << areaArray[i][4] 
 	   << ", centre " << anglecentres[i]
-	   << ": Area = " << areaArray[i][1] << " +- " << areaArray[i][2] 
-	   << "  SA = " << SA << " +- " << SAerr 
+	   << ": Area = " << areaArray[i][1] << " +- " << areaArray[i][2] << " cnts" 
+	   << "  SA = " << SA << " +- " << SAerr << " msr" 
            << "  Area/SA = " << AoSA[i] << " +- " << AoSAerr[i] << " counts/msr"<< endl;
     }
   }
-  delete c_SolidAngle;
+  //delete c_SolidAngle;
   
+  /* Graph of Area/Solid Angle*/
   TCanvas* c_AoSA = new TCanvas("c_AoSA","c_AoSA",1000,1000);
+  c_AoSA->SetLogy();
   TGraphErrors* gAoSA = new TGraphErrors(
 		  anglecentres.size(),
 		  &(anglecentres[0]), &(AoSA[0]),
@@ -106,18 +149,39 @@ void CS(double Energy, double Spin, double spdf, double angmom, double nodes){
 		  0, &(AoSAerr[0]) );
   gAoSA->SetTitle("Area/SolidAngle");
   gAoSA->GetXaxis()->SetTitle("ThetaLab [deg]");
-  gAoSA->GetYaxis()->SetTitle("___ [counts/msr]");
+  gAoSA->GetYaxis()->SetTitle("Counts/#Omega [counts/msr]");
   gAoSA->Draw();
 
-  /* TWOFNR diff. cross section */ 
+  /* Graph of experimental diff. cross sect (dSigma/dOmega) */
+  TCanvas* c_dSdO = new TCanvas("c_dSdO","c_dSdO",1000,1000);
+  c_dSdO->SetLogy();
+  TGraphErrors* gdSdO = new TGraphErrors(
+		  anglecentres.size(),
+		  &(anglecentres[0]), &(expDCS[0]),
+		  //&(anglewidth[0]), &(AoSAerr[0]) );
+		  0, &(expDCSerr[0]) );
+  gdSdO->SetTitle("Differential Cross Section");
+  gdSdO->GetXaxis()->SetTitle("ThetaLab [deg]");
+  gdSdO->GetYaxis()->SetTitle("d#sigma/d#Theta [mb/msr]");
+  gdSdO->Draw();
+
+  /* TWOFNR diff. cross section, in mb/msr */ 
   TCanvas* c_TWOFNR = new TCanvas("c_TWOFNR","c_TWOFNR",1000,1000);
-  TGraph* DiffCross = TWOFNR(means[indexE], J0, Spin, nodes, spdf, angmom); 
-  DiffCross->Draw();
+  c_TWOFNR->SetLogy();
+  TGraph* TheoryDiffCross = TWOFNR(means[indexE], J0, Spin, nodes, spdf, angmom); 
+  TheoryDiffCross->GetYaxis()->SetTitle("d#sigma/d#Theta [mb/msr]"); //msr set in func above
+  TheoryDiffCross->GetXaxis()->SetTitle("ThetaLab [deg]");
+  TheoryDiffCross->Draw();
+
+  /* Convert AoSA into Differential Cross Section */
+  //cout << " SCALING BY NORMALIZATION = " << ElasticNorm << endl;
+  //gAoSA->GetYaxis()->SetTitle("d#sigma/d#Theta [mb/msr]");
+
 
   /* Scaled and compared on same plot */ 
 /* 
   cout << "USING BASIC SCALING METHOD..." << endl;
-  TGraph* ScaledTWOFNR = DiffCross;
+  TGraph* ScaledTWOFNR = TheoryDiffCross;
   TCanvas* c_Compare = new TCanvas("c_Compare","c_Compare",1000,1000);
   Scale(ScaledTWOFNR,gAoSA);
   c_Compare->SetLogy();
@@ -131,16 +195,17 @@ void CS(double Energy, double Spin, double spdf, double angmom, double nodes){
   /* Using Chi2 minimizaiton */
   cout << "USING CHI2 MINIMIZAITON..." << endl;
   TCanvas* c_Chi2Min = new TCanvas("c_Chi2Min","c_Chi2Min",1000,1000);
-  TGraph* Final = FindNormalisation(DiffCross,gAoSA);
-  gAoSA->SetLineColor(kRed);
-  gAoSA->SetMarkerColor(kRed);
-  gAoSA->SetMarkerStyle(21);
-  gAoSA->Draw("AP");
+  c_Chi2Min->SetLogy();
+  TGraph* Final = FindNormalisation(TheoryDiffCross,gdSdO);
+  gdSdO->SetLineColor(kRed);
+  gdSdO->SetMarkerColor(kRed);
+  gdSdO->SetMarkerStyle(21);
+  gdSdO->Draw("AP");
   Final->Draw("SAME");
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-vector<vector<double>> ExpDiffCross(double Energy){
+vector<vector<double>> GetExpDiffCross(double Energy){
   cout << "========================================================" << endl;
   vector<vector<double>> AllPeaks_OneGate;
   vector<vector<double>> OnePeak_AllGates;
@@ -234,6 +299,10 @@ TGraph* TWOFNR(double E, double J0, double J, double n, double l, double j){
   system("pwd"); 
   cout << "===================================" << endl;
 
+  /* Delete existing tran.jjj & 24.jjj files */
+  remove("tran.jjj");
+  remove("24.jjj");
+
   double BeamEnergy =  7.7;
   double QValue = 2.274 - E;
 
@@ -271,15 +340,43 @@ TGraph* TWOFNR(double E, double J0, double J, double n, double l, double j){
 
   Front_Input.close();
 
-  cout << "Filled front input file." << endl;
+  cout << "Filled front20 input file." << endl;
   cout << "Executing front20..." << endl;
   system("(exec ~/Programs/TWOFNR/front20 < in.front > /dev/null)"); 
-  cout << "-> front20 complete!" << endl;
+    ifstream checkfront("tran.jjj");
+    if(!checkfront){
+      //front20 fail!
+      cout << " !! ERROR !! \n front20 failed to complete" << endl;
+      return 0;
+    } else {
+      cout << "-> tran.jjj generated (success not guaranteed)" << endl;
+      checkfront.close();
+    }
+
+  /* in.twofnr instructs twofnr20 to evaluate tran.jjj */
   cout << "Executing twofnr20..." << endl;
   system("(exec ~/Programs/TWOFNR/twofnr20 < in.twofnr > /dev/null)");
-  cout << "-> twofnr20 complete!" << endl;
+    ifstream checktwofnr("24.jjj");
+    if(!checktwofnr){
+      //twofnr20 fail!
+      cout << " !! ERROR !! \n twofnr20 failed to complete" << endl;
+      terminate();
+//      return 0;
+    } else {
+      cout << "-> twofnr20 complete!" << endl;
+      checktwofnr.close();
+    }
 
   TGraph* CS = new TGraph("24.jjj");
+
+  //mb/sr->mb/msr is x1/1000
+  for(int i=0; i<CS->GetN(); i++){
+    double x, newy;
+    CS->GetPoint(i,x,newy);
+    newy=newy/1000;
+    CS->SetPoint(i,x,newy);
+  }
+
 
   cout << "===================================" << endl;
   cout << "Current directory    " << twofnrDir << endl;
@@ -322,6 +419,8 @@ double ToMininize(const double* parameter){
 
 ////////////////////////////////////////////////////////////////////////////////
 TGraph* FindNormalisation(TGraph* theory, TGraphErrors* experiment){
+  /* (dSdO)meas = S * (dSdO)calc */
+
   // Set global variable
   currentThry = theory;
   staticExp = experiment;
@@ -332,23 +431,26 @@ TGraph* FindNormalisation(TGraph* theory, TGraphErrors* experiment){
     ROOT::Math::Factory::CreateMinimizer(minName, algoName);
   min->SetValidError(true);
 
-  // Number of parameter
-  int mysize = 1; // Originally 2 - why??
+  // Number of parameters (should only be 1 for me)
+  int mysize = 1;
 
   // Create funciton wrapper for minimizer
   // a IMultiGenFunction type
   ROOT::Math::Functor f(&ToMininize,mysize);
   min->SetFunction(f);
   
-  // Set range of paramenter(??)
+  // Set range of parameter(??)
   double* parameter = new double[mysize];
   for(unsigned int i = 0 ; i < mysize ; i++){
     parameter[i] = 0.5;
     char name[4];
     sprintf(name,"S%d",i+1);
-    min->SetLimitedVariable(i,name,parameter[i],0.1,0,1000);
+    min->SetLimitedVariable(i,name,parameter[i],0.1,0,10000);
   }
-  
+ 
+
+  ///// TO IMPROVE: FIND WAY OF OBTAINING NDF AND PRINT CHI2/NDF /////
+
   // Minimise
   min->Minimize();
   const double *xs = min->X();
@@ -356,9 +458,8 @@ TGraph* FindNormalisation(TGraph* theory, TGraphErrors* experiment){
 
   // Write out
   for(int i = 0  ; i < mysize ; i++){
-    cout << Form("S%d=",i+1) << xs[i] <<"("<<err[i] << ") "; 
+    cout << Form("S%d=",i+1) << xs[i] << "(" << err[i] << ")" << endl;
   }
-  cout << endl;
 
   // Return the Fitted CS
   TGraph* g = new TGraph(); 

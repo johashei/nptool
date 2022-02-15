@@ -168,6 +168,10 @@ vector<vector<double>> FitKnownPeaks_RtrnArry(TH1F* hist){
     full->SetParameter(2*i+2,1.0);
     full->SetParLimits(2*i+2,0.0,1e5);
   }
+
+  //TESTING!!!!!
+  //full->FixParameter(6,0.);
+
   //full->FixParameter(numParams-1,0.0);
   full->SetParameter(numParams-1,1.0);
   full->SetParLimits(numParams-1,0.0,1e1);

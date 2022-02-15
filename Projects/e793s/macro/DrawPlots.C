@@ -521,7 +521,7 @@ void DrawPlots(){
   
   cout << "==========================================" << endl;
   cout << "========== AVAILABLE FUNCTIONS ===========" << endl;
-cout << " 2D Matrices " << endl;
+  cout << " 2D Matrices " << endl;
   cout << "\t- Draw_2DParticleGamma() "<< endl;
   cout << "\t- Draw_2DGammaGamma() "<< endl;
   cout << ""<< endl;
@@ -556,6 +556,9 @@ cout << " 2D Matrices " << endl;
   cout << "\t- FitKnownPeaks(histogram) "<< endl;
   cout << "\t- AGATA_efficiency(double Energy_kev) "<< endl;
   cout << "\t- CorrectForAGATAEffic(TH1F* hist) "<< endl;
+  cout << "\t- CS(stateEnergy, stateSpin, orbital_l, orbital_j, nodes) "<< endl;
+  cout << "\t---- 0.143, p3/2 = CS(0.143, 2, 1, 1.5, ?) "<< endl;
+  cout << "\t---- 0.968, p1/2 = CS(0.968, 0, 1, 0.5, ?) "<< endl;
   cout << ""<< endl;
   cout << "==========================================" << endl;
 
