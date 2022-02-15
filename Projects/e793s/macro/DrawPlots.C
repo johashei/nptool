@@ -2,6 +2,8 @@
 #include "KnownPeakFitter.h"
 #include "DrawPlots.h"
 
+#include "CS2.h"
+#include "ThreeBodyBreakup.h"
 /* USE THIS SPACE TO TEST NEW FEATURES */
 
 void thickness(){
@@ -514,7 +516,7 @@ void ForPoster_DiffCrossSec(){
 /* MAIN FUNCTION */
 
 void DrawPlots(){
-  gStyle->SetOptStat("nei");
+  gStyle->SetOptStat("nemMrRi");
   LoadChainNP();
   
   cout << "==========================================" << endl;
@@ -525,7 +527,10 @@ cout << " 2D Matrices " << endl;
   cout << ""<< endl;
   cout << " Ungated histograms " << endl;
   cout << "\t- Draw_1DParticle() "<< endl;
+  cout << "\t- Draw_1DParticle_MUST2() "<< endl;
   cout << "\t- Draw_1DGamma() "<< endl;
+  cout << "\t- Draw_1DGamma_MG() "<< endl;
+  cout << "\t- Draw_1DGamma_MM() "<< endl;
   cout << ""<< endl;
   cout << " Gated histograms " << endl;
   cout << "\t- GateParticle_SeeGamma(particle, width) "<< endl;
@@ -549,7 +554,8 @@ cout << " 2D Matrices " << endl;
   cout << ""<< endl;
   cout << " Analysis functions" << endl;
   cout << "\t- FitKnownPeaks(histogram) "<< endl;
-  cout << "\t\t-- Fits Ex peaks to an excitation spectrum "<< endl;
+  cout << "\t- AGATA_efficiency(double Energy_kev) "<< endl;
+  cout << "\t- CorrectForAGATAEffic(TH1F* hist) "<< endl;
   cout << ""<< endl;
   cout << "==========================================" << endl;
 
