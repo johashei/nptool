@@ -2,7 +2,7 @@
 
 TGraphErrors* GetT(int ring);
 TGraphErrors* GetZ(int ring);
-TGraphErrors* Calibrate(const TGraphErrors* g, double offset, double vdrift);
+TGraphErrors* Calibrate(const TGraphErrors* g, double offset, double vdrift, double base_line);
 void Scale(const TGraphErrors* ref,TGraphErrors* mod);
 double chi2(TGraphErrors* g1,TGraphErrors* g2);
 double Chi2(const double* parameter);
@@ -14,7 +14,8 @@ vector<double> vdrift;
 vector<double> evdrift;
 vector<double> offset;
 vector<double> eoffset;
-
+unsigned int current_ring;
+double percent = 0.02;
 ////////////////////////////////////////////////////////////////////////////////
 
 void cal(){
@@ -26,9 +27,10 @@ void cal(){
   for(unsigned int i = 0 ; i < 18; i++){
     cout << "Processing Ring " << i << endl;
     cv->cd(i+1);
+    current_ring=i+1;
     t = GetT(i+1);
     z = GetZ(i+1);
-    NumericalMinimization("Minuit2","Combined"); //SCAN, MIGRAD, COMBINED
+    NumericalMinimization("Minuit2","Fumili2"); //SCAN, MIGRAD, COMBINED
     z->Draw("ap");
 
     z->SetLineColor(kRed);
@@ -57,10 +59,14 @@ void cal(){
 
 ////////////////////////////////////////////////////////////////////////////////
 TGraphErrors* GetT(int ring){
-  static TFile* Tfile = new TFile("TPad_distrib.root"); 
+  static TFile* Tfile = new TFile("TPad_distrib_new.root"); 
   TString name = Form("TPad_ring%d",ring);
   TH1F* h = (TH1F*) Tfile->FindObjectAny(name);
-  h->Scale(1./h->Integral());
+  h->Rebin(8);
+  int maxBin=h->GetMaximumBin();
+  double scale = h->Integral(maxBin-10,maxBin+10)/20.;
+  h->Scale(1./scale);
+  cout << h->GetBinCenter(maxBin) << endl;
   unsigned int size = h->GetNbinsX();
   vector<double> x ;
   vector<double> y ;
@@ -82,7 +88,10 @@ TGraphErrors* GetZ(int ring){
   static TFile* Tfile = new TFile("ZPad_distrib.root"); 
   TString name = Form("ZPad_Ring%d",ring);
   TH1F* h = (TH1F*) Tfile->FindObjectAny(name);
-  h->Scale(1./h->Integral());
+  h->Rebin(8);
+  int maxBin=h->GetMaximumBin();
+  double scale = h->Integral(maxBin-10,maxBin+10)/20.;
+  h->Scale(1./scale);
   unsigned int size = h->GetNbinsX();
   vector<double> x ;
   vector<double> y ;
@@ -102,13 +111,13 @@ TGraphErrors* GetZ(int ring){
 } 
 
 ////////////////////////////////////////////////////////////////////////////////
-TGraphErrors* Calibrate(const TGraphErrors* g, double offset, double vdrift){
+TGraphErrors* Calibrate(const TGraphErrors* g, double offset, double vdrift,double base_line){
   TGraphErrors* res = new TGraphErrors(*g); 
   unsigned int size = g->GetN();
   double x, y; 
   for(unsigned int i = 0 ; i < size ; i++){
     g->GetPoint(i, x, y);
-    res->SetPoint(i,(x*30+offset)*vdrift,y);
+    res->SetPoint(i,(x*30+offset)*vdrift*(0.98-percent*current_ring/18.),y+base_line);
   }
   res->SetLineColor(kGreen-3);
   res->SetMarkerColor(kGreen-3);
@@ -127,7 +136,7 @@ void Scale(const TGraphErrors* ref,TGraphErrors* mod){
     double xref = x;
     double yref = y;
     double ymod = mod->Eval(xref);
-    if(yref>0.0002){
+    if(yref>0.9){
       scale+= ymod/yref; 
       point++;
     }
@@ -143,7 +152,7 @@ void Scale(const TGraphErrors* ref,TGraphErrors* mod){
 }
 ////////////////////////////////////////////////////////////////////////////////
 double Chi2(const double* parameter){
-  c = Calibrate(t,parameter[0],parameter[1]);
+  c = Calibrate(t,parameter[0],parameter[1],parameter[2]);
   Scale(z,c);
   return chi2(z,c);
 } 
@@ -180,21 +189,36 @@ void NumericalMinimization(const char * minName ,const char *algoName){
 
   // create funciton wrapper for minimizer
   // a IMultiGenFunction type 
-  ROOT::Math::Functor f(&Chi2,2); 
+  ROOT::Math::Functor f(&Chi2,3); 
 
   min->SetFunction(f);
   min->Clear();
-  double* parameter = new double[2];
-  parameter[0] = -1200;
-  parameter[1] = 0.0327339 ;
-  //parameter[1] = 0.0337261;
+  double* parameter = new double[3];
+  parameter[0] = -1000;
+  //parameter[1] =0.0291536; //p5mm
+ // parameter[1] =0.030712; //m5mm
+//  parameter[1] =0.0304835; // d5mm
 
+//  parameter[1] =0.0306181; // d5mm
+
+//  parameter[1] =0.0314412; // speed of ring 18
+
+  parameter[1] = 0.0345; // speed for right target length
+
+//  parameter[1] =0.0291703; // speed of ring 1
+
+  parameter[2] =0;// base line
+//  parameter[1] =0.0300424 ;
+  //parameter[1] =0.029 ;
+
+  
   // Set the free variables to be minimized!
-  min->SetLimitedVariable(0,"Offset",parameter[0],1,-1300,-1100);
-  //min->SetFixedVariable(0,"Offset",parameter[0]);
-   min->SetLimitedVariable(1,"VDrift",parameter[1],1e-5,0.02,0.04); 
+  min->SetLimitedVariable(0,"Offset",parameter[0],10,-2000,2000);
+  //min->SetLimitedVariable(1,"VDrift",parameter[1],1e-2,0.02,0.05); 
+  min->SetFixedVariable(1,"VDrift",parameter[1]);
+  //min->SetFixedVariable(2,"BaseLine",parameter[2]); 
+  min->SetLimitedVariable(2,"BaseLine",parameter[2],1,0,20); 
   // Set a fixed VDrift
- // min->SetFixedVariable(1,"VDrift",parameter[1]);
 
   // do the minimization
   min->Minimize(); 
@@ -204,7 +228,7 @@ void NumericalMinimization(const char * minName ,const char *algoName){
   std::cout << "VDrift = " << xs[1] <<  " +/- " << min->Errors()[1] << std::endl;
   std::cout << "Chi2= " << Chi2(xs) << std::endl;
 
-  vdrift.push_back(xs[1]);
+  vdrift.push_back(xs[1]*(0.98+percent*current_ring/18.));
   evdrift.push_back(min->Errors()[1]);
   offset.push_back(xs[0]);
   eoffset.push_back(min->Errors()[0]);
