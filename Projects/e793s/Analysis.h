@@ -82,6 +82,13 @@ class Analysis: public NPL::VAnalysis{
     std::vector<double> EDC;
     vector<double> AddBack_EDC;
     vector<double> AddBack_EDC2;
+    vector<double> AGATA_GammaPx;
+    vector<double> AGATA_GammaPy;
+    vector<double> AGATA_GammaPz;
+    vector<double> AGATA_GammaE;
+    vector<double> AGATA_OrigBetaX;
+    vector<double> AGATA_OrigBetaY;
+    vector<double> AGATA_OrigBetaZ;
     double EAgata;
     std::vector<double> ELab;
     std::vector<double> Ex;

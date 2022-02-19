@@ -36,6 +36,7 @@ using namespace std;
 ////////////////////////////////////////////////////////////////////////////////
 Analysis::Analysis(){
 }
+
 ////////////////////////////////////////////////////////////////////////////////
 Analysis::~Analysis(){
 }
@@ -45,11 +46,11 @@ void Analysis::Init() {
  ///////////////////////////////////////////////////////////////////////////////  
   
 //  if(NPOptionManager::getInstance()->HasDefinition("simulation")){
-    cout << " == == == == SIMULATION == == == ==" << endl;
-    isSim=true;
+//    cout << " == == == == SIMULATION == == == ==" << endl;
+//    isSim=true;
 //  } else {
-//    cout << " == == == == EXPERIMENT == == == ==" << endl;
-//    isSim=false;
+    cout << " == == == == EXPERIMENT == == == ==" << endl;
+    isSim=false;
 //  }
 
   agata_zShift=51*mm;
@@ -173,27 +174,8 @@ void Analysis::TreatEvent(){
   ReInitValue();
 
   if(isSim){
-    //ThetaCM_emmitted->Fill(Initial->GetThetaCM(0));
     ThetaCM_emmitted->Fill(ReactionConditions->GetThetaCM());
-    //ThetaLab_emmitted->Fill(Initial->GetThetaLab_WorldFrame(0));
     ThetaLab_emmitted->Fill(ReactionConditions->GetTheta(0));
-
-    /* 
-    TVector3 labDir = Initial->GetParticleDirection(0);
-    TVector3 comDir = labDir;
-
-    comDir.SetZ( cos(0.5*Initial->GetThetaLab_WorldFrame(0)*deg) );
-    comDir.SetX( labDir.X() / (2*comDir.Z()) );
-    comDir.SetY( labDir.Y() / (2*comDir.Z()) );
-
-    
-    cout << Initial->GetThetaLab_WorldFrame(0) << "  " 
-	 << labDir.Theta()/deg << " "
-	 << comDir.Theta()/deg << " "
-	 << endl;
-
-    ThetaCM_emmitted->Fill(comDir.Theta()/deg);
-   */
   }
 
   GATCONF_MASTER=ML->GetCalibratedValue("GATCONF_MASTER");
@@ -213,9 +195,7 @@ void Analysis::TreatEvent(){
   TVector3 BeamDirection(0.,0.,1.);
   BeamImpact = TVector3(XBeam,YBeam,m_DetectorManager->GetTargetZ()); 
 
-////  ParticleMult=M2->Si_E.size()+MG->DSSD_E.size();
   ParticleMult=M2->Si_E.size();////+MG->DSSD_E.size();
-
 
   //ParticleMult=M2->Si_E.size();
   //  FinalBeamEnergy=BeamCD2.Slow(OriginalBeamEnergy,0.5*TargetThickness,BeamDirection.Angle(TVector(0,0,1)));
@@ -450,16 +430,53 @@ void Analysis::TreatEvent(){
     // TrackZ1 to be corrected there is a shift of +51mm
     TVector3 GammaHit(AddX[i],AddY[i],AddZ[i]+agata_zShift); 
     // TVector3 GammaHit(trackX1[0],trackY1[0],trackZ1[0]); 
+
+
+//    cout << "gDir " << GammaHit.X() << " "
+//                    << GammaHit.Y() << " "
+//                    << GammaHit.Z() << " ";
+    /* TEST adding constant to Phi */
+    //double phitemp = GammaHit.Phi();
+    //double phiconst = -2.0;
+    //GammaHit.SetPhi(phitemp+phiconst);
+//    GammaHit.RotateZ(0.0);
+
+//    cout << "gDir " << GammaHit.X() << " "
+//                    << GammaHit.Y() << " "
+//                    << GammaHit.Z() << endl;
+
     // Gamma Direction 
     TVector3 GammaDirection = GammaHit-BeamImpact;
     GammaDirection = GammaDirection.Unit();
-    // Beta from Two body kinematic
-    //TVector3 beta = reaction.GetEnergyImpulsionLab_4().BoostVector();
-    // Beta from the Beam mid target 
-    reaction.GetKinematicLine4();
-    // TVector3 beta(0,0,-reaction.GetNucleus4()->GetBeta());
-    TVector3 beta(0,0,-0.1257);
 
+
+    /* Beta from Two body kinematic */
+    TVector3 beta = reaction.GetEnergyImpulsionLab_4().BoostVector();
+
+//    cout << "bDir " << beta.X() << " "
+//                    << beta.Y() << " "
+//                    << beta.Z() ;
+    beta.RotateX(0.002847); beta.RotateY(3.144869); beta.RotateZ(0.095923);
+    //beta.RotateY(M_PI);
+//    cout << "bDir " << beta.X() << " "
+//                    << beta.Y() << " "
+//                    << beta.Z() << endl;
+
+
+
+    /* Original beta */
+//    TVector3 beta(0,0,-0.1257);
+
+    // For beta rotation minimization
+    AGATA_GammaPx.push_back(Egamma*GammaDirection.X());
+    AGATA_GammaPy.push_back(Egamma*GammaDirection.Y());
+    AGATA_GammaPz.push_back(Egamma*GammaDirection.Z());
+    AGATA_GammaE.push_back(Egamma);
+    AGATA_OrigBetaX.push_back(beta.X());
+    AGATA_OrigBetaY.push_back(beta.Y());
+    AGATA_OrigBetaZ.push_back(beta.Z());
+
+    /* Other fills */
     double ThetaGamma = GammaDirection.Angle(BeamDirection)/deg;
     // Construct LV in lab frame
     GammaLV.SetPx(Egamma*GammaDirection.X());
@@ -485,6 +502,19 @@ void Analysis::TreatEvent(){
   }
 
 
+}
+
+////////////////////////////////////////////////////////////////////////////////
+void FillSolidAngles(TH1F* hSA, TH1F* hDet, TH1F* hEmm){
+  for (int i = 0; i < hSA->GetNbinsX(); ++i){
+    double val = hDet->GetBinContent(i) / hEmm->GetBinContent(i);
+    double valerr = val * sqrt( 
+      pow(hDet->GetBinError(i) / hDet->GetBinContent(i), 2) +
+      pow(hEmm->GetBinError(i) / hEmm->GetBinContent(i), 2) );
+    if (isnan(val)) { val = 0; valerr = 0; }
+    hSA->SetBinContent(i, val);
+    hSA->SetBinError(i, valerr);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -564,9 +594,14 @@ void Analysis::End(){
     cout << "Angular infinitesimal (MG) = " << dt_MG << "deg " << endl;
     auto Cline_MG = new TF1("Cline_MG",Form("1./(2*%f*sin(x*%f/180.)*%f*%f/180.)",M_PI,M_PI,dt_MG,M_PI),0,180);
 
-    SolidAngle_CM_MG->Divide(ThetaCM_emmitted);
+    /* Testing method for better errors in SolidAngle histograms */
+    /* NOT YET IMPLEMENTED FOR INDIVIDUAL DETECTORS!!!! */
+    FillSolidAngles(SolidAngle_CM_MG, ThetaCM_detected_MG, ThetaCM_emmitted);
+    //SolidAngle_CM_MG->Divide(ThetaCM_emmitted);
     SolidAngle_CM_MG->Divide(Cline_MG,1);
-    SolidAngle_Lab_MG->Divide(ThetaLab_emmitted);
+
+    FillSolidAngles(SolidAngle_Lab_MG, ThetaLab_detected_MG, ThetaLab_emmitted);
+    //SolidAngle_Lab_MG->Divide(ThetaLab_emmitted);
     SolidAngle_Lab_MG->Divide(Cline_MG,1);
 
     HistList->Add(ThetaCM_detected_MG);
@@ -587,7 +622,8 @@ void Analysis::End(){
       SolidAngle_CM_MGX[i] = new TH1F(*ThetaCM_detected_MGX[i]);
       SolidAngle_CM_MGX[i]->SetName(name.c_str());
       SolidAngle_CM_MGX[i]->SetTitle(name.c_str());
-      SolidAngle_CM_MGX[i]->Divide(ThetaCM_emmitted);
+      FillSolidAngles(SolidAngle_CM_MGX[i], ThetaCM_detected_MGX[i], ThetaCM_emmitted);
+      //SolidAngle_CM_MGX[i]->Divide(ThetaCM_emmitted);
       SolidAngle_CM_MGX[i]->Divide(Cline_MG,1);
     }
 
@@ -600,7 +636,8 @@ void Analysis::End(){
       SolidAngle_Lab_MGX[i] = new TH1F(*ThetaLab_detected_MGX[i]);
       SolidAngle_Lab_MGX[i]->SetName(name.c_str());
       SolidAngle_Lab_MGX[i]->SetTitle(name.c_str());
-      SolidAngle_Lab_MGX[i]->Divide(ThetaLab_emmitted);
+      FillSolidAngles(SolidAngle_Lab_MGX[i], ThetaLab_detected_MGX[i], ThetaLab_emmitted);
+      //SolidAngle_Lab_MGX[i]->Divide(ThetaLab_emmitted);
       SolidAngle_Lab_MGX[i]->Divide(Cline_MG,1);
     }
 
@@ -613,7 +650,8 @@ void Analysis::End(){
       SolidAngle_CM_MMX[i] = new TH1F(*ThetaCM_detected_MMX[i]);
       SolidAngle_CM_MMX[i]->SetName(name.c_str());
       SolidAngle_CM_MMX[i]->SetTitle(name.c_str());
-      SolidAngle_CM_MMX[i]->Divide(ThetaCM_emmitted);
+      FillSolidAngles(SolidAngle_CM_MMX[i], ThetaCM_detected_MMX[i], ThetaCM_emmitted);
+      //SolidAngle_CM_MMX[i]->Divide(ThetaCM_emmitted);
       SolidAngle_CM_MMX[i]->Divide(Cline_MM,1);
     }
 
@@ -625,7 +663,8 @@ void Analysis::End(){
       SolidAngle_Lab_MMX[i] = new TH1F(*ThetaLab_detected_MMX[i]);
       SolidAngle_Lab_MMX[i]->SetName(name.c_str());
       SolidAngle_Lab_MMX[i]->SetTitle(name.c_str());
-      SolidAngle_Lab_MMX[i]->Divide(ThetaLab_emmitted);
+      FillSolidAngles(SolidAngle_Lab_MMX[i], ThetaLab_detected_MMX[i], ThetaLab_emmitted);
+      //SolidAngle_Lab_MMX[i]->Divide(ThetaLab_emmitted);
       SolidAngle_Lab_MMX[i]->Divide(Cline_MM,1);
     }
 
@@ -639,13 +678,13 @@ void Analysis::End(){
     for(int i=0; i<5; i++){HistList->Add(SolidAngle_CM_MMX[i]);}
     for(int i=0; i<5; i++){HistList->Add(SolidAngle_Lab_MMX[i]);}
     
-    auto HistoFile = new TFile("SolidAngle_HistFile_06Dec.root","RECREATE");
+    auto HistoFile = new TFile("SolidAngle_HistFile_15Feb.root","RECREATE");
     HistList->Write();
     HistoFile->Close();
   }
 }
 
-  ////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 void Analysis::InitOutputBranch(){
   //RootOutput::getInstance()->GetTree()->Branch("Ex",&Ex,"Ex/D");
   RootOutput::getInstance()->GetTree()->Branch("Ex",&Ex);
@@ -653,6 +692,13 @@ void Analysis::InitOutputBranch(){
   RootOutput::getInstance()->GetTree()->Branch("EDC",&EDC);
   RootOutput::getInstance()->GetTree()->Branch("AddBack_EDC",&AddBack_EDC);
   RootOutput::getInstance()->GetTree()->Branch("AddBack_EDC2",&AddBack_EDC2);
+  RootOutput::getInstance()->GetTree()->Branch("AGATA_GammaPx",&AGATA_GammaPx);
+  RootOutput::getInstance()->GetTree()->Branch("AGATA_GammaPy",&AGATA_GammaPy);
+  RootOutput::getInstance()->GetTree()->Branch("AGATA_GammaPz",&AGATA_GammaPz);
+  RootOutput::getInstance()->GetTree()->Branch("AGATA_GammaE",&AGATA_GammaE);
+  RootOutput::getInstance()->GetTree()->Branch("AGATA_OrigBetaX",&AGATA_OrigBetaX);
+  RootOutput::getInstance()->GetTree()->Branch("AGATA_OrigBetaY",&AGATA_OrigBetaY);
+  RootOutput::getInstance()->GetTree()->Branch("AGATA_OrigBetaZ",&AGATA_OrigBetaZ);
   RootOutput::getInstance()->GetTree()->Branch("EAgata",&EAgata,"EAgata/D");
   RootOutput::getInstance()->GetTree()->Branch("ELab",&ELab);
   RootOutput::getInstance()->GetTree()->Branch("Ecm",&Ecm);
@@ -762,7 +808,6 @@ void Analysis::InitOutputBranch(){
   }
 }
 
-
 ////////////////////////////////////////////////////////////////////////////////
 void Analysis::InitInputBranch(){
   SetBranchStatus();
@@ -829,6 +874,7 @@ void Analysis::InitInputBranch(){
   }
 }
 
+////////////////////////////////////////////////////////////////////////////////
 void Analysis::SetBranchStatus(){
   // Set Branch status 
   RootInput::getInstance()->GetChain()->SetBranchStatus("LTS",true);
@@ -894,6 +940,13 @@ void Analysis::ReInitValue(){
   AddBack_EDC.clear();
   AddBack_EDC2.clear();
   AddBack_EDC2.push_back(-1.0); //offset by 1
+  AGATA_GammaPx.clear();
+  AGATA_GammaPy.clear();
+  AGATA_GammaPz.clear();
+  AGATA_GammaE.clear();
+  AGATA_OrigBetaX.clear();
+  AGATA_OrigBetaY.clear();
+  AGATA_OrigBetaZ.clear();
   EAgata = -1000;
   ELab.clear();
   RawEnergy.clear(); 
