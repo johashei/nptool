@@ -14,6 +14,11 @@ using namespace std;
 // NPL
 #include "NPEnergyLoss.h"
 
+double AlphaSourceGaus(double *,double *);
+double AlphaTripletGaus(double *,double *);
+double AlphaTripletWithTail(double *,double *);
+double AlphaTripletWithTwoTail(double *,double *);
+
 namespace NPL{
   class CalibrationSource{
     
@@ -26,6 +31,7 @@ namespace NPL{
     vector< vector<double> > m_Energies;
     vector< vector<double> > m_BranchingRatio;
     vector< vector<double> > m_ErrEnergies;
+    int  m_FitFunctionType;
   
   private: // Computed source signal (a TF1 ready for fit use, set up with physical value)
     TF1* m_SourceSignal;
@@ -33,6 +39,8 @@ namespace NPL{
    
   public: // Getter and Setter
     TF1* GetSourceSignal();
+    void SetFitFunctionType(int type){m_FitFunctionType=type;};
+    int  GetFitFunctionType(){return m_FitFunctionType;};
     
   public: // Get and Set the energies
     // for particle like source (one gaussian per energies)
@@ -50,5 +58,6 @@ namespace NPL{
     void Set_244Cm();
     
   };
+
 }
 #endif

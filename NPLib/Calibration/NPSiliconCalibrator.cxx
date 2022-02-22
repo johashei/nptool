@@ -24,7 +24,7 @@ NPL::SiliconCalibrator::~SiliconCalibrator(){
 }
 
 //////////////////////////////////////////////
-double NPL::SiliconCalibrator::ZeroExtrapolation(TH1* histo, NPL::CalibrationSource* CS, NPL::EnergyLoss* EL, vector<double>& coeff, unsigned int pedestal, unsigned int max_iteration, double rmin,double rmax){
+double NPL::SiliconCalibrator::ZeroExtrapolation(TH1* histo, NPL::CalibrationSource* CS, NPL::EnergyLoss* EL, vector<double>& coeff, double pedestal, unsigned int max_iteration, double rmin,double rmax){
   if(histo->GetEntries()==0){
     coeff.clear();
     coeff.push_back(0);
@@ -63,7 +63,8 @@ double NPL::SiliconCalibrator::ZeroExtrapolation(TH1* histo, NPL::CalibrationSou
   bool   LastStepDecrease = false;
 
   // 0.1% precision on the total scale (typically 6 MeV ) 
-  double my_precision = (rmax-pedestal)*0.001;
+  //double my_precision = (rmax-pedestal)*0.001;
+  double my_precision = 1;
   // Energy of the Source and sigma on the value (MeV)
   double Assume_Thickness = 0 ; // micrometer
   vector<double> Assume_E; // Energie calculated assuming Assume_Thickness deadlayer of Al
@@ -96,15 +97,17 @@ double NPL::SiliconCalibrator::ZeroExtrapolation(TH1* histo, NPL::CalibrationSou
       g->SetPoint(i,x[i] ,Assume_E[i]);
     }
 
-    DistanceToPedestal = FitPoints(g,&Assume_E[0], Source_Sig, coeff, 0 );
-
+    DistanceToPedestal = FitPoints(g,&Assume_E[0], Source_Sig, coeff, pedestal );
+/*
+    cout << "test " << histo->GetName() << ", Assume_Thick =" << Assume_Thickness / micrometer << "um with step "<< Step/micrometer << ", Dst to Pedestal = " << DistanceToPedestal <<", pedestal= "<<pedestal << endl;
+*/
     if(abs(DistanceToPedestal) < my_precision || Step < 0.01*micrometer){
       break;
     }
 
     else if(DistanceToPedestal < 0 ){
       if(LastStepIncrease)
-        Step *= 5; //multiply step by 5
+        //Step *= 5; //multiply step by 5
 
       Assume_Thickness += Step;
       LastStepIncrease = true;
@@ -112,7 +115,7 @@ double NPL::SiliconCalibrator::ZeroExtrapolation(TH1* histo, NPL::CalibrationSou
 
     else if(DistanceToPedestal > 0 ){
       if(LastStepDecrease)
-        Step *= 0.5; //decrease step by half
+        //Step *= 0.5; //decrease step by half
 
       Assume_Thickness -= Step;
       LastStepDecrease = true;
@@ -249,7 +252,179 @@ TGraphErrors* NPL::SiliconCalibrator::FitSpectrum(TH1* histo, double rmin, doubl
    // sigma:  must be >=1, higher sgma higher resolution
    // option: nobackground => Don't subtract back ground
    // threshold: look for peaks within range [HighespeakAmp*threshold ; HighespeakAmp]
-   Int_t    nfound = sp.Search(histo,2,"",0.15); 
+   Int_t    nfound = sp.Search(histo,2,"",0.6); 
+   //std::cout << "Number of peaks found = " << nfound << std::endl; // used for debugging
+   TSpectrumPosition_t xpeaks = sp.GetPositionX();
+
+   // order list of peaks
+   sort(xpeaks, xpeaks+nfound);
+
+   m_FitFunction =  m_CalibrationSource->GetSourceSignal();
+   int FitFunctionType =  m_CalibrationSource->GetFitFunctionType();
+   if (nfound == 3) {
+
+       if(FitFunctionType==0){
+           // 3 * (triple gaussian (no tail))
+           vector< vector<double> > Energies    = m_CalibrationSource->GetEnergies();
+           vector< vector<double> > ErrEnergies = m_CalibrationSource->GetEnergiesErrors();
+           vector< vector<double> > BranchingRatio = m_CalibrationSource->GetBranchingRatio();
+           
+           // ballpark the sigma
+           double sigma = (xpeaks[1]-xpeaks[0])/10;
+           m_FitFunction->FixParameter(0,sigma);
+           m_FitFunction->SetParLimits(0,0.1,sigma*3);
+
+           int arg_number=1;
+           double H=0, Bratio=0, Eratio=0;
+           for(unsigned int i = 0 ; i < Energies.size() ; i++){
+               H = histo->GetBinContent(histo->FindBin(xpeaks[i])); 
+               m_FitFunction->SetParameter(arg_number,H ); //main peak amp
+               m_FitFunction->SetParLimits(arg_number, H*0.8, H*1.2 ); 
+               arg_number++;
+               m_FitFunction->FixParameter(arg_number, xpeaks[i]); //main peak mean
+               //m_FitFunction->SetParLimits(arg_number, xpeaks[i]*0.99, xpeaks[i]*1.01);
+               arg_number++;
+               for(unsigned int j = 0 ; j < Energies[i].size() ; j++){
+                   Bratio = BranchingRatio[i][j]/BranchingRatio[i][0];
+                   Eratio = Energies[i][j]/Energies[i][0];
+                   m_FitFunction->FixParameter(arg_number,Bratio);
+                   //m_FitFunction->SetParLimits(arg_number,Bratio*0.95,Bratio*1.05);
+                   arg_number++;
+                   m_FitFunction->SetParameter(arg_number,Eratio);
+                   m_FitFunction->SetParLimits(arg_number,Eratio*0.998,Eratio*1.01);
+                   arg_number++;
+               }
+           }
+
+           // Set range and fit spectrum
+           histo->GetXaxis()->SetRangeUser(xpeaks[0]-xpeaks[0]/20.,xpeaks[2]+xpeaks[2]/20.);
+           histo->Fit(m_FitFunction,"MQR");
+           TF1* fit = histo->GetFunction(m_FitFunction->GetName());
+           std::cout << "sigma: " << fit->GetParameter(0)<< std::endl;
+
+           // Graph energies(MeV) VS fitted peak channel and associated uncertainties 
+           TGraphErrors* gre = new TGraphErrors();
+           int point = 0 ;
+           for (unsigned int i = 0; i < Energies.size(); i++) {
+               gre->SetPoint(point, fit->GetParameter(2+8*i), Energies[i][0]);
+               gre->SetPointError(point++, fit->GetParError(2+8*i), ErrEnergies[i][0]);
+           }
+           //std::cout << "gre->GetN() = " << gre->GetN() << std::endl; // used for debugging
+           return gre;
+
+
+       } else if(FitFunctionType==1){// 3 * (triple gaussian with tail)
+
+           //WORK IN PROGRESS (only one triplet fit)
+           double H2 = histo->GetBinContent(histo->FindBin(xpeaks[1])); 
+
+           m_FitFunction->SetParameter(0,H2*30);
+           m_FitFunction->SetParameter(1,xpeaks[1]);
+           double sigma = (xpeaks[1]-xpeaks[0])/50;
+           m_FitFunction->SetParameter(2,sigma);
+           m_FitFunction->SetParameter(3,sigma); //tail=sigma as a start
+           m_FitFunction->SetParameter(10,5*sigma); //tail2=5*sigma as a start
+           m_FitFunction->SetParLimits(10,2*sigma,10*sigma); //tail2=5*sigma as a start
+           // Set range and fit spectrum
+           //histo->GetXaxis()->SetRangeUser(xpeaks[0]-xpeaks[0]/20.,xpeaks[2]+xpeaks[2]/20.);
+           histo->GetXaxis()->SetRangeUser(xpeaks[1]-2000.,xpeaks[1]+1000);
+           histo->Fit(m_FitFunction,"MQR");
+           TF1* fit = histo->GetFunction(m_FitFunction->GetName());
+
+           vector< vector<double> > Energies    = m_CalibrationSource->GetEnergies();
+           vector< vector<double> > ErrEnergies = m_CalibrationSource->GetEnergiesErrors();
+
+           TGraphErrors* gre = new TGraphErrors();
+           int point = 0 ;
+           for (unsigned int i = 0; i < Energies.size(); i++) {
+               gre->SetPoint(point, fit->GetParameter(3*i+1), Energies[i][0]);
+               gre->SetPointError(point++, fit->GetParError(3*i+1), ErrEnergies[i][0]);
+           }
+           return gre;
+
+       }else if(FitFunctionType==2){//old way
+
+           // Set initial mean 
+           m_FitFunction->SetParameter(1,xpeaks[0]);
+           m_FitFunction->SetParameter(4,xpeaks[1]);
+           m_FitFunction->SetParameter(7,xpeaks[2]);
+
+           // Set Limit
+           m_FitFunction->SetParLimits(1,xpeaks[0]*0.8,xpeaks[0]*1.2);
+           m_FitFunction->SetParLimits(4,xpeaks[1]*0.8,xpeaks[1]*1.2);
+           m_FitFunction->SetParLimits(7,xpeaks[2]*0.8,xpeaks[2]*1.2);
+
+
+           // Set initial height
+           double H1 = histo->GetBinContent(histo->FindBin(xpeaks[0])); 
+           double H2 = histo->GetBinContent(histo->FindBin(xpeaks[1])); 
+           double H3 = histo->GetBinContent(histo->FindBin(xpeaks[2])); 
+
+           m_FitFunction->SetParameter(0,H1);
+           m_FitFunction->SetParameter(3,H2);
+           m_FitFunction->SetParameter(6,H3);
+
+           // Set Limit
+           m_FitFunction->SetParLimits(0,H1*0.4,H1*2);
+           m_FitFunction->SetParLimits(3,H2*0.4,H2*2);
+           m_FitFunction->SetParLimits(6,H3*0.4,H3*2);
+
+           // ballpark the sigma
+           double sigma = (xpeaks[1]-xpeaks[0])/10;
+           m_FitFunction->SetParameter(2,sigma);
+           m_FitFunction->SetParameter(5,sigma);
+           m_FitFunction->SetParameter(8,sigma);
+
+           // Set Limit
+           m_FitFunction->SetParLimits(2,0,sigma*3);
+           m_FitFunction->SetParLimits(5,0,sigma*3);
+           m_FitFunction->SetParLimits(8,0,sigma*3);
+
+           // Set range and fit spectrum
+           histo->GetXaxis()->SetRangeUser(xpeaks[0]-xpeaks[0]/20.,xpeaks[2]+xpeaks[2]/20.);
+           histo->Fit(m_FitFunction,"MQR");
+           TF1* fit = histo->GetFunction(m_FitFunction->GetName());
+           // energies and associated uncertainties 
+           vector< vector<double> > Energies    = m_CalibrationSource->GetEnergies();
+           vector< vector<double> > ErrEnergies = m_CalibrationSource->GetEnergiesErrors();
+
+           //    unsigned int mysize = Energies.size();
+           TGraphErrors* gre = new TGraphErrors();
+           int point = 0 ;
+           for (unsigned int i = 0; i < Energies.size(); i++) {
+               gre->SetPoint(point, fit->GetParameter(3*i+1), Energies[i][0]);
+               gre->SetPointError(point++, fit->GetParError(3*i+1), ErrEnergies[i][0]);
+           }
+           //std::cout << "gre->GetN() = " << gre->GetN() << std::endl; // used for debugging
+           return gre;
+
+       } else{ //Fit functiuon type not 0,1 or 2 (undefined)
+           return (new TGraphErrors());
+       }
+
+   }
+
+   else{ //nfound!=3
+       return (new TGraphErrors());
+   }
+}
+/*
+TGraphErrors* NPL::SiliconCalibrator::FitSpectrum(TH1* histo, double rmin, double rmax)
+{
+//   for(unsigned int i = 0 ; i < histo->GetNbinsX() ; i++)
+//      if(histo->GetBinCenter(i)<rmin || histo->GetBinCenter(i)>rmax )
+//         histo->SetBinContent(i,0);
+
+   // apply range for peak search
+   histo->GetXaxis()->SetRangeUser(rmin, rmax);
+   // Perform a peak search to get a hint of where are the peaks
+   TSpectrum sp(4,1); // number of peaks is 4 to avoid warning of peak buffer
+   //arguments:
+   // hist : input histogram  
+   // sigma:  must be >=1, higher sgma higher resolution
+   // option: nobackground => Don't subtract back ground
+   // threshold: look for peaks within range [HighespeakAmp*threshold ; HighespeakAmp]
+   Int_t    nfound = sp.Search(histo,2,"",0.6); 
    //std::cout << "Number of peaks found = " << nfound << std::endl; // used for debugging
    TSpectrumPosition_t xpeaks = sp.GetPositionX();
 
@@ -317,5 +492,6 @@ TGraphErrors* NPL::SiliconCalibrator::FitSpectrum(TH1* histo, double rmin, doubl
       return (new TGraphErrors());
    }
 }
+*/
 
 
