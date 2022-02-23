@@ -72,6 +72,7 @@ void NPS::BeamReaction::ReadConfiguration() {
 
   if(input.GetAllBlocksWithToken("TwoBodyReaction").size()>0) m_ReactionType =TwoBody;
   else if(input.GetAllBlocksWithToken("QFSReaction").size()>0) m_ReactionType =QFS;
+  else if(input.GetAllBlocksWithToken("PhaseSpace").size()>0) m_ReactionType =PhaseSpace;
   else if(input.GetAllBlocksWithToken("FusionReaction").size()>0) m_ReactionType =Fusion;
 
   // Two body
@@ -92,6 +93,18 @@ void NPS::BeamReaction::ReadConfiguration() {
   else  if (m_ReactionType==QFS) {
     m_QFS.ReadConfigurationFile(input);
     m_BeamName = NPL::ChangeNameToG4Standard(m_QFS.GetParticleA()->GetName());
+    m_active = true;
+    m_ReactionConditions = new TReactionConditions();
+    AttachReactionConditions();
+    if (!RootOutput::getInstance()->GetTree()->FindBranch("ReactionConditions"))
+      RootOutput::getInstance()->GetTree()->Branch(
+          "ReactionConditions", "TReactionConditions", &m_ReactionConditions);
+  }
+
+  // PhaseSpace
+  else  if (m_ReactionType==PhaseSpace) {
+    m_PhaseSpace.ReadConfigurationFile(input);
+    m_BeamName = NPL::ChangeNameToG4Standard(m_PhaseSpace.GetBeam()->GetName());
     m_active = true;
     m_ReactionConditions = new TReactionConditions();
     AttachReactionConditions();
@@ -202,6 +215,9 @@ G4bool NPS::BeamReaction::ModelTrigger(const G4FastTrack& fastTrack) {
       }
     }
     else if(m_ReactionType==Fusion){
+      return true;
+    }
+    else if(m_ReactionType==PhaseSpace){
       return true;
     }
   }

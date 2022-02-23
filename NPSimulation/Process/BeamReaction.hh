@@ -31,12 +31,14 @@
 #include "PhysicsList.hh"
 #include "NPReaction.h"
 #include "NPQFS.h"
+#include "NPPhaseSpace.h"
 #include "TReactionConditions.h"
 class G4VPhysicalVolume;
 namespace NPS{
   enum ReactionType{
     TwoBody,
     QFS,
+    PhaseSpace,
     Fusion
     };
 
@@ -55,6 +57,7 @@ namespace NPS{
     private:
       NPL::Reaction m_Reaction;
       NPL::QFS m_QFS;
+      NPL::PhaseSpace m_PhaseSpace;
       string m_BeamName;
       int m_ReactionType;
       G4AblaInterface* ABLA;

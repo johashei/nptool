@@ -2,6 +2,8 @@ add_custom_command(OUTPUT NPParticleDict.cxx COMMAND ${CMAKE_BINARY_DIR}/scripts
 
 add_custom_command(OUTPUT NPReactionDict.cxx COMMAND ${CMAKE_BINARY_DIR}/scripts/build_dict.sh NPReaction.h NPReactionDict.cxx NPReaction.rootmap libNPPhysics.so NPReactionLinkDef.h DEPENDS NPReaction.h NPReactionLinkDef.h) 
 
+add_custom_command(OUTPUT NPPhaseSpaceDict.cxx COMMAND ${CMAKE_BINARY_DIR}/scripts/build_dict.sh NPPhaseSpace.h NPPhaseSpaceDict.cxx NPPhaseSpace.rootmap libNPPhysics.so NPPhaseSpaceLinkDef.h DEPENDS NPPhaseSpace.h NPPhaseSpaceLinkDef.h) 
+
 add_custom_command(OUTPUT NPQFSDict.cxx COMMAND ${CMAKE_BINARY_DIR}/scripts/build_dict.sh NPQFS.h NPQFSDict.cxx NPQFS.rootmap libNPPhysics.so NPQFSLinkDef.h DEPENDS NPQFS.h NPQFSLinkDef.h) 
 
 add_custom_command(OUTPUT NPDecayDict.cxx COMMAND ${CMAKE_BINARY_DIR}/scripts/build_dict.sh NPDecay.h NPDecayDict.cxx NPDecay.rootmap libNPPhysics.so NPDecayLinkDef.h DEPENDS NPDecay.h NPDecayLinkDef.h) 
@@ -22,7 +24,7 @@ add_custom_command(OUTPUT TReactionConditionsDict.cxx COMMAND ${CMAKE_BINARY_DIR
 
 add_custom_command(OUTPUT TFissionConditionsDict.cxx COMMAND ${CMAKE_BINARY_DIR}/scripts/build_dict.sh TFissionConditions.h TFissionConditionsDict.cxx TFissionConditions.rootmap libNPFissionConditions.so DEPENDS TFissionConditions.h)
 
-add_library(NPPhysics SHARED GEF.cxx NPFissionDecay.cxx NPDecay.cxx NPBeam.cxx NPEnergyLoss.cxx NPFunction.cxx NPParticle.cxx NPReaction.cxx NPQFS.cxx NPParticleDict.cxx NPReactionDict.cxx NPQFSDict.cxx NPEnergyLossDict.cxx )
+add_library(NPPhysics SHARED GEF.cxx NPFissionDecay.cxx NPDecay.cxx NPBeam.cxx NPEnergyLoss.cxx NPFunction.cxx NPParticle.cxx NPReaction.cxx NPPhaseSpace.cxx NPQFS.cxx NPParticleDict.cxx NPReactionDict.cxx NPPhaseSpaceDict.cxx NPQFSDict.cxx NPEnergyLossDict.cxx )
 target_link_libraries(NPPhysics ${ROOT_LIBRARIES} Physics NPCore) 
 
 add_library(NPInitialConditions  SHARED  TInitialConditions.cxx TInitialConditionsDict.cxx )
@@ -41,4 +43,4 @@ add_library(NPFissionConditions SHARED TFissionConditions.cxx TFissionConditions
 target_link_libraries(NPFissionConditions ${ROOT_LIBRARIES} ) 
 
 
-install(FILES GEF.h NPFissionDecay.h NPDecay.h NPBeam.h NPEnergyLoss.h NPFunction.h NPParticle.h NPNucleus.h NPReaction.h  NPQFS.h TInitialConditions.h TTrackInfo.h TInteractionCoordinates.h TReactionConditions.h TFissionConditions.h DESTINATION ${CMAKE_INCLUDE_OUTPUT_DIRECTORY})
+install(FILES GEF.h NPFissionDecay.h NPDecay.h NPBeam.h NPEnergyLoss.h NPFunction.h NPParticle.h NPNucleus.h NPReaction.h NPPhaseSpace.h NPQFS.h TInitialConditions.h TTrackInfo.h TInteractionCoordinates.h TReactionConditions.h TFissionConditions.h DESTINATION ${CMAKE_INCLUDE_OUTPUT_DIRECTORY})
