@@ -63,13 +63,22 @@ namespace NPL{
 
     public:
       // Getters and Setters
-      void     SetBeamEnergy(const double& eBeam)      {fBeamEnergy = eBeam;     initializePrecomputeVariable();}
+      bool SetBeamLV(const TLorentzVector& LV);
+      bool SetBeamLV(double dirX,double dirY,double dirZ,double Kinetic);
       Particle* GetBeam(){return &fBeam;};
-
+      double Generate(){return fPhaseSpace.Generate();}
+      TLorentzVector* GetDecayLV(unsigned int& n){return fPhaseSpace.GetDecay(n);}
+      size_t GetDecaySize(){return fDaughters.size();}
+      Particle* GetParticle(unsigned int& n){return &fDaughters[n];}
+      double  GetExcitation(unsigned int& n){return fExcitations[n];}
+      
     private: // intern precompute variable
-      void initializePrecomputeVariable();
-      TLorentzVector fInitialEnergyImpulsion;
-      std::vector<double> fmasses;
+      void Init();
+      TLorentzVector fBeamLV;
+      TLorentzVector fTargetLV;
+      TLorentzVector fTotalLV;
+
+      std::vector<double> fMasses;
 
       ClassDef(PhaseSpace,0)
 

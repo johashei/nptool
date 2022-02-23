@@ -197,7 +197,7 @@ G4bool NPS::BeamReaction::ModelTrigger(const G4FastTrack& fastTrack) {
   if (m_shoot && m_length < m_StepSize) {
     if(m_ReactionType==QFS){
       //if ( m_QFS.IsAllowed() ) {
-        return true;
+      return true;
       //}
       //else{
       //  m_shoot=false;
@@ -505,16 +505,16 @@ void NPS::BeamReaction::DoIt(const G4FastTrack& fastTrack,
     int j=0;
     m_QFS.SetIsAllowed(false);
     while(!m_QFS.IsAllowed()){
-        // Shoot internal momentum for the removed cluster
-        // if a momentum Sigma is given then shoot in 3 indep. Gaussians
-        // if input files are given for distributions use them instead
-        m_QFS.ShootInternalMomentum();
+      // Shoot internal momentum for the removed cluster
+      // if a momentum Sigma is given then shoot in 3 indep. Gaussians
+      // if input files are given for distributions use them instead
+      m_QFS.ShootInternalMomentum();
 
-        // Go from CM to Lab
-        m_QFS.KineRelativistic(Theta1, Phi1, TKE1, Theta2, Phi2, TKE2);
+      // Go from CM to Lab
+      m_QFS.KineRelativistic(Theta1, Phi1, TKE1, Theta2, Phi2, TKE2);
 
-        j++;
-        if(j>100) cout<< "ERROR: too many iteration and QFS kinematical conditions not allowed"<<endl;    
+      j++;
+      if(j>100) cout<< "ERROR: too many iteration and QFS kinematical conditions not allowed"<<endl;    
     }
 
     //---------------------------------------------------------
@@ -665,6 +665,29 @@ void NPS::BeamReaction::DoIt(const G4FastTrack& fastTrack,
     m_ReactionConditions->SetMomentumDirectionZ(momentum_kineB_world.z());
 
   }// end QFS
+
+  //////////////////////////
+  //  Phase space  Case   //
+  //////////////////////////
+  else if(m_ReactionType==PhaseSpace){
+    // Prepare beam LV
+    if(m_PhaseSpace.SetBeamLV(pdirection.x(),pdirection.y(),pdirection.z(),energy)){
+      for(unsigned int i = 0,size=m_PhaseSpace.GetDecaySize() ; i < size ; i++){
+        int d_Z = m_QFS.GetParticle1()->GetZ();
+        int d_A = m_QFS.GetParticle1()->GetA();
+
+        static G4IonTable* IonTable
+          = G4ParticleTable::GetParticleTable()->GetIonTable();
+
+        G4ParticleDefinition* dName;
+
+        if (d_Z == 0 && d_A == 1) // neutron is special case
+          dName = G4Neutron::Definition();
+        else 
+          dName = IonTable->GetIon(d_Z, d_A);
+      }
+    }
+  }
 
   ////////////////////
   //  Fusion Case   //

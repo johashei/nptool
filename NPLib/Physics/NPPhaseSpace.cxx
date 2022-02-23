@@ -53,30 +53,34 @@ void NPL::PhaseSpace::ReadConfigurationFile(NPL::InputParser parser){
 
   vector<string> token = {"Beam","Target","Daughters","ExcitationEnergies","Fermi"};
   fDaughters.clear(); 
-
+  fMasses.clear();
   for(unsigned int i = 0 ; i < blocks.size() ; i++){
     if(blocks[i]->HasTokenList(token)){
       int v = NPOptionManager::getInstance()->GetVerboseLevel();
       NPOptionManager::getInstance()->SetVerboseLevel(0);
       fBeam.ReadConfigurationFile(parser);
       NPOptionManager::getInstance()->SetVerboseLevel(v);
-
       fBeamEnergy= fBeam.GetEnergy();
       fTarget= GetParticle(blocks[i]->GetString("Target"),parser);
+      fTargetLV=TLorentzVector(0,0,0,fTarget.Mass());
       vector<string> vDaughters= blocks[i]->GetVectorString("Daughters");
       fExcitations= blocks[i]->GetVectorDouble("ExcitationEnergies","MeV");
-
-      for(auto d : vDaughters){
+      for(auto d:vDaughters){
         fDaughters.push_back(GetParticle(d,parser));
+        fMasses.push_back(fDaughters.rend()->Mass());
       }
+
+     SetBeamLV(0,0,1,fBeam.GetGamma()*fBeam.Mass());
+
     }
 
     else{
       cout << "ERROR: check your input file formatting \033[0m" << endl;
       exit(1);
     }
+
   }
-}
+  }
 ////////////////////////////////////////////////////////////////////////////////
 Particle NPL::PhaseSpace::GetParticle(string name, NPL::InputParser parser){
   vector<NPL::InputBlock*> blocks = parser.GetAllBlocksWithTokenAndValue("DefineParticle",name);
@@ -109,3 +113,25 @@ Particle NPL::PhaseSpace::GetParticle(string name, NPL::InputParser parser){
 
   return (NPL::Particle());
 }
+////////////////////////////////////////////////////////////////////////////////
+bool NPL::PhaseSpace::SetBeamLV(const TLorentzVector& LV){
+    fBeamLV=LV;
+    fTotalLV = fBeamLV+fTargetLV;
+    static std::string option;
+    option="";
+    if(fFermi)
+      option="Fermi";
+    return fPhaseSpace.SetDecay(fTotalLV,fMasses.size(),&fMasses[0],option.c_str());
+
+  }
+////////////////////////////////////////////////////////////////////////////////
+bool NPL::PhaseSpace::SetBeamLV(double dirX,double dirY,double dirZ,double Kinetic){
+     fBeam.SetKineticEnergy(Kinetic);
+     double E = fBeam.GetGamma()*fBeam.Mass();
+     double pc=sqrt(E*E-fBeam.Mass()*fBeam.Mass());
+     TVector3 p(dirX,dirY,dirZ);
+     p.Unit();
+     p*=pc;
+     TLorentzVector beamLV(p,E);
+     return SetBeamLV(fBeamLV);
+  }
