@@ -47,7 +47,7 @@ NPS::BeamReaction::BeamReaction(G4String modelName, G4Region* envelope)
     m_shoot=false;
     m_rand=0;
     m_Z=0;
-
+    m_event_weight=1;
     ABLA = new G4AblaInterface();
   }
 
@@ -108,9 +108,8 @@ void NPS::BeamReaction::ReadConfiguration() {
     m_active = true;
     m_ReactionConditions = new TReactionConditions();
     AttachReactionConditions();
-    if (!RootOutput::getInstance()->GetTree()->FindBranch("ReactionConditions"))
-      RootOutput::getInstance()->GetTree()->Branch(
-          "ReactionConditions", "TReactionConditions", &m_ReactionConditions);
+    if (!RootOutput::getInstance()->GetTree()->FindBranch("EventWeight"))
+      RootOutput::getInstance()->GetTree()->Branch("EventWeight", &m_event_weight);
   }
 
   // Fusion
@@ -671,10 +670,15 @@ void NPS::BeamReaction::DoIt(const G4FastTrack& fastTrack,
   //////////////////////////
   else if(m_ReactionType==PhaseSpace){
     // Prepare beam LV
+    static int d_Z,d_A;
+    static double d_Ex;
     if(m_PhaseSpace.SetBeamLV(pdirection.x(),pdirection.y(),pdirection.z(),energy)){
-      for(unsigned int i = 0,size=m_PhaseSpace.GetDecaySize() ; i < size ; i++){
-        int d_Z = m_QFS.GetParticle1()->GetZ();
-        int d_A = m_QFS.GetParticle1()->GetA();
+      m_event_weight= m_PhaseSpace.Generate();
+      unsigned int size = m_PhaseSpace.GetDecaySize();
+      for(unsigned int i = 0; i < size ; i++){
+        d_Z = m_PhaseSpace.GetParticle(i)->GetZ();
+        d_A = m_PhaseSpace.GetParticle(i)->GetA();
+        d_Ex =m_PhaseSpace.GetExcitation(i);
 
         static G4IonTable* IonTable
           = G4ParticleTable::GetParticleTable()->GetIonTable();
@@ -684,7 +688,18 @@ void NPS::BeamReaction::DoIt(const G4FastTrack& fastTrack,
         if (d_Z == 0 && d_A == 1) // neutron is special case
           dName = G4Neutron::Definition();
         else 
-          dName = IonTable->GetIon(d_Z, d_A);
+          dName = IonTable->GetIon(d_Z, d_A,d_Ex);
+
+        auto dLV = m_PhaseSpace.GetDecayLV(i);
+
+        G4ThreeVector dir(dLV->Px(),dLV->Py(),dLV->Pz());
+        dir=dir.unit();
+        m_PhaseSpace.GetParticle(i)->SetBeta(dLV->Beta());
+
+        // Emmit daughter  
+        G4DynamicParticle particle(dName, dir,m_PhaseSpace.GetParticle(i)->GetEnergy());
+        fastStep.CreateSecondaryTrack(particle, localPosition, time);
+
       }
     }
   }
@@ -693,14 +708,6 @@ void NPS::BeamReaction::DoIt(const G4FastTrack& fastTrack,
   //  Fusion Case   //
   ////////////////////
   else if(m_ReactionType==Fusion){
-    // Set the end of the step conditions
-    fastStep.SetPrimaryTrackFinalKineticEnergyAndDirection(0, pdirection);
-    fastStep.SetPrimaryTrackFinalPosition(worldPosition);
-    fastStep.SetTotalEnergyDeposited(0);
-    fastStep.SetPrimaryTrackFinalTime(time);// FIXME
-    fastStep.KillPrimaryTrack();
-    fastStep.SetPrimaryTrackPathLength(0.0);
-
     static G4IonTable* IonTable
       = G4ParticleTable::GetParticleTable()->GetIonTable();
     //////Define the kind of particle to shoot////////

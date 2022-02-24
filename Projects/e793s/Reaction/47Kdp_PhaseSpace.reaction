@@ -1,0 +1,26 @@
+%%%%%%%%%%%%%%%%%%%%%% E793S %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Beam
+  Particle= 47K 
+  ExcitationEnergy= 0 MeV
+  Energy= 362 MeV
+  SigmaEnergy= 0. MeV
+  SigmaThetaX= 0.0  deg
+  SigmaPhiY= 0.0    deg
+  SigmaX= 2 mm
+  SigmaY= 2 mm
+  MeanThetaX= 0 deg
+  MeanPhiY= 0 deg
+  MeanX= 0 mm
+  MeanY= 0 mm
+  %EnergyProfilePath=
+  %XThetaXProfilePath=
+  %YPhiYProfilePath=
+ 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+PhaseSpace
+ Beam= 47K
+ Target= 2H
+ Daughters= 1H 47K n
+ ExcitationEnergies= 0 0 0 MeV 
+ Fermi= 1

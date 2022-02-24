@@ -70,6 +70,7 @@ namespace NPS{
       double m_rand;
       double m_length;
       int    m_Parent_ID;
+      double m_event_weight;
       double SlowDownBeam(const G4ParticleDefinition* Beam, double IncidentEnergy, double Thickness,G4Material* Material);
     
     private:// specific for the simple case of fusion
