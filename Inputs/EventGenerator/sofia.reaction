@@ -26,7 +26,7 @@ TwoBodyReaction
  ShootLight= 1
  ShootHeavy= 1
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-FissionDecay 
+%FissionDecay 
  CompoundNucleus= 189Pb
  FissionModel= GEF
  VamosChargeStates= 0

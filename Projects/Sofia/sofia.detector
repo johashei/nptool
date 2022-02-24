@@ -12,7 +12,7 @@ SofTofW
  R= 4 m
  THETA= -20 deg
  PHI= 0 deg
- Build_GLAD= 1
+ Build_GLAD= 0
  GLAD_TiltAngle= 14 deg
  GLAD_DistanceFromTarget= 3.05 m
  Build_MagneticField= 1 
