@@ -1,0 +1,87 @@
+TTreeName
+  RawTree
+RootFileName
+  
+  %/media/sofia/s455/raw/run_raw_0419.root
+  %/media/sofia/s455/raw/run_raw_0422.root
+  
+  %% 216Th
+  %/media/sofia/s455/raw/run_raw_0372.root
+  %/media/sofia/s455/raw/run_raw_0373.root
+  %/media/sofia/s455/raw/run_raw_0374.root
+  %/media/sofia/s455/raw/run_raw_0375.root
+  %/media/sofia/s455/raw/run_raw_0376.root
+  %/media/sofia/s455/raw/run_raw_0377.root
+  
+  %/media/sofia/s455/raw/run_raw_0378.root
+  %/media/sofia/s455/raw/run_raw_0379.root
+  %/media/sofia/s455/raw/run_raw_0380.root
+  %/media/sofia/s455/raw/run_raw_0381.root
+  %/media/sofia/s455/raw/run_raw_0382.root
+  
+  %% 207Fr
+  %/media/sofia/s455/raw/run_raw_0383.root
+  %/media/sofia/s455/raw/run_raw_0384.root
+  %/media/sofia/s455/raw/run_raw_0385.root
+  %/media/sofia/s455/raw/run_raw_0386.root
+  %/media/sofia/s455/raw/run_raw_0387.root
+  %/media/sofia/s455/raw/run_raw_0388.root
+  %/media/sofia/s455/raw/run_raw_0389.root
+  
+  %/media/sofia/s455/raw/run_raw_0417.root
+  %/media/sofia/s455/raw/run_raw_0418.root
+  
+  %% 180Hg
+  %/media/sofia/s455/raw/run_raw_0390.root
+  %/media/sofia/s455/raw/run_raw_0391.root
+  %/media/sofia/s455/raw/run_raw_0392.root
+  %/media/sofia/s455/raw/run_raw_0393.root
+  
+  %% 180Hg with high AT gain
+  %/media/sofia/s455/raw/run_raw_0394.root
+  %/media/sofia/s455/raw/run_raw_0395.root
+  %/media/sofia/s455/raw/run_raw_0396.root
+  %/media/sofia/s455/raw/run_raw_0397.root
+  %/media/sofia/s455/raw/run_raw_0398.root
+  %/media/sofia/s455/raw/run_raw_0399.root
+
+  %% 189Pb
+  %/media/pierre/proton/raw/run_raw_0400.root
+  
+  %% 182Hg
+  /media/pierre/proton/raw/run_raw_0401.root
+  
+  %% 187Pb
+  %/media/sofia/s455/raw/run_raw_0402.root
+  %/media/sofia/s455/raw/run_raw_0403.root
+  
+  %% 184Hg
+  %/media/sofia/s455/raw/run_raw_0404.root
+  %/media/sofia/s455/raw/run_raw_0405.root
+  %/media/sofia/s455/raw/run_raw_0406.root
+  
+  %% 175Pt
+  %/media/sofia/s455/raw/run_raw_0411.root
+  %/media/sofia/s455/raw/run_raw_0412.root
+  %/media/sofia/s455/raw/run_raw_0413.root
+  
+  %% 204Fr
+  %/media/sofia/s455/raw/run_raw_0414.root
+  %/media/sofia/s455/raw/run_raw_0415.root
+  %/media/sofia/s455/raw/run_raw_0416.root
+  
+  %% 221Pa
+  %/media/sofia/s455/raw/run_raw_0420.root
+
+  %% 199At Brho0 = 11.0955
+  %/media/sofia/s455/raw/run_raw_0423.root
+  %/media/sofia/s455/raw/run_raw_0424.root
+  
+  %% 199At Brho0 = 10.9970
+  %/media/sofia/s455/raw/run_raw_0425.root
+  %/media/sofia/s455/raw/run_raw_0426.root
+  
+  %% 197At
+  %/media/sofia/s455/raw/run_raw_0427.root
+  %/media/sofia/s455/raw/run_raw_0428.root
+  %/media/sofia/s455/raw/run_raw_0429.root
