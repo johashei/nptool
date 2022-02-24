@@ -97,8 +97,10 @@ G4AssemblyVolume* Miniball::BuildClusterDetector(){
     G4VisAttributes* Blue = new G4VisAttributes(G4Color(0.5,0.5,1));
     G4VisAttributes* Caps = new G4VisAttributes(G4Color(0.5,0.5,0.5,0.5));
 
+    G4VisAttributes* DL = new G4VisAttributes(G4VisAttributes::Invisible);
+
     G4LogicalVolume* World = m_gdmlparser.GetVolume("MexpHall_log");  
-    string name;
+    string name,dname;
     for(unsigned int i = 0 ; i < World->GetNoDaughters () ;i++){
       G4VPhysicalVolume* VPV = World->GetDaughter(i);
       name = VPV->GetLogicalVolume()->GetName();
@@ -111,6 +113,15 @@ G4AssemblyVolume* Miniball::BuildClusterDetector(){
         G4Transform3D Trans(*Rot,Pos);
         m_ClusterDetector->AddPlacedVolume(HPGE,Trans); 
         m_NumberOfPlacedVolume++;
+
+        for(unsigned int d = 0 ; d < HPGE->GetNoDaughters () ;d++){
+          G4VPhysicalVolume* dVPV = HPGE->GetDaughter(d); 
+          dname = dVPV->GetLogicalVolume()->GetName();
+          if(dname == "cluster0_0_HPGe_A_0_deadlayer_log"){
+          G4LogicalVolume* DeadLayer = dVPV->GetLogicalVolume(); 
+          DeadLayer->SetVisAttributes(DL);
+          }
+        }
       }
       else if(name == "cluster0_0_HPGe_B_1_det_env_log"){
         G4LogicalVolume* HPGE = VPV->GetLogicalVolume(); 
@@ -121,6 +132,14 @@ G4AssemblyVolume* Miniball::BuildClusterDetector(){
         G4Transform3D Trans(*Rot,Pos);
         m_ClusterDetector->AddPlacedVolume(HPGE,Trans); 
         m_NumberOfPlacedVolume++;
+        for(unsigned int d = 0 ; d < HPGE->GetNoDaughters () ;d++){
+          G4VPhysicalVolume* dVPV = HPGE->GetDaughter(d); 
+          dname = dVPV->GetLogicalVolume()->GetName();
+          if(dname == "cluster0_0_HPGe_B_1_deadlayer_log"){
+          G4LogicalVolume* DeadLayer = dVPV->GetLogicalVolume(); 
+          DeadLayer->SetVisAttributes(DL);
+          }
+        }
       }
       else if(name == "cluster0_0_HPGe_C_2_det_env_log"){
         G4LogicalVolume* HPGE = VPV->GetLogicalVolume(); 
@@ -130,7 +149,14 @@ G4AssemblyVolume* Miniball::BuildClusterDetector(){
         G4ThreeVector Pos = VPV->GetObjectTranslation(); 
         G4Transform3D Trans(*Rot,Pos);
         m_ClusterDetector->AddPlacedVolume(HPGE,Trans); 
-        m_NumberOfPlacedVolume++;
+        for(unsigned int d = 0 ; d < HPGE->GetNoDaughters () ;d++){
+          G4VPhysicalVolume* dVPV = HPGE->GetDaughter(d); 
+          dname = dVPV->GetLogicalVolume()->GetName();
+          if(dname == "cluster0_0_HPGe_C_2_deadlayer_log"){
+          G4LogicalVolume* DeadLayer = dVPV->GetLogicalVolume(); 
+          DeadLayer->SetVisAttributes(DL);
+          }
+        } m_NumberOfPlacedVolume++;
       }
       else if(name.compare(0,8,"cluster0")==0 || name == "nozzle_log"){
         G4LogicalVolume* Capsule= VPV->GetLogicalVolume(); 
