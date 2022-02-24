@@ -2,7 +2,7 @@ cmake_minimum_required (VERSION 3.0)
 include(CheckCXXCompilerFlag)
 project(NPLib CXX)
 set(CMAKE_BUILD_TYPE Release)
-
+set (CMAKE_CXX_STANDARD 20)    
 # Setting the policy to match Cmake version
 cmake_policy(VERSION ${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION})
 
@@ -36,13 +36,12 @@ configure_file(scripts/build_dict.sh.in scripts/build_dict.sh @ONLY)
 
 
 configure_file(Core/NPLibVersion.h.in Core/NPLibVersion.h @ONLY)
-set(DETLIST ${ETLIST})
 
-string(COMPARE EQUAL "${DETLIST}" "" rdet)
+string(COMPARE EQUAL "${NPTOOL_DETLIST}" "" rdet)
 if(rdet)
     message("Building all detectors")
   else()
-    message("Building the following detectors ${DETLIST}") 
+    message("Building the following detectors ${NPTOOL_DETLIST}") 
 endif()
 
 set(CMAKE_BINARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin )
@@ -61,10 +60,10 @@ MACRO(subdirlist result curdir)
       string(REPLACE "Detectors/" "" det ${child})
 
       IF(NOT r0 AND NOT r1)
-        string(COMPARE EQUAL "${DETLIST}" "" r2)
+        string(COMPARE EQUAL "${NPTOOL_DETLIST}" "" r2)
         IF(r2)
           LIST(APPEND dirlist ${child})
-        ELSEIF(${DETLIST} MATCHES ".*${det}.*" )
+        ELSEIF(${NPTOOL_DETLIST} MATCHES ".*${det}.*" )
           LIST(APPEND dirlist ${child}) 
         ENDIF()
       ENDIF()
