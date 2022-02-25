@@ -90,7 +90,7 @@ $ cmake ./
 ```
 __OR__ some detectors compiled:
 ```
-$ cmake ./ -DETLIST="DetFolder1 DetFolder2"
+$ cmake ./ -DNPTOOL_DETLIST="DetFolder1 DetFolder2"
 ```
 
 Then, the whole NPLib can be compiled with _n_ threads using:
@@ -103,7 +103,7 @@ If you wish to recompile in order to get support for more detectors, do:
 
 ```
 $ nptool-cleaner
-$ cmake ./ -DETLIST="DetFolder1 DetFolder2 ..."
+$ cmake ./ -DNPTOOL_ETLIST="DetFolder1 DetFolder2 ..."
 $ make -jn install
 ```
 
