@@ -45,13 +45,13 @@ add_definitions(${Geant4_DEFINITIONS})
 configure_file(Core/NPSimulationVersion.hh.in Core/NPSimulationVersion.hh @ONLY) 
 
  # Detector List
-set(DETLIST ${NPLib_DETECTOR_LIST})
+set(NPTOOL_DETLIST ${NPLib_DETECTOR_LIST})
 
-string(COMPARE EQUAL "${DETLIST}" "" rdet)
+string(COMPARE EQUAL "${NPTOOL_DETLIST}" "" rdet)
 if(rdet)
     message("Building all detectors")
   else()
-    message("Building the following detectors ${DETLIST}") 
+    message("Building the following detectors ${NPTOOL_DETLIST}") 
 endif()
 
 # Add root to the link and include directories
@@ -84,10 +84,10 @@ MACRO(subdirlist result curdir)
       string(REPLACE "Detectors/" "" det ${child})
 
       IF(NOT r0 AND NOT r1)
-        string(COMPARE EQUAL "${DETLIST}" "" r2)
+        string(COMPARE EQUAL "${NPTOOL_DETLIST}" "" r2)
         IF(r2)
           LIST(APPEND dirlist ${child})
-        ELSEIF(${DETLIST} MATCHES ".*${det}.*" )
+        ELSEIF(${NPTOOL_DETLIST} MATCHES ".*${det}.*" )
           LIST(APPEND dirlist ${child}) 
         ENDIF()
       ENDIF()
