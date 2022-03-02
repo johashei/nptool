@@ -136,6 +136,19 @@ G4Material* MaterialManager::GetMaterialFromLibrary(string Name,
       return material;
     }
 
+    else if (Name == "Inox" || Name == "StainlessSteel") {
+      if (!density)
+        density = 8.02 * g / cm3;
+      // Actually taken value fron Epoxy
+      G4Material* material = new G4Material("NPS_" + Name, density, 3);
+      material->AddElement(GetElementFromLibrary("Fe"), 0.74);
+      material->AddElement(GetElementFromLibrary("Cr"), 0.18);
+      material->AddElement(GetElementFromLibrary("Ni"), 0.08);
+      m_Material[Name] = material;
+      return material;
+    }
+
+ 
     else if (Name == "Rogers4003C") {
       if (!density)
         density = 1.79 * g / cm3;
@@ -273,6 +286,19 @@ G4Material* MaterialManager::GetMaterialFromLibrary(string Name,
       m_Material[Name] = material;
       return material;
     }
+
+    else if (Name == "EJ560") {
+      if (!density)
+        density = 1.03 * g / cm3;
+      G4Material* material = new G4Material("NPS_" + Name, density, 4);
+      material->AddElement(GetElementFromLibrary("Si"), 1);
+      material->AddElement(GetElementFromLibrary("O"), 1);
+      material->AddElement(GetElementFromLibrary("C"), 3);
+      material->AddElement(GetElementFromLibrary("H"), 9);
+      m_Material[Name] = material;
+      return material;
+    }
+
 
     else if (Name == "Cu") {
       if (!density)
