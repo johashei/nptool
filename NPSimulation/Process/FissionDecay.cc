@@ -104,7 +104,7 @@ G4bool FissionDecay::IsApplicable( const G4ParticleDefinition& particleType) {
 ////////////////////////////////////////////////////////////////////////////////
 G4bool FissionDecay::ModelTrigger(const G4FastTrack& fastTrack) {
   bool Trigger = false;
-
+    
   const G4Track* PrimaryTrack = fastTrack.GetPrimaryTrack();
   int Parent_ID = PrimaryTrack->GetParentID();
 
@@ -114,7 +114,6 @@ G4bool FissionDecay::ModelTrigger(const G4FastTrack& fastTrack) {
 
     m_PreviousEnergy=fastTrack.GetPrimaryTrack()->GetKineticEnergy();
   }
-
   return Trigger;
 }
 

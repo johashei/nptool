@@ -82,7 +82,6 @@ bool NPL::FissionDecay::GenerateEvent(string CompoundName, double MEx,double MEK
     double& TKE, double &KE1, double& KE2){
 
   bool worked=false;
-
   FissionFragments.clear();
   Ex.clear();
   DEK.clear();
