@@ -40,21 +40,12 @@ TChain* Chain(std::string TreeName, std::vector<std::string>& file, bool EventLi
 void LoadChainNP(){
   vector<string> files;
   
-  //files.push_back("../../../Outputs/Analysis/OriginalValues_ptI.root");
-  //files.push_back("../../../Outputs/Analysis/OriginalValues_ptII.root");
-  //files.push_back("../../../Outputs/Analysis/OriginalValues_ptIII.root");
-
-  //files.push_back("../../../Outputs/Analysis/47K_Full_07Sep_PartI.root");
-  //files.push_back("../../../Outputs/Analysis/47K_Full_07Sep_PartII.root");
-
-  //files.push_back("../../../Outputs/Analysis/47Kdp_11Oct_PartI.root");
-  //files.push_back("../../../Outputs/Analysis/47Kdp_11Oct_PartII.root");
-
-  //files.push_back("../../../Outputs/Analysis/47Kdp_13Oct_wildTry_PartI.root");
-  //files.push_back("../../../Outputs/Analysis/47Kdp_13Oct_wildTry_PartII.root");
-
   files.push_back("../../../Outputs/Analysis/47Kdp_08Nov_PartI.root");
   files.push_back("../../../Outputs/Analysis/47Kdp_08Nov_PartII.root");
+
+//  files.push_back("../../../Outputs/Analysis/47Kdp_17Feb_AGATA_RotateBYpi.root");
+
+//  files.push_back("../../../Outputs/Analysis/47Kdp_19Feb_AGATA_RotateBXYZ.root");
 
   chain = Chain("PhysicsTree",files,true);
 }
@@ -183,9 +174,16 @@ void Draw_1DGamma_MM(){
   Eg->GetYaxis()->SetTitle("Counts / 0.001 MeV");
 }
 
+void Load_1DParticle(){
+  TH1F *hEx = new TH1F("hEx","Loaded 1D Particle Spectrum",200,-1,9);
+  TFile *file = new TFile("LoadHistograms/Load_1DParticle.root","READ");
+  hEx = (TH1F*)file->Get("Ep");
+  hEx->Draw();
+}
+
 void Draw_1DParticle(){
   TCanvas *cEx = new TCanvas("cEx","cEx",1000,1000);
-  chain->Draw("Ex>>Ep(160,-1,7)",
+  chain->Draw("Ex>>Ep(200,-1,9)",
 	"abs(T_MUGAST_VAMOS-2777)<600 && Mugast.TelescopeNumber>0 && Mugast.TelescopeNumber<8",
 	"");
   TH1F* Ep = (TH1F*) gDirectory->Get("Ep");
@@ -198,7 +196,7 @@ void Draw_1DParticle(){
 
 void Draw_1DParticleMUST2(){
   TCanvas *cEx = new TCanvas("cEx","cEx",1000,1000);
-  chain->Draw("Ex>>Ep(160,-1,7)",
+  chain->Draw("Ex>>Ep(200,-1,9)",
 	"abs(T_MUGAST_VAMOS-2777)<600 && MUST2.TelescopeNumber>0 && MUST2.TelescopeNumber<4",
 	"");
   TH1F* Ep = (TH1F*) gDirectory->Get("Ep");
@@ -207,9 +205,16 @@ void Draw_1DParticleMUST2(){
   Ep->GetYaxis()->SetTitle("Counts / 0.05 MeV");
 }
 
+void Load_2DParticleGamma(){
+  TH2F *hExEg = new TH2F("hExEg","Loaded 2D Particle-Gamma",200,-1,9,2500,0,5);
+  TFile *file = new TFile("LoadHistograms/Load_2DParticleGamma.root","READ");
+  hExEg = (TH2F*)file->Get("ExEg");
+  hExEg->Draw();
+}
+
 void Draw_2DParticleGamma(){
   TCanvas *cExEg = new TCanvas("cExEg","cExEg",1000,1000);
-  chain->Draw("AddBack_EDC:Ex>>ExEg(140,-1,7,2500,0,5)",
+  chain->Draw("AddBack_EDC:Ex>>ExEg(200,-1,9,2500,0,5)",
         "abs(T_MUGAST_VAMOS-2777)<600 && Mugast.TelescopeNumber>0 && Mugast.TelescopeNumber<8",
 	"colz");
   TH1F* ExEg = (TH1F*) gDirectory->Get("ExEg");
@@ -287,7 +292,7 @@ cout << " NO MG3 IN THIS ONE!!!!!!!!!!!!!!!!!!!!!!!!!" << endl;
 
   string title = to_string(gamma-width)+" < Eg < "+to_string(gamma+width);
   string ytitle = "Counts / " + to_string(binsize) + " MeV";
-  string draw = "Ex>>ExGate(" + to_string(8.0/binsize) + ",-1,7)";
+  string draw = "Ex>>ExGate(" + to_string(10.0/binsize) + ",-1,9)";
 
   TCanvas *cEx_Gate = new TCanvas("cEx_Gate","cEx_Gate",1000,1000);
   //chain->Draw("Ex>>ExGate(60,-1,5)",gating.c_str(),"colz");
@@ -314,7 +319,7 @@ void GateGamma_SeeParticle_WithBG(double gamma, double width, double bg){
 	  + "  BG: "+to_string(bg-width)+" to "+to_string(bg+width)+".";
   
   TCanvas *cEx_Gate = new TCanvas("cEx_Gate","cEx_Gate",1000,1000);
-  chain->Draw("Ex>>ExGate(80,-1,7)",gating.c_str(),"");
+  chain->Draw("Ex>>ExGate(100,-1,9)",gating.c_str(),"");
   //chain->Draw("Ex>>ExGate(120,-1,5)",gating.c_str(),"");
   TH1F* ExGate = (TH1F*) gDirectory->Get("ExGate");
   ExGate->GetXaxis()->SetTitle("Ex [MeV]");
@@ -325,7 +330,7 @@ void GateGamma_SeeParticle_WithBG(double gamma, double width, double bg){
   ExGate->SetFillStyle(3154);
   ExGate->SetTitle(title.c_str());
 
-  chain->Draw("Ex>>ExBG(80,-1,7)",bggate.c_str(),"same");
+  chain->Draw("Ex>>ExBG(100,-1,9)",bggate.c_str(),"same");
   //chain->Draw("Ex>>ExBG(120,-1,5)",bggate.c_str(),"same");
   TH1F* ExBG = (TH1F*) gDirectory->Get("ExBG");
   ExBG->SetLineColor(kRed);
@@ -351,7 +356,7 @@ void GateGamma_SeeParticle_WithBG(double gamma, double width, double bg, double 
 	  + "  BG: "+to_string(bg-width)+" to "+to_string(bg+width)+".";
   
   TCanvas *cEx_Gate = new TCanvas("cEx_Gate","cEx_Gate",1000,1000);
-  chain->Draw("Ex>>ExGate(80,-1,7)",gating.c_str(),"");
+  chain->Draw("Ex>>ExGate(100,-1,9)",gating.c_str(),"");
   //chain->Draw("Ex>>ExGate(120,-1,5)",gating.c_str(),"");
   TH1F* ExGate = (TH1F*) gDirectory->Get("ExGate");
   ExGate->GetXaxis()->SetTitle("Ex [MeV]");
@@ -362,7 +367,7 @@ void GateGamma_SeeParticle_WithBG(double gamma, double width, double bg, double 
   ExGate->SetFillStyle(3154);
   ExGate->SetTitle(title.c_str());
 
-  chain->Draw("Ex>>ExBG(80,-1,7)",bggate.c_str(),"same");
+  chain->Draw("Ex>>ExBG(100,-1,9)",bggate.c_str(),"same");
   //chain->Draw("Ex>>ExBG(120,-1,5)",bggate.c_str(),"same");
   TH1F* ExBG = (TH1F*) gDirectory->Get("ExBG");
   ExBG->Scale(ratio);
@@ -621,7 +626,7 @@ void CompareSimExp(){
   TCanvas *cSimExp = new TCanvas("cSimExp","cSimExp",1000,1000);
   gStyle->SetOptStat(0);
   
-  chain->Draw("Ex>>hexp(70,-1,6)","abs(T_MUGAST_VAMOS-2777)<600","");
+  chain->Draw("Ex>>hexp(100,-1,9)","abs(T_MUGAST_VAMOS-2777)<600","");
   TH1F* hexp = (TH1F*) gDirectory->Get("hexp");
   hexp->SetTitle("Comparing Simulation to Experiment");
   hexp->GetXaxis()->SetTitle("Ex [MeV]");
@@ -632,7 +637,7 @@ void CompareSimExp(){
   //TFile* simfile = new TFile("../../../Outputs/Analysis/SimTest_Jun22_TWOFNR_p32.root", 
 		  "READ");
   TTree* simtree = (TTree*) simfile->FindObjectAny("PhysicsTree");
-  simtree->Draw("Ex>>hsimMGp32(70,-1,6)",
+  simtree->Draw("Ex>>hsimMGp32(100,-1,9)",
 		  "Mugast.TelescopeNumber>0 && Mugast.TelescopeNumber<8","same");
   TH1F* hsimMGp32 = (TH1F*) gDirectory->Get("hsimMGp32");
   hsimMGp32->SetLineColor(kBlue);
@@ -890,7 +895,7 @@ void ExPhiLab_ForPoster(){
 void ExThetaLab(){
   TCanvas *diagnoseTheta = new TCanvas("diagnoseTheta","diagnoseTheta",1000,1000);
   chain->Draw(
-    "Ex:ThetaLab>>thetaHist(60,100,160,120,-1,5)", 
+    "Ex:ThetaLab>>thetaHist(60,100,160,100,-1,9)", 
     "abs(T_MUGAST_VAMOS-2777)<600 && Mugast.TelescopeNumber>0 && Mugast.TelescopeNumber<8",
     "colz");
   TH1F* thetaHist = (TH1F*) gDirectory->Get("thetaHist");  
@@ -939,7 +944,7 @@ void ExThetaLab(double gamma, double width){
   string gating = "abs(T_MUGAST_VAMOS-2777)<600 && Mugast.TelescopeNumber>0 && Mugast.TelescopeNumber<8 && abs(AddBack_EDC-"
 	        + to_string(gamma) + ") < " + to_string(width); 
 
-  chain->Draw("Ex:ThetaLab>>thetaHist(60,100,160,60,-1,5)", gating.c_str(), "colz");
+  chain->Draw("Ex:ThetaLab>>thetaHist(60,100,160,100,-1,9)", gating.c_str(), "colz");
   TH1F* thetaHist = (TH1F*) gDirectory->Get("thetaHist");  
   thetaHist->GetXaxis()->SetTitle("Theta (degrees)");
   thetaHist->GetYaxis()->SetTitle("Ex [MeV]");
@@ -1181,7 +1186,7 @@ void GateThetaCM(double minTheta, double maxTheta, double binsize){
 
   string title = to_string(minTheta)+" < ThetaCM < "+to_string(maxTheta);
   string ytitle = "Counts / " + to_string(binsize) + " MeV";
-  string draw = "Ex>>Ex_ThetaCMGate(" + to_string(8.0/binsize) + ",-1,7)";
+  string draw = "Ex>>Ex_ThetaCMGate(" + to_string(10.0/binsize) + ",-1,9)";
 
   TCanvas *cEx_ThetaCMGate = new TCanvas("cEx_ThetaCMGate","cEx_ThetaCMGate",1000,1000);
   chain->Draw(draw.c_str(),gating.c_str(),"colz");
@@ -1201,7 +1206,7 @@ void GateThetaLab(double minTheta, double maxTheta, double binsize){
 
   string title = to_string(minTheta)+" < ThetaLab < "+to_string(maxTheta);
   string ytitle = "Counts / " + to_string(binsize) + " MeV";
-  string draw = "Ex>>Ex_ThetaLabGate(" + to_string(8.0/binsize) + ",-1,7)";
+  string draw = "Ex>>Ex_ThetaLabGate(" + to_string(10.0/binsize) + ",-1,9)";
 
   TCanvas *cEx_ThetaLabGate = new TCanvas("cEx_ThetaLabGate","cEx_ThetaLabGate",1000,1000);
   chain->Draw(draw.c_str(),gating.c_str(),"colz");
@@ -1227,7 +1232,7 @@ void GateThetaLab_MultiWrite(double startTheta, double finishTheta, int numGates
         + " && ThetaLab < "
         + to_string(minTheta+gatesize);
     string histname = "cThetaLabGate_" + to_string(minTheta) + "-" + to_string(minTheta+gatesize);
-    string draw = "Ex>>" + histname + "(" + to_string(8.0/binsize) + ",-1,7)";
+    string draw = "Ex>>" + histname + "(" + to_string(10.0/binsize) + ",-1,9)";
 
     TCanvas *cEx_ThetaLabGate = new TCanvas(histname.c_str(),histname.c_str(),1000,1000);
     chain->Draw(draw.c_str(),gating.c_str(),"colz");
