@@ -1,7 +1,7 @@
 ---
 Language:        Cpp
 # BasedOnStyle:  LLVM
-AccessModifierOffset: -2
+AccessModifierOffset: -1
 AlignAfterOpenBracket: Align
 AlignConsecutiveMacros: None
 AlignConsecutiveAssignments: None
@@ -35,7 +35,7 @@ BraceWrapping:
   AfterControlStatement: Never
   AfterEnum:       false
   AfterFunction:   false
-  AfterNamespace:  false
+  AfterNamespace:  false 
   AfterObjCDeclaration: false
   AfterStruct:     false
   AfterUnion:      false
@@ -107,7 +107,7 @@ KeepEmptyLinesAtTheStartOfBlocks: true
 MacroBlockBegin: ''
 MacroBlockEnd:   ''
 MaxEmptyLinesToKeep: 1
-NamespaceIndentation: None
+NamespaceIndentation: All 
 ObjCBinPackProtocolList: Auto
 ObjCBlockIndentWidth: 2
 ObjCBreakBeforeNestedBlockParam: true
@@ -122,7 +122,7 @@ PenaltyBreakTemplateDeclaration: 10
 PenaltyExcessCharacter: 1000000
 PenaltyReturnTypeOnItsOwnLine: 60
 PenaltyIndentedWhitespace: 0
-PointerAlignment: Right
+PointerAlignment: Left 
 ReflowComments:  true
 SortIncludes:    true
 SortJavaStaticImport: Before
