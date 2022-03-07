@@ -8,8 +8,12 @@ Double_t f_semi(Double_t *x, Double_t *par){
   return f;
 }
 
-
 void ThreeBodyBreakup(){
+  TFile *fweight = new TFile("../../../Outputs/Simulation/EventWeight_25Feb.root");
+  TCanvas *cweight = (TCanvas*)fweight->Get("c1");
+  TH1F  *hweight = (TH1F*)cweight->GetPrimitive("hEventWeight");
+//  hweight->Draw();
+
   TGenPhaseSpace PS1p;
 
   //47K(d,p)47K+p+n
@@ -42,10 +46,11 @@ void ThreeBodyBreakup(){
      double ex=R.ReconstructRelativistic(ELab,theta);
      //cout << ELab << " " << ex << endl;
      Ex1p->Fill(ex,weight); 
-    }
+  }
 
   TCanvas* c_Ex1p = new TCanvas("c_Ex1p","c_Ex1p",1000,500);
   Ex1p->Draw();
+  Ex1p->Multiply(hweight);
 
 //  TCanvas* c_semi = new TCanvas("c_semi","c_semi",1000,500);
   TF1 *f1 = new TF1("f_semi",f_semi,-10,40,3);

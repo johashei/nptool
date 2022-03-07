@@ -1226,12 +1226,12 @@ void GateThetaLab_MultiWrite(double startTheta, double finishTheta, int numGates
 
   for (int i=0; i<numGates; i++){
     double minTheta = startTheta + (i * gatesize);
-    string title = to_string(minTheta)+" < ThetaLab < "+to_string(minTheta+gatesize);
+    string title = to_string((int) minTheta)+" < ThetaLab < "+to_string((int) (minTheta+gatesize));
     string gating = core
         + to_string(minTheta)
         + " && ThetaLab < "
         + to_string(minTheta+gatesize);
-    string histname = "cThetaLabGate_" + to_string(minTheta) + "-" + to_string(minTheta+gatesize);
+    string histname = "cThetaLabGate_" + to_string((int) minTheta) + "-" + to_string((int) (minTheta+gatesize));
     string draw = "Ex>>" + histname + "(" + to_string(10.0/binsize) + ",-1,9)";
 
     TCanvas *cEx_ThetaLabGate = new TCanvas(histname.c_str(),histname.c_str(),1000,1000);
@@ -1239,6 +1239,7 @@ void GateThetaLab_MultiWrite(double startTheta, double finishTheta, int numGates
     TH1F* Ex_ThetaLabGate = (TH1F*) gDirectory->Get(histname.c_str());
     Ex_ThetaLabGate->GetXaxis()->SetTitle("Ex [MeV]");
     Ex_ThetaLabGate->GetYaxis()->SetTitle(ytitle.c_str());
+    Ex_ThetaLabGate->Sumw2();
     Ex_ThetaLabGate->SetTitle(title.c_str());
     list->Add(Ex_ThetaLabGate);
     delete cEx_ThetaLabGate;
@@ -1246,5 +1247,41 @@ void GateThetaLab_MultiWrite(double startTheta, double finishTheta, int numGates
 
   TFile* file = new TFile("GateThetaLabHistograms.root","RECREATE");
   list->Write("GateThetaLabHistograms",TObject::kSingleKey);
+  file->ls();
+}
+
+void GatePhaseSpaceByThetaLab_MultiWrite(double startTheta, double finishTheta, int numGates, double binsize){
+  string core = "EventWeight*(Mugast.TelescopeNumber>0 && Mugast.TelescopeNumber<8 && ThetaLab > ";
+  string ytitle = "Counts / " + to_string(binsize) + " MeV";
+  double gatesize = (finishTheta-startTheta)/numGates;
+  TList* list = new TList();
+
+  TFile* psfile = new TFile("../../../Outputs/Analysis/Sim_02Mar_47Kdp_PhaseSpace.root","READ");
+  TTree* PSTree = (TTree*) psfile->FindObjectAny("PhysicsTree");
+
+  for (int i=0; i<numGates; i++){
+    double minTheta = startTheta + (i * gatesize);
+    string title = to_string((int) minTheta)+" < ThetaLab < "+to_string((int) (minTheta+gatesize));
+    string gating = core
+        + to_string(minTheta)
+        + " && ThetaLab < "
+        + to_string(minTheta+gatesize)
+	+ ")";
+    string histname = "cPSpaceThetaLabGate_" + to_string((int) minTheta) + "-" + to_string((int) (minTheta+gatesize));
+    string draw = "Ex>>" + histname + "(" + to_string(10.0/binsize) + ",-1,9)";
+
+    TCanvas *cPSpace_ThetaLabGate = new TCanvas(histname.c_str(),histname.c_str(),1000,1000);
+    PSTree->Draw(draw.c_str(),gating.c_str(),"colz");
+    TH1F* PSpace_ThetaLabGate = (TH1F*) gDirectory->Get(histname.c_str());
+    PSpace_ThetaLabGate->GetXaxis()->SetTitle("Ex [MeV]");
+    PSpace_ThetaLabGate->GetYaxis()->SetTitle(ytitle.c_str());
+    PSpace_ThetaLabGate->Sumw2();
+    PSpace_ThetaLabGate->SetTitle(title.c_str());
+    list->Add(PSpace_ThetaLabGate);
+    delete cPSpace_ThetaLabGate;
+  }
+
+  TFile* file = new TFile("GatePhaseSpaceThetaLabHistograms.root","RECREATE");
+  list->Write("GatePhaseSpaceThetaLabHistograms",TObject::kSingleKey);
   file->ls();
 }

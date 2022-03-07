@@ -1,5 +1,4 @@
 #include "GausFit.h"
-//#include "KnownPeakFitter_With47K.h"
 #include "KnownPeakFitter.h"
 #include "DrawPlots.h"
 

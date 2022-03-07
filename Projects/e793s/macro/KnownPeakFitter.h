@@ -60,6 +60,7 @@ vector<vector<double>> FitKnownPeaks_RtrnArry(TH1F* hist){
   hist->Sumw2();
 
   /* Construct flat BG to subtract */ 
+  /**
   cout << " REMOVING FLAT BG OF 36 COUNTS!!!!" << endl;
   cout << " REMOVING FLAT BG OF 36 COUNTS!!!!" << endl;
   cout << " REMOVING FLAT BG OF 36 COUNTS!!!!" << endl;
@@ -73,7 +74,7 @@ vector<vector<double>> FitKnownPeaks_RtrnArry(TH1F* hist){
     FlatBG->SetBinError(i,ErrBG);
   }
   hist->Add(FlatBG,-1);
-  /**/
+  **/
 
   //Build individual peak fit functions
   string nameBase = "Peak ";

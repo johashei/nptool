@@ -1,6 +1,7 @@
 /* Predefine functions */
 vector<vector<double>> GetExpDiffCross(double Energy);
 TH1F* PullThetaLabHist(int i, double minTheta, double gatesize);
+TH1F* PullPhaseSpaceHist(int i, double minTheta, double gatesize);
 void Scale(TGraph* g , TGraphErrors* ex);
 TGraph* TWOFNR(double E, double J0, double J, double n, double l, double j);
 double ToMininize(const double* parameter);
@@ -13,7 +14,10 @@ TGraphErrors* staticExp;
 int indexE;
 
 /* Output volume toggle */
-bool loud = 1;
+bool loud = 0;
+
+/* Scale method toggle */
+bool scaleTogether = 1;
 
 ////////////////////////////////////////////////////////////////////////////////
 void CS(){
@@ -113,6 +117,14 @@ void CS(double Energy, double Spin, double spdf, double angmom){
     anglecentres.push_back(((areaArray[i][4]-areaArray[i][3])/2.)+areaArray[i][3]);
     anglewidth.push_back(areaArray[i][4]-areaArray[i][3]);
 
+    double tempsum=0, tempsumerr=0;
+    for(int x=binmin;x<binmax+1;x++){
+      tempsum += SolidAngle->GetBinContent(x);
+      tempsumerr += SolidAngle->GetBinError(x);
+      if(loud){cout << x << endl;}
+    }
+    if(loud){cout << "TEST CHECK " << tempsum << " +- " << tempsumerr << endl;}
+
     double SAerr;
     double SA = SolidAngle->IntegralAndError(binmin,binmax,SAerr);
     SA = SA*1000.;       //sr->msr
@@ -162,20 +174,20 @@ void CS(double Energy, double Spin, double spdf, double angmom){
 		  0, &(expDCSerr[0]) );
   gdSdO->SetTitle("Differential Cross Section");
   gdSdO->GetXaxis()->SetTitle("ThetaLab [deg]");
-  gdSdO->GetYaxis()->SetTitle("d#sigma/d#Theta [mb/msr]");
+  gdSdO->GetYaxis()->SetTitle("d#sigma/d#Omega [mb/msr]");
   gdSdO->Draw();
 
   /* TWOFNR diff. cross section, in mb/msr */ 
   TCanvas* c_TWOFNR = new TCanvas("c_TWOFNR","c_TWOFNR",1000,1000);
   c_TWOFNR->SetLogy();
   TGraph* TheoryDiffCross = TWOFNR(means[indexE], J0, Spin, nodes, spdf, angmom); 
-  TheoryDiffCross->GetYaxis()->SetTitle("d#sigma/d#Theta [mb/msr]"); //msr set in func above
+  TheoryDiffCross->GetYaxis()->SetTitle("d#sigma/d#Omega [mb/msr]"); //msr set in func above
   TheoryDiffCross->GetXaxis()->SetTitle("ThetaLab [deg]");
   TheoryDiffCross->Draw();
 
   /* Convert AoSA into Differential Cross Section */
   //cout << " SCALING BY NORMALIZATION = " << ElasticNorm << endl;
-  //gAoSA->GetYaxis()->SetTitle("d#sigma/d#Theta [mb/msr]");
+  //gAoSA->GetYaxis()->SetTitle("d#sigma/d#Omega [mb/msr]");
 
 
   /* Scaled and compared on same plot */ 
@@ -211,6 +223,32 @@ vector<vector<double>> GetExpDiffCross(double Energy){
   vector<vector<double>> OnePeak_AllGates;
   int numbins = 10;
   double x[numbins], y[numbins];
+  TList* list = new TList();
+
+  /* Determine scaling factor for PhaseSpace */
+  double trackScale = 0.0;
+  if(scaleTogether){
+    TH1F* baseEx = PullThetaLabHist(0,105.,5.);
+    TH1F* basePS = PullPhaseSpaceHist(0,105.,5.);
+    for(int i=1; i<numbins;i++){
+      TH1F* addEx = PullThetaLabHist(i,105.,5.); baseEx->Add(addEx,1.);
+      TH1F* addPS = PullPhaseSpaceHist(i,105.,5.); basePS->Add(addPS,1.);
+    }
+    basePS->Scale(0.01);
+    trackScale = 0.01;
+    int numbinsScale = baseEx->GetNbinsX();
+    for(int b=0; b<numbinsScale; b++){
+      while(basePS->GetBinContent(b) > baseEx->GetBinContent(b)){
+        basePS->Scale(0.99999);
+        trackScale *= 0.99999;
+      }
+    }
+    baseEx->Add(basePS,-1.);
+    baseEx->SetName("AllAngles");
+    list->Add(baseEx);
+    cout << " !!!!!!!!!!!!!!!FINAL SCALING = " << trackScale << endl;
+  }
+
   for(int i=0; i<numbins;i++){
     double bin = 5.;
     double min = 105. + (i*bin);
@@ -221,12 +259,41 @@ vector<vector<double>> GetExpDiffCross(double Energy){
     /* Retrieve theta-gated Ex TH1F from file GateThetaLabHistograms.root */
     /* To change angle gates, run GateThetaLab_MultiWrite() */
     TH1F* gate = PullThetaLabHist(i,105.,5.);
+    TH1F* pspace = PullPhaseSpaceHist(i,105.,5.);
+
+    /* Scale Phase Space... */
+    /* ... for all angles together */
+    if(scaleTogether){
+      gate->Add(pspace,-trackScale);
+    } 
+    /* ... or seperately for each angular bin */
+    else {
+      if(pspace->Integral() > 50.){ // Non-garbage histogram
+        pspace->Scale(0.01);
+        int numbins = gate->GetNbinsX();
+        for(int b=0; b<numbins; b++){
+	  if(loud){cout << " FROM " << pspace->GetBinContent(b) << 
+		         " > " << gate->GetBinContent(b); 
+	  }
+          while(pspace->GetBinContent(b) > gate->GetBinContent(b)){
+            pspace->Scale(0.9999);
+	  }
+	  if(loud){cout << " TO " << pspace->GetBinContent(b) << 
+	  	      " > " << gate->GetBinContent(b) << endl;
+	  }
+        }
+        gate->Add(pspace,-1);
+      }
+    }
 
     /* Retrieve array containing all fits, for one angle gate. *
      * Specific peak of interest selected from the vector by   *
      * global variable indexE                                  */
     AllPeaks_OneGate = FitKnownPeaks_RtrnArry(gate);
     
+    /* Write PS-subtracted spectrum to list */
+    list->Add(gate);
+
     /* Check correct OneGate vector is selected */
     cout << "area of " << means[indexE] << " = "
 	 << AllPeaks_OneGate[indexE][1] 
@@ -240,17 +307,37 @@ vector<vector<double>> GetExpDiffCross(double Energy){
     /* Push relevant OneGate vector to end of AllGates vector */
     OnePeak_AllGates.push_back(AllPeaks_OneGate[indexE]);
   }
+
+  /* Write PS-subtracted spectrum to file */
+  TFile* outfile = new TFile("GateThetaLab_ExMinusGatePhaseSpace.root","RECREATE");
+  list->Write("GateThetaLab_ExMinusPhaseSpace",TObject::kSingleKey);
+
   return OnePeak_AllGates;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 TH1F* PullThetaLabHist(int i, double minTheta, double gatesize){
-  TFile* file = new TFile("GateThetaLabHistograms.root","READ");
+  TFile* file = new TFile("GateThetaLabHistograms_ReadMe.root","READ");
   string histname = "cThetaLabGate_" 
-	          + to_string(minTheta+(i*gatesize)) + "-" 
-		  + to_string(minTheta+((i+1)*gatesize));
+	          + to_string((int) (minTheta+(i*gatesize))) + "-" 
+		  + to_string((int) (minTheta+((i+1)*gatesize)));
+  cout << "Loading " << histname << endl;
   TList *list = (TList*)file->Get("GateThetaLabHistograms");
   TH1F* hist = (TH1F*)list->FindObject(histname.c_str());
+//  file->Close();
+  return hist;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TH1F* PullPhaseSpaceHist(int i, double minTheta, double gatesize){
+  TFile* file = new TFile("GatePhaseSpaceThetaLabHistograms_ReadMe.root","READ");
+  string histname = "cPSpaceThetaLabGate_" 
+	          + to_string((int) (minTheta+(i*gatesize))) + "-" 
+		  + to_string((int) (minTheta+((i+1)*gatesize)));
+  cout << "Loading " << histname << endl;
+  TList *list = (TList*)file->Get("GatePhaseSpaceThetaLabHistograms");
+  TH1F* hist = (TH1F*)list->FindObject(histname.c_str());
+  file->Close();
   return hist;
 }
 
@@ -389,7 +476,7 @@ TGraph* TWOFNR(double E, double J0, double J, double n, double l, double j){
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-double Chi2(TGraph* theory , TGraphErrors* exper){
+double Chi2(TGraph* theory, TGraphErrors* exper){
   double Chi2 = 0 ;
   double chi;
   //for(int i = 1 ; i < exper->GetN() ; i++){
@@ -402,7 +489,6 @@ double Chi2(TGraph* theory , TGraphErrors* exper){
   if(loud){cout << "Chi2 = " << Chi2 << endl;}
   return Chi2;
 }
-
 
 ////////////////////////////////////////////////////////////////////////////////
 double ToMininize(const double* parameter){
