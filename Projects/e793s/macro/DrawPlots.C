@@ -4,6 +4,7 @@
 
 #include "CS2.h"
 #include "ThreeBodyBreakup.h"
+#include "ThreeBodyBreakup_FitPhaseSpace.h"
 /* USE THIS SPACE TO TEST NEW FEATURES */
 
 void thickness(){
@@ -523,10 +524,12 @@ void DrawPlots(){
   cout << "========== AVAILABLE FUNCTIONS ===========" << endl;
   cout << " 2D Matrices " << endl;
   cout << "\t- Draw_2DParticleGamma() "<< endl;
+  cout << "\t- Load_2DParticleGamma() "<< endl;
   cout << "\t- Draw_2DGammaGamma() "<< endl;
   cout << ""<< endl;
   cout << " Ungated histograms " << endl;
   cout << "\t- Draw_1DParticle() "<< endl;
+  cout << "\t- Load_1DParticle() "<< endl;
   cout << "\t- Draw_1DParticle_MUST2() "<< endl;
   cout << "\t- Draw_1DGamma() "<< endl;
   cout << "\t- Draw_1DGamma_MG() "<< endl;

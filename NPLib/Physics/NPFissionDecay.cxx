@@ -125,6 +125,7 @@ bool NPL::FissionDecay::GenerateEvent(string CompoundName, double MEx,double MEK
         FFl.SetKineticEnergy(KEl);
         FFh.SetKineticEnergy(KEh);
       }
+
       FissionFragments.push_back(FFl);
       FissionFragments.push_back(FFh);
       Ex.push_back(0);
@@ -145,6 +146,11 @@ bool NPL::FissionDecay::GenerateEvent(string CompoundName, double MEx,double MEK
       double Phil   = m_FissionModel->GetPhffl();
       double Phih   = m_FissionModel->GetPhffh();
 
+      if(Thetal != Thetal)
+        worked=false;
+      if(Thetah != Thetah)
+        worked=false;
+
       TVector3 uxy = TVector3(cos(TMath::Pi()/2-PhiCN), sin(TMath::Pi()/2-PhiCN), 0);
       TVector3 Momentuml = Pl * TVector3(sin(Thetal)*cos(Phil),
           sin(Thetal)*sin(Phil),
@@ -155,7 +161,7 @@ bool NPL::FissionDecay::GenerateEvent(string CompoundName, double MEx,double MEK
           sin(Thetah)*sin(Phih),
           cos(Thetah));
       Momentumh.Rotate(-ThetaCN, uxy);
-      
+     
       DPx.push_back(Momentuml.X());
       DPx.push_back(Momentumh.X());
       DPy.push_back(Momentuml.Y());
@@ -168,19 +174,23 @@ bool NPL::FissionDecay::GenerateEvent(string CompoundName, double MEx,double MEK
       KE2 = m_FissionModel->GetKE2();
 
       // Neutron and gamma emission
-      float* En1;
-      float* Eg1;
-      En1 = m_FissionModel->GetNeutronEnergyFrag1();
-      //cout << "----- Neutron energy: " << endl;
-      //for(int i=0; i<51; i++) {
-      //  cout << "En= " << En1[i] << endl;
-      //}
+      if(m_shoot_neutron){
+        float* En1;
+        En1 = m_FissionModel->GetNeutronEnergyFrag1();
+        //cout << "----- Neutron energy: " << endl;
+        //for(int i=0; i<51; i++) {
+        //  cout << "En= " << En1[i] << endl;
+        //}
+      }
 
-      Eg1 = m_FissionModel->GetGammaEnergyFrag1();
-      //cout << "----- Gamma energy: " << endl;
-      //for(int i=0; i<101; i++){
-      //  cout << "Eg= " << Eg1[i] << endl;
-      //}
+      if(m_shoot_gamma){
+        float* Eg1;
+        Eg1 = m_FissionModel->GetGammaEnergyFrag1();
+        //cout << "----- Gamma energy: " << endl;
+        //for(int i=0; i<101; i++){
+        //  cout << "Eg= " << Eg1[i] << endl;
+        //}
+      }
     }
   }
   return worked;

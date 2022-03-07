@@ -107,13 +107,13 @@ G4bool FissionDecay::ModelTrigger(const G4FastTrack& fastTrack) {
     
   const G4Track* PrimaryTrack = fastTrack.GetPrimaryTrack();
   int Parent_ID = PrimaryTrack->GetParentID();
+  m_PreviousEnergy = PrimaryTrack->GetKineticEnergy();
 
   m_FissionConditions->Clear();
   if(Parent_ID>=0){
     Trigger = true;
-
-    m_PreviousEnergy=fastTrack.GetPrimaryTrack()->GetKineticEnergy();
   }
+  
   return Trigger;
 }
 
@@ -150,11 +150,11 @@ void FissionDecay::DoIt(const G4FastTrack& fastTrack,G4FastStep& fastStep){
   std::vector<double> DPz;
   double TKE, KE1, KE2;
 
-
   G4bool IsFissionDecay = m_FissionDecay.GenerateEvent(NPL::ChangeNameFromG4Standard(m_CurrentName),m_ExcitationEnergy,energy,
       pdirection.x(),pdirection.y(),pdirection.z(),
       FissionFragment, Ex,DEK,DPx,DPy,DPz,
       TKE, KE1, KE2);
+  
   if(IsFissionDecay){
     /////////////////////////////////////////////////
     // Fillion the attached Fission condition Tree //
@@ -187,7 +187,7 @@ void FissionDecay::DoIt(const G4FastTrack& fastTrack,G4FastStep& fastStep){
       int FFZ = FissionFragment[i].GetZ();
       int FFA = FissionFragment[i].GetA();
       FissionFragmentDef=NULL;
-
+      
       // Set the momentum direction
       G4ThreeVector Momentum (DPx[i],DPy[i],DPz[i]);
       Momentum=Momentum.unit();
@@ -197,7 +197,6 @@ void FissionDecay::DoIt(const G4FastTrack& fastTrack,G4FastStep& fastStep){
 
       m_FissionConditions->SetFragmentZ(FFZ);
       m_FissionConditions->SetFragmentA(FFA);
-      //m_FissionConditions->SetFragmentKineticEnergy(DEK[i]);
       m_FissionConditions->SetFragmentKineticEnergy(KineticEnergy);
       m_FissionConditions->SetFragmentBrho(Brho);
       m_FissionConditions->SetFragmentTheta(Momentum.theta()/deg);
@@ -222,13 +221,11 @@ void FissionDecay::DoIt(const G4FastTrack& fastTrack,G4FastStep& fastStep){
       // the rest
       else
         FissionFragmentDef=G4ParticleTable::GetParticleTable()->GetIonTable()->GetIon(FFZ, FFA, Ex[i]);
-
-
       G4DynamicParticle DynamicFissionFragment(FissionFragmentDef,Momentum,DEK[i]);
       fastStep.CreateSecondaryTrack(DynamicFissionFragment, localPosition, time);
     }
 
-    if(size){
+    if(size>0){
       // Set the end of the step conditions
       fastStep.SetPrimaryTrackFinalKineticEnergyAndDirection(0,pdirection);
       fastStep.SetPrimaryTrackFinalPosition(worldPosition);  
