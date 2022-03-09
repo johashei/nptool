@@ -6,12 +6,14 @@ void Scale(TGraph* g , TGraphErrors* ex);
 TGraph* TWOFNR(double E, double J0, double J, double n, double l, double j);
 double ToMininize(const double* parameter);
 TGraph* FindNormalisation(TGraph* theory, TGraphErrors* experiment);
+TList* peakFitList = new TList();
 
 /* Global variables */
 vector<Double_t> anglecentres, anglewidth;
 TGraph* currentThry;
 TGraphErrors* staticExp;
 int indexE;
+double globalS, globalSerr;
 
 /* Output volume toggle */
 bool loud = 0;
@@ -45,7 +47,11 @@ void CS(double Energy, double Spin, double spdf, double angmom){
   // p3/5 -> spdf = 1, angmom = 1.5
   // J0 is incident spin, which is 47K g.s. therefore J0 = 1/2
   double J0 = 0.5;
-  double ElasticNorm = 5.8, ElasticNormErr = 1.3; // DeuteronNorm in elastics, 5.6 +- 1.3
+  double ElasticNorm = 5.8, ElasticNormErr = 1.3; // DeuteronNorm in elastics, 5.8 +- 1.3
+  /* Reduce by factor of 10,000 */
+  /* WHY DOES THIS WORK???????*/
+  ElasticNorm /= 10000.;
+  ElasticNormErr /= 10000.;
   double nodes;
 
   if(spdf==1){
@@ -63,6 +69,9 @@ void CS(double Energy, double Spin, double spdf, double angmom){
   indexE = 100;
   anglecentres.clear();
   anglewidth.clear();
+  globalS=0.;
+  globalSerr=0.;
+  peakFitList->Clear();
 
   /* Retrieve array index of the entered peak energy */
   /* numpeaks and Energy[] defined globally in KnownPeakFitter.h */
@@ -149,7 +158,7 @@ void CS(double Energy, double Spin, double spdf, double angmom){
            << "  Area/SA = " << AoSA[i] << " +- " << AoSAerr[i] << " counts/msr"<< endl;
     }
   }
-  //delete c_SolidAngle;
+  delete c_SolidAngle;
   
   /* Graph of Area/Solid Angle*/
   TCanvas* c_AoSA = new TCanvas("c_AoSA","c_AoSA",1000,1000);
@@ -212,8 +221,22 @@ void CS(double Energy, double Spin, double spdf, double angmom){
   gdSdO->SetLineColor(kRed);
   gdSdO->SetMarkerColor(kRed);
   gdSdO->SetMarkerStyle(21);
+  /* Construct title string */
+  /**/  ostringstream textstream;
+  /**/  textstream << std::fixed << setprecision(3);
+  /**/  textstream << "Peak " << means[indexE];
+  /**/  string tempstr = textstream.str();
+  /**/	textstream << ":  S = " << globalS 
+  /**/	           << " +- " << globalSerr;
+  /**/  string textstring = textstream.str(); 
+  gdSdO->SetTitle(textstring.c_str());
   gdSdO->Draw("AP");
   Final->Draw("SAME");
+  string savestring = "./CS2_Figures/"+tempstr+".root";
+  c_Chi2Min->SaveAs(savestring.c_str());
+
+  //delete c_AoSA;
+  //delete c_dSdO;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -255,13 +278,18 @@ vector<vector<double>> GetExpDiffCross(double Energy){
     double max = min + bin;
     cout << "===================================" << endl;
     cout << "min: " << min << " max: " << max << endl;
+  
+    stringstream tmp; tmp << fixed << setprecision(0); 
+    tmp << "c_peakFits_" << min << "_" << max; 
+    string tmp2 = tmp.str();
+    TCanvas* c_peakFits = new TCanvas("c_peakFits",tmp2.c_str(),1000,1000);
 
     /* Retrieve theta-gated Ex TH1F from file GateThetaLabHistograms.root */
     /* To change angle gates, run GateThetaLab_MultiWrite() */
     TH1F* gate = PullThetaLabHist(i,105.,5.);
     TH1F* pspace = PullPhaseSpaceHist(i,105.,5.);
 
-    /* Scale Phase Space... */
+    /* Scale the Phase Space at this angle... */
     /* ... for all angles together */
     if(scaleTogether){
       gate->Add(pspace,-trackScale);
@@ -270,6 +298,7 @@ vector<vector<double>> GetExpDiffCross(double Energy){
     else {
       if(pspace->Integral() > 50.){ // Non-garbage histogram
         pspace->Scale(0.01);
+	trackScale=0.01;
         int numbins = gate->GetNbinsX();
         for(int b=0; b<numbins; b++){
 	  if(loud){cout << " FROM " << pspace->GetBinContent(b) << 
@@ -277,11 +306,13 @@ vector<vector<double>> GetExpDiffCross(double Energy){
 	  }
           while(pspace->GetBinContent(b) > gate->GetBinContent(b)){
             pspace->Scale(0.9999);
+	    trackScale*=0.9999;
 	  }
 	  if(loud){cout << " TO " << pspace->GetBinContent(b) << 
 	  	      " > " << gate->GetBinContent(b) << endl;
 	  }
         }
+        cout << " !!! SCALE FOR THIS ANGLE = " << trackScale << endl;
         gate->Add(pspace,-1);
       }
     }
@@ -292,7 +323,11 @@ vector<vector<double>> GetExpDiffCross(double Energy){
     AllPeaks_OneGate = FitKnownPeaks_RtrnArry(gate);
     
     /* Write PS-subtracted spectrum to list */
-    list->Add(gate);
+    //list->Add(gate);
+    //list->Add(c_peakFits);
+    string filename = "./CS2_Figures/";
+    filename += tmp2 + ".root";
+    c_peakFits->SaveAs(filename.c_str());
 
     /* Check correct OneGate vector is selected */
     cout << "area of " << means[indexE] << " = "
@@ -306,11 +341,12 @@ vector<vector<double>> GetExpDiffCross(double Energy){
 
     /* Push relevant OneGate vector to end of AllGates vector */
     OnePeak_AllGates.push_back(AllPeaks_OneGate[indexE]);
+    delete c_peakFits; 
   }
 
   /* Write PS-subtracted spectrum to file */
-  TFile* outfile = new TFile("GateThetaLab_ExMinusGatePhaseSpace.root","RECREATE");
-  list->Write("GateThetaLab_ExMinusPhaseSpace",TObject::kSingleKey);
+  //TFile* outfile = new TFile("GateThetaLab_ExMinusGatePhaseSpace.root","RECREATE");
+  //list->Write("GateThetaLab_ExMinusPhaseSpace",TObject::kSingleKey);
 
   return OnePeak_AllGates;
 }
@@ -362,7 +398,7 @@ void Scale(TGraph* g , TGraphErrors* ex){
   //scaleTWOFNR = mean;
   cout << "SCALED THEORY BY " << mean << endl;
   cout << " therefore S = " << 1/mean << " ??" << endl;  
-
+  
   double* x = g->GetX();
   double* y = g->GetY();
   for(unsigned int i = 0 ; i < g->GetN() ; i++)
@@ -546,6 +582,10 @@ TGraph* FindNormalisation(TGraph* theory, TGraphErrors* experiment){
   for(int i = 0  ; i < mysize ; i++){
     cout << Form("S%d=",i+1) << xs[i] << "(" << err[i] << ")" << endl;
   }
+
+  /* Store S value in global variable, to access for drawing on plots */
+  globalS = xs[0];
+  globalSerr = err[0];
 
   // Return the Fitted CS
   TGraph* g = new TGraph(); 

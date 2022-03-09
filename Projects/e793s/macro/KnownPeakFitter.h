@@ -104,20 +104,27 @@ vector<vector<double>> FitKnownPeaks_RtrnArry(TH1F* hist){
   for(int i=0; i<numPeaks; i++) {
     full->FixParameter((i*3)+1,sigma);
     full->FixParameter((i*3)+2,means.at(i));
+      // Set max 279 counts to 100
+      //full->SetParameter((i*3)+3,0.);//1e1);
+      //if(i==2){full->SetParLimits((i*3)+3,0.0,1e2);}
+      //else{full->SetParLimits((i*3)+3,0.0,1e5);}
     full->SetParameter((i*3)+3,1e1);
     full->SetParLimits((i*3)+3,0.0,1e5);
   }
   //full->SetParameter(0,30.);
-  //full->SetParLimits(0,0.,40.);
-  full->FixParameter(0,0.);
+  //full->SetParLimits(0,0.,40.); /* FOR TOTAL SPECTRUM FITTING */
+  full->SetParLimits(0,0.,10.); /* FOR ANGLE GATED FITTING */
+  //full->FixParameter(0,0.);
+  full->FixParameter(9,0.); //??
 
   // Specific limits
   // Set max 279 counts to 100
-  full->SetParLimits(9,0.0,1e2); // Doesnt work???
+  //full->FixParameter(9,0.0);
+  //full->SetParLimits(9,0.0,1e2); // Doesnt work???
   allPeaks[14]->SetLineColor(kOrange);
 
   //Fit full function to histogram
-  hist->Fit(full, "RQ", "", minFit, maxFit);
+  hist->Fit(full, "RWQB", "", minFit, maxFit);
   hist->Draw();
 
   //Extract fitted variables, assign them to individual fits, and draw them
@@ -165,6 +172,7 @@ vector<vector<double>> FitKnownPeaks_RtrnArry(TH1F* hist){
   }
   cout << " BG  " << full->GetParameter(0) 
        << " +- " << full->GetParError(0) << endl;
+
   return allpeaks;
 }
 
