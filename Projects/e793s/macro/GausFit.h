@@ -14,7 +14,7 @@ Double_t pi = 3.14159265358979323846;
 ////////////////////////////////////////////////////////
 
 void DoubleGaus(TH1F* hist){
-  bool repeat=true;
+  bool repeat=true, bgbool = true;
   int repeatInt;
   double minFit, maxFit, mean1, mean2; 
 
@@ -31,6 +31,8 @@ void DoubleGaus(TH1F* hist){
       cin >> mean1;
     cout << " Peak 2 = ";
       cin >> mean2;
+    cout << " Background, yes or no?" << endl;
+      cin >> bgbool;
 
     //TF1 *g1 = new TF1 ("m1", equation, minFit, maxFit);
     TF1 *g1 = new TF1 ("m1", "([0]/([2]*sqrt(2*pi)))*exp(-0.5*pow((x-[1])/[2],2))",
@@ -64,13 +66,18 @@ void DoubleGaus(TH1F* hist){
     g1->SetParameter(1, mean1);
       g1->SetParLimits(1, mean1-0.5, mean1+0.5);
     g1->SetParameter(2, 0.13);
+    //g1->SetParameter(2, 0.14);
       g1->SetParLimits(2, 0.05, 0.30);
+      //g1->SetParLimits(2, 0.13, 0.30);
     g2->SetParameter(0, 100);
       g2->SetParLimits(0, 0.0, 500.0);
     g2->SetParameter(1, mean2);
       g2->SetParLimits(1, mean2-1.0, mean2+1.0);
     g2->SetParameter(2, 0.13);
+    //g2->SetParameter(2, 0.14);
       g2->SetParLimits(2, 0.05, 0.30);
+      //g2->SetParLimits(2, 0.13, 0.30);
+
 
     hist->Fit(g1, "WWR", "", minFit, mean1+5);//maxFit);
     hist->Fit(g2, "WWR", "", mean2-5, maxFit);//minFit, maxFit);
@@ -80,6 +87,12 @@ void DoubleGaus(TH1F* hist){
     g2->GetParameters(&par[3]);
     bg->GetParameters(&par[6]);
     f1->SetParameters(par);
+
+    /* JUST FOR FITTING 0.36-GATED 5.3MeV PEAK! */
+    //  f1->SetParLimits(2, 0.137, 0.40);
+    //  f1->SetParLimits(5, 0.137, 0.40);
+
+    if(bgbool==false){bg->FixParameter(0,0.); f1->FixParameter(6,0.);}
 
     hist->Fit(f1, "WWR", "", minFit, maxFit);
     hist->Draw();
