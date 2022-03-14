@@ -18,7 +18,7 @@
  *                                                                           *
  *---------------------------------------------------------------------------*
  * Comment:                                                                  *
- *                                                                           *   
+ *                                                                           *
  *                                                                           *
  *****************************************************************************/
 
@@ -31,74 +31,70 @@ using namespace std;
 
 class TCatanaData : public TObject {
   //////////////////////////////////////////////////////////////
-  // data members are hold into vectors in order 
+  // data members are hold into vectors in order
   // to allow multiplicity treatment
-  private: 
-    // Energy
-    vector<UShort_t>   fCatana_E_DetectorNbr;
-    vector<Double_t>   fCatana_Energy;
+ private:
+  // Energy
+  vector<UShort_t> fCatana_E_DetectorNbr;
+  vector<Double_t> fCatana_Energy;
 
-    // Time
-    vector<UShort_t>   fCatana_T_DetectorNbr;
-    vector<Double_t>   fCatana_Time;
-
+  // Time
+  vector<UShort_t> fCatana_T_DetectorNbr;
+  vector<Double_t> fCatana_Time;
 
   //////////////////////////////////////////////////////////////
   // Constructor and destructor
-  public: 
-    TCatanaData();
-    ~TCatanaData();
-    
+ public:
+  TCatanaData();
+  ~TCatanaData();
 
   //////////////////////////////////////////////////////////////
   // Inherited from TObject and overriden to avoid warnings
-  public:
-    void Clear();
-    void Clear(const Option_t*) {};
-    void Dump() const;
-
+ public:
+  void Clear();
+  void Clear(const Option_t*){};
+  void Dump() const;
 
   //////////////////////////////////////////////////////////////
   // Getters and Setters
-  // Prefer inline declaration to avoid unnecessary called of 
+  // Prefer inline declaration to avoid unnecessary called of
   // frequently used methods
   // add //! to avoid ROOT creating dictionnary for the methods
-  public:
-    //////////////////////    SETTERS    ////////////////////////
-    // Energy
-    inline void SetEnergy(const UShort_t& DetNbr,const Double_t& Energy){
-      fCatana_E_DetectorNbr.push_back(DetNbr);
-      fCatana_Energy.push_back(Energy);
-    };//!
+ public:
+  //////////////////////    SETTERS    ////////////////////////
+  // Energy
+  inline void SetEnergy(const UShort_t& DetNbr, const Double_t& Energy) {
+    fCatana_E_DetectorNbr.push_back(DetNbr);
+    fCatana_Energy.push_back(Energy);
+  }; //!
 
-    // Time
-    inline void SetTime(const UShort_t& DetNbr,const Double_t& Time)	{
-      fCatana_T_DetectorNbr.push_back(DetNbr);     
-      fCatana_Time.push_back(Time);
-    };//!
+  // Time
+  inline void SetTime(const UShort_t& DetNbr, const Double_t& Time) {
+    fCatana_T_DetectorNbr.push_back(DetNbr);
+    fCatana_Time.push_back(Time);
+  }; //!
 
+  //////////////////////    GETTERS    ////////////////////////
+  // Energy
+  inline UShort_t GetMultEnergy() const { return fCatana_E_DetectorNbr.size(); }
+  inline UShort_t GetE_DetectorNbr(const unsigned int& i) const { return fCatana_E_DetectorNbr[i]; } //!
+  inline Double_t Get_Energy(const unsigned int& i) const { return fCatana_Energy[i]; }              //!
 
-    //////////////////////    GETTERS    ////////////////////////
-    // Energy
-    inline UShort_t GetMultEnergy() const
-      {return fCatana_E_DetectorNbr.size();}
-    inline UShort_t GetE_DetectorNbr(const unsigned int &i) const 
-      {return fCatana_E_DetectorNbr[i];}//!
-    inline Double_t Get_Energy(const unsigned int &i) const 
-      {return fCatana_Energy[i];}//!
+  // Time
+  inline UShort_t GetMultTime() const { return fCatana_T_DetectorNbr.size(); }
+  inline UShort_t GetT_DetectorNbr(const unsigned int& i) const { return fCatana_T_DetectorNbr[i]; } //!
+  inline Double_t Get_Time(const unsigned int& i) const { return fCatana_Time[i]; }                  //!
 
-    // Time
-    inline UShort_t GetMultTime() const
-      {return fCatana_T_DetectorNbr.size();}
-    inline UShort_t GetT_DetectorNbr(const unsigned int &i) const 
-      {return fCatana_T_DetectorNbr[i];}//!
-    inline Double_t Get_Time(const unsigned int &i) const 
-      {return fCatana_Time[i];}//!
-
+  // For Catana simulation analysis of s027 purpose
+  vector<UShort_t> Get_Catana_E_DetectorNbr() { return fCatana_E_DetectorNbr; };
+  vector<Double_t> Get_Catana_Energy() { return fCatana_Energy; };
+  // Time
+  vector<UShort_t> Get_Catana_T_DetectorNbr() { return fCatana_T_DetectorNbr; };
+  vector<Double_t> Get_Catana_Time() { return fCatana_Time; };
 
   //////////////////////////////////////////////////////////////
   // Required for ROOT dictionnary
-  ClassDef(TCatanaData,1)  // CatanaData structure
+  ClassDef(TCatanaData, 1) // CatanaData structure
 };
 
 #endif
