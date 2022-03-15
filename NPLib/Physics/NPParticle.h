@@ -24,6 +24,7 @@
  *****************************************************************************/
 // ROOT headers
 #include "TLorentzVector.h"
+#include "TGraph.h"
 
 // NPTOOL headers
 #include "NPGlobalSystemOfUnits.h"
@@ -155,6 +156,7 @@ namespace NPL {
     void DefineMassByThreshold(const vector<NPL::Particle>& N); // Define the mass as the sum of the mass of the particle defined in N
 
   public:
+    TGraph* GetStableNuclei();
     double GetSn() const;
     double GetSp() const;
     double GetS2n() const;

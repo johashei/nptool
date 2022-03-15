@@ -302,6 +302,42 @@ Particle::~Particle()
 {
 }
 
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo...... 
+TGraph* Particle::GetStableNuclei()
+{
+  TGraph* gStableNuclei = new TGraph();
+  ifstream inFile;
+  string Path = getenv("NPTOOL") ;
+  string FileName = Path + "/NPLib/Physics/nubtab16.asc";
+  inFile.open(FileName.c_str());
+
+  // reading the file
+  string line, s_name;
+  size_t space;
+  int i_stable = 1;
+  if (inFile.is_open()) {
+    while (!inFile.eof()) {
+      getline(inFile,line);
+
+      if(line.size()>72){
+        s_name = line.substr(11,7);
+        space = s_name.find_first_of(" ");
+        s_name.resize(space);
+
+        Extract(line.data());
+        if(fLifeTime==-1){
+          gStableNuclei->SetPoint(i_stable,fAtomicWeight-fCharge,fCharge);
+          i_stable++;
+        }
+      }
+    }
+  }
+  else cout << "Unable to open file nuclear data base file " << FileName << endl;
+
+  return gStableNuclei;
+}
+
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo...... 
 void Particle::Extract(string line){
   // name of the isotope
