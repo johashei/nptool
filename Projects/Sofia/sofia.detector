@@ -12,17 +12,17 @@ SofTofW
  R= 4 m
  THETA= -20 deg
  PHI= 0 deg
- Build_GLAD= 0
+ Build_GLAD= 1
  GLAD_TiltAngle= 14 deg
  GLAD_DistanceFromTarget= 3.05 m
  Build_MagneticField= 1 
  GLAD_MagField= 1.70 T 
- Build_VacuumPipe= 1
+ Build_VacuumPipe= 0
  VacuumPipeX= 0 cm
  VacuumPipeY= 0 cm
  VacuumPipeZ= 0.9 m
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-SofTwim
+%SofTwim
  R= 1.85 m
  THETA= 0
  PHI= 0

@@ -147,7 +147,7 @@ G4AssemblyVolume* SofTofW::BuildTOFDetector(){
     Tv.setZ(0);
     for(unsigned int i=0; i<28; i++){
       int k = -14+i;
-      Tv.setY(k*(SofTofW_NS::tof_plastic_width+0.5));
+      Tv.setY(k*(SofTofW_NS::tof_plastic_width+0.1));
       m_TofWall->AddPlacedVolume(m_PlasticTof, Tv, Rv);
     }
 
