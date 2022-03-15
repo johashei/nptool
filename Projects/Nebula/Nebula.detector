@@ -6,15 +6,15 @@ Target
  ANGLE= 0 deg
  X= 0 mm
  Y= 0 mm
- Z= 0 mm
+ Z= -4000 mm
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-Nebula
+NEBULA
  POS= 0 0 5 m
  NumberOfModule= 30
  Veto= 1
  Frame= 1
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-Nebula
+NEBULA
  POS= 0 0 5.15 m
  NumberOfModule= 30
  Veto= 0
@@ -22,16 +22,60 @@ Nebula
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
  
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-Nebula
+NEBULA
  POS= 0 0 10 m
  NumberOfModule= 30
  Veto= 1
  Frame= 1
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-Nebula
+NEBULA
  POS= 0 0 10.15 m
  NumberOfModule= 30
  Veto= 0
  Frame= 0
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
  
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+NEBULA
+ POS= 0 0 3 m
+ NumberOfModule= 15
+ Veto= 1
+ Frame= 1
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+NEBULA
+ POS= 0 0 3.15 m
+ NumberOfModule= 15
+ Veto= 0
+ Frame= 0
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%Samurai
+% POS= 0 0 0 mm
+% ANGLE= 30 deg
+% %
+% METHOD= 1				
+% % 0=RungeKutta, 1=EliaOmar
+% FIELDMAP=3T.table.bin 
+% %fieldmap/3T.table.bin 		
+% % fieldmap path
+% STEPS_PER_METER= 1000
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%SAMURAIFDC1
+% %XML= db/SAMURAIFDC0_20200109.xml
+% %Offset= -0.00666226 0.102191 -3370.01 mm
+% Offset= -0.00666226 0.102191 -4370.01 mm
+% %InvertX= 1 
+% %InvertY= 0
+% %InvertD= 1
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%SAMURAIFDC2
+% %XML= db/SAMURAIFDC2.xml
+% Offset= 1000 200 5000 mm
+% OffAngle= 59.930 deg
+% %-252.416 -0.228477 4122.57 mm
+% %InvertX= 0 
+% %InvertY= 1
+% %InvertD= 1
+
+%

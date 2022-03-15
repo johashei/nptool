@@ -53,7 +53,6 @@
 using namespace std;
 using namespace CLHEP;
 
-
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 namespace Nebula_NS{
   // Energy and time Resolution
@@ -141,7 +140,7 @@ G4LogicalVolume* Nebula::BuildVeto(){
 // Read stream at Configfile to pick-up parameters of detector (Position,...)
 // Called in DetecorConstruction::ReadDetextorConfiguration Method
 void Nebula::ReadConfiguration(NPL::InputParser parser){
-  vector<NPL::InputBlock*> blocks = parser.GetAllBlocksWithToken("Nebula");
+  vector<NPL::InputBlock*> blocks = parser.GetAllBlocksWithToken("NEBULA");
   if(NPOptionManager::getInstance()->GetVerboseLevel())
     cout << "//// " << blocks.size() << " detectors found " << endl; 
 
@@ -282,8 +281,8 @@ extern"C" {
   class proxy_nps_Nebula{
     public:
       proxy_nps_Nebula(){
-        NPS::DetectorFactory::getInstance()->AddToken("Nebula","Nebula");
-        NPS::DetectorFactory::getInstance()->AddDetector("Nebula",Nebula::Construct);
+        NPS::DetectorFactory::getInstance()->AddToken("NEBULA","NEBULA");
+        NPS::DetectorFactory::getInstance()->AddDetector("NEBULA",Nebula::Construct);
       }
   };
 
