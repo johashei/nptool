@@ -1,0 +1,28 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Beam
+  Particle= 8He
+  Energy= 2000 MeV
+  SigmaEnergy= 100 MeV
+  SigmaThetaX= 1 deg
+  SigmaPhiY= 1 deg
+  SigmaX= 5 mm
+  SigmaY= 5 mm
+  MeanThetaX= 0 deg
+  MeanPhiY= 0 deg
+  MeanX= 0 mm
+  MeanY= 0 mm
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+QFSReaction
+ Beam= 8He
+ Target= 1H
+ Scattered= 1H
+ KnockedOut= 1H
+ Heavy= 7H
+ ExcitationEnergyBeam= 0.0 MeV
+ ExcitationEnergyHeavy= 3.6800 MeV
+ MomentumSigma= 50.0 
+ ShootHeavy= 1
+ ShootLight= 1
+  
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
