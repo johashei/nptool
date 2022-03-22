@@ -39,7 +39,7 @@ class TTRexData : public TObject {
     vector<UShort_t>   fTRexFront_E_DetectorNbr;
     vector<UShort_t>   fTRexFront_E_StripNbr;
     vector<Double_t>   fTRexFront_Energy;
-
+    
     // Time
     vector<UShort_t>   fTRexFront_T_DetectorNbr;
     vector<UShort_t>   fTRexFront_T_StripNbr;
