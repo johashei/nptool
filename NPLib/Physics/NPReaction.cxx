@@ -209,7 +209,7 @@ double Reaction::ShootRandomThetaCM(){
     TH1D* Proj = fDoubleDifferentialCrossSectionHist->ProjectionX("proj",binY,binY);
     SetThetaCM( theta=Proj->GetRandom()*deg );
   }
-  else if (fLabCrossSection){
+  else if (fLabCrossSection&&fCrossSectionHist){
     double thetalab=-1;
     double energylab=-1;
     while(energylab<0){
@@ -219,7 +219,7 @@ double Reaction::ShootRandomThetaCM(){
     theta = EnergyLabToThetaCM(energylab, thetalab); //transform to theta CM
     SetThetaCM( theta );
   }
-  else{
+  else if(fCrossSectionHist){
     // When root perform a Spline interpolation to shoot random number out of
     // the distribution, it can over shoot and output a number larger that 180
     // this lead to an additional signal at 0-4 deg Lab, especially when using a
@@ -231,7 +231,9 @@ double Reaction::ShootRandomThetaCM(){
     //cout << " Shooting Random ThetaCM "  << theta << endl;
     SetThetaCM( theta*deg );
   }
-
+  else{
+    NPL::SendErrorAndExit("NPL::Reaction","No cross section provided, add relevant token to input file.");
+    }
 
   return theta;
 }

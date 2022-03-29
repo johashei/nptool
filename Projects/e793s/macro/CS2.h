@@ -139,23 +139,35 @@ void CS(double Energy, double Spin, double spdf, double angmom){
     SA = SA*1000.;       //sr->msr
     SAerr = SAerr*1000.; //sr->msr
 
+    /* Area over Solid angle ONLY */
     AoSA.push_back(areaArray[i][1]/SA);
     AoSAerr.push_back((areaArray[i][1]/SA) 
 		    * sqrt( pow(areaArray[i][2]/areaArray[i][1],2) 
 			    + pow(SAerr/SA,2)));
 
-    expDCS.push_back((areaArray[i][1]/SA)*ElasticNorm);
-    expDCSerr.push_back((areaArray[i][1]/SA)*ElasticNorm
-		    * sqrt( pow(areaArray[i][2]/areaArray[i][1],2)
-		            + pow(SAerr/SA,2)
-			    + pow(ElasticNormErr/ElasticNorm,2)));
+    /* Differential Cross Section */
+    /* NOTE: DON'T INCLUDE NORM ERROR IN ERR PROPAGATION AS IT IS SYSTEMATIC! */
+    double tempvalue = (areaArray[i][1]/SA)*ElasticNorm; 
+    expDCS.push_back(tempvalue);
+    double temperror = tempvalue
+		     * sqrt( pow(areaArray[i][2]/areaArray[i][1],2)
+		           + pow(SAerr/SA,2)
+			   //+ pow(ElasticNormErr/ElasticNorm,2)
+			   );
+    expDCSerr.push_back(temperror);
 
     if(loud){
       cout << "Angle " << areaArray[i][3] << " to " << areaArray[i][4] 
 	   << ", centre " << anglecentres[i]
 	   << ": Area = " << areaArray[i][1] << " +- " << areaArray[i][2] << " cnts" 
 	   << "  SA = " << SA << " +- " << SAerr << " msr" 
-           << "  Area/SA = " << AoSA[i] << " +- " << AoSAerr[i] << " counts/msr"<< endl;
+           << "  Area/SA = " << AoSA[i] << " +- " << AoSAerr[i] << " counts/msr"
+	   << setprecision(5)
+           << "  Norm = " << ElasticNorm << " +- " << ElasticNormErr
+	   << " (don't include norm err in propagation)"
+           << "  dSdO = " << tempvalue << " +- " << temperror  
+	   << setprecision(3)
+	   << endl;
     }
   }
   delete c_SolidAngle;
@@ -164,10 +176,10 @@ void CS(double Energy, double Spin, double spdf, double angmom){
   TCanvas* c_AoSA = new TCanvas("c_AoSA","c_AoSA",1000,1000);
   c_AoSA->SetLogy();
   TGraphErrors* gAoSA = new TGraphErrors(
-		  anglecentres.size(),
-		  &(anglecentres[0]), &(AoSA[0]),
+		  anglecentres.size(), //n
+		  &(anglecentres[0]), &(AoSA[0]), //x, y
 		  //&(anglewidth[0]), &(AoSAerr[0]) );
-		  0, &(AoSAerr[0]) );
+		  0, &(AoSAerr[0]) );  //errX, errY 
   gAoSA->SetTitle("Area/SolidAngle");
   gAoSA->GetXaxis()->SetTitle("ThetaLab [deg]");
   gAoSA->GetYaxis()->SetTitle("Counts/#Omega [counts/msr]");
@@ -232,8 +244,10 @@ void CS(double Energy, double Spin, double spdf, double angmom){
   gdSdO->SetTitle(textstring.c_str());
   gdSdO->Draw("AP");
   Final->Draw("SAME");
-  string savestring = "./CS2_Figures/"+tempstr+".root";
-  c_Chi2Min->SaveAs(savestring.c_str());
+  string savestring1 = "./CS2_Figures/"+tempstr+".root";
+  string savestring2 = "./CS2_Figures/"+tempstr+".pdf";
+  c_Chi2Min->SaveAs(savestring1.c_str());
+  c_Chi2Min->SaveAs(savestring2.c_str());
 
   //delete c_AoSA;
   //delete c_dSdO;
@@ -257,10 +271,21 @@ vector<vector<double>> GetExpDiffCross(double Energy){
       TH1F* addEx = PullThetaLabHist(i,105.,5.); baseEx->Add(addEx,1.);
       TH1F* addPS = PullPhaseSpaceHist(i,105.,5.); basePS->Add(addPS,1.);
     }
+    /* Subtract flat background equal to smallest bin in range */
+    TH1F* baseExCopy = baseEx;
+    baseExCopy->GetXaxis()->SetRange(baseExCopy->FindBin(-1.),baseExCopy->FindBin(7.9));
+    double minValueInRange = baseExCopy->GetBinContent(baseEx->GetMinimumBin());
+    cout << "Subtracting background of " << minValueInRange << endl;
+    for(int b=1; b<baseEx->GetNbinsX() ; b++){
+      baseEx->SetBinContent(b,baseEx->GetBinContent(b)-minValueInRange);
+    }
+    /* Begin scaling within range, track changes */
     basePS->Scale(0.01);
     trackScale = 0.01;
     int numbinsScale = baseEx->GetNbinsX();
-    for(int b=0; b<numbinsScale; b++){
+    int nbinlow = basePS->FindBin(2.); int nbinhigh = basePS->FindBin(7.5);
+    //for(int b=1; b<numbinsScale; b++){
+    for(int b=nbinlow; b<nbinhigh; b++){
       while(basePS->GetBinContent(b) > baseEx->GetBinContent(b)){
         basePS->Scale(0.99999);
         trackScale *= 0.99999;
@@ -517,7 +542,7 @@ double Chi2(TGraph* theory, TGraphErrors* exper){
   double chi;
   //for(int i = 1 ; i < exper->GetN() ; i++){
   for(int i = 0 ; i < exper->GetN() ; i++){
-    if(exper->Eval(anglecentres[i])>0)  {
+    if(exper->Eval(anglecentres[i])>1.0e-10){ //0){
       chi=(exper->Eval(anglecentres[i])-theory->Eval(anglecentres[i]) ) / (exper->GetErrorY(i));
       Chi2 +=chi*chi;
     }

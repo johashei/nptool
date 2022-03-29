@@ -1,6 +1,6 @@
 
 
-for i in {1..20}
+for i in {1..30}
 do
-  nohup npsimulation -D minos_dali.detector -E reaction/pp.reaction -B run.mac -O simu_tpad_$i --random-seed $i & 
+  nohup npsimulation -D minos_dali_short.detector -E reaction/pp.reaction -B script/run.mac -O simu_tpad_short_$i --random-seed $i & 
 done

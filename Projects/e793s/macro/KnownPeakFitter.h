@@ -15,11 +15,12 @@ array<double,numPeaks> means = { 0.000,
 			   2.910,
 			   3.2,
 			   3.605,
-			   3.792, 
-			   4.1, 
+			   3.87,//3.792, 
+			   4.04,//4.1, 
 			   4.4,
 			   5.24
                            };
+
 /*
 Double_t f_bg(Double_t *x, Double_t *par){
   // Flat bg [0] + semicircle [1]*sqrt(6.183^2 - (x-10.829)^2) 
@@ -112,10 +113,10 @@ vector<vector<double>> FitKnownPeaks_RtrnArry(TH1F* hist){
     full->SetParLimits((i*3)+3,0.0,1e5);
   }
   //full->SetParameter(0,30.);
-  //full->SetParLimits(0,0.,40.); /* FOR TOTAL SPECTRUM FITTING */
-  full->SetParLimits(0,0.,10.); /* FOR ANGLE GATED FITTING */
+  full->SetParLimits(0,0.,40.); /* FOR TOTAL SPECTRUM FITTING */
+  //full->SetParLimits(0,0.,10.); /* FOR ANGLE GATED FITTING */
   //full->FixParameter(0,0.);
-  full->FixParameter(9,0.); //??
+  //full->FixParameter(9,0.); //??
 
   // Specific limits
   // Set max 279 counts to 100

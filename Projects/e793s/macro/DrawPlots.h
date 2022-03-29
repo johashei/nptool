@@ -156,6 +156,13 @@ void Draw_1DGamma(){
   Eg->GetYaxis()->SetTitle("Counts / 0.001 MeV");
 }
 
+void Load_1DGamma(){
+  TH1F *hEg = new TH1F("hEg","Loaded 1D Gamma Spectrum",200,-1,9);
+  TFile *file = new TFile("LoadHistograms/Load_1DGamma.root","READ");
+  hEg = (TH1F*)file->Get("Eg");
+  hEg->Draw();
+}
+
 void Draw_1DGamma_MG(){
   TCanvas *cEg = new TCanvas("cEg","cEg",1000,1000);
   gStyle->SetOptStat(0);
@@ -163,6 +170,13 @@ void Draw_1DGamma_MG(){
   TH1F* Eg = (TH1F*) gDirectory->Get("Eg");
   Eg->GetXaxis()->SetTitle("E_{#gamma} [MeV]");
   Eg->GetYaxis()->SetTitle("Counts / 0.001 MeV");
+}
+
+void Load_1DGamma_MG(){
+  TH1F *hEgMG = new TH1F("hEg","Loaded 1D Gamma Spectrum, MG gated",200,-1,9);
+  TFile *file = new TFile("LoadHistograms/Load_1DGamma_MG.root","READ");
+  hEgMG = (TH1F*)file->Get("Eg");
+  hEgMG->Draw();
 }
 
 void Draw_1DGamma_MM(){
@@ -209,7 +223,7 @@ void Load_2DParticleGamma(){
   TH2F *hExEg = new TH2F("hExEg","Loaded 2D Particle-Gamma",200,-1,9,2500,0,5);
   TFile *file = new TFile("LoadHistograms/Load_2DParticleGamma.root","READ");
   hExEg = (TH2F*)file->Get("ExEg");
-  hExEg->Draw();
+  hExEg->Draw("colz");
 }
 
 void Draw_2DParticleGamma(){
@@ -224,6 +238,14 @@ void Draw_2DParticleGamma(){
   TLine *XeqY = new TLine(0,0,9,9);
   XeqY->SetLineColor(kRed);
   XeqY->Draw();
+}
+
+void Load_2DGammaGamma(){
+  TH2F *hEgEg = new TH2F("hEgEg","Loaded 2D Gamma-Gamma",200,-1,9,2500,0,5);
+  TFile *file = new TFile("LoadHistograms/Load_2DGammaGamma.root","READ");
+  hEgEg = (TH2F*)file->Get("gg");
+  hEgEg->SetName("hEgEg");
+  hEgEg->Draw("colz");
 }
 
 void Draw_2DGammaGamma(){
@@ -1284,4 +1306,275 @@ void GatePhaseSpaceByThetaLab_MultiWrite(double startTheta, double finishTheta, 
   TFile* file = new TFile("GatePhaseSpaceThetaLabHistograms.root","RECREATE");
   list->Write("GatePhaseSpaceThetaLabHistograms",TObject::kSingleKey);
   file->ls();
+}
+
+
+/*
+void gg(){
+  static vector<double> *AddBack_EDC;
+  auto Gamma_Branch = chain->GetBranch("AddBack_EDC");
+  Gamma_Branch->SetAddress(&AddBack_EDC);
+
+  auto h=new TH2F("gg","gg",1000,0,10,1000,0,10);
+
+//cout << "here1" << endl;
+
+  unsigned int numEntries = chain->GetEntries();
+//cout << numEntries << endl;
+  for(unsigned int i=0; i<numEntries; i++){
+//cout << "here2" << endl;
+    chain->GetEntry(i);
+//cout << "here3" << endl;
+    // Example filling of GG matrix 
+    unsigned int size = AddBack_EDC->size();
+//cout << size << endl;
+    if(size>0){
+	    double e1,e2;
+      for(unsigned int s = 0 ; s < size-1 ; s++){
+//cout << "here4, s = " << s << " & size = " << size << endl;
+        e1=AddBack_EDC->at(s) ; e2 = AddBack_EDC->at(s+1);
+//cout << "here5" << endl;
+       // Folding of the matrix, always fill big first
+       if(e1>e2)
+         h->Fill(e1,e2);
+       else
+         h->Fill(e2,e1);
+      }
+    }
+//cout << "here6" << endl;
+  }
+  h->Draw();
+}
+*/
+
+void ggLoad(TTree* chain, TH2F* h){
+   // Initilise the Mugast branch
+   auto Mugast = new TMugastPhysics();
+ 
+   // Initilise access variables for chain
+//   static double T_MUGAST_VAMOS;
+   static vector<double> //*X, *Y, *Z, *RawEnergy, 
+	   *AddBack_EDC;
+ 
+   // Pull chain branches
+//   auto Energy_Branch = chain->GetBranch("RawEnergy");
+   auto Gamma_Branch = chain->GetBranch("AddBack_EDC");
+//   auto X_Branch = chain->GetBranch("X");
+//   auto Y_Branch = chain->GetBranch("Y");
+//   auto Z_Branch = chain->GetBranch("Z");
+//   auto MugVam_Branch = chain->GetBranch("T_MUGAST_VAMOS");
+ 
+   // Set Mugast branch address
+//   chain->SetBranchAddress("Mugast",&Mugast);
+ 
+   // Set chain variable addresses
+//   Energy_Branch->SetAddress(&RawEnergy);
+   Gamma_Branch->SetAddress(&AddBack_EDC);
+//   X_Branch->SetAddress(&X);
+//   Y_Branch->SetAddress(&Y);
+//   Z_Branch->SetAddress(&Z);
+//   MugVam_Branch->SetAddress(&T_MUGAST_VAMOS);
+  
+   // Build loop variables
+   unsigned int numEntries = chain->GetEntries();
+   unsigned int multiplicity = 0;
+ 
+   // Loop on entries
+   for(unsigned int i=0; i<numEntries; i++){
+     chain->GetEntry(i);
+
+ 
+       // Gate on Timing
+//       if(abs(T_MUGAST_VAMOS-2777)<600){
+         int gammaMultip = AddBack_EDC->size();
+         if(gammaMultip>=1){
+        
+	   double e1,e2;
+           for(unsigned int s=0 ; s<gammaMultip-1 ; s++){
+             e1=AddBack_EDC->at(s) ; e2 = AddBack_EDC->at(s+1);
+             // Folding of the matrix, always fill big first
+             if(e1>e2){
+               h->Fill(e1,e2);
+	     }
+	     else{
+               h->Fill(e2,e1);
+	     }
+           }
+         }//if gamma
+   }//for i
+}
+
+//void gggLoad(TTree* chain, TH3F* h){
+void gggLoad(TTree* chain, THnSparseF* h){
+   // Initilise the Mugast branch
+   auto Mugast = new TMugastPhysics();
+ 
+   // Initilise access variables for chain
+//   static double T_MUGAST_VAMOS;
+   static vector<double> //*X, *Y, *Z, *RawEnergy, 
+	   *AddBack_EDC;
+ 
+   // Pull chain branches
+//   auto Energy_Branch = chain->GetBranch("RawEnergy");
+   auto Gamma_Branch = chain->GetBranch("AddBack_EDC");
+//   auto X_Branch = chain->GetBranch("X");
+//   auto Y_Branch = chain->GetBranch("Y");
+//   auto Z_Branch = chain->GetBranch("Z");
+//   auto MugVam_Branch = chain->GetBranch("T_MUGAST_VAMOS");
+ 
+   // Set Mugast branch address
+//   chain->SetBranchAddress("Mugast",&Mugast);
+ 
+   // Set chain variable addresses
+//   Energy_Branch->SetAddress(&RawEnergy);
+   Gamma_Branch->SetAddress(&AddBack_EDC);
+//   X_Branch->SetAddress(&X);
+//   Y_Branch->SetAddress(&Y);
+//   Z_Branch->SetAddress(&Z);
+//   MugVam_Branch->SetAddress(&T_MUGAST_VAMOS);
+  
+   // Build loop variables
+   unsigned int numEntries = chain->GetEntries();
+   unsigned int multiplicity = 0;
+ 
+   // Loop on entries
+   for(unsigned int i=0; i<numEntries; i++){
+     chain->GetEntry(i);
+//     multiplicity = Mugast->TelescopeNumber.size(); 
+
+     // Loop on MUGAST multiplicity
+//     for(int m=0; m<multiplicity; m++){
+ 
+       // Gate on Timing
+//       if(abs(T_MUGAST_VAMOS-2777)<600){
+         int gammaMultip = AddBack_EDC->size();
+         if(gammaMultip>=2){
+	   double e1,e2,e3;
+           for(unsigned int s=0; s<gammaMultip-2; s++){
+             e1 = AddBack_EDC->at(s);
+	     e2 = AddBack_EDC->at(s+1);
+	     e3 = AddBack_EDC->at(s+2);
+
+	     double arr[] = {e1, e2, e3};
+             int n = sizeof(arr)/sizeof(arr[0]);
+	     sort(arr, arr+n, greater<double>());
+
+             //h->Fill(arr[0], arr[1], arr[2]);
+             h->Fill(arr, 1.);
+
+/*
+             // Folding of the matrix, always fill big first
+             if(e1>e2){
+	       if(e2>e3){
+		 //e1 > e2 > e3
+                 h->Fill(e1,e2,e3);
+	       }
+	       else{
+		 //e1 > e2 > e3
+	       }
+	     }
+	     else{
+               h->Fill(e2,e1,e3);
+	     }
+*/
+           }
+         }//if gamma
+//       }//if timing
+//     }//for m
+   }//for i
+}
+
+
+void gg(){
+ 
+   auto h=new TH2F("gg","gg",1000,0,10,1000,0,10);
+   auto DataFile = new TFile("../../../Outputs/Analysis/47Kdp_08Nov_PartI.root", "READ");
+   auto chain = (TTree*) DataFile->FindObjectAny("PhysicsTree");
+ 
+   ggLoad(chain, h);
+
+   auto h2=new TH2F("gg","gg",1000,0,10,1000,0,10);
+   auto DataFile2 = new TFile("../../../Outputs/Analysis/47Kdp_08Nov_PartII.root", "READ");
+   auto chain2 = (TTree*) DataFile->FindObjectAny("PhysicsTree");
+
+   ggLoad(chain2, h2);
+
+   h->Add(h2,1);
+
+   h->Add(h2,1);
+   TFile* file = new TFile("GGMatrix.root","RECREATE");
+   h->Write();
+   file->Close();
+
+   //h->Draw("colz");
+}
+
+void ggg(){
+   int bins[3] = {1000,1000,1000};
+   double min[3] = {0.,0.,0.};
+   double max[3] = {10.,10.,10.};
+
+   //auto h3d=new TH3F("ggg","ggg",1000,0,10,1000,0,10,1000,0,10);
+   auto h3d=new THnSparseF("hggg","hggg",3,bins,min,max);
+   auto DataFile = new TFile("../../../Outputs/Analysis/47Kdp_08Nov_PartI.root", "READ");
+   auto chain = (TTree*) DataFile->FindObjectAny("PhysicsTree");
+ 
+   gggLoad(chain, h3d);
+
+   //auto h3d2=new TH3F("gg","gg",1000,0,10,1000,0,10,1000,0,10);
+   auto h3d2=new THnSparseF("hggg","hggg",3,bins,min,max);
+   auto DataFile2 = new TFile("../../../Outputs/Analysis/47Kdp_08Nov_PartII.root", "READ");
+   auto chain2 = (TTree*) DataFile->FindObjectAny("PhysicsTree");
+
+   gggLoad(chain2, h3d2);
+
+   h3d->Add(h3d2,1);
+   TFile* file = new TFile("GGGMatrix.root","RECREATE");
+   h3d->Write();
+   file->Close();
+
+//   h3d->Draw();
+   double gate = 0.10;
+   int xmin = (int)((0.66-gate)*1000.);
+   int xmax = (int)((0.66+gate)*1000.);
+   int ymin = (int)((2.28-gate)*1000.);
+   int ymax = (int)((2.28+gate)*1000.);
+   cout << "GATING X AXIS FROM " << 0.66-gate << " - " << 0.66+gate << " -> bins " << xmin << " to " << xmax << endl;
+   cout << "GATING Y AXIS FROM " << 2.28-gate << " - " << 2.28+gate << " -> bins " << ymin << " to " << ymax << endl;
+   
+   h3d->GetAxis(0)->SetRange(xmin,xmax);
+   h3d->GetAxis(1)->SetRange(ymin,ymax);
+   TH1D* projZ = h3d->Projection(2);
+   projZ->Draw();
+   //h->SaveAs("Save3Dgammas.root");
+}
+
+void gggGater(THnSparseF* h3d, double xE, double xgate, double yE, double ygate){
+  int xmin = (int)((xE-xgate)*1000.);
+  int xmax = (int)((xE+xgate)*1000.);
+  int ymin = (int)((yE-ygate)*1000.);
+  int ymax = (int)((yE+ygate)*1000.);
+
+  cout << "GATING X AXIS FROM " << xE-xgate << " - " << xE+xgate << " -> bins " << xmin << " to " << xmax << endl;
+  cout << "GATING Y AXIS FROM " << yE-ygate << " - " << yE+ygate << " -> bins " << ymin << " to " << ymax << endl;
+
+  h3d->GetAxis(0)->SetRange(xmin,xmax);
+  h3d->GetAxis(1)->SetRange(ymin,ymax);
+  TH1D* projZ = h3d->Projection(2);
+  projZ->Draw();
+
+}
+
+void ggGater(TH2F* h, double E, double gate){
+  int binmin = (int)((E-gate)*100.)+1;//h->GetXaxis()->GetBin(E-gate);
+  int binmax = (int)((E+gate)*100.)+1;//h->GetXaxis()->GetBin(E+gate);
+
+  TH1D* h1 = h->ProjectionX("_px",binmin,binmax);
+  TH1D* h2 = h->ProjectionY("_py",binmin,binmax);
+
+  h1->SetTitle("gg Gate, ASSUMING 1000 bins from 0 to 10 MeV");
+  h1->Add(h2,1);
+  h1->Draw();
+
+
 }

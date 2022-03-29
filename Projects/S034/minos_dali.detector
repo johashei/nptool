@@ -17,42 +17,42 @@ Minos
 Dali
  R = 212.4 mm 
  Alpha = 240 deg
- Zeta = 298,28 mm 
+ Zeta = 298.28 mm 
  Ring = 1
  Material = NaI(Tl)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 Dali
  R = 212.4 mm 
  Alpha = 180 deg 
- Zeta = 298,28 mm
+ Zeta = 298.28 mm
  Ring = 1
  Material = NaI(Tl)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 Dali
  R= 212.4 mm 
  Alpha = 120 deg 
- Zeta = 298,28 mm 
+ Zeta = 298.28 mm 
  Ring = 1
  Material = NaI(Tl)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 Dali
  R = 212.4 mm 
  Alpha = 60 deg 
- Zeta = 298,28 mm
+ Zeta = 298.28 mm
  Ring = 1
  Material = NaI(Tl)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 Dali
  R = 212.4 mm
  Alpha = 0 deg 
- Zeta = 298,28 mm
+ Zeta = 298.28 mm
  Ring = 1
  Material = NaI(Tl)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 Dali
  R = 212.4 mm 
  Alpha = -60 deg 
- Zeta = 298,28 mm
+ Zeta = 298.28 mm
  Ring = 1
  Material = NaI(Tl)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

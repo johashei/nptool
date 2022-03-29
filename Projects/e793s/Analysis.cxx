@@ -44,9 +44,12 @@ Analysis::~Analysis(){
 ////////////////////////////////////////////////////////////////////////////////
 void Analysis::Init() {
  ///////////////////////////////////////////////////////////////////////////////  
-  
+
+//    isPhaseSpace=true;
+    isPhaseSpace=true;
+
 //  if(NPOptionManager::getInstance()->HasDefinition("simulation")){
-//    cout << " == == == == SIMULATION == == == ==" << endl;
+    cout << " == == == == SIMULATION == == == ==" << endl;
 //    isSim=true;
 //  } else {
     cout << " == == == == EXPERIMENT == == == ==" << endl;
@@ -56,7 +59,7 @@ void Analysis::Init() {
   agata_zShift=51*mm;
   //BrhoRef=0.65;
 
-  if(isSim){
+  if(isSim && !isPhaseSpace){
     Initial = new TInitialConditions();
     ReactionConditions = new TReactionConditions(); 
     RootInput::getInstance()->GetChain()->SetBranchAddress("InitialConditions",&Initial);
@@ -96,11 +99,15 @@ void Analysis::Init() {
 
   // get reaction information
   reaction.ReadConfigurationFile(NPOptionManager::getInstance()->GetReactionFile());
+  //reaction = new NPL::Reaction("47K(d,p)48K@355");
   OriginalBeamEnergy = reaction.GetBeamEnergy();
+  //OriginalBeamEnergy = reaction->GetBeamEnergy();
   reaction.Print(); //TESTING PARSER
+  //reaction->Print(); //TESTING PARSER
 
   // get beam position from .reaction file
   Beam = (NPL::Beam*) reaction.GetParticle1(); 
+  //Beam = (NPL::Beam*) reaction->GetParticle1(); 
   XBeam = Beam->GetMeanX();
   YBeam = Beam->GetMeanY();
 
@@ -118,7 +125,9 @@ void Analysis::Init() {
   
   // energy losses
   string light = NPL::ChangeNameToG4Standard(reaction.GetParticle3()->GetName());
+  //string light = NPL::ChangeNameToG4Standard(reaction->GetParticle3()->GetName());
   string beam = NPL::ChangeNameToG4Standard(reaction.GetParticle1()->GetName());
+  //string beam = NPL::ChangeNameToG4Standard(reaction->GetParticle1()->GetName());
   LightTarget = NPL::EnergyLoss(light+"_"+TargetMaterial+".G4table","G4Table",100 );
   LightAl = NPL::EnergyLoss(light+"_Al.G4table" ,"G4Table",100);
   LightSi = NPL::EnergyLoss(light+"_Si.G4table" ,"G4Table",100);
@@ -126,6 +135,7 @@ void Analysis::Init() {
 
   FinalBeamEnergy = BeamTargetELoss.Slow(OriginalBeamEnergy, 0.5*TargetThickness, 0);
   reaction.SetBeamEnergy(FinalBeamEnergy); 
+  //reaction->SetBeamEnergy(FinalBeamEnergy); 
 
   cout << "Beam energy at mid-target: " << FinalBeamEnergy << endl;
 
@@ -154,9 +164,13 @@ void Analysis::Init() {
   //nbHits=0;
   //count=0;
   AHeavy=reaction.GetParticle4()->GetA();
+  //AHeavy=reaction->GetParticle4()->GetA();
   ALight=reaction.GetParticle3()->GetA(); 
+  //ALight=reaction->GetParticle3()->GetA(); 
   MHeavy=reaction.GetParticle4()->Mass();
+  //MHeavy=reaction->GetParticle4()->Mass();
   MLight=reaction.GetParticle3()->Mass();
+  //MLight=reaction->GetParticle3()->Mass();
   bool writetoscreen=true;
 
   for(int i=0;i<GATCONF_SIZE;i++){ // loop over the bits
@@ -173,7 +187,7 @@ void Analysis::TreatEvent(){
   // Reinitiate calculated variable
   ReInitValue();
 
-  if(isSim){
+  if(isSim && !isPhaseSpace){
     ThetaCM_emmitted->Fill(ReactionConditions->GetThetaCM());
     ThetaLab_emmitted->Fill(ReactionConditions->GetTheta(0));
   }
@@ -186,7 +200,7 @@ void Analysis::TreatEvent(){
     }
   }
 
-  if(isSim){
+  if(isSim && !isPhaseSpace){
     OriginalELab = ReactionConditions->GetKineticEnergy(0);
     OriginalThetaLab = ReactionConditions->GetTheta(0);
     BeamEnergy = ReactionConditions->GetBeamEnergy();
@@ -213,7 +227,7 @@ void Analysis::TreatEvent(){
     // MUST2
     int TelescopeNumber = M2->TelescopeNumber[countMust2];
 
-    if(isSim){
+    if(isSim && !isPhaseSpace){
       ThetaCM_detected_MM->Fill(ReactionConditions->GetThetaCM());
       ThetaLab_detected_MM->Fill(ReactionConditions->GetTheta(0));
 
@@ -281,6 +295,7 @@ void Analysis::TreatEvent(){
     /************************************************/
     // Part 3 : Excitation Energy Calculation
     Ex.push_back(reaction.ReconstructRelativistic(elab_tmp,thetalab_tmp));
+    //Ex.push_back(reaction->ReconstructRelativistic(elab_tmp,thetalab_tmp));
     Ecm.push_back(Energy*(AHeavy+ALight)/(4*AHeavy*cos(thetalab_tmp)*cos(thetalab_tmp)));
     /************************************************/
 
@@ -288,6 +303,7 @@ void Analysis::TreatEvent(){
     // Part 4 : Theta CM Calculation
     
     ThetaCM.push_back(reaction.EnergyLabToThetaCM(elab_tmp, thetalab_tmp)/deg);
+    //ThetaCM.push_back(reaction->EnergyLabToThetaCM(elab_tmp, thetalab_tmp)/deg);
     /************************************************/
 
     ThetaLab.push_back(thetalab_tmp/deg);
@@ -302,7 +318,7 @@ void Analysis::TreatEvent(){
   for(unsigned int countMugast = 0; countMugast<sizeMG; countMugast++){
 
 
-    if(isSim){
+    if(isSim && !isPhaseSpace){
       int MGX = MG->TelescopeNumber[0];
       MGX = MGX-1;
       if(MGX==6){MGX=5;}
@@ -364,6 +380,7 @@ void Analysis::TreatEvent(){
     // Part 3 : Excitation Energy Calculation
     if(!isSim){
       Ex.push_back(reaction.ReconstructRelativistic(elab_tmp,thetalab_tmp));
+      //Ex.push_back(reaction->ReconstructRelativistic(elab_tmp,thetalab_tmp));
       Ecm.push_back(elab_tmp*(AHeavy+ALight)/(4*AHeavy*cos(thetalab_tmp)*cos(thetalab_tmp)));
     }
 
@@ -371,6 +388,7 @@ void Analysis::TreatEvent(){
     ThetaLab.push_back(thetalab_tmp/deg);
     PhiLab.push_back(philab_tmp/deg);
     ThetaCM.push_back(reaction.EnergyLabToThetaCM(elab_tmp, thetalab_tmp)/deg);
+    //ThetaCM.push_back(reaction->EnergyLabToThetaCM(elab_tmp, thetalab_tmp)/deg);
 
     if(sizeMG==1){
       MG_T = MG->DSSD_T[0];
@@ -452,17 +470,16 @@ void Analysis::TreatEvent(){
 
     /* Beta from Two body kinematic */
     TVector3 beta = reaction.GetEnergyImpulsionLab_4().BoostVector();
+    //TVector3 beta = reaction->GetEnergyImpulsionLab_4().BoostVector();
 
 //    cout << "bDir " << beta.X() << " "
 //                    << beta.Y() << " "
 //                    << beta.Z() ;
-    beta.RotateX(0.002847); beta.RotateY(3.144869); beta.RotateZ(0.095923);
-    //beta.RotateY(M_PI);
+//    beta.RotateX(0.002847); beta.RotateY(3.144869); beta.RotateZ(0.095923);
+    beta.RotateY(M_PI);
 //    cout << "bDir " << beta.X() << " "
 //                    << beta.Y() << " "
 //                    << beta.Z() << endl;
-
-
 
     /* Original beta */
 //    TVector3 beta(0,0,-0.1257);
@@ -525,7 +542,7 @@ void Analysis::End(){
   }
   cout << endl ;
 
-  if(isSim){
+  if(isSim && !isPhaseSpace){
 
     //TObjArray HistList(0);
     TList *HistList = new TList();
@@ -595,13 +612,10 @@ void Analysis::End(){
     auto Cline_MG = new TF1("Cline_MG",Form("1./(2*%f*sin(x*%f/180.)*%f*%f/180.)",M_PI,M_PI,dt_MG,M_PI),0,180);
 
     /* Testing method for better errors in SolidAngle histograms */
-    /* NOT YET IMPLEMENTED FOR INDIVIDUAL DETECTORS!!!! */
     FillSolidAngles(SolidAngle_CM_MG, ThetaCM_detected_MG, ThetaCM_emmitted);
-    //SolidAngle_CM_MG->Divide(ThetaCM_emmitted);
     SolidAngle_CM_MG->Divide(Cline_MG,1);
 
     FillSolidAngles(SolidAngle_Lab_MG, ThetaLab_detected_MG, ThetaLab_emmitted);
-    //SolidAngle_Lab_MG->Divide(ThetaLab_emmitted);
     SolidAngle_Lab_MG->Divide(Cline_MG,1);
 
     HistList->Add(ThetaCM_detected_MG);
@@ -623,7 +637,6 @@ void Analysis::End(){
       SolidAngle_CM_MGX[i]->SetName(name.c_str());
       SolidAngle_CM_MGX[i]->SetTitle(name.c_str());
       FillSolidAngles(SolidAngle_CM_MGX[i], ThetaCM_detected_MGX[i], ThetaCM_emmitted);
-      //SolidAngle_CM_MGX[i]->Divide(ThetaCM_emmitted);
       SolidAngle_CM_MGX[i]->Divide(Cline_MG,1);
     }
 
@@ -637,7 +650,6 @@ void Analysis::End(){
       SolidAngle_Lab_MGX[i]->SetName(name.c_str());
       SolidAngle_Lab_MGX[i]->SetTitle(name.c_str());
       FillSolidAngles(SolidAngle_Lab_MGX[i], ThetaLab_detected_MGX[i], ThetaLab_emmitted);
-      //SolidAngle_Lab_MGX[i]->Divide(ThetaLab_emmitted);
       SolidAngle_Lab_MGX[i]->Divide(Cline_MG,1);
     }
 
@@ -651,7 +663,6 @@ void Analysis::End(){
       SolidAngle_CM_MMX[i]->SetName(name.c_str());
       SolidAngle_CM_MMX[i]->SetTitle(name.c_str());
       FillSolidAngles(SolidAngle_CM_MMX[i], ThetaCM_detected_MMX[i], ThetaCM_emmitted);
-      //SolidAngle_CM_MMX[i]->Divide(ThetaCM_emmitted);
       SolidAngle_CM_MMX[i]->Divide(Cline_MM,1);
     }
 
@@ -664,7 +675,6 @@ void Analysis::End(){
       SolidAngle_Lab_MMX[i]->SetName(name.c_str());
       SolidAngle_Lab_MMX[i]->SetTitle(name.c_str());
       FillSolidAngles(SolidAngle_Lab_MMX[i], ThetaLab_detected_MMX[i], ThetaLab_emmitted);
-      //SolidAngle_Lab_MMX[i]->Divide(ThetaLab_emmitted);
       SolidAngle_Lab_MMX[i]->Divide(Cline_MM,1);
     }
 
@@ -702,7 +712,7 @@ void Analysis::InitOutputBranch(){
   RootOutput::getInstance()->GetTree()->Branch("EAgata",&EAgata,"EAgata/D");
   RootOutput::getInstance()->GetTree()->Branch("ELab",&ELab);
   RootOutput::getInstance()->GetTree()->Branch("Ecm",&Ecm);
-  RootOutput::getInstance()->GetTree()->Branch("RawEnergy",&RawEnergy); // CPx ADDITION
+  RootOutput::getInstance()->GetTree()->Branch("RawEnergy",&RawEnergy);
   RootOutput::getInstance()->GetTree()->Branch("ThetaLab",&ThetaLab);
   RootOutput::getInstance()->GetTree()->Branch("PhiLab",&PhiLab);
   RootOutput::getInstance()->GetTree()->Branch("ThetaCM",&ThetaCM);
@@ -797,8 +807,10 @@ void Analysis::InitOutputBranch(){
   RootOutput::getInstance()->GetTree()->Branch("AddX",AddX,"AddX[nbAdd]/F");
   RootOutput::getInstance()->GetTree()->Branch("AddY",AddY,"AddY[nbAdd]/F");
   RootOutput::getInstance()->GetTree()->Branch("AddZ",AddZ,"AddZ[nbAdd]/F");
+  
+  RootOutput::getInstance()->GetTree()->Branch("EventWeight",&EventWeight,"EventWeight/D");
 
-  if(isSim){
+  if(isSim && !isPhaseSpace){
     RootOutput::getInstance()->GetTree()->Branch("OriginalELab",
 	      &OriginalELab,"OriginalELab/D");
     RootOutput::getInstance()->GetTree()->Branch("OriginalThetaLab",
@@ -860,7 +872,11 @@ void Analysis::InitInputBranch(){
   RootInput::getInstance()->GetChain()->SetBranchAddress("AddY",AddY);
   RootInput::getInstance()->GetChain()->SetBranchAddress("AddZ",AddZ);
 
-  if(isSim){
+  if(isPhaseSpace){
+    RootInput:: getInstance()->GetChain()->SetBranchAddress("EventWeight",&EventWeight);
+  }
+
+  if(isSim && !isPhaseSpace){
     //RootInput:: getInstance()->GetChain()->SetBranchStatus("InitialConditions",true );
     //RootInput:: getInstance()->GetChain()->SetBranchStatus("fIC_*",true );
     RootInput::getInstance()->GetChain()->SetBranchAddress("InitialConditions",
@@ -924,7 +940,11 @@ void Analysis::SetBranchStatus(){
   RootInput::getInstance()->GetChain()->SetBranchStatus("AddY",true  );
   RootInput::getInstance()->GetChain()->SetBranchStatus("AddZ",true  );
 
-  if(isSim){
+  if(isPhaseSpace){
+    RootInput:: getInstance()->GetChain()->SetBranchStatus("EventWeight",true );
+  }
+
+  if(isSim && !isPhaseSpace){
     RootInput:: getInstance()->GetChain()->SetBranchStatus("InitialConditions",true );
     RootInput:: getInstance()->GetChain()->SetBranchStatus("fIC_*",true );
     RootInput:: getInstance()->GetChain()->SetBranchStatus("InteractionCoordinates",true );
