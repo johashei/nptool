@@ -1,53 +1,53 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 Target
- THICKNESS= 10 micrometer
- RADIUS=	20 mm
- MATERIAL= CD2
+ THICKNESS= 0.49 cm
+ RADIUS=	28 mm
+ MATERIAL= Vacuum 
  ANGLE= 0 deg
- X= 0 mm
+ X= 3.5 cm
  Y= 0 mm
- Z= -4000 mm
+ Z= 0 mm
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 NEBULA
- POS= 0 0 5 m
- NumberOfModule= 30
- Veto= 1
- Frame= 1
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-NEBULA
- POS= 0 0 5.15 m
- NumberOfModule= 30
- Veto= 0
- Frame= 0
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
- 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-NEBULA
- POS= 0 0 10 m
- NumberOfModule= 30
- Veto= 1
- Frame= 1
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-NEBULA
- POS= 0 0 10.15 m
- NumberOfModule= 30
- Veto= 0
- Frame= 0
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
- 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-NEBULA
- POS= 0 0 3 m
+ POS= 0 0 12 m
  NumberOfModule= 15
  Veto= 1
  Frame= 1
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 NEBULA
- POS= 0 0 3.15 m
+ POS= 0 0 12.15 m
  NumberOfModule= 15
  Veto= 0
  Frame= 0
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+NEBULA
+ POS= 0 0 16 m
+ NumberOfModule= 30
+ Veto= 1
+ Frame= 1
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+NEBULA
+ POS= 0 0 16.15 m
+ NumberOfModule= 30
+ Veto= 0
+ Frame= 0
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+NEBULA
+ POS= 0 0 18 m
+ NumberOfModule= 30
+ Veto= 1
+ Frame= 1
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+NEBULA
+ POS= 0 0 18.15 m
+ NumberOfModule= 30
+ Veto= 0
+ Frame= 0
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ 
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %Samurai
 % POS= 0 0 0 mm
@@ -78,4 +78,4 @@ NEBULA
 % %InvertY= 1
 % %InvertD= 1
 
-%
+
