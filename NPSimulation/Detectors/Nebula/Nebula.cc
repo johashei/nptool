@@ -40,7 +40,7 @@
 
 // NPTool header
 #include "Nebula.hh"
-#include "CalorimeterScorers.hh"
+#include "PlasticBar.hh"
 #include "InteractionScorers.hh"
 #include "RootOutput.h"
 #include "MaterialManager.hh"
@@ -216,7 +216,7 @@ void Nebula::ReadSensitive(const G4Event* ){
 
   ///////////
   // Module scorer
-  CalorimeterScorers::PS_Calorimeter* Scorer= (CalorimeterScorers::PS_Calorimeter*) m_ModuleScorer->GetPrimitive(0);
+  PlasticBar::PS_PlasticBar* Scorer= (PlasticBar::PS_PlasticBar*) m_ModuleScorer->GetPrimitive(0);
 
   unsigned int size = Scorer->GetMult(); 
   for(unsigned int i = 0 ; i < size ; i++){
@@ -225,8 +225,10 @@ void Nebula::ReadSensitive(const G4Event* ){
     if(Energy>Nebula_NS::EnergyThreshold){
       double Time = RandGauss::shoot(Scorer->GetTime(i),Nebula_NS::ResoTime);
       int DetectorNbr = level[0];
-      //m_Event->SetEnergy(DetectorNbr,Energy);
-      //m_Event->SetTime(DetectorNbr,Time); 
+      m_Event->SetChargeUp(DetectorNbr,Energy/2);
+      m_Event->SetChargeDown(DetectorNbr,Energy/2);
+      m_Event->SetTimeUp(DetectorNbr,Time/2); 
+      m_Event->SetTimeDown(DetectorNbr,Time/2); 
     }
   }
 }
@@ -245,18 +247,18 @@ void Nebula::InitializeScorers() {
   // Otherwise the scorer is initialise
   // Module 
   vector<int> level; level.push_back(0);
-  G4VPrimitiveScorer* ModuleCalorimeter= new CalorimeterScorers::PS_Calorimeter("ModuleCalorimeter",level, 0) ;
+  G4VPrimitiveScorer* ModulePlasticBar= new PlasticBar::PS_PlasticBar("ModulePlasticBar",level, 0) ;
   G4VPrimitiveScorer* ModuleInteraction= new InteractionScorers::PS_Interactions("ModuleInteraction",ms_InterCoord, 0) ;
   //and register it to the multifunctionnal detector
-  m_ModuleScorer->RegisterPrimitive(ModuleCalorimeter);
+  m_ModuleScorer->RegisterPrimitive(ModulePlasticBar);
   m_ModuleScorer->RegisterPrimitive(ModuleInteraction);
   G4SDManager::GetSDMpointer()->AddNewDetector(m_ModuleScorer) ;
 
   // Veto 
-  G4VPrimitiveScorer* VetoCalorimeter= new CalorimeterScorers::PS_Calorimeter("VetoCalorimeter",level, 0) ;
+  G4VPrimitiveScorer* VetoPlasticBar= new PlasticBar::PS_PlasticBar("VetoPlasticBar",level, 0) ;
   G4VPrimitiveScorer* VetoInteraction= new InteractionScorers::PS_Interactions("VetoInteraction",ms_InterCoord, 0) ;
   //and register it to the multifunctionnal detector
-  m_VetoScorer->RegisterPrimitive(VetoCalorimeter);
+  m_VetoScorer->RegisterPrimitive(VetoPlasticBar);
   m_VetoScorer->RegisterPrimitive(VetoInteraction);
   G4SDManager::GetSDMpointer()->AddNewDetector(m_VetoScorer) ;
 
