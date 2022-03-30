@@ -12,6 +12,7 @@ Beam
   MeanX= 0 mm
   MeanY= 0 mm
   ExcitationEnergy= 3680 keV 
+  ZEmmission= 0 mm 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 LevelData 54Ca
  Path= reaction/54Ca.dat 

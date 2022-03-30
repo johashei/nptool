@@ -11,7 +11,7 @@ Target
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%1
 Catana CSV
- Path= geometry/Catana.csv 
+ Path= geometry/CATANA_nptool_sim.csv 
  Pos= 0 0 100 mm
  Rshift= 100 micrometer
 

@@ -101,7 +101,7 @@ void TMinosPhysics::PreTreat() {
         vector<unsigned short>* Time   = m_EventData->GetTimePtr(i);
         m_utility.Calibrate(Time,Charge,i,T,Q);      
 
-        if(T>0){
+        if(T>0&&Q<77000){
           PadNumber = m_EventData->GetPadNumber(i);
           double x_mm = m_X[PadNumber];
           double y_mm = m_Y[PadNumber];
@@ -111,16 +111,12 @@ void TMinosPhysics::PreTreat() {
           double calV= cal->GetValue(cal_v,0);
           double calO=cal->GetValue(cal_o,0);
 
-          // regular case
-          //double z_mm = (T*m_TimeBin+cal->GetValue(cal_o,0))*cal->GetValue(cal_v,0);    
-          
-          // testing dependency:
-          //calV+=-calV*30./100.;// -5%
-          //calO+=+calO*60./100;
-          double z_mm = (T*m_TimeBin+calO)*calV;    
+          double z_mm = (T*m_TimeBin+calO/*-0.7-0.04*ring*/)*calV;    
+          //cout << T*m_TimeBin+calO << endl;
           TVector3 Pos=TVector3(x_mm+m_Position.X(),y_mm+m_Position.Y(),z_mm+m_Position.Z());
           Pos.RotateZ(m_ZRotation); 
           // Calibrate the Pad:
+          
           X_Pad.push_back(Pos.X());
           Y_Pad.push_back(Pos.Y());
           Z_Pad.push_back(Pos.Z());    

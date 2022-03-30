@@ -1,5 +1,5 @@
 EmPhysicsList Option4
-DefaultCutOff 1
+DefaultCutOff 10
 IonBinaryCascadePhysics 0
 NPIonInelasticPhysics 0
 EmExtraPhysics 0

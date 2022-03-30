@@ -20,7 +20,7 @@ QFSReaction
  KnockedOut= 1H
  Heavy= 11B
  ExcitationEnergyBeam= 0.0 MeV
- ExcitationEnergyHeavy= 0.0 MeV
+ ExcitationEnergyHeavy= 1.0 MeV
  MomentumSigma= 50.0 
  ShootHeavy= 1
  ShootLight= 1
