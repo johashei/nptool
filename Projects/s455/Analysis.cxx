@@ -27,6 +27,33 @@ using namespace std;
 #include"NPDetectorManager.h"
 #include"NPPhysicalConstants.h"
 #include"NPGlobalSystemOfUnits.h"
+
+
+////////////////////////////////////////////////////////////////////////////////
+struct TofPair
+{
+  double x = -1000;
+  double y = -1000;
+  double tof = -1000;
+  double velocity = -1;
+  double beta = -1;
+  double theta_in = -10;
+  double theta_out = -10;
+  int plastic = -1;
+  //
+  int isLorR  = -1;
+  // *** isLorR = 1 -> Left
+  // *** isLorR = 2 -> Right 
+  //
+  int isUorD  = -1;
+  // *** isUorD = 1 -> Up
+  // *** isUorD = 2 -> Down
+  int section = -1;
+  double Esec = -1;
+  double DT = -100;
+};
+
+
 ////////////////////////////////////////////////////////////////////////////////
 Analysis::Analysis(){
 }
@@ -66,6 +93,42 @@ void Analysis::TreatEvent(){
     SofTofW->BuildPhysicalEvent();
 
     FissionFragmentAnalysis();
+    //BeamFragmentAnalysis();
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+void Analysis::BeamFragmentAnalysis(){
+  unsigned int softofw_size = SofTofW->PlasticNbr.size();
+
+  double L_CC = 8.45;
+  TofPair TofHit;
+  if(softofw_size==1){
+    TofHit.plastic  = SofTofW->PlasticNbr[0];
+    TofHit.x        = SofTofW->CalPosX[0];
+    TofHit.y        = SofTofW->CalPosY[0];
+    TofHit.tof      = SofTofW->CalTof[0];
+    TofHit.velocity = L_CC/TofHit.tof;
+    TofHit.beta     = TofHit.velocity * m/ns / NPUNITS::c_light;
+
+    double Brho = 9.62543 + 0.0076642*TofHit.x;
+    double Lfactor = 9.17/L_CC;
+    double Beta = TofHit.beta*Lfactor;
+    double Gamma1 = 1. / sqrt(1 - Beta * Beta);
+
+    double AoQ = Brho / (3.10761 * Beta * Gamma1);
+
+    SofFF->SetTOF(TofHit.tof);
+    SofFF->SetTofPosX(TofHit.x);
+    SofFF->SetTofPosY(TofHit.y);
+    SofFF->SetPlastic(TofHit.plastic);
+
+    SofFF->SetBeta(Beta);
+    SofFF->SetGamma(Gamma1);
+    SofFF->SetAoQ(AoQ);
+    SofFF->SetBrho(Brho);
+
+
   }
 }
 
@@ -74,14 +137,6 @@ void Analysis::FissionFragmentAnalysis(){
   unsigned int softofw_size = SofTofW->PlasticNbr.size();
   unsigned int softwim_size = SofTwim->SectionNbr.size();
 
-  double TOF_CC[2];
-  double Plastic[2];
-  double Plastic_left = -1;
-  double Plastic_right = -1;
-  double TOF_left = -1;
-  double TOF_right = -1;
-  double TOF_up = -1;
-  double TOF_down = -1;
   double E1 = -1;
   double E2 = -1;
   double E3 = -1;
@@ -90,15 +145,11 @@ void Analysis::FissionFragmentAnalysis(){
   double DT2 = -1000;
   double DT3 = -1000;
   double DT4 = -1000;
+  double Theta1 = -1000;
+  double Theta2 = -1000;
+  double Theta3 = -1000;
+  double Theta4 = -1000;
   double L_CC = 8.45;
-  double Beta_left = -1;
-  double Beta_right = -1;
-  double Beta_up = -1;
-  double Beta_down = -1;
-  double Beta1 = -1;
-  double Beta2 = -1;
-  double Beta3 = -1;
-  double Beta4 = -1;
   double Beta_norm = 0.745;
   double Gamma1 = -1;
   double Gamma2 = -1;
@@ -116,25 +167,34 @@ void Analysis::FissionFragmentAnalysis(){
   int iZ1 = -1;
   int iZ2 = -1;
   int iZsum = -1;
-  double ThetaIn1 = -1000;
-  double ThetaIn2 = -1000;
 
-  for(int i = 0; i<2; i++){
-    TOF_CC[i] = -1;
-    Plastic[i] = -1;
-  }
-
-  vector<double> PosY;
-  vector<double> PosX;
+  TofPair TofHit[2];
   if(softofw_size==2){
     for(unsigned int i=0; i<softofw_size; i++){
-      TOF_CC[i] = SofTofW->CalTof[i];
-      Plastic[i] = SofTofW->PlasticNbr[i];
-      PosX.push_back(SofTofW->CalPosX[i]);
-      PosY.push_back(SofTofW->CalPosY[i]);
+      TofHit[i].plastic  = SofTofW->PlasticNbr[i];
+      TofHit[i].x        = SofTofW->CalPosX[i];
+      TofHit[i].y        = SofTofW->CalPosY[i];
+      TofHit[i].tof      = SofTofW->CalTof[i];
+      TofHit[i].velocity = L_CC/TofHit[i].tof;
+      TofHit[i].beta     = TofHit[i].velocity * m/ns / NPUNITS::c_light;
+    }
 
-      SofFF->SetTofPosX(SofTofW->CalPosX[i]);
-      SofFF->SetTofPosY(SofTofW->CalPosY[i]);
+    if(TofHit[0].x>TofHit[1].x){
+      TofHit[0].isLorR = 1;
+      TofHit[1].isLorR = 2;
+    }
+    else if(TofHit[0].x<TofHit[1].x){
+      TofHit[0].isLorR = 2;
+      TofHit[1].isLorR = 1;
+    }
+
+    if(TofHit[0].y>TofHit[1].y){
+      TofHit[0].isUorD = 1;
+      TofHit[1].isUorD = 2;
+    }
+    else if(TofHit[0].y<TofHit[1].y){
+      TofHit[0].isUorD = 2;
+      TofHit[1].isUorD = 1;
     }
   }
 
@@ -154,37 +214,30 @@ void Analysis::FissionFragmentAnalysis(){
       SofFF->SetPosY2(SofMwpc->PositionY[i]);
     }
     if(SofMwpc->DetectorNbr[i]==4){
-      X3.push_back(SofMwpc->PositionX1[i]);
-      Y3.push_back(SofMwpc->PositionY[i]);
+      if(SofMwpc->PositionX1[i]!=-1000)
+        X3.push_back(SofMwpc->PositionX1[i]);
+      
+      if(SofMwpc->PositionY[i]!=-1000)
+        Y3.push_back(SofMwpc->PositionY[i]);
 
-      SofFF->SetPosX3(SofMwpc->PositionX1[i]);
-      SofFF->SetPosY3(SofMwpc->PositionY[i]);
+      //SofFF->SetPosX3(SofMwpc->PositionX1[i]);
+      //SofFF->SetPosY3(SofMwpc->PositionY[i]);
     }
   }
+  
 
   vector<double> good_posx;
   vector<double> good_posy;
-  for(unsigned int i=0; i<PosX.size(); i++){
-    double tofx = PosX[i];
-    double tofy = PosY[i];
+  for(unsigned int i=0; i<2; i++){
+    double tofx = TofHit[i].x;
+    //double tofy = TofHit[i].y;
     for(unsigned int k=0; k<X3.size(); k++){
       double posx = X3[k];
       if(abs(posx-tofx) < 100){
         good_posx.push_back(posx);
-        good_posy.push_back(tofy);   
       }
     }
   }
-
-
-  /*if(good_posx.size()==2 && good_posy.size()==2){
-    SofFF->SetTofPosX(good_posx[0]);
-    SofFF->SetTofPosX(good_posx[1]);
-
-    SofFF->SetTofPosY(good_posy[0]);
-    SofFF->SetTofPosY(good_posy[1]);
-    }*/
-
 
   int mult1 = SofTwim->mult1;
   int mult2 = SofTwim->mult2;
@@ -202,18 +255,22 @@ void Analysis::FissionFragmentAnalysis(){
         if(sec==1){
           E1 = SofTwim->EnergySection[i];
           DT1 = SofTwim->DriftTime[i];
+          Theta1 = SofTwim->Theta[i];
         }
         if(sec==2){
           E2 = SofTwim->EnergySection[i];
           DT2 = SofTwim->DriftTime[i];
+          Theta2 = SofTwim->Theta[i];
         }
         if(sec==3){
           E3 = SofTwim->EnergySection[i]; 
           DT3 = SofTwim->DriftTime[i];
+          Theta3 = SofTwim->Theta[i];
         }
         if(sec==4){
           E4 = SofTwim->EnergySection[i];     
           DT4 = SofTwim->DriftTime[i];
+          Theta4 = SofTwim->Theta[i];
         }
       }
 
@@ -237,121 +294,238 @@ void Analysis::FissionFragmentAnalysis(){
       if(E4>0)
         E4 = E4/16;
 
-      if(Plastic[0]<Plastic[1]){
-        Plastic_left = Plastic[0];
-        Plastic_right = Plastic[1];
-        TOF_left = TOF_CC[0];
-        TOF_right = TOF_CC[1];
-      }
-      if(Plastic[0]>Plastic[1]){
-        Plastic_left = Plastic[1];
-        Plastic_right = Plastic[0];
-        TOF_left = TOF_CC[1];
-        TOF_right = TOF_CC[0];
-      }
 
-      if(PosY.size()==2){
-        if(PosY[0]>PosY[1]){
-          TOF_up = TOF_CC[0];
-          TOF_down = TOF_CC[1];
-        }
-        if(PosY[0]<PosY[1]){
-          TOF_up = TOF_CC[1];
-          TOF_down = TOF_CC[0];
-        }
-      }
-
-      double velocity_left = L_CC/TOF_left;
-      double velocity_right = L_CC/TOF_right;
-      Beta_left = velocity_left * m/ns / NPUNITS::c_light;
-      Beta_right = velocity_right * m/ns / NPUNITS::c_light;
-
-      double velocity_down = L_CC/TOF_down;
-      double velocity_up = L_CC/TOF_up;
-      Beta_down = velocity_down * m/ns / NPUNITS::c_light;
-      Beta_up = velocity_up * m/ns / NPUNITS::c_light;
-
+      // *** case 1 *** //
       if(E1!=-1 && E2!=-1){
-        Beta1 = Beta_down;
-        Beta2 = Beta_up;
+        if(TofHit[0].isUorD==1 && TofHit[1].isUorD==2){
+          TofHit[0].Esec = E2;
+          TofHit[1].Esec = E1;
+
+          TofHit[0].theta_in = Theta2;
+          TofHit[1].theta_in = Theta1;
+ 
+          TofHit[0].DT = DT2;
+          TofHit[1].DT = DT1;
+
+          TofHit[0].section = 2;
+          TofHit[1].section = 1;
+        }
+        if(TofHit[0].isUorD==2 && TofHit[1].isUorD==1){
+          TofHit[0].Esec = E1;
+          TofHit[1].Esec = E2;
+
+          TofHit[0].theta_in = Theta1;
+          TofHit[1].theta_in = Theta2;
+ 
+          TofHit[0].DT = DT1;
+          TofHit[1].DT = DT2;
+
+          TofHit[0].section = 1;
+          TofHit[1].section = 2;
+        }
       }
+
+      // *** case 2 *** //
       if(E1!=-1 && E3!=-1){
-        Beta1 = Beta_down;
-        Beta3 = Beta_up;
+        if(TofHit[0].isUorD==1 && TofHit[1].isUorD==2){
+          TofHit[0].Esec = E3;
+          TofHit[1].Esec = E1;
+
+          TofHit[0].theta_in = Theta3;
+          TofHit[1].theta_in = Theta1;
+ 
+          TofHit[0].DT = DT3;
+          TofHit[1].DT = DT1;
+
+          TofHit[0].section = 3;
+          TofHit[1].section = 1;
+        }
+        if(TofHit[0].isUorD==2 && TofHit[1].isUorD==1){
+          TofHit[0].Esec = E1;
+          TofHit[1].Esec = E3;
+
+          TofHit[0].DT = DT1;
+          TofHit[1].DT = DT3;
+
+          TofHit[0].theta_in = Theta1;
+          TofHit[1].theta_in = Theta3;
+ 
+          TofHit[0].section = 1;
+          TofHit[1].section = 3; 
+        }
       }
+
+      // *** case 3 *** //
       if(E1!=-1 && E4!=-1){
-        Beta1 = Beta_left;
-        Beta4 = Beta_right;
+        if(TofHit[0].isLorR==1 && TofHit[1].isLorR==2){
+          TofHit[0].Esec = E1;
+          TofHit[1].Esec = E4;
+
+          TofHit[0].theta_in = Theta1;
+          TofHit[1].theta_in = Theta4;
+          
+          TofHit[0].DT = DT1;
+          TofHit[1].DT = DT4;
+
+          TofHit[0].section = 1;
+          TofHit[1].section = 4;
+        }
+        if(TofHit[0].isLorR==2 && TofHit[1].isLorR==1){
+          TofHit[0].Esec = E4;
+          TofHit[1].Esec = E1;
+
+          TofHit[0].theta_in = Theta4;
+          TofHit[1].theta_in = Theta1;
+           
+          TofHit[0].DT = DT4;
+          TofHit[1].DT = DT1;
+
+          TofHit[0].section = 4;
+          TofHit[1].section = 1;
+        }
       }
+
+      // *** case 4 *** //
       if(E2!=-1 && E3!=-1){
-        Beta2 = Beta_left;
-        Beta3 = Beta_right;
+        if(TofHit[0].isLorR==1 && TofHit[1].isLorR==2){
+          TofHit[0].Esec = E2;
+          TofHit[1].Esec = E3;
+
+          TofHit[0].theta_in = Theta2;
+          TofHit[1].theta_in = Theta3;
+           
+          TofHit[0].DT = DT2;
+          TofHit[1].DT = DT3;
+
+          TofHit[0].section = 2;
+          TofHit[1].section = 3;
+        }
+        if(TofHit[0].isLorR==2 && TofHit[1].isLorR==1){
+          TofHit[0].Esec = E3;
+          TofHit[1].Esec = E2;
+
+          TofHit[0].theta_in = Theta3;
+          TofHit[1].theta_in = Theta2;
+ 
+          TofHit[0].DT = DT3;
+          TofHit[1].DT = DT2;
+
+          TofHit[0].section = 3;
+          TofHit[1].section = 2;
+        }
       }
+
+      // *** case 5 *** //
       if(E2!=-1 && E4!=-1){
-        Beta2 = Beta_up;
-        Beta4 = Beta_down;
+        if(TofHit[0].isUorD==1 && TofHit[1].isUorD==2){
+          TofHit[0].Esec = E2;
+          TofHit[1].Esec = E4;
+
+          TofHit[0].theta_in = Theta2;
+          TofHit[1].theta_in = Theta4;
+ 
+          TofHit[0].DT = DT2;
+          TofHit[1].DT = DT4;
+
+          TofHit[0].section = 2;
+          TofHit[1].section = 4;
+        }
+        if(TofHit[0].isUorD==2 && TofHit[1].isUorD==1){
+          TofHit[0].Esec = E4;
+          TofHit[1].Esec = E2;
+
+          TofHit[0].theta_in = Theta4;
+          TofHit[1].theta_in = Theta2;
+ 
+          TofHit[0].DT = DT4;
+          TofHit[1].DT = DT2;
+
+          TofHit[0].section = 4;
+          TofHit[1].section = 2;
+        }
       }
+
+      // *** case 6 *** //
       if(E3!=-1 && E4!=-1){
-        Beta3 = Beta_up;
-        Beta4 = Beta_down;
+        if(TofHit[0].isUorD==1 && TofHit[1].isUorD==2){
+          TofHit[0].Esec = E3;
+          TofHit[1].Esec = E4;
+
+          TofHit[0].theta_in = Theta3;
+          TofHit[1].theta_in = Theta4;
+ 
+          TofHit[0].DT = DT3;
+          TofHit[1].DT = DT4;
+
+          TofHit[0].section = 3;
+          TofHit[1].section = 4;
+        }
+        if(TofHit[0].isUorD==2 && TofHit[1].isUorD==1){
+          TofHit[0].Esec = E4;
+          TofHit[1].Esec = E3;
+
+          TofHit[0].theta_in = Theta4;
+          TofHit[1].theta_in = Theta3;
+ 
+          TofHit[0].DT = DT4;
+          TofHit[1].DT = DT3;
+
+          TofHit[0].section = 4;
+          TofHit[1].section = 3;
+        }
       }
 
 
-      if(Beta1!=-1 && E1>0){ 
-        E1 = E1 / fcorr_z_beta[0]->Eval(Beta1) * fcorr_z_beta[0]->Eval(Beta_norm);
-        E1 = E1 / fcorr_z_dt[0]->Eval(DT1) * fcorr_z_dt[0]->Eval(55);
-      }
-      if(Beta2!=-1 && E2>0){ 
-        E2 = E2 / fcorr_z_beta[1]->Eval(Beta2) * fcorr_z_beta[1]->Eval(Beta_norm);
-        E2 = E2 / fcorr_z_dt[1]->Eval(DT2) * fcorr_z_dt[1]->Eval(55);
-      }
-      if(Beta3!=-1 && E3>0){ 
-        E3 = E3 / fcorr_z_beta[2]->Eval(Beta3) * fcorr_z_beta[2]->Eval(Beta_norm);
-        E3 = E3 / fcorr_z_dt[2]->Eval(DT3) * fcorr_z_dt[2]->Eval(-55);
-      }
-      if(Beta4!=-1 && E4>0){ 
-        E4 = E4 / fcorr_z_beta[3]->Eval(Beta4) * fcorr_z_beta[3]->Eval(Beta_norm);
-        E4 = E4 / fcorr_z_dt[3]->Eval(DT4) * fcorr_z_dt[3]->Eval(-55);
+      // *** spline correction *** //
+      for(int i=0; i<2; i++){
+        int section = TofHit[i].section;
+
+        double drift_time;
+        if(section==1) drift_time = DT1;
+        if(section==2) drift_time = DT2;
+        if(section==3) drift_time = DT3;
+        if(section==4) drift_time = DT4;
+
+        double DT_eval;
+        if(section<3) DT_eval=55;
+        if(section>2) DT_eval=-55;
+        if(section>0){
+          TofHit[i].Esec = TofHit[i].Esec / fcorr_z_beta[section-1]->Eval(TofHit[i].beta) * fcorr_z_beta[section-1]->Eval(Beta_norm);
+
+          TofHit[i].Esec = TofHit[i].Esec / fcorr_z_dt[section-1]->Eval(drift_time) * fcorr_z_dt[section-1]->Eval(DT_eval);
+        }
       }
 
 
-      // Z calibration //
-      if(E1>0 && E2>0 && E3==-1 && E4==-1){
-        Z1 = E1;
-        Z2 = E2;
-        Beta_Z1 = Beta1;
-        Beta_Z2 = Beta2;
+      // *** Calculation Theta_out *** //
+      double XA;
+      double ZA = 2328.;
+      double XC;
+      double ZC = 4434.;
+      double XMW3 = -1436;
+      double ZMW3 = 8380;
+      double X3lab;
+      double Z3lab;
+      double Theta0 = 20.*deg;
+      TVector3 vOut;
+      TVector3 vZ = TVector3(0,0,1);
+      for(int i=0; i<2; i++){
+        XA = TofHit[i].DT;
+        XC = XA+(ZC-ZA)*tan(TofHit[i].theta_in);
+
+        X3lab = TofHit[i].x*cos(Theta0) + XMW3;
+        Z3lab = ZMW3 + TofHit[i].x*cos(Theta0);
+
+        vOut = TVector3(X3lab-XC,0,Z3lab-ZC);
+
+        double angle = vZ.Angle(vOut);
+
+        TofHit[i].theta_out = angle;
       }
-      if(E1>0 && E2==-1 && E3>0 && E4==-1){
-        Z1 = E1;
-        Z2 = E3;
-        Beta_Z1 = Beta1;
-        Beta_Z2 = Beta3;
-      }
-      if(E1>0 && E2==-1 && E3==-1 && E4>0){
-        Z1 = E1;
-        Z2 = E4;
-        Beta_Z1 = Beta1;
-        Beta_Z2 = Beta4;
-      }
-      if(E1==-1 && E2>0 && E3>0 && E4==-1){
-        Z1 = E2;
-        Z2 = E3;
-        Beta_Z1 = Beta2;
-        Beta_Z2 = Beta3;
-      }
-      if(E1==-1 && E2>0 && E3==-1 && E4>0){
-        Z1 = E2;
-        Z2 = E4;
-        Beta_Z1 = Beta2;
-        Beta_Z2 = Beta4;
-      }
-      if(E1==-1 && E2==-1 && E3>0 && E4>0){
-        Z1 = E3;
-        Z2 = E4;
-        Beta_Z1 = Beta3;
-        Beta_Z2 = Beta4;
-      }
+
+      Z1 = TofHit[0].Esec;
+      Z2 = TofHit[1].Esec;
+
 
       if(Z1>0 && Z2>0){
         Z1 = fZff_p0 + fZff_p1*Z1 + fZff_p2*Z1*Z1;
@@ -367,6 +541,20 @@ void Analysis::FissionFragmentAnalysis(){
         iZsum = iZ1 + iZ2;
       }
 
+      //double Bfactor = 2185./2413.;
+      //Brho1 = Bfactor*(9.62543 + 0.0076642*TofHit[0].x);
+      //Brho2 = Bfactor*(9.62543 + 0.0076642*TofHit[1].x);
+      
+      double MagB = 2185*2.2/3584;
+      double Leff = 2.067;
+      double Tilt = 14*deg;
+      double rho1 = Leff/abs(2*sin(0.5*(TofHit[0].theta_out-TofHit[0].theta_in))*cos(Tilt-0.5*(TofHit[0].theta_out-TofHit[0].theta_in)));
+      double rho2 = Leff/abs(2*sin(0.5*(TofHit[1].theta_out-TofHit[1].theta_in))*cos(Tilt-0.5*(TofHit[1].theta_out-TofHit[1].theta_in)));
+      double Brho1 = MagB*rho1;
+      double Brho2 = MagB*rho2;
+      double Lfactor = 1.;//9.5/L_CC;
+      Beta_Z1 = TofHit[0].beta*Lfactor;
+      Beta_Z2 = TofHit[1].beta*Lfactor;
       Gamma1 = 1. / sqrt(1 - Beta_Z1 * Beta_Z1);
       Gamma2 = 1. / sqrt(1 - Beta_Z2 * Beta_Z2);
 
@@ -377,8 +565,24 @@ void Analysis::FissionFragmentAnalysis(){
       A2 = AoQ2 * iZ2;
 
       // *** Filling the Fission Fragment Tree *** //
-      SofFF->SetTOF(TOF_left);
-      SofFF->SetTOF(TOF_right);
+      SofFF->SetTOF(TofHit[0].tof);
+      SofFF->SetTOF(TofHit[1].tof);
+      SofFF->SetTofPosX(TofHit[0].x);
+      SofFF->SetTofPosX(TofHit[1].x);
+      SofFF->SetTofPosY(TofHit[0].y);
+      SofFF->SetTofPosY(TofHit[1].y);
+      SofFF->SetPlastic(TofHit[0].plastic);
+      SofFF->SetPlastic(TofHit[1].plastic);
+
+      for(int i=0; i<good_posx.size(); i++){
+        SofFF->SetPosX3(good_posx[i]);
+      }
+      SofFF->SetThetaIn(TofHit[0].theta_in);
+      SofFF->SetThetaIn(TofHit[1].theta_in);
+      SofFF->SetThetaOut(TofHit[0].theta_out);
+      SofFF->SetThetaOut(TofHit[1].theta_out);
+
+
       SofFF->SetBeta(Beta_Z1);
       SofFF->SetBeta(Beta_Z2);
       SofFF->SetGamma(Gamma1);
@@ -388,7 +592,7 @@ void Analysis::FissionFragmentAnalysis(){
       SofFF->SetZ(Z1);
       SofFF->SetZ(Z2);
       SofFF->SetAoQ(AoQ1);
-      SofFF->SetAoQ(AoQ1);
+      SofFF->SetAoQ(AoQ2);
       SofFF->SetA(A1);
       SofFF->SetA(A2);
       SofFF->SetBrho(Brho1);
@@ -400,7 +604,7 @@ void Analysis::FissionFragmentAnalysis(){
       SofFF->SetDT(DT4);
 
       SofFF->SetZsum(Zsum);
-      SofFF->SetIntZsum(iZsum);
+      SofFF->SetiZsum(iZsum);
     }
   }
 }
@@ -451,6 +655,7 @@ void Analysis::BeamAnalysis(){
       double Y_p0 = 23943.8;
       double Y_p1 = 12.362;
       Zbeam = Zbeam/(Y_p0 + Y_p1*YCC)*Y_p0;
+
 
       // Z calibration //
       Zbeam = fZbeam_p0 + fZbeam_p1*Zbeam + fZbeam_p2*Zbeam*Zbeam;
@@ -524,11 +729,15 @@ void Analysis::InitParameter(){
   fDCC   = -10000;
   fK_LS2 = -30e-8;
 
-  fRunID = 12;
+  fBrho0 = 12.3255;
+  fRunID = 6;
 
   // Beam parameter //
   fZBeta_p0 = 1;
   fZBeta_p1 = 0;
+  fZbeam_p0 = 1651.57;
+  fZbeam_p1 = 0.0876127;
+  fZbeam_p2 = 4.02563e-6;
 
   // FF parameter //
   fZff_p0 = 2.80063;
@@ -646,8 +855,11 @@ void Analysis::InitParameter(){
     fZbeam_p0 = 186.892;
     fZbeam_p1 = 0.20739;
     fZbeam_p2 = 1.61797e-6;
-
   }
+  if(fRunID==15){
+    fBrho0 = 12.3352;
+  }
+
 }
 
 ////////////////////////////////////////////////////////////////////////////////

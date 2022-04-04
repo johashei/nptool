@@ -45,6 +45,7 @@ TSofFissionFragment::~TSofFissionFragment() {
 void TSofFissionFragment::Clear() {
   fFF_Z.clear();
   fFF_iZ.clear();
+  fFF_Plastic.clear();
   fFF_AoQ.clear();
   fFF_A.clear();
   fFF_Beta.clear();
@@ -53,6 +54,7 @@ void TSofFissionFragment::Clear() {
   fFF_Brho.clear();
   fFF_DT.clear();
   fFF_ThetaIn.clear();
+  fFF_ThetaOut.clear();
   fFF_TofPosX.clear();
   fFF_TofPosY.clear();
   fFF_PosX1.clear();
@@ -63,7 +65,7 @@ void TSofFissionFragment::Clear() {
   fFF_PosY3.clear();
 
   fFF_Zsum = -1;
-  fFF_IntZsum = -1;
+  fFF_iZsum = -1;
 }
 
 
