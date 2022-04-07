@@ -51,6 +51,7 @@ struct TofPair
   int section = -1;
   double Esec = -1;
   double DT = -100;
+  double x3 = -1000;
 };
 
 
@@ -226,15 +227,13 @@ void Analysis::FissionFragmentAnalysis(){
   }
   
 
-  vector<double> good_posx;
-  vector<double> good_posy;
   for(unsigned int i=0; i<2; i++){
     double tofx = TofHit[i].x;
-    //double tofy = TofHit[i].y;
     for(unsigned int k=0; k<X3.size(); k++){
       double posx = X3[k];
-      if(abs(posx-tofx) < 100){
-        good_posx.push_back(posx);
+      if(abs(tofx-posx) < 150){
+        if(abs(tofx-posx)<abs(tofx-TofHit[i].x3))
+          TofHit[i].x3 = posx;
       }
     }
   }
@@ -498,28 +497,39 @@ void Analysis::FissionFragmentAnalysis(){
 
 
       // *** Calculation Theta_out *** //
+      double Theta0 = 20.*deg;
       double XA;
       double ZA = 2328.;
       double XC;
-      double ZC = 4434.;
-      double XMW3 = -1436;
+      double ZG = 4434.;
+      double ZC;
+      double XMW3 = -1436.;
       double ZMW3 = 8380;
       double X3lab;
       double Z3lab;
-      double Theta0 = 20.*deg;
+      double Tilt = 14.*deg;
       TVector3 vOut;
       TVector3 vZ = TVector3(0,0,1);
+      TVector3 vC;
+      TVector3 v3lab;
       for(int i=0; i<2; i++){
         XA = TofHit[i].DT;
-        XC = XA+(ZC-ZA)*tan(TofHit[i].theta_in);
+        XC = (XA+(ZG-ZA)*tan(TofHit[i].theta_in)) / (1-tan(Tilt)*tan(TofHit[i].theta_in));
+        ZC = ZG + XC*tan(Tilt);
 
-        X3lab = TofHit[i].x*cos(Theta0) + XMW3;
-        Z3lab = ZMW3 + TofHit[i].x*cos(Theta0);
+        X3lab = TofHit[i].x3*cos(Theta0) + XMW3;
+        Z3lab = TofHit[i].x3*sin(Theta0) + ZMW3;
 
-        vOut = TVector3(X3lab-XC,0,Z3lab-ZC);
+        vC    = TVector3(XC,0,ZC);
+        v3lab = TVector3(X3lab,0,Z3lab);
+        vOut  = TVector3(X3lab-XC,0,Z3lab-ZC);
 
+        double PathLength = vC.Mag() + vOut.Mag() + 74.;
+        PathLength = PathLength/1000.;
         double angle = vZ.Angle(vOut);
 
+        TofHit[i].velocity = PathLength/TofHit[i].tof;
+        TofHit[i].beta     = TofHit[i].velocity * m/ns / NPUNITS::c_light;
         TofHit[i].theta_out = angle;
       }
 
@@ -541,20 +551,16 @@ void Analysis::FissionFragmentAnalysis(){
         iZsum = iZ1 + iZ2;
       }
 
-      //double Bfactor = 2185./2413.;
-      //Brho1 = Bfactor*(9.62543 + 0.0076642*TofHit[0].x);
-      //Brho2 = Bfactor*(9.62543 + 0.0076642*TofHit[1].x);
-      
       double MagB = 2185*2.2/3584;
       double Leff = 2.067;
-      double Tilt = 14*deg;
+      //double rho1 = Leff/abs(2*sin(0.5*(TofHit[0].theta_out - TofHit[0].theta_in)));
+      //double rho2 = Leff/abs(2*sin(0.5*(TofHit[1].theta_out - TofHit[1].theta_in)));
       double rho1 = Leff/abs(2*sin(0.5*(TofHit[0].theta_out-TofHit[0].theta_in))*cos(Tilt-0.5*(TofHit[0].theta_out-TofHit[0].theta_in)));
       double rho2 = Leff/abs(2*sin(0.5*(TofHit[1].theta_out-TofHit[1].theta_in))*cos(Tilt-0.5*(TofHit[1].theta_out-TofHit[1].theta_in)));
       double Brho1 = MagB*rho1;
       double Brho2 = MagB*rho2;
-      double Lfactor = 1.;//9.5/L_CC;
-      Beta_Z1 = TofHit[0].beta*Lfactor;
-      Beta_Z2 = TofHit[1].beta*Lfactor;
+      Beta_Z1 = TofHit[0].beta;
+      Beta_Z2 = TofHit[1].beta;
       Gamma1 = 1. / sqrt(1 - Beta_Z1 * Beta_Z1);
       Gamma2 = 1. / sqrt(1 - Beta_Z2 * Beta_Z2);
 
@@ -573,10 +579,8 @@ void Analysis::FissionFragmentAnalysis(){
       SofFF->SetTofPosY(TofHit[1].y);
       SofFF->SetPlastic(TofHit[0].plastic);
       SofFF->SetPlastic(TofHit[1].plastic);
-
-      for(int i=0; i<good_posx.size(); i++){
-        SofFF->SetPosX3(good_posx[i]);
-      }
+      SofFF->SetPosX3(TofHit[0].x3);
+      SofFF->SetPosX3(TofHit[1].x3);
       SofFF->SetThetaIn(TofHit[0].theta_in);
       SofFF->SetThetaIn(TofHit[1].theta_in);
       SofFF->SetThetaOut(TofHit[0].theta_out);
@@ -598,10 +602,11 @@ void Analysis::FissionFragmentAnalysis(){
       SofFF->SetBrho(Brho1);
       SofFF->SetBrho(Brho2);
 
-      SofFF->SetDT(DT1);
-      SofFF->SetDT(DT2);
-      SofFF->SetDT(DT3);
-      SofFF->SetDT(DT4);
+      SofFF->SetDT(TofHit[0].DT);
+      SofFF->SetDT(TofHit[1].DT);
+      SofFF->SetSection(TofHit[0].section);
+      SofFF->SetSection(TofHit[1].section);
+
 
       SofFF->SetZsum(Zsum);
       SofFF->SetiZsum(iZsum);
@@ -730,7 +735,7 @@ void Analysis::InitParameter(){
   fK_LS2 = -30e-8;
 
   fBrho0 = 12.3255;
-  fRunID = 6;
+  fRunID = 5;
 
   // Beam parameter //
   fZBeta_p0 = 1;

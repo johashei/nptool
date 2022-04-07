@@ -53,6 +53,7 @@ void TSofFissionFragment::Clear() {
   fFF_Gamma.clear();
   fFF_Brho.clear();
   fFF_DT.clear();
+  fFF_Section.clear();
   fFF_ThetaIn.clear();
   fFF_ThetaOut.clear();
   fFF_TofPosX.clear();

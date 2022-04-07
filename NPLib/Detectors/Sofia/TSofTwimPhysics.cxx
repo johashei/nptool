@@ -174,8 +174,8 @@ void TSofTwimPhysics::BuildPhysicalEvent() {
     DriftTime.push_back(DTsec1);
     SectionNbr.push_back(1);
 
-    Theta1 = asin((AnodeDriftTime[0][11]-AnodeDriftTime[0][3])/(7*31.));
-    Theta.push_back(Theta1);
+    Theta1 = atan((AnodeDriftTime[0][11]-AnodeDriftTime[0][3])/(7*31.));
+    Theta.push_back(-Theta1);
   }
   if(Esec2>0){
     Esec2 = Cal->ApplyCalibration("SofTwim/SEC2_ALIGN",Esec2);
@@ -183,8 +183,8 @@ void TSofTwimPhysics::BuildPhysicalEvent() {
     DriftTime.push_back(DTsec2);
     SectionNbr.push_back(2);
 
-    Theta2 = asin((AnodeDriftTime[1][11]-AnodeDriftTime[1][3])/(7*31.));
-    Theta.push_back(Theta2);
+    Theta2 = atan((AnodeDriftTime[1][11]-AnodeDriftTime[1][3])/(7*31.));
+    Theta.push_back(-Theta2);
   }
   if(Esec3>0){
     Esec3 = Cal->ApplyCalibration("SofTwim/SEC3_ALIGN",Esec3);
@@ -192,8 +192,8 @@ void TSofTwimPhysics::BuildPhysicalEvent() {
     DriftTime.push_back(DTsec3);
     SectionNbr.push_back(3);
 
-    Theta3 = asin((AnodeDriftTime[2][11]-AnodeDriftTime[2][3])/(7*31.));
-    Theta.push_back(Theta3);
+    Theta3 = atan((AnodeDriftTime[2][11]-AnodeDriftTime[2][3])/(7*31.));
+    Theta.push_back(-Theta3);
   }
   if(Esec4>0){
     Esec4 = Cal->ApplyCalibration("SofTwim/SEC4_ALIGN",Esec4);
@@ -201,8 +201,8 @@ void TSofTwimPhysics::BuildPhysicalEvent() {
     DriftTime.push_back(DTsec4);
     SectionNbr.push_back(4);
 
-    Theta4 = asin((AnodeDriftTime[3][11]-AnodeDriftTime[3][3])/(7*31.));
-    Theta.push_back(Theta4);
+    Theta4 = atan((AnodeDriftTime[3][11]-AnodeDriftTime[3][3])/(7*31.));
+    Theta.push_back(-Theta4);
   }
 
   m_Beta = -1;

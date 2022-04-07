@@ -44,6 +44,7 @@ class TSofFissionFragment : public TObject {
     vector<double> fFF_Gamma;
     vector<double> fFF_Brho;
     vector<double> fFF_DT;
+    vector<int>    fFF_Section;
     vector<double> fFF_ThetaIn;
     vector<double> fFF_ThetaOut;
     vector<double> fFF_TofPosX;
@@ -91,6 +92,7 @@ class TSofFissionFragment : public TObject {
     inline void SetGamma(double val){fFF_Gamma.push_back(val);};//!
     inline void SetBrho(double val){fFF_Brho.push_back(val);};//!
     inline void SetDT(double val){fFF_DT.push_back(val);};//!
+    inline void SetSection(int val){fFF_Section.push_back(val);};//!
     inline void SetThetaIn(double val){fFF_ThetaIn.push_back(val);};//!
     inline void SetThetaOut(double val){fFF_ThetaOut.push_back(val);};//!
     inline void SetTofPosX(double val){fFF_TofPosX.push_back(val);};//!
@@ -121,6 +123,7 @@ class TSofFissionFragment : public TObject {
     inline double GetGamma(int i) const {return fFF_Gamma[i];}//! 
     inline double GetBrho(int i) const {return fFF_Brho[i];}//! 
     inline double GetDT(int i) const {return fFF_DT[i];}//! 
+    inline double GetSection(int i) const {return fFF_Section[i];}//! 
     inline double GetThetaIn(int i) const {return fFF_ThetaIn[i];}//! 
     inline double GetThetaOut(int i) const {return fFF_ThetaOut[i];}//! 
     inline double GetTofPosX(int i) const {return fFF_TofPosX[i];}//! 

@@ -242,8 +242,8 @@ void ChiNu::ReadConfiguration(NPL::InputParser parser){
 // Called After DetecorConstruction::AddDetector Method
 void ChiNu::ConstructDetector(G4LogicalVolume* world){
  
-  G4Material* Air = MaterialManager::getInstance()->GetMaterialFromLibrary("Air");
-  world->SetMaterial(Air);
+  //G4Material* Air = MaterialManager::getInstance()->GetMaterialFromLibrary("Air");
+  //world->SetMaterial(Air);
 
   for (unsigned short i = 0 ; i < m_R.size() ; i++) {
 
