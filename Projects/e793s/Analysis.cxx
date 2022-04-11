@@ -45,15 +45,15 @@ Analysis::~Analysis(){
 void Analysis::Init() {
  ///////////////////////////////////////////////////////////////////////////////  
 
+    isPhaseSpace=false;
 //    isPhaseSpace=true;
-    isPhaseSpace=true;
 
 //  if(NPOptionManager::getInstance()->HasDefinition("simulation")){
     cout << " == == == == SIMULATION == == == ==" << endl;
-//    isSim=true;
+    isSim=true;
 //  } else {
-    cout << " == == == == EXPERIMENT == == == ==" << endl;
-    isSim=false;
+//    cout << " == == == == EXPERIMENT == == == ==" << endl;
+//    isSim=false;
 //  }
 
   agata_zShift=51*mm;
@@ -688,9 +688,12 @@ void Analysis::End(){
     for(int i=0; i<5; i++){HistList->Add(SolidAngle_CM_MMX[i]);}
     for(int i=0; i<5; i++){HistList->Add(SolidAngle_Lab_MMX[i]);}
     
-    auto HistoFile = new TFile("SolidAngle_HistFile_15Feb.root","RECREATE");
+    auto HistoFile = new TFile("~/Programs/nptool/Projects/e793s/SolidAngle_HistFile_New.root","RECREATE");
     HistList->Write();
     HistoFile->Close();
+
+
+    cout << "!!! MAKE SURE YOU RENAME THE SOLID ANGLE FILE! !!!" << endl;
   }
 }
 
@@ -721,11 +724,11 @@ void Analysis::InitOutputBranch(){
   RootOutput::getInstance()->GetTree()->Branch("Y",&Y);
   RootOutput::getInstance()->GetTree()->Branch("Z",&Z);
   RootOutput::getInstance()->GetTree()->Branch("dE",&dE,"dE/D");
-////  RootOutput::getInstance()->GetTree()->Branch("MG_T",MG_T);
-////  RootOutput::getInstance()->GetTree()->Branch("MG_E",MG_E);
-////  RootOutput::getInstance()->GetTree()->Branch("MG_X",MG_X);
-////  RootOutput::getInstance()->GetTree()->Branch("MG_Y",MG_Y);
-////  RootOutput::getInstance()->GetTree()->Branch("MG_D",MG_D);
+  RootOutput::getInstance()->GetTree()->Branch("MG_T",MG_T);
+  RootOutput::getInstance()->GetTree()->Branch("MG_E",MG_E);
+  RootOutput::getInstance()->GetTree()->Branch("MG_X",MG_X);
+  RootOutput::getInstance()->GetTree()->Branch("MG_Y",MG_Y);
+  RootOutput::getInstance()->GetTree()->Branch("MG_D",MG_D);
 
   // Vamos 
   RootOutput::getInstance()->GetTree()->Branch("LTS",&LTS,"LTS/l");
