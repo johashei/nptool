@@ -2,6 +2,9 @@ TTreeName
   RawTree
 RootFileName
   
+  %/media/sofia/s455/raw/run_raw_0367.root
+  %/media/sofia/s455/raw/run_raw_0368.root
+  %/media/sofia/s455/raw/run_raw_0369.root
   %/media/sofia/s455/raw/run_raw_0419.root
   %/media/sofia/s455/raw/run_raw_0422.root
   
@@ -46,14 +49,14 @@ RootFileName
   %/media/sofia/s455/raw/run_raw_0399.root
 
   %% 189Pb
-  %/media/pierre/proton/raw/run_raw_0400.root
+  %/media/sofia/s455/raw/run_raw_0400.root
   
   %% 182Hg
-  /media/pierre/proton/raw/run_raw_0401.root
+  %/media/sofia/s455/raw/run_raw_0401.root
   
   %% 187Pb
   %/media/sofia/s455/raw/run_raw_0402.root
-  %/media/sofia/s455/raw/run_raw_0403.root
+  /media/sofia/s455/raw/run_raw_0403.root
   
   %% 184Hg
   %/media/sofia/s455/raw/run_raw_0404.root

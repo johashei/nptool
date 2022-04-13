@@ -36,6 +36,7 @@ class TSofFissionFragment : public TObject {
   private:
     vector<double> fFF_Z; 
     vector<int> fFF_iZ;
+    vector<int> fFF_Plastic;
     vector<double> fFF_AoQ;
     vector<double> fFF_A;
     vector<double> fFF_Beta;
@@ -43,7 +44,9 @@ class TSofFissionFragment : public TObject {
     vector<double> fFF_Gamma;
     vector<double> fFF_Brho;
     vector<double> fFF_DT;
+    vector<int>    fFF_Section;
     vector<double> fFF_ThetaIn;
+    vector<double> fFF_ThetaOut;
     vector<double> fFF_TofPosX;
     vector<double> fFF_TofPosY;
     vector<double> fFF_PosX1;
@@ -53,7 +56,7 @@ class TSofFissionFragment : public TObject {
     vector<double> fFF_PosY2;
     vector<double> fFF_PosY3;
     double fFF_Zsum;
-    int fFF_IntZsum;
+    int fFF_iZsum;
 
   //////////////////////////////////////////////////////////////
   // Constructor and destructor
@@ -78,7 +81,8 @@ class TSofFissionFragment : public TObject {
   public:
     //////////////////////    SETTERS    ////////////////////////
     inline void SetZsum(double val){fFF_Zsum = val;};//!
-    inline void SetIntZsum(int val){fFF_IntZsum = val;};//!
+    inline void SetiZsum(int val){fFF_iZsum = val;};//!
+    inline void SetPlastic(int val){fFF_Plastic.push_back(val);};//!
     inline void SetZ(double val){fFF_Z.push_back(val);};//!
     inline void SetiZ(int val){fFF_iZ.push_back(val);};//!
     inline void SetAoQ(double val){fFF_AoQ.push_back(val);};//!
@@ -88,7 +92,9 @@ class TSofFissionFragment : public TObject {
     inline void SetGamma(double val){fFF_Gamma.push_back(val);};//!
     inline void SetBrho(double val){fFF_Brho.push_back(val);};//!
     inline void SetDT(double val){fFF_DT.push_back(val);};//!
+    inline void SetSection(int val){fFF_Section.push_back(val);};//!
     inline void SetThetaIn(double val){fFF_ThetaIn.push_back(val);};//!
+    inline void SetThetaOut(double val){fFF_ThetaOut.push_back(val);};//!
     inline void SetTofPosX(double val){fFF_TofPosX.push_back(val);};//!
     inline void SetTofPosY(double val){fFF_TofPosY.push_back(val);};//!
     inline void SetPosX1(double val){fFF_PosX1.push_back(val);};//!
@@ -106,7 +112,8 @@ class TSofFissionFragment : public TObject {
     int GetMultMwpc2() {return fFF_PosY2.size();}//!
     int GetMultMwpc3() {return fFF_PosY3.size();}//!
     inline double GetZsum() const {return fFF_Zsum;}//! 
-    inline int GetIntZsum() const {return fFF_IntZsum;}//! 
+    inline int GetiZsum() const {return fFF_iZsum;}//! 
+    inline int GetPlastic(int i) const {return fFF_Plastic[i];}//! 
     inline double GetZ(int i) const {return fFF_Z[i];}//! 
     inline int GetiZ(int i) const {return fFF_iZ[i];}//! 
     inline double GetAoQ(int i) const {return fFF_AoQ[i];}//! 
@@ -116,7 +123,9 @@ class TSofFissionFragment : public TObject {
     inline double GetGamma(int i) const {return fFF_Gamma[i];}//! 
     inline double GetBrho(int i) const {return fFF_Brho[i];}//! 
     inline double GetDT(int i) const {return fFF_DT[i];}//! 
+    inline double GetSection(int i) const {return fFF_Section[i];}//! 
     inline double GetThetaIn(int i) const {return fFF_ThetaIn[i];}//! 
+    inline double GetThetaOut(int i) const {return fFF_ThetaOut[i];}//! 
     inline double GetTofPosX(int i) const {return fFF_TofPosX[i];}//! 
     inline double GetTofPosY(int i) const {return fFF_TofPosY[i];}//! 
     inline double GetPosX1(int i) const {return fFF_PosX1[i];}//! 

@@ -50,6 +50,7 @@ class Analysis: public NPL::VAnalysis{
     void ReInitValue();
     void BeamAnalysis();
     void FissionFragmentAnalysis();
+    void BeamFragmentAnalysis();
 
     static NPL::VAnalysis* Construct();
 

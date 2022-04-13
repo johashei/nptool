@@ -74,7 +74,7 @@ void RunAction::EndOfRunAction(const G4Run* aRun){
         Particles.insert( (*traj)[i]->GetParticleName());
     }
     MaterialManager::getInstance()->WriteDEDXTable(Particles,0,10*GeV); 
-    MaterialManager::getInstance()->WriteCrossSectionTable(Particles,0,20*MeV); 
+    MaterialManager::getInstance()->WriteCrossSectionTable(Particles,0,19.9*MeV); 
 }
 
 

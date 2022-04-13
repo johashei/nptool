@@ -16,7 +16,7 @@ int indexE;
 double globalS, globalSerr;
 
 /* Output volume toggle */
-bool loud = 0;
+bool loud = 1;
 
 /* Scale method toggle */
 bool scaleTogether = 1;
@@ -42,14 +42,12 @@ void CS(){
 
 ////////////////////////////////////////////////////////////////////////////////
 void CS(double Energy, double Spin, double spdf, double angmom){
-  /* BASIC RUN: CS(0.143,2,1,1.5,1) */
- 
   // p3/5 -> spdf = 1, angmom = 1.5
   // J0 is incident spin, which is 47K g.s. therefore J0 = 1/2
   double J0 = 0.5;
   double ElasticNorm = 5.8, ElasticNormErr = 1.3; // DeuteronNorm in elastics, 5.8 +- 1.3
+
   /* Reduce by factor of 10,000 */
-  /* WHY DOES THIS WORK???????*/
   ElasticNorm /= 10000.;
   ElasticNormErr /= 10000.;
   double nodes;
@@ -91,12 +89,11 @@ void CS(double Energy, double Spin, double spdf, double angmom){
   }
 
   /* Solid Angle (from simulation) */
-//  auto file = new TFile("../SolidAngle_HistFile_06Dec_47Kdp.root");
   auto file = new TFile("../SolidAngle_HistFile_15Feb_47Kdp.root");
   TH1F* SolidAngle = (TH1F*) file->FindObjectAny("SolidAngle_Lab_MG");
   TCanvas* c_SolidAngle = new TCanvas("c_SolidAngle","c_SolidAngle",1000,1000);
   SolidAngle->Draw();
-  // canvas deleted after Area/SA calculation
+  /* (canvas deleted after Area/SA calculation) */
  
   /* Area of experimental peaks */
   TCanvas* c_PeakArea = new TCanvas("c_PeakArea","c_PeakArea",1000,1000);
@@ -194,9 +191,14 @@ void CS(double Energy, double Spin, double spdf, double angmom){
 		  //&(anglewidth[0]), &(AoSAerr[0]) );
 		  0, &(expDCSerr[0]) );
   gdSdO->SetTitle("Differential Cross Section");
-  gdSdO->GetXaxis()->SetTitle("ThetaLab [deg]");
+  gdSdO->GetXaxis()->SetTitle("#theta_{lab} [deg]");
+  gdSdO->GetXaxis()->SetTitleOffset(1.2);
+  gdSdO->GetXaxis()->SetTitleSize(0.04);
   gdSdO->GetYaxis()->SetTitle("d#sigma/d#Omega [mb/msr]");
+  gdSdO->GetYaxis()->SetTitleOffset(1.2);
+  gdSdO->GetYaxis()->SetTitleSize(0.04);
   gdSdO->Draw();
+  c_dSdO->Update();
 
   /* TWOFNR diff. cross section, in mb/msr */ 
   TCanvas* c_TWOFNR = new TCanvas("c_TWOFNR","c_TWOFNR",1000,1000);
@@ -228,7 +230,23 @@ void CS(double Energy, double Spin, double spdf, double angmom){
   /* Using Chi2 minimizaiton */
   cout << "USING CHI2 MINIMIZAITON..." << endl;
   TCanvas* c_Chi2Min = new TCanvas("c_Chi2Min","c_Chi2Min",1000,1000);
-  c_Chi2Min->SetLogy();
+  gStyle->SetPadLeftMargin(0.12);
+  gStyle->SetPadRightMargin(0.03);
+  //c_Chi2Min->SetLogy();
+
+  TPad *pad1 = new TPad("pad1","pad1",0,0.25,1,1);
+  TPad *pad2 = new TPad("pad2","pad2",0,0,1,0.25);
+  pad1->SetTopMargin(0.15);
+  pad1->SetBottomMargin(0.00001);
+  pad1->SetBorderMode(0);
+  pad1->SetLogy();
+  pad2->SetTopMargin(0.00001);
+  pad2->SetBottomMargin(0.3);
+  pad2->SetBorderMode(0);
+  pad1->Draw();
+  pad2->Draw();
+  pad1->cd();
+
   TGraph* Final = FindNormalisation(TheoryDiffCross,gdSdO);
   gdSdO->SetLineColor(kRed);
   gdSdO->SetMarkerColor(kRed);
@@ -242,8 +260,37 @@ void CS(double Energy, double Spin, double spdf, double angmom){
   /**/	           << " +- " << globalSerr;
   /**/  string textstring = textstream.str(); 
   gdSdO->SetTitle(textstring.c_str());
+  gdSdO->GetYaxis()->SetTitleOffset(1.3);
+  gdSdO->GetYaxis()->SetTitleSize(0.042);
+  gdSdO->GetXaxis()->SetRangeUser(103.,157.);
   gdSdO->Draw("AP");
   Final->Draw("SAME");
+
+
+  pad2->cd();
+  TGraphErrors* gResid = new TGraphErrors(*gdSdO);
+  for(int n=0; n < gResid->GetN(); n++){
+    double x = gdSdO->GetPointX(n);
+    double residual = gdSdO->GetPointY(n) - Final->Eval(x);
+    gResid->SetPoint(n,x,residual);
+    gResid->SetPointError(n,0,gdSdO->GetErrorY(n));
+  }
+  TLine* markzero = new TLine(103.,0.,157.,0.);
+  gResid->SetTitle("");
+  gResid->GetXaxis()->SetRangeUser(103.,157.);
+  gResid->GetYaxis()->SetTitle("Residuals");
+  gResid->GetYaxis()->SetTitleSize(0.15);
+  gResid->GetYaxis()->SetTitleOffset(0.36);
+  gResid->GetYaxis()->SetLabelSize(0.08);
+  gResid->GetYaxis()->SetNdivisions(305);
+  gResid->GetXaxis()->SetTitleSize(0.15);
+  gResid->GetXaxis()->SetTitleOffset(0.8);
+  gResid->GetXaxis()->SetLabelSize(0.1);
+  gResid->GetXaxis()->SetTickLength(0.1);
+  gResid->Draw();
+  markzero->SetLineStyle(2);
+  markzero->Draw("same");
+
   string savestring1 = "./CS2_Figures/"+tempstr+".root";
   string savestring2 = "./CS2_Figures/"+tempstr+".pdf";
   c_Chi2Min->SaveAs(savestring1.c_str());
@@ -297,6 +344,14 @@ vector<vector<double>> GetExpDiffCross(double Energy){
     cout << " !!!!!!!!!!!!!!!FINAL SCALING = " << trackScale << endl;
   }
 
+  /* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! */
+  /* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! */
+  // TEMPORARY!!! REMOVE LAST THREE BINS ON HIGH ENERGY STATES!!!
+  if(means[indexE] > 3.0){numbins-=3;}
+  /* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! */
+  /* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! */
+
+
   for(int i=0; i<numbins;i++){
     double bin = 5.;
     double min = 105. + (i*bin);
@@ -320,6 +375,7 @@ vector<vector<double>> GetExpDiffCross(double Energy){
       gate->Add(pspace,-trackScale);
     } 
     /* ... or seperately for each angular bin */
+    /* NOTE THAT THIS DOES NOT ACCOUNT FOR FLAT BACKGROUND */
     else {
       if(pspace->Integral() > 50.){ // Non-garbage histogram
         pspace->Scale(0.01);
@@ -538,17 +594,22 @@ TGraph* TWOFNR(double E, double J0, double J, double n, double l, double j){
 
 ////////////////////////////////////////////////////////////////////////////////
 double Chi2(TGraph* theory, TGraphErrors* exper){
-  double Chi2 = 0 ;
-  double chi;
+  double Chi2 = 0;
+  double chi = 0;
+
+  //cout << setprecision(8);
   //for(int i = 1 ; i < exper->GetN() ; i++){
   for(int i = 0 ; i < exper->GetN() ; i++){
-    if(exper->Eval(anglecentres[i])>1.0e-10){ //0){
-      chi=(exper->Eval(anglecentres[i])-theory->Eval(anglecentres[i]) ) / (exper->GetErrorY(i));
+    if(exper->GetPointY(i)>1.0e-8){ //0){
+      //chi=(exper->Eval(anglecentres[i])-theory->Eval(anglecentres[i]) ) / (exper->GetErrorY(i));
+      chi=(exper->GetPointY(i) - theory->Eval(anglecentres[i]) ) / (exper->GetErrorY(i));
+      //cout << "COMPARE::::: " << exper->Eval(anglecentres[i]) << " TO " << exper->GetPointY(i) << endl;
       Chi2 +=chi*chi;
     }
   }
   if(loud){cout << "Chi2 = " << Chi2 << endl;}
   return Chi2;
+  //cout << setprecision(3);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -589,10 +650,10 @@ TGraph* FindNormalisation(TGraph* theory, TGraphErrors* experiment){
   // Set range of parameter(??)
   double* parameter = new double[mysize];
   for(unsigned int i = 0 ; i < mysize ; i++){
-    parameter[i] = 0.5;
+    parameter[i] = 0.8;
     char name[4];
     sprintf(name,"S%d",i+1);
-    min->SetLimitedVariable(i,name,parameter[i],0.1,0,10000);
+    min->SetLimitedVariable(i,name,parameter[i],0.01,0,10);
   }
  
 
@@ -616,7 +677,20 @@ TGraph* FindNormalisation(TGraph* theory, TGraphErrors* experiment){
   TGraph* g = new TGraph(); 
   double* X = theory->GetX();
   double* Y = theory->GetY();
+  if(loud){
+    cout << setprecision(8);
+    cout << "Start: X[0] = " << theory->GetPointX(4) << " Y[0] = " << theory->GetPointY(4) << endl;
+    cout << "multip by " << xs[0] << endl;
+  }
+  
   for(int i=0; i<theory->GetN(); i++){ g->SetPoint(g->GetN(),X[i],xs[0]*Y[i]); }
+
+  //for(int i=0; i<theory->GetN(); i++){ g->SetPoint(i,X[i],xs[0]*Y[i]); }
+
+  if(loud){
+    cout << "End:   X[0] = " << g->GetPointX(4) << " Y[0] = " << g->GetPointY(4) << endl;
+    cout << setprecision(3);
+  }
 
   return g;
 }

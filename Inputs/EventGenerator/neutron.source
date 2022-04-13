@@ -5,21 +5,19 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 Isotropic
  EnergyLow= 0
- EnergyHigh= 20
+ EnergyHigh= 18
  %EnergyDistribution= flat
- EnergyDistribution= 0.38*sqrt(x)*exp(-x/0.847212)
+ %EnergyDistribution= 0.38*sqrt(x)*exp(-x/0.847212)
  %EnergyDistribution= -0.00372440431*pow(x,6)+0.387617479*pow(x,5)-14.3752948*pow(x,4)+225.888082*pow(x,3)-1555.60583*pow(x,2)+7983.24902*pow(x,1)+9069.96435
  %EnergyDistribution= 0.619676*TMath::SinH(sqrt(1.07777*x))*exp(-0.847212*x)
- %EnergyDistribution= 1.90903*TMath::SinH(sqrt(1.04982*x))*exp(-0.845506*x)
- %EnergyDistribution= 22.8043*TMath::SinH(sqrt(0.0144658*x))*exp(-0.729612*x)
- %EnergyDistribution= 13.0603*TMath::SinH(sqrt(0.0547835*x))*exp(-0.691795*x)
+ EnergyDistribution= 1.0*TMath::SinH(sqrt(2.3075*x))*exp(-1.0193*x)
  HalfOpenAngleMin= 0
  HalfOpenAngleMax= 0
  x0= 0 
  y0= 0 
- z0= -1000 mm 
- SigmaX= 5 mm
- SigmaY= 5 mm
+ z0= 0 mm 
+ SigmaX= 1 mm
+ SigmaY= 1 mm
  Multiplicity= 1
  Particle= neutron
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

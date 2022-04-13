@@ -93,10 +93,15 @@ void TSofTwimPhysics::BuildPhysicalEvent() {
   double Esec2=0;
   double Esec3=0;
   double Esec4=0;
+  double Theta1=-10;
+  double Theta2=-10;
+  double Theta3=-10;
+  double Theta4=-10;
   double DTsec1=-1e6;
   double DTsec2=-1e6;
   double DTsec3=-1e6;
   double DTsec4=-1e6;
+  double AnodeDriftTime[4][16];
 
   unsigned int mysizeE = m_PreTreatedData->GetMultiplicity();
   for (UShort_t e = 0; e < mysizeE ; e++) {
@@ -111,6 +116,8 @@ void TSofTwimPhysics::BuildPhysicalEvent() {
     AnodeNbr.push_back(AnodeNumber);
     AnodeEnergy.push_back(Energy);
     AnodeDT.push_back(DT);
+
+    AnodeDriftTime[SectionNbr-1][AnodeNumber-1] = DT;
 
     if(SectionNbr==1){
       anode_energy_sec1.push_back(Energy);
@@ -166,24 +173,36 @@ void TSofTwimPhysics::BuildPhysicalEvent() {
     EnergySection.push_back(Esec1);
     DriftTime.push_back(DTsec1);
     SectionNbr.push_back(1);
+
+    Theta1 = atan((AnodeDriftTime[0][11]-AnodeDriftTime[0][3])/(7*31.));
+    Theta.push_back(-Theta1);
   }
   if(Esec2>0){
     Esec2 = Cal->ApplyCalibration("SofTwim/SEC2_ALIGN",Esec2);
     EnergySection.push_back(Esec2);
     DriftTime.push_back(DTsec2);
     SectionNbr.push_back(2);
+
+    Theta2 = atan((AnodeDriftTime[1][11]-AnodeDriftTime[1][3])/(7*31.));
+    Theta.push_back(-Theta2);
   }
   if(Esec3>0){
     Esec3 = Cal->ApplyCalibration("SofTwim/SEC3_ALIGN",Esec3);
     EnergySection.push_back(Esec3);
     DriftTime.push_back(DTsec3);
     SectionNbr.push_back(3);
+
+    Theta3 = atan((AnodeDriftTime[2][11]-AnodeDriftTime[2][3])/(7*31.));
+    Theta.push_back(-Theta3);
   }
   if(Esec4>0){
     Esec4 = Cal->ApplyCalibration("SofTwim/SEC4_ALIGN",Esec4);
     EnergySection.push_back(Esec4);
     DriftTime.push_back(DTsec4);
     SectionNbr.push_back(4);
+
+    Theta4 = atan((AnodeDriftTime[3][11]-AnodeDriftTime[3][3])/(7*31.));
+    Theta.push_back(-Theta4);
   }
 
   m_Beta = -1;
@@ -310,6 +329,7 @@ void TSofTwimPhysics::Clear() {
   AnodeSecNbr.clear();
   AnodeEnergy.clear();
   AnodeDT.clear();
+  Theta.clear();
 
   mult1 = 0;
   mult2 = 0;
