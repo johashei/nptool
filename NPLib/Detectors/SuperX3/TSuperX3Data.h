@@ -52,9 +52,11 @@ class TSuperX3Data : public TObject {
   // Back
   // Energy
   vector<Double_t> fSuperX3_BackE_Energy;
+  vector<UShort_t> fSuperX3_BackE_StripNbr;
   vector<UShort_t> fSuperX3_BackE_DetectorNbr;
   // Time
   vector<Double_t> fSuperX3_BackT_Time;
+  vector<UShort_t> fSuperX3_BackT_StripNbr;
   vector<UShort_t> fSuperX3_BackT_DetectorNbr;
 
  public:
@@ -90,13 +92,15 @@ class TSuperX3Data : public TObject {
   }
 
   // Back E
-  void SetBackE(UShort_t DetNbr, Double_t Energy) {
+  void SetBackE(UShort_t DetNbr, UShort_t StripNbr, Double_t Energy) {
     fSuperX3_BackE_DetectorNbr.push_back(DetNbr);
+    fSuperX3_BackE_StripNbr.push_back(StripNbr);
     fSuperX3_BackE_Energy.push_back(Energy);
   }
   // Back T
-  void SetBackT(UShort_t DetNbr, Double_t Time) {
+  void SetBackT(UShort_t DetNbr, UShort_t StripNbr, Double_t Time) {
     fSuperX3_BackT_DetectorNbr.push_back(DetNbr);
+    fSuperX3_BackT_StripNbr.push_back(StripNbr);
     fSuperX3_BackT_Time.push_back(Time);
   }
 
@@ -126,10 +130,12 @@ class TSuperX3Data : public TObject {
   // (Back, E)
   UShort_t GetBackEMult() const { return fSuperX3_BackE_DetectorNbr.size(); }
   UShort_t GetBackEDetectorNbr(Int_t i) const { return fSuperX3_BackE_DetectorNbr[i]; }
+  UShort_t GetBackEStripNbr(Int_t i) const { return fSuperX3_BackE_StripNbr[i]; }
   Double_t GetBackEEnergy(Int_t i) const { return fSuperX3_BackE_Energy[i]; }
   // (Back, T)
   UShort_t GetBackTMult() const { return fSuperX3_BackT_DetectorNbr.size(); }
   UShort_t GetBackTDetectorNbr(Int_t i) const { return fSuperX3_BackT_DetectorNbr[i]; }
+  UShort_t GetBackTStripNbr(Int_t i) const { return fSuperX3_BackT_StripNbr[i]; }
   Double_t GetBackTTime(Int_t i) const { return fSuperX3_BackT_Time[i]; }
 
   ClassDef(TSuperX3Data, 1) // TSuperX3Data raw data

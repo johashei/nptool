@@ -46,7 +46,6 @@
 #include "MaterialManager.hh"
 #include "NPOptionManager.h"
 #include "NPSDetectorFactory.hh"
-#include "ObsoleteGeneralScorers.hh"
 
 #include "InteractionScorers.hh"
 #include "RootOutput.h"
@@ -293,6 +292,7 @@ void SuperX3::ReadSensitive(const G4Event*) {
   m_Event->Clear();
 
   auto resistive = (DSSDScorers::PS_Resistive*)m_Scorer->GetPrimitive(0);
+  auto backstrip = (DSSDScorers::PS_Rectangle*)m_Scorer->GetPrimitive(1);
   auto sizeUp = resistive->GetUpMult();
   for (unsigned int i = 0; i < sizeUp; i++) {
     double energy = resistive->GetEnergyUp(i);
@@ -311,13 +311,14 @@ void SuperX3::ReadSensitive(const G4Event*) {
     m_Event->SetDownE(det, strip, energy);
     m_Event->SetDownT(det, strip, time);
   }
-  auto sizeBack = resistive->GetBackMult();
+  auto sizeBack = backstrip->GetWidthMult();
   for (unsigned int i = 0; i < sizeBack; i++) {
-    double energy = resistive->GetEnergyBack(i);
-    double time = resistive->GetTimeBack(i);
-    int det = resistive->GetDetectorBack(i);
-    m_Event->SetBackE(det, energy);
-    m_Event->SetBackT(det, time);
+    double energy = backstrip->GetEnergyWidth(i);
+    double time = backstrip->GetTimeWidth(i);
+    int det = backstrip->GetDetectorWidth(i);
+    int strip = backstrip->GetStripWidth(i);
+    m_Event->SetBackE(det, strip, energy);
+    m_Event->SetBackT(det, strip, time);
   }
 }
 
@@ -338,12 +339,15 @@ void SuperX3::InitializeScorers() {
   //..... resistive starts..
   G4VPrimitiveScorer* resistivestrip =
       new DSSDScorers::PS_Resistive("resistivestrip", 1, SiliconFaceLength, SiliconFaceWidth, NbStrips);
+  G4VPrimitiveScorer* backstrip =
+      new DSSDScorers::PS_Rectangle("backstrip", 1, SiliconFaceLength, 1, SiliconFaceWidth, 4);
 
   G4VPrimitiveScorer* interaction = new InteractionScorers::PS_Interactions("Interaction", ms_InterCoord, 0);
   //... resistive ends......
   // and register it to the multifunctionnal detector
   //.... resistive starts...
   m_Scorer->RegisterPrimitive(resistivestrip);
+  m_Scorer->RegisterPrimitive(backstrip);
   m_Scorer->RegisterPrimitive(interaction);
   //.....resistive ends...
 

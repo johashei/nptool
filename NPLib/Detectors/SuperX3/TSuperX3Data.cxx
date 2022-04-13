@@ -53,9 +53,11 @@ void TSuperX3Data::Clear() {
 
   // (Back, E)
   fSuperX3_BackE_DetectorNbr.clear();
+  fSuperX3_BackE_StripNbr.clear();
   fSuperX3_BackE_Energy.clear();
   // (Back, T)
   fSuperX3_BackT_DetectorNbr.clear();
+  fSuperX3_BackT_StripNbr.clear();
   fSuperX3_BackT_Time.clear();
 }
 
