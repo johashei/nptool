@@ -230,7 +230,23 @@ void CS(double Energy, double Spin, double spdf, double angmom){
   /* Using Chi2 minimizaiton */
   cout << "USING CHI2 MINIMIZAITON..." << endl;
   TCanvas* c_Chi2Min = new TCanvas("c_Chi2Min","c_Chi2Min",1000,1000);
-  c_Chi2Min->SetLogy();
+  gStyle->SetPadLeftMargin(0.12);
+  gStyle->SetPadRightMargin(0.03);
+  //c_Chi2Min->SetLogy();
+
+  TPad *pad1 = new TPad("pad1","pad1",0,0.25,1,1);
+  TPad *pad2 = new TPad("pad2","pad2",0,0,1,0.25);
+  pad1->SetTopMargin(0.15);
+  pad1->SetBottomMargin(0.00001);
+  pad1->SetBorderMode(0);
+  pad1->SetLogy();
+  pad2->SetTopMargin(0.00001);
+  pad2->SetBottomMargin(0.3);
+  pad2->SetBorderMode(0);
+  pad1->Draw();
+  pad2->Draw();
+  pad1->cd();
+
   TGraph* Final = FindNormalisation(TheoryDiffCross,gdSdO);
   gdSdO->SetLineColor(kRed);
   gdSdO->SetMarkerColor(kRed);
@@ -244,8 +260,37 @@ void CS(double Energy, double Spin, double spdf, double angmom){
   /**/	           << " +- " << globalSerr;
   /**/  string textstring = textstream.str(); 
   gdSdO->SetTitle(textstring.c_str());
+  gdSdO->GetYaxis()->SetTitleOffset(1.3);
+  gdSdO->GetYaxis()->SetTitleSize(0.042);
+  gdSdO->GetXaxis()->SetRangeUser(103.,157.);
   gdSdO->Draw("AP");
   Final->Draw("SAME");
+
+
+  pad2->cd();
+  TGraphErrors* gResid = new TGraphErrors(*gdSdO);
+  for(int n=0; n < gResid->GetN(); n++){
+    double x = gdSdO->GetPointX(n);
+    double residual = gdSdO->GetPointY(n) - Final->Eval(x);
+    gResid->SetPoint(n,x,residual);
+    gResid->SetPointError(n,0,gdSdO->GetErrorY(n));
+  }
+  TLine* markzero = new TLine(103.,0.,157.,0.);
+  gResid->SetTitle("");
+  gResid->GetXaxis()->SetRangeUser(103.,157.);
+  gResid->GetYaxis()->SetTitle("Residuals");
+  gResid->GetYaxis()->SetTitleSize(0.15);
+  gResid->GetYaxis()->SetTitleOffset(0.36);
+  gResid->GetYaxis()->SetLabelSize(0.08);
+  gResid->GetYaxis()->SetNdivisions(305);
+  gResid->GetXaxis()->SetTitleSize(0.15);
+  gResid->GetXaxis()->SetTitleOffset(0.8);
+  gResid->GetXaxis()->SetLabelSize(0.1);
+  gResid->GetXaxis()->SetTickLength(0.1);
+  gResid->Draw();
+  markzero->SetLineStyle(2);
+  markzero->Draw("same");
+
   string savestring1 = "./CS2_Figures/"+tempstr+".root";
   string savestring2 = "./CS2_Figures/"+tempstr+".pdf";
   c_Chi2Min->SaveAs(savestring1.c_str());
@@ -298,6 +343,14 @@ vector<vector<double>> GetExpDiffCross(double Energy){
     list->Add(baseEx);
     cout << " !!!!!!!!!!!!!!!FINAL SCALING = " << trackScale << endl;
   }
+
+  /* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! */
+  /* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! */
+  // TEMPORARY!!! REMOVE LAST THREE BINS ON HIGH ENERGY STATES!!!
+  if(means[indexE] > 3.0){numbins-=3;}
+  /* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! */
+  /* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! */
+
 
   for(int i=0; i<numbins;i++){
     double bin = 5.;

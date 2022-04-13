@@ -20,6 +20,9 @@ NPL::Reaction Ti12C12C("47Ti(12C,12C)47Ti@355");
 
 void KnownLines_Ex(bool isVertical, double rangemin, double rangemax, Style_t lType, Color_t lColour);
 
+static double tCentre = 2700.;
+static double tRange =   400.;
+
 /* BASE FUNCTIONS */
 TF1* f_efficAGATA(){
   TF1 *f_E = new TF1("fit_1","TMath::Exp([0]+[1]*TMath::Log(x)+[2]*pow(TMath::Log(x),2.0)+[3]*pow(TMath::Log(x),3.0)+[4]*pow(TMath::Log(x),4.0))",10,6000);
@@ -40,10 +43,16 @@ TChain* Chain(std::string TreeName, std::vector<std::string>& file, bool EventLi
 void LoadChainNP(){
   vector<string> files;
   
-  files.push_back("../../../Outputs/Analysis/47Kdp_08Nov_PartI.root");
-  files.push_back("../../../Outputs/Analysis/47Kdp_08Nov_PartII.root");
+  //files.push_back("../../../Outputs/Analysis/47Kdp_08Nov_PartI.root");
+  //files.push_back("../../../Outputs/Analysis/47Kdp_08Nov_PartII.root");
+  
+  //files.push_back("../../../Outputs/Analysis/47Kdp_08Apr_PartI.root");
+  //files.push_back("../../../Outputs/Analysis/47Kdp_08Apr_PartII.root");
 
-//  files.push_back("../../../Outputs/Analysis/47Kdp_17Feb_AGATA_RotateBYpi.root");
+  files.push_back("../../../Outputs/Analysis/47Kdp_11Apr22_PartI.root");
+  files.push_back("../../../Outputs/Analysis/47Kdp_11Apr22_PartII.root");
+
+  //  files.push_back("../../../Outputs/Analysis/47Kdp_17Feb_AGATA_RotateBYpi.root");
 
 //  files.push_back("../../../Outputs/Analysis/47Kdp_19Feb_AGATA_RotateBXYZ.root");
 
@@ -111,12 +120,15 @@ void DrawParticleStates(TCanvas* canvas){
   TLine *l3800 = new TLine(3.792, 0.0, 3.792, max);
     l3800->SetLineStyle(kDotted);
     l3800->Draw("same");
+  TLine *l3870 = new TLine(3.876, 0.0, 3.876, max);
+    l3870->SetLineStyle(kDotted);
+    l3870->Draw("same");
   TLine *l4100 = new TLine(4.1, 0.0, 4.1, max);
     l4100->SetLineStyle(kDotted);
     l4100->Draw("same");
- TLine *l4400 = new TLine(4.4, 0.0, 4.4, max);
-    l4400->SetLineStyle(kDotted);
-    l4400->Draw("same");
+ TLine *l4510 = new TLine(4.51, 0.0, 4.51, max);
+    l4510->SetLineStyle(kDotted);
+    l4510->Draw("same");
 }
 
 void plot_kine(NPL::Reaction r, double Ex,Color_t c,int w, int s){
@@ -150,7 +162,7 @@ void AddTiStates(double E){
 void Draw_1DGamma(){
   TCanvas *cEg = new TCanvas("cEg","cEg",1000,1000);
   gStyle->SetOptStat(0);
-  chain->Draw("AddBack_EDC>>Eg(5000,0,5)","abs(T_MUGAST_VAMOS-2777)<600");
+  chain->Draw("AddBack_EDC>>Eg(5000,0,5)","abs(T_MUGAST_VAMOS-2700)<400");
   TH1F* Eg = (TH1F*) gDirectory->Get("Eg");
   Eg->GetXaxis()->SetTitle("E_{#gamma} [MeV]");
   Eg->GetYaxis()->SetTitle("Counts / 0.001 MeV");
@@ -166,13 +178,14 @@ void Load_1DGamma(){
 void Draw_1DGamma_MG(){
   TCanvas *cEg = new TCanvas("cEg","cEg",1000,1000);
   gStyle->SetOptStat(0);
-  chain->Draw("AddBack_EDC>>Eg(5000,0,5)","abs(T_MUGAST_VAMOS-2777)<600 && Mugast.TelescopeNumber>0 && Mugast.TelescopeNumber<8");
+  chain->Draw("AddBack_EDC>>Eg(5000,0,5)","abs(T_MUGAST_VAMOS-2700)<400 && Mugast.TelescopeNumber>0 && Mugast.TelescopeNumber<8");
   TH1F* Eg = (TH1F*) gDirectory->Get("Eg");
   Eg->GetXaxis()->SetTitle("E_{#gamma} [MeV]");
   Eg->GetYaxis()->SetTitle("Counts / 0.001 MeV");
 }
 
 void Load_1DGamma_MG(){
+  TCanvas *cEg = new TCanvas("cEg","cEg",1000,1000);
   TH1F *hEgMG = new TH1F("hEg","Loaded 1D Gamma Spectrum, MG gated",200,-1,9);
   TFile *file = new TFile("LoadHistograms/Load_1DGamma_MG.root","READ");
   hEgMG = (TH1F*)file->Get("Eg");
@@ -182,23 +195,33 @@ void Load_1DGamma_MG(){
 void Draw_1DGamma_MM(){
   TCanvas *cEg = new TCanvas("cEg","cEg",1000,1000);
   gStyle->SetOptStat(0);
-  chain->Draw("AddBack_EDC>>Eg(5000,0,5)","abs(T_MUGAST_VAMOS-2777)<600 && MUST2.TelescopeNumber>0 && MUST2.TelescopeNumber<5");
+  chain->Draw("AddBack_EDC>>Eg(5000,0,5)","abs(T_MUGAST_VAMOS-2700)<400 && MUST2.TelescopeNumber>0 && MUST2.TelescopeNumber<5");
   TH1F* Eg = (TH1F*) gDirectory->Get("Eg");
   Eg->GetXaxis()->SetTitle("E_{#gamma} [MeV]");
   Eg->GetYaxis()->SetTitle("Counts / 0.001 MeV");
 }
 
 void Load_1DParticle(){
+  TCanvas *cEg = new TCanvas("cEg","cEg",1000,1000);
   TH1F *hEx = new TH1F("hEx","Loaded 1D Particle Spectrum",200,-1,9);
   TFile *file = new TFile("LoadHistograms/Load_1DParticle.root","READ");
   hEx = (TH1F*)file->Get("Ep");
   hEx->Draw();
 }
 
+void Load_1DParticle_SubPhaseSpace(){
+  TCanvas *cEg = new TCanvas("cEg","cEg",1000,1000);
+  TH1F *hSubtracted = new TH1F("hSubtracted",
+		  "Loaded 1D Particle Spectrum, Phase Spacae Subtracted (17Mar)",200,-1,9);
+  TFile *file = new TFile("LoadHistograms/Load_1DParticle_SubPhaseSpace.root","READ");
+  hSubtracted = (TH1F*)file->Get("subtracted");
+  hSubtracted->Draw();
+}
+
 void Draw_1DParticle(){
   TCanvas *cEx = new TCanvas("cEx","cEx",1000,1000);
   chain->Draw("Ex>>Ep(200,-1,9)",
-	"abs(T_MUGAST_VAMOS-2777)<600 && Mugast.TelescopeNumber>0 && Mugast.TelescopeNumber<8",
+	"abs(T_MUGAST_VAMOS-2700)<400 && Mugast.TelescopeNumber>0 && Mugast.TelescopeNumber<8 && Ex@.size()==1",
 	"");
   TH1F* Ep = (TH1F*) gDirectory->Get("Ep");
 //  Ep->SetTitle("Ex");
@@ -211,7 +234,7 @@ void Draw_1DParticle(){
 void Draw_1DParticleMUST2(){
   TCanvas *cEx = new TCanvas("cEx","cEx",1000,1000);
   chain->Draw("Ex>>Ep(200,-1,9)",
-	"abs(T_MUGAST_VAMOS-2777)<600 && MUST2.TelescopeNumber>0 && MUST2.TelescopeNumber<4",
+	"abs(T_MUGAST_VAMOS-2700)<400 && MUST2.TelescopeNumber>0 && Ex@.size()==1 && MUST2.TelescopeNumber<4",
 	"");
   TH1F* Ep = (TH1F*) gDirectory->Get("Ep");
 //  Ep->SetTitle("Ex");
@@ -220,6 +243,7 @@ void Draw_1DParticleMUST2(){
 }
 
 void Load_2DParticleGamma(){
+  TCanvas *cExEg = new TCanvas("cExEg","cExEg",1000,1000);
   TH2F *hExEg = new TH2F("hExEg","Loaded 2D Particle-Gamma",200,-1,9,2500,0,5);
   TFile *file = new TFile("LoadHistograms/Load_2DParticleGamma.root","READ");
   hExEg = (TH2F*)file->Get("ExEg");
@@ -229,7 +253,7 @@ void Load_2DParticleGamma(){
 void Draw_2DParticleGamma(){
   TCanvas *cExEg = new TCanvas("cExEg","cExEg",1000,1000);
   chain->Draw("AddBack_EDC:Ex>>ExEg(200,-1,9,2500,0,5)",
-        "abs(T_MUGAST_VAMOS-2777)<600 && Mugast.TelescopeNumber>0 && Mugast.TelescopeNumber<8",
+        "abs(T_MUGAST_VAMOS-2700)<400 && Mugast.TelescopeNumber>0 && Mugast.TelescopeNumber<8 && Ex@.size()==1 ",
 	"colz");
   TH1F* ExEg = (TH1F*) gDirectory->Get("ExEg");
   ExEg->SetTitle("Ex-Egamma");
@@ -241,6 +265,7 @@ void Draw_2DParticleGamma(){
 }
 
 void Load_2DGammaGamma(){
+  TCanvas *cEgEg = new TCanvas("cEgEg","cEgEg",1000,1000);
   TH2F *hEgEg = new TH2F("hEgEg","Loaded 2D Gamma-Gamma",200,-1,9,2500,0,5);
   TFile *file = new TFile("LoadHistograms/Load_2DGammaGamma.root","READ");
   hEgEg = (TH2F*)file->Get("gg");
@@ -282,9 +307,9 @@ void gg(){
 
 void Draw_2DGammaGamma_TimeGated(){
   TCanvas *cEgEg = new TCanvas("cEgEg","cEgEg",1000,1000);
-  chain->Draw("AddBack_EDC:AddBack_EDC2>>EgEg(999,0.005,5,999,0.005,5)","abs(T_MUGAST_VAMOS-2777)<600","colz");
+  chain->Draw("AddBack_EDC:AddBack_EDC2>>EgEg(999,0.005,5,999,0.005,5)","abs(T_MUGAST_VAMOS-2700)<400","colz");
   TH1F* EgEg = (TH1F*) gDirectory->Get("EgEg");
-  chain->Draw("AddBack_EDC2:AddBack_EDC>>EgEg2(999,0.005,5,999,0.005,5)","abs(T_MUGAST_VAMOS-2777)<600","colz");
+  chain->Draw("AddBack_EDC2:AddBack_EDC>>EgEg2(999,0.005,5,999,0.005,5)","abs(T_MUGAST_VAMOS-2700)<400","colz");
   TH1F* EgEg2 = (TH1F*) gDirectory->Get("EgEg2");
   EgEg->Add(EgEg2,1);
   EgEg->SetTitle("Egamma-Egamma");
@@ -298,8 +323,8 @@ void Draw_2DGammaGamma_TimeGated(){
 }
 
 void GateGamma_SeeParticle(double gamma, double width, double binsize){
-  string gating = "abs(T_MUGAST_VAMOS-2777)<600 && Mugast.TelescopeNumber>0 && Mugast.TelescopeNumber<8 && abs(AddBack_EDC-" 
-  //string gating = "abs(T_MUGAST_VAMOS-2777)<600 && Mugast.TelescopeNumber!=3 && abs(AddBack_EDC-" 
+  string gating = "abs(T_MUGAST_VAMOS-2700)<400 && Mugast.TelescopeNumber>0 && Mugast.TelescopeNumber<8 && Ex@.size()==1 && abs(AddBack_EDC-" 
+  //string gating = "abs(T_MUGAST_VAMOS-2700)<400 && Mugast.TelescopeNumber!=3 && abs(AddBack_EDC-" 
       + to_string(gamma)
       + ")<"
       + to_string(width);
@@ -328,11 +353,11 @@ cout << " NO MG3 IN THIS ONE!!!!!!!!!!!!!!!!!!!!!!!!!" << endl;
 }
 
 void GateGamma_SeeParticle_WithBG(double gamma, double width, double bg){
-  string gating = "abs(T_MUGAST_VAMOS-2777)<600 && Mugast.TelescopeNumber>0 && Mugast.TelescopeNumber<8 && abs(AddBack_EDC-" 
+  string gating = "abs(T_MUGAST_VAMOS-2700)<400 && Mugast.TelescopeNumber>0 && Mugast.TelescopeNumber<8 && Ex@.size()==1 && abs(AddBack_EDC-" 
       + to_string(gamma)
       + ")<"
       + to_string(width);
-  string bggate = "abs(T_MUGAST_VAMOS-2777)<600 && Mugast.TelescopeNumber>0 && Mugast.TelescopeNumber<8 && abs(AddBack_EDC-" 
+  string bggate = "abs(T_MUGAST_VAMOS-2700)<400 && Mugast.TelescopeNumber>0 && Mugast.TelescopeNumber<8 && Ex@.size()==1 && abs(AddBack_EDC-" 
       + to_string(bg)
       + ")<"
       + to_string(width);
@@ -363,11 +388,11 @@ void GateGamma_SeeParticle_WithBG(double gamma, double width, double bg){
 }
 
 void GateGamma_SeeParticle_WithBG(double gamma, double width, double bg, double widthbg){
-  string gating = "abs(T_MUGAST_VAMOS-2777)<600 && Mugast.TelescopeNumber>0 && Mugast.TelescopeNumber<8 && abs(AddBack_EDC-" 
+  string gating = "abs(T_MUGAST_VAMOS-2700)<400 && Mugast.TelescopeNumber>0 && Mugast.TelescopeNumber<8 && Ex@.size()==1 && abs(AddBack_EDC-" 
       + to_string(gamma)
       + ")<"
       + to_string(width);
-  string bggate = "abs(T_MUGAST_VAMOS-2777)<600 && Mugast.TelescopeNumber>0 && Mugast.TelescopeNumber<8 && abs(AddBack_EDC-" 
+  string bggate = "abs(T_MUGAST_VAMOS-2700)<400 && Mugast.TelescopeNumber>0 && Mugast.TelescopeNumber<8 && Ex@.size()==1 && abs(AddBack_EDC-" 
       + to_string(bg)
       + ")<"
       + to_string(widthbg);
@@ -401,10 +426,35 @@ void GateGamma_SeeParticle_WithBG(double gamma, double width, double bg, double 
   DrawParticleStates(cEx_Gate);
 }
 
-void GateParticle_SeeGamma(double particle, double width){
+void AddGammaLines(TH1F* hist, double particle, double ymax){
+  string base = "sub ";
+
+  for(int i=1; i<means.size();i++){
+    string name = base + to_string(means.at(i));
+    TLine *line = new TLine(particle-means.at(i), 0.0, particle-means.at(i), ymax);
+    line->SetLineColor(kBlack); line->SetLineStyle(kDotted);
+    line->Draw();
+    TText *text = new TText((1.-(means.at(i)/particle))*particle,0.8*ymax,name.c_str());
+    text->SetTextAngle(90);
+    //text->SetTextSize(40);
+    text->Draw();
+  }
+
+}
+
+void AddPlacedGammas(TH1F* hist, double ymax){
+  hist->Draw();
+  for(int i=0; i<knowngammas.size();i++){
+    TLine *line = new TLine(knowngammas.at(i), 0.0, knowngammas.at(i), ymax);
+    line->SetLineColor(kBlack); line->SetLineStyle(kDotted);
+    line->Draw();
+  }
+}
+
+void GateParticle_SeeGamma(double particle, double width){ 
   gStyle->SetOptStat("nemMrRi");
 
-  string gating = "abs(T_MUGAST_VAMOS-2777)<600 && Mugast.TelescopeNumber<8 && Mugast.TelescopeNumber>0 && abs(Ex-" 
+  string gating = "abs(T_MUGAST_VAMOS-2700)<400 && Mugast.TelescopeNumber<8 && Mugast.TelescopeNumber>0 && Ex@.size()==1 && abs(Ex-" 
       + to_string(particle)
       + ")<"
       + to_string(width);
@@ -423,6 +473,11 @@ void GateParticle_SeeGamma(double particle, double width){
   cEg_Gate->Update();
   TLine *limit = new TLine(particle, 0.0, particle, cEg_Gate->GetUymax());
   limit->SetLineColor(kRed);
+
+  EgGate->Draw();
+  limit->Draw();
+  AddGammaLines(EgGate, particle, cEg_Gate->GetUymax());
+/*
   TLine *sub0143 = new TLine(particle-0.143, 0.0, particle-0.143, cEg_Gate->GetUymax());
   sub0143->SetLineColor(kBlack); sub0143->SetLineStyle(kDotted);
   TLine *sub0279 = new TLine(particle-0.279, 0.0, particle-0.279, cEg_Gate->GetUymax());
@@ -442,14 +497,16 @@ void GateParticle_SeeGamma(double particle, double width){
   sub0143->Draw();
   sub0279->Draw();
   sub0728->Draw();
+*/
+
 }
 
 void GateParticle_SeeGamma_WithBG(double particle, double width, double bg){
-  string gating = "abs(T_MUGAST_VAMOS-2777)<600 && abs(Ex-" 
+  string gating = "abs(T_MUGAST_VAMOS-2700)<400 && Ex@.size()==1 && abs(Ex-" 
       + to_string(particle)
       + ")<"
       + to_string(width);
-  string bggate = "abs(T_MUGAST_VAMOS-2777)<600 && abs(Ex-" 
+  string bggate = "abs(T_MUGAST_VAMOS-2700)<400 && Ex@.size()==1 && abs(Ex-" 
       + to_string(bg)
       + ")<"
       + to_string(width);
@@ -614,13 +671,13 @@ TCanvas *cggGate = new TCanvas("cggGate","cggGate",1000,1000);
 void CompareExsAt4MeV(){
   TCanvas *cExCompare = new TCanvas("cExCompare","cExCompare",1000,1000);
   chain->Draw("AddBack_EDC>>gate3p0(1000,0,10)",
-		  "abs(T_MUGAST_VAMOS-2777)<600 && abs(Ex-3.0)<0.1","same");
+		  "abs(T_MUGAST_VAMOS-2700)<400 && abs(Ex-3.0)<0.1","same");
   chain->Draw("AddBack_EDC>>gate3p5(1000,0,10)",
-		  "abs(T_MUGAST_VAMOS-2777)<600 && abs(Ex-3.5)<0.1","same");
+		  "abs(T_MUGAST_VAMOS-2700)<400 && abs(Ex-3.5)<0.1","same");
   chain->Draw("AddBack_EDC>>gate3p9(1000,0,10)",
-		  "abs(T_MUGAST_VAMOS-2777)<600 && abs(Ex-3.9)<0.1","same");
+		  "abs(T_MUGAST_VAMOS-2700)<400 && abs(Ex-3.9)<0.1","same");
   chain->Draw("AddBack_EDC>>gate4p3(1000,0,10)",
-		  "abs(T_MUGAST_VAMOS-2777)<600 && abs(Ex-4.3)<0.1","same");
+		  "abs(T_MUGAST_VAMOS-2700)<400 && abs(Ex-4.3)<0.1","same");
  
   TH1F* gate3p0 = (TH1F*) gDirectory->Get("gate3p0");
     gate3p0->GetXaxis()->SetTitle("Egamma [MeV]");
@@ -648,7 +705,7 @@ void CompareSimExp(){
   TCanvas *cSimExp = new TCanvas("cSimExp","cSimExp",1000,1000);
   gStyle->SetOptStat(0);
   
-  chain->Draw("Ex>>hexp(100,-1,9)","abs(T_MUGAST_VAMOS-2777)<600","");
+  chain->Draw("Ex>>hexp(100,-1,9)","abs(T_MUGAST_VAMOS-2700)<400","");
   TH1F* hexp = (TH1F*) gDirectory->Get("hexp");
   hexp->SetTitle("Comparing Simulation to Experiment");
   hexp->GetXaxis()->SetTitle("Ex [MeV]");
@@ -724,12 +781,12 @@ void CompareSimExp(){
 void MugastMisalignment(){
   TCanvas *cMisaligned = new TCanvas("cMisaligned","cMisaligned",1000,1000);
   gStyle->SetOptStat(0);
-  chain->Draw("Ex>>hcG_T1(120,-1,5)","abs(T_MUGAST_VAMOS-2777)<600 && Mugast.TelescopeNumber==1","");
-  chain->Draw("Ex>>hcG_T2(120,-1,5)","abs(T_MUGAST_VAMOS-2777)<600 && Mugast.TelescopeNumber==2","same");
-  chain->Draw("Ex>>hcG_T3(120,-1,5)","abs(T_MUGAST_VAMOS-2777)<600 && Mugast.TelescopeNumber==3","same");
-  chain->Draw("Ex>>hcG_T4(120,-1,5)","abs(T_MUGAST_VAMOS-2777)<600 && Mugast.TelescopeNumber==4","same");
-  chain->Draw("Ex>>hcG_T5(120,-1,5)","abs(T_MUGAST_VAMOS-2777)<600 && Mugast.TelescopeNumber==5","same");
-  chain->Draw("Ex>>hcG_T7(120,-1,5)","abs(T_MUGAST_VAMOS-2777)<600 && Mugast.TelescopeNumber==7","same");
+  chain->Draw("Ex>>hcG_T1(120,-1,5)","abs(T_MUGAST_VAMOS-2700)<400 && Mugast.TelescopeNumber==1","");
+  chain->Draw("Ex>>hcG_T2(120,-1,5)","abs(T_MUGAST_VAMOS-2700)<400 && Mugast.TelescopeNumber==2","same");
+  chain->Draw("Ex>>hcG_T3(120,-1,5)","abs(T_MUGAST_VAMOS-2700)<400 && Mugast.TelescopeNumber==3","same");
+  chain->Draw("Ex>>hcG_T4(120,-1,5)","abs(T_MUGAST_VAMOS-2700)<400 && Mugast.TelescopeNumber==4","same");
+  chain->Draw("Ex>>hcG_T5(120,-1,5)","abs(T_MUGAST_VAMOS-2700)<400 && Mugast.TelescopeNumber==5","same");
+  chain->Draw("Ex>>hcG_T7(120,-1,5)","abs(T_MUGAST_VAMOS-2700)<400 && Mugast.TelescopeNumber==7","same");
   TH1F* hcG_T1 = (TH1F*) gDirectory->Get("hcG_T1");
   hcG_T1->SetTitle("Misalignment of MUGAST telescopes");
   hcG_T1->GetXaxis()->SetTitle("E_{x} [MeV]");
@@ -780,7 +837,7 @@ void MugastMisalignment(double gamma, double width){
   TCanvas *cMisaligned = new TCanvas("cMisaligned","cMisaligned",1000,1000);
   gStyle->SetOptStat(0);
 
-  string base = "abs(T_MUGAST_VAMOS-2777)<600 && abs(AddBack_EDC-" + to_string(gamma) 
+  string base = "abs(T_MUGAST_VAMOS-2700)<400 && abs(AddBack_EDC-" + to_string(gamma) 
 	      + ")<" + to_string(width) + " && Mugast.TelescopeNumber==";
   string str1 = base + "1";
   string str2 = base + "2";
@@ -845,7 +902,7 @@ void ExPhiLab(){
   TCanvas *diagnosePhi = new TCanvas("diagnosePhi","diagnosePhi",1000,1000);
   chain->Draw(
     "Ex:PhiLab>>phiHist(180,-180,180,120,-1,5)", 
-    "abs(T_MUGAST_VAMOS-2777)<600 && Mugast.TelescopeNumber>0 && Mugast.TelescopeNumber<8",
+    "abs(T_MUGAST_VAMOS-2700)<400 && Mugast.TelescopeNumber>0 && Mugast.TelescopeNumber<8",
     "colz");
   TH1F* phiHist = (TH1F*) gDirectory->Get("phiHist");  
   phiHist->GetXaxis()->SetTitle("Phi (degrees)");
@@ -889,7 +946,7 @@ void ExPhiLab_ForPoster(){
   diagnosePhi->cd(1);
   chain->Draw(
     "Ex:PhiLab>>phiHist(180,-180,180,40,-1,+1)", 
-    "abs(T_MUGAST_VAMOS-2777)<600 && Mugast.TelescopeNumber>0 && Mugast.TelescopeNumber<8",
+    "abs(T_MUGAST_VAMOS-2700)<400 && Mugast.TelescopeNumber>0 && Mugast.TelescopeNumber<8",
     "colz");
   TH1F* phiHist = (TH1F*) gDirectory->Get("phiHist");  
   phiHist->GetXaxis()->SetTitle("#Phi_{Lab} [deg]");
@@ -904,7 +961,7 @@ void ExPhiLab_ForPoster(){
   TTree* tree = (TTree*) file->FindObjectAny("PhysicsTree");
   diagnosePhi->cd(2);
   tree->Draw("Ex:PhiLab>>phiHist2(180,-180,180,40,-1,+1)", 
-    "abs(T_MUGAST_VAMOS-2777)<600 && Mugast.TelescopeNumber>0 && Mugast.TelescopeNumber<8",
+    "abs(T_MUGAST_VAMOS-2700)<400 && Mugast.TelescopeNumber>0 && Mugast.TelescopeNumber<8",
     "colz");
   TH1F* phiHist2 = (TH1F*) gDirectory->Get("phiHist2");  
   
@@ -918,7 +975,7 @@ void ExThetaLab(){
   TCanvas *diagnoseTheta = new TCanvas("diagnoseTheta","diagnoseTheta",1000,1000);
   chain->Draw(
     "Ex:ThetaLab>>thetaHist(60,100,160,100,-1,9)", 
-    "abs(T_MUGAST_VAMOS-2777)<600 && Mugast.TelescopeNumber>0 && Mugast.TelescopeNumber<8",
+    "abs(T_MUGAST_VAMOS-2700)<400 && Mugast.TelescopeNumber>0 && Mugast.TelescopeNumber<8",
     "colz");
   TH1F* thetaHist = (TH1F*) gDirectory->Get("thetaHist");  
   thetaHist->GetXaxis()->SetTitle("Theta (degrees)");
@@ -963,7 +1020,7 @@ void ExThetaLab(){
 void ExThetaLab(double gamma, double width){
   TCanvas *diagnoseTheta = new TCanvas("diagnoseTheta","diagnoseTheta",1000,1000);
 
-  string gating = "abs(T_MUGAST_VAMOS-2777)<600 && Mugast.TelescopeNumber>0 && Mugast.TelescopeNumber<8 && abs(AddBack_EDC-"
+  string gating = "abs(T_MUGAST_VAMOS-2700)<400 && Mugast.TelescopeNumber>0 && Mugast.TelescopeNumber<8 && abs(AddBack_EDC-"
 	        + to_string(gamma) + ") < " + to_string(width); 
 
   chain->Draw("Ex:ThetaLab>>thetaHist(60,100,160,100,-1,9)", gating.c_str(), "colz");
@@ -1015,11 +1072,13 @@ void ExThetaLab(double gamma, double width){
 void ELabThetaLab(){
   TCanvas *cELabTLaab = new TCanvas("cELabTLab","cELabTLab",1000,1000);
   gStyle->SetOptStat(0);
-  chain->Draw("ELab:ThetaLab>>hKine(360,0,180,450,0,7)","abs(T_MUGAST_VAMOS-2777)<600","col");
+  chain->Draw("ELab:ThetaLab>>hKine(360,0,180,450,0,7)","abs(T_MUGAST_VAMOS-2700)<400","col");
   TH2F* hKine = (TH2F*) gDirectory->Get("hKine");
   hKine->SetTitle("");
   hKine->GetXaxis()->SetTitle("#theta_{lab} [deg]");
   hKine->GetYaxis()->SetTitle("E_{lab} [MeV]");
+  plot_kine(Kdt, 0.000, kBlack, 2, 1);
+  
   plot_kine(Kdp, 0.000, kBlack, 2, 1);
   plot_kine(Kdp, 4.644, kBlack, 2, 1);
 
@@ -1038,26 +1097,25 @@ void ELabThetaLab(){
   plot_kine(Tidp, 0.000, kBlack, 2, 1);
   plot_kine(Tidp, 5.652, kBlack, 2, 6); //strongest populated state according to PDBarnes(1965)
 
-  plot_kine(K12C12C, 0.000, kBlack, 2, 1);
 }
 
 void XYMust2(){
   TCanvas *cXYMust2 = new TCanvas("cXYMM","cXYMM",1000,1000);
   chain->Draw("Y:X>>hXYMust2(300,-150,+150,300,-150,+150)",
-		  "abs(T_MUGAST_VAMOS-2777)<600 && MUST2.TelescopeNumber>0 && MUST2.TelescopeNumber<5",
+		  "abs(T_MUGAST_VAMOS-2700)<400 && MUST2.TelescopeNumber>0 && MUST2.TelescopeNumber<5",
 		  "colz");
 }
 
 void XYMugast(){
   TCanvas *cXYMugast = new TCanvas("cXYMG","cXYMG",1000,1000);
   chain->Draw("Y:X>>hXYMugast(150,-150,+150, 150,-150,+150)",
-		  "abs(T_MUGAST_VAMOS-2777)<600 && Mugast.TelescopeNumber>0 && Mugast.TelescopeNumber<8",
+		  "abs(T_MUGAST_VAMOS-2700)<400 && Mugast.TelescopeNumber>0 && Mugast.TelescopeNumber<8",
 		  "colz");
 }
 
 void MM5_ELabThetaLab(){
   chain->Draw("ELab:ThetaLab>>hMM5_el(180,50,95,700,0,7)",
-		  "abs(T_MUGAST_VAMOS-2777)<600 && MUST2.TelescopeNumber==5",
+		  "abs(T_MUGAST_VAMOS-2700)<400 && MUST2.TelescopeNumber==5",
 		  "colz");
   TH2F* hMM5_el = (TH2F*) gDirectory->Get("hMM5_el");
   hMM5_el->GetXaxis()->SetTitle("Theta Lab");
@@ -1069,7 +1127,7 @@ void MM5_ELabThetaLab(){
 
 void MM5_RawEThetaLab(){
   chain->Draw("RawEnergy:ThetaLab>>hMM5_el(90,50,95,700,0,7)",
-		  "abs(T_MUGAST_VAMOS-2777)<600 && MUST2.TelescopeNumber==5",
+		  "abs(T_MUGAST_VAMOS-2700)<400 && MUST2.TelescopeNumber==5",
 		  "colz");
 
   //plot_kine(Kdd, 0, kGreen+2, 2, 9);
@@ -1078,7 +1136,7 @@ void MM5_RawEThetaLab(){
 
 void MM5_ExThetaLab(){
   chain->Draw("Ex:ThetaLab>>hMM5_ex(180,0,180,400,0,20)",
-		  "abs(T_MUGAST_VAMOS-2777)<600 && Must2.TelescopeNumber==5",
+		  "abs(T_MUGAST_VAMOS-2700)<400 && Must2.TelescopeNumber==5",
 		  "colz");
 }
 
@@ -1089,10 +1147,10 @@ void ExMugast_ForPoster(){
   forPoster->Divide(1,2);
   forPoster->cd(1);
 
-  chain->Draw("Ex>>hcG_T1(120,-1,5)","abs(T_MUGAST_VAMOS-2777)<600 && Mugast.TelescopeNumber==1","same");
-  chain->Draw("Ex>>hcG_T2(120,-1,5)","abs(T_MUGAST_VAMOS-2777)<600 && Mugast.TelescopeNumber==2","same");
-  chain->Draw("Ex>>hcG_T5(120,-1,5)","abs(T_MUGAST_VAMOS-2777)<600 && Mugast.TelescopeNumber==5","same");
-  chain->Draw("Ex>>hcG_T7(120,-1,5)","abs(T_MUGAST_VAMOS-2777)<600 && Mugast.TelescopeNumber==7","same");
+  chain->Draw("Ex>>hcG_T1(120,-1,5)","abs(T_MUGAST_VAMOS-2700)<400 && Mugast.TelescopeNumber==1","same");
+  chain->Draw("Ex>>hcG_T2(120,-1,5)","abs(T_MUGAST_VAMOS-2700)<400 && Mugast.TelescopeNumber==2","same");
+  chain->Draw("Ex>>hcG_T5(120,-1,5)","abs(T_MUGAST_VAMOS-2700)<400 && Mugast.TelescopeNumber==5","same");
+  chain->Draw("Ex>>hcG_T7(120,-1,5)","abs(T_MUGAST_VAMOS-2700)<400 && Mugast.TelescopeNumber==7","same");
   TH1F* hcG_T1 = (TH1F*) gDirectory->Get("hcG_T1");
   hcG_T1->GetXaxis()->SetRangeUser(-1.0,+1.0);
   TH1F* hcG_T2 = (TH1F*) gDirectory->Get("hcG_T2");
@@ -1137,10 +1195,10 @@ void ExMugast_ForPoster(){
   forPoster->cd(2);
 
 
-  tree->Draw("Ex>>h_T1(120,-1,5)","abs(T_MUGAST_VAMOS-2777)<600 && Mugast.TelescopeNumber==1","same");
-  tree->Draw("Ex>>h_T2(120,-1,5)","abs(T_MUGAST_VAMOS-2777)<600 && Mugast.TelescopeNumber==2","same");
-  tree->Draw("Ex>>h_T5(120,-1,5)","abs(T_MUGAST_VAMOS-2777)<600 && Mugast.TelescopeNumber==5","same");
-  tree->Draw("Ex>>h_T7(120,-1,5)","abs(T_MUGAST_VAMOS-2777)<600 && Mugast.TelescopeNumber==7","same");
+  tree->Draw("Ex>>h_T1(120,-1,5)","abs(T_MUGAST_VAMOS-2700)<400 && Mugast.TelescopeNumber==1","same");
+  tree->Draw("Ex>>h_T2(120,-1,5)","abs(T_MUGAST_VAMOS-2700)<400 && Mugast.TelescopeNumber==2","same");
+  tree->Draw("Ex>>h_T5(120,-1,5)","abs(T_MUGAST_VAMOS-2700)<400 && Mugast.TelescopeNumber==5","same");
+  tree->Draw("Ex>>h_T7(120,-1,5)","abs(T_MUGAST_VAMOS-2700)<400 && Mugast.TelescopeNumber==7","same");
   TH1F* h_T1 = (TH1F*) gDirectory->Get("h_T1");
   h_T1->GetXaxis()->SetRangeUser(-1.0,+1.0);
   TH1F* h_T2 = (TH1F*) gDirectory->Get("h_T2");
@@ -1192,7 +1250,7 @@ void AGATA_efficiency(double Energy_keV){
 }
 
 void ElasticsGate(double EMin, double EMax){
-  string gates = "abs(T_MUGAST_VAMOS-2777)<600 && MUST2.TelescopeNumber==5 && ELab > " 
+  string gates = "abs(T_MUGAST_VAMOS-2700)<400 && MUST2.TelescopeNumber==5 && ELab > " 
 	       + to_string(EMin) 
 	       + " && ELab < " 
 	       + to_string(EMax);
@@ -1201,7 +1259,7 @@ void ElasticsGate(double EMin, double EMax){
 }
 
 void GateThetaCM(double minTheta, double maxTheta, double binsize){
-  string gating = "abs(T_MUGAST_VAMOS-2777)<600 && Mugast.TelescopeNumber>0 && Mugast.TelescopeNumber<8 && ThetaCM > " 
+  string gating = "abs(T_MUGAST_VAMOS-2700)<400 && Mugast.TelescopeNumber>0 && Mugast.TelescopeNumber<8 && ThetaCM > " 
       + to_string(minTheta)
       + " && ThetaCM < "
       + to_string(maxTheta);
@@ -1221,7 +1279,7 @@ void GateThetaCM(double minTheta, double maxTheta, double binsize){
 }
 
 void GateThetaLab(double minTheta, double maxTheta, double binsize){
-  string gating = "abs(T_MUGAST_VAMOS-2777)<600 && Mugast.TelescopeNumber>0 && Mugast.TelescopeNumber<8 && ThetaLab > " 
+  string gating = "abs(T_MUGAST_VAMOS-2700)<400 && Mugast.TelescopeNumber>0 && Mugast.TelescopeNumber<8 && ThetaLab > " 
       + to_string(minTheta)
       + " && ThetaLab < "
       + to_string(maxTheta);
@@ -1240,8 +1298,40 @@ void GateThetaLab(double minTheta, double maxTheta, double binsize){
   DrawParticleStates(cEx_ThetaLabGate);
 }
 
+void GateThetaLab_AllOverlaid(){
+  double binsize = 0.1;
+  string basegate = "abs(T_MUGAST_VAMOS-2700)<400 && Mugast.TelescopeNumber>0 && Mugast.TelescopeNumber<8 && ";
+      //+ to_string(minTheta)
+      //+ " && ThetaLab < "
+      //+ to_string(maxTheta);
+
+  string ytitle = "Counts / " + to_string(binsize) + " MeV";
+  string draw = "Ex>>Ex_ThetaLabGate(" + to_string(10.0/binsize) + ",-1,9)";
+
+  TCanvas *cThetaLabGates = new TCanvas("cThetaLabGates","cThetaLabGates",1000,1000);
+  
+  /* 105 to 110 */
+  
+  for(int i=0; i<9;i++){
+    int min = 105+(i*5);
+    int max = 110+(i*5);
+
+
+    string gate = basegate + "ThetaLab > " + to_string(min) + " && ThetaLab < " + to_string(max);
+    string histname = "Gate" + to_string(min) + "to" + to_string(max); 
+    string draw = "Ex>>" + histname + "(100,-1,9)";
+
+    
+    chain->Draw(draw.c_str(),gate.c_str(),"same");
+    TH1F* hist = (TH1F*) gDirectory->Get(histname.c_str());
+    hist->SetLineColor(i+1);
+
+  }
+
+}
+
 void GateThetaLab_MultiWrite(double startTheta, double finishTheta, int numGates, double binsize){
-  string core = "abs(T_MUGAST_VAMOS-2777)<600 && Mugast.TelescopeNumber>0 && Mugast.TelescopeNumber<8 && ThetaLab > ";
+  string core = "abs(T_MUGAST_VAMOS-2700)<400 && Mugast.TelescopeNumber>0 && Mugast.TelescopeNumber<8 && ThetaLab > ";
   string ytitle = "Counts / " + to_string(binsize) + " MeV";
   double gatesize = (finishTheta-startTheta)/numGates;
   TList* list = new TList();
@@ -1385,7 +1475,7 @@ void ggLoad(TTree* chain, TH2F* h){
 
  
        // Gate on Timing
-//       if(abs(T_MUGAST_VAMOS-2777)<600){
+//       if(abs(T_MUGAST_VAMOS-2700)<400){
          int gammaMultip = AddBack_EDC->size();
          if(gammaMultip>=1){
         
@@ -1446,7 +1536,7 @@ void gggLoad(TTree* chain, THnSparseF* h){
 //     for(int m=0; m<multiplicity; m++){
  
        // Gate on Timing
-//       if(abs(T_MUGAST_VAMOS-2777)<600){
+//       if(abs(T_MUGAST_VAMOS-2700)<400){
          int gammaMultip = AddBack_EDC->size();
          if(gammaMultip>=2){
 	   double e1,e2,e3;
