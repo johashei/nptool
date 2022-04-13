@@ -47,6 +47,8 @@
 #include "NPOptionManager.h"
 #include "NPSDetectorFactory.hh"
 #include "ObsoleteGeneralScorers.hh"
+
+#include "InteractionScorers.hh"
 #include "RootOutput.h"
 #include "SuperX3.hh"
 #include "TSuperX3Data.h"
@@ -336,10 +338,13 @@ void SuperX3::InitializeScorers() {
   //..... resistive starts..
   G4VPrimitiveScorer* resistivestrip =
       new DSSDScorers::PS_Resistive("resistivestrip", 1, SiliconFaceLength, SiliconFaceWidth, NbStrips);
+
+  G4VPrimitiveScorer* interaction = new InteractionScorers::PS_Interactions("Interaction", ms_InterCoord, 0);
   //... resistive ends......
   // and register it to the multifunctionnal detector
   //.... resistive starts...
   m_Scorer->RegisterPrimitive(resistivestrip);
+  m_Scorer->RegisterPrimitive(interaction);
   //.....resistive ends...
 
   //  Add All Scorer to the Global Scorer Manager
