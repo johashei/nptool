@@ -311,12 +311,12 @@ void SuperX3::ReadSensitive(const G4Event*) {
     m_Event->SetDownE(det, strip, energy);
     m_Event->SetDownT(det, strip, time);
   }
-  auto sizeBack = backstrip->GetWidthMult();
+  auto sizeBack = backstrip->GetLengthMult();
   for (unsigned int i = 0; i < sizeBack; i++) {
-    double energy = backstrip->GetEnergyWidth(i);
-    double time = backstrip->GetTimeWidth(i);
-    int det = backstrip->GetDetectorWidth(i);
-    int strip = backstrip->GetStripWidth(i);
+    double energy = backstrip->GetEnergyLength(i);
+    double time = backstrip->GetTimeLength(i);
+    int det = backstrip->GetDetectorLength(i);
+    int strip = backstrip->GetStripLength(i);
     m_Event->SetBackE(det, strip, energy);
     m_Event->SetBackT(det, strip, time);
   }
@@ -340,7 +340,7 @@ void SuperX3::InitializeScorers() {
   G4VPrimitiveScorer* resistivestrip =
       new DSSDScorers::PS_Resistive("resistivestrip", 1, SiliconFaceLength, SiliconFaceWidth, NbStrips);
   G4VPrimitiveScorer* backstrip =
-      new DSSDScorers::PS_Rectangle("backstrip", 1, SiliconFaceLength, 1, SiliconFaceWidth, 4);
+      new DSSDScorers::PS_Rectangle("backstrip", 1, SiliconFaceLength, SiliconFaceWidth, 4, 1);
 
   G4VPrimitiveScorer* interaction = new InteractionScorers::PS_Interactions("Interaction", ms_InterCoord, 0);
   //... resistive ends......

@@ -11,7 +11,7 @@ Beam
   MeanPhiY= 0 deg
   MeanX= 0 mm
   MeanY= 0 mm
-
+  ZEmission= 0mm
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 QFSReaction
  Beam= 12C
