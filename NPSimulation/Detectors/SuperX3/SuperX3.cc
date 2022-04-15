@@ -129,8 +129,8 @@ void SuperX3::VolumeMaker(G4int DetecNumber, G4ThreeVector position, G4RotationM
   //   m_MaterialAluminium, "logicAluStrip", 0, 0, 0);
   G4LogicalVolume* logicAluStrip = new G4LogicalVolume(solidAluStrip, m_MaterialVacuum, "logicAluStrip", 0, 0, 0);
 
-  new G4PVPlacement(0, positionAluStripFront, logicAluStrip, Name + "_AluStripFront", logicSuperX3, false, 0);
-  new G4PVPlacement(0, positionAluStripBack, logicAluStrip, Name + "_AluStripBack", logicSuperX3, false, 0);
+  new G4PVPlacement(0, positionAluStripFront, logicAluStrip, Name + "_AluStripFront", logicSuperX3, false, DetecNumber);
+  new G4PVPlacement(0, positionAluStripBack, logicAluStrip, Name + "_AluStripBack", logicSuperX3, false, DetecNumber);
 
   logicAluStrip->SetVisAttributes(G4VisAttributes(G4Colour(1.90, 0.0, 0.0)));
 
@@ -141,7 +141,7 @@ void SuperX3::VolumeMaker(G4int DetecNumber, G4ThreeVector position, G4RotationM
       new G4Box("solidSilicon", 0.5 * SiliconFaceWidth, 0.5 * SiliconFaceLength * mm, 0.5 * SiliconThickness);
   G4LogicalVolume* logicSilicon = new G4LogicalVolume(solidSilicon, m_MaterialSilicon, "logicSilicon", 0, 0, 0);
 
-  new G4PVPlacement(0, positionSilicon, logicSilicon, Name + "_Silicon", logicSuperX3, false, 0);
+  new G4PVPlacement(0, positionSilicon, logicSilicon, Name + "_Silicon", logicSuperX3, false, DetecNumber);
 
   // Set Silicon strip sensible
   logicSilicon->SetSensitiveDetector(m_Scorer);
