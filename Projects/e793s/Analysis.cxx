@@ -281,12 +281,12 @@ void Analysis::TreatEvent(){
          << M2->GetTelescopeNormal(countMust2).Z() << endl;
     */
 
-    if(!isSim){
+//    if(!isSim){
       // Evaluate energy using the thickness
       elab_tmp = LightAl.EvaluateInitialEnergy(Energy, 0.4*micrometer, ThetaM2Surface);
       // Target Correction
       elab_tmp = LightTarget.EvaluateInitialEnergy(elab_tmp, 0.5*TargetThickness, ThetaNormalTarget);
-    } else {elab_tmp = Energy;}
+//    } else {elab_tmp = Energy;}
 
     ELab.push_back(elab_tmp);
 
@@ -364,7 +364,7 @@ void Analysis::TreatEvent(){
     Energy = MG->GetEnergyDeposit(countMugast);
     RawEnergy.push_back(Energy);
 
-    if(!isSim){
+    //if(!isSim){
       elab_tmp = LightAl.EvaluateInitialEnergy(
 		    Energy,              //particle energy after Al
 		    0.4*micrometer,      //thickness of Al
@@ -373,16 +373,16 @@ void Analysis::TreatEvent(){
 		    elab_tmp,            //particle energy after leaving target
 		    TargetThickness*0.5, //distance passed through target
 		    ThetaNormalTarget);  //angle of exit from target
-    } else {elab_tmp = Energy;}
+    //} else {elab_tmp = Energy;}
 
     ELab.push_back(elab_tmp);
 
     // Part 3 : Excitation Energy Calculation
-    if(!isSim){
+    //if(!isSim){ //TESTING!!!!
       Ex.push_back(reaction.ReconstructRelativistic(elab_tmp,thetalab_tmp));
       //Ex.push_back(reaction->ReconstructRelativistic(elab_tmp,thetalab_tmp));
       Ecm.push_back(elab_tmp*(AHeavy+ALight)/(4*AHeavy*cos(thetalab_tmp)*cos(thetalab_tmp)));
-    }
+    //}
 
     // Part 4 : Theta CM Calculation
     ThetaLab.push_back(thetalab_tmp/deg);
