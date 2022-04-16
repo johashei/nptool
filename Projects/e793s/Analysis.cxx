@@ -264,9 +264,9 @@ void Analysis::TreatEvent(){
     if(CsI_E_M2>0 ){
       // The energy in CsI is calculate form dE/dx Table because
       Energy = CsI_E_M2;
-      if(!isSim){
-        Energy = LightAl.EvaluateInitialEnergy(Energy, 0.4*micrometer, ThetaM2Surface);
-      }
+      //if(!isSim){
+      Energy = LightAl.EvaluateInitialEnergy(Energy, 0.4*micrometer, ThetaM2Surface);
+      //}
       Energy+=Si_E_M2;
     }
     else
@@ -364,7 +364,7 @@ void Analysis::TreatEvent(){
     Energy = MG->GetEnergyDeposit(countMugast);
     RawEnergy.push_back(Energy);
 
-    //if(!isSim){
+    if(!isSim){
       elab_tmp = LightAl.EvaluateInitialEnergy(
 		    Energy,              //particle energy after Al
 		    0.4*micrometer,      //thickness of Al
@@ -373,7 +373,21 @@ void Analysis::TreatEvent(){
 		    elab_tmp,            //particle energy after leaving target
 		    TargetThickness*0.5, //distance passed through target
 		    ThetaNormalTarget);  //angle of exit from target
-    //} else {elab_tmp = Energy;}
+    } else { //TESTING DIFFERENT ENERGY LOSSES IN SIMULATION
+      elab_tmp = Energy; //so I can add and remove sections
+//      elab_tmp = LightSi.EvaluateInitialEnergy(
+//		    elab_tmp,              //particle energy after Si
+//		    0.5*300.*micrometer,      //thickness of Si
+//		    ThetaMGSurface);     //angle of impingement
+      elab_tmp = LightAl.EvaluateInitialEnergy(
+		    elab_tmp,            //particle energy after Al
+		    0.4*micrometer,      //thickness of Al
+		    ThetaMGSurface);     //angle of impingement
+      elab_tmp = LightTarget.EvaluateInitialEnergy(
+		    elab_tmp,            //particle energy after leaving target
+		    TargetThickness*0.5, //distance passed through target
+		    ThetaNormalTarget);  //angle of exit from target
+    }
 
     ELab.push_back(elab_tmp);
 
