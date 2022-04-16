@@ -114,7 +114,7 @@ void SuperX3::VolumeMaker(G4int DetecNumber, G4ThreeVector position, G4RotationM
   G4Box* solidSuperX3 = new G4Box(Name, 0.5 * FaceFront, 0.5 * SiliconFaceLength * mm, 0.5 * Length);
   G4LogicalVolume* logicSuperX3 = new G4LogicalVolume(solidSuperX3, m_MaterialVacuum, Name, 0, 0, 0);
 
-  new G4PVPlacement(G4Transform3D(*rotation, position), logicSuperX3, Name, world, false, 0);
+  new G4PVPlacement(G4Transform3D(*rotation, position), logicSuperX3, Name, world, false, DetecNumber);
 
   logicSuperX3->SetVisAttributes(G4VisAttributes::Invisible);
   if (m_non_sensitive_part_visiualisation)
