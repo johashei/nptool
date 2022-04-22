@@ -832,6 +832,20 @@ G4Material* MaterialManager::GetMaterialFromLibrary(string Name,
       return material;
     }
 
+    else if (Name == "Lyso" || Name == "LYSO") {
+      if (!density)
+        density = 7.1 * g / cm3;
+      G4Material* material = new G4Material("NPS_" + Name, density, 5);
+      material->AddElement(GetElementFromLibrary("Lu"), 2);
+      material->AddElement(GetElementFromLibrary("Y"), 2);
+      material->AddElement(GetElementFromLibrary("Si"), 1);
+      material->AddElement(GetElementFromLibrary("O"), 5);
+      material->AddElement(GetElementFromLibrary("Ce"), 1);
+      m_Material[Name] = material;
+      return material;
+    }
+
+
     else if (Name == "BaF2") {
       if (!density)
         density = 4.89 * g / cm3;

@@ -14,8 +14,8 @@ SofTofW
  PHI= 0 deg
  Build_GLAD= 1
  GLAD_TiltAngle= 14 deg
- GLAD_DistanceFromTarget= 3.05 m
- Build_MagneticField= 1 
+ GLAD_DistanceFromTarget= 3.0 m
+ Build_MagneticField= 0
  GLAD_MagField= 1.70 T 
  Build_VacuumPipe= 0
  VacuumPipeX= 0 cm

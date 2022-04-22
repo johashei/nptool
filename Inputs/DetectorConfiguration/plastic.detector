@@ -11,12 +11,12 @@ Target
 Plastic
  X= 0 mm
  Y= 0 mm
- Z= 10 mm
- Thickness= 1.0 cm
- Shape= Square
- Height= 22 mm
- Width= 22 mm
- Radius= 0 mm
+ Z= 100 mm
+ Thickness= 50 mm
+ Shape= cylind
+ Height= 50 mm
+ Width= 0 mm
+ Radius= 25 mm
  Scintillator= Cu
  LeadThickness= 0 mm
 
