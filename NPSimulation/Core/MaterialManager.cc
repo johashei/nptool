@@ -845,6 +845,18 @@ G4Material* MaterialManager::GetMaterialFromLibrary(string Name,
       return material;
     }
 
+    else if (Name == "BGO") {
+      if (!density)
+        density = 7.13 * g / cm3;
+      G4Material* material = new G4Material("NPS_" + Name, density, 3);
+      material->AddElement(GetElementFromLibrary("Bi"), 4);
+      material->AddElement(GetElementFromLibrary("Ge"), 3);
+      material->AddElement(GetElementFromLibrary("O"), 12);
+      m_Material[Name] = material;
+      return material;
+    }
+
+
 
     else if (Name == "BaF2") {
       if (!density)

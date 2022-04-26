@@ -7,7 +7,7 @@ Isotropic
  EnergyLow= 12 MeV
  EnergyHigh= 12 MeV
  HalfOpenAngleMin= 0 deg
- HalfOpenAngleMax= 1 deg
+ HalfOpenAngleMax= 2 deg
  x0= 0 mm
  y0= 0 mm
  z0= 0 mm
