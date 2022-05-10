@@ -45,16 +45,16 @@ Analysis::~Analysis(){
 void Analysis::Init() {
  ///////////////////////////////////////////////////////////////////////////////  
 
-    isPhaseSpace=false;
-//    isPhaseSpace=true;
-
-//  if(NPOptionManager::getInstance()->HasDefinition("simulation")){
-    cout << " == == == == SIMULATION == == == ==" << endl;
-    isSim=true;
-//  } else {
+//    cout << " == == == == SIMULATION == == == ==" << endl;
+//      isSim=true;
+//      isPhaseSpace=false;
 //    cout << " == == == == EXPERIMENT == == == ==" << endl;
-//    isSim=false;
-//  }
+//      isSim=false;
+//      isPhaseSpace=false;
+    cout << " == == == == PHASE SPACE == == == ==" << endl;
+      isSim=false;
+      isPhaseSpace=true;
+
 
   agata_zShift=51*mm;
   //BrhoRef=0.65;
@@ -99,15 +99,11 @@ void Analysis::Init() {
 
   // get reaction information
   reaction.ReadConfigurationFile(NPOptionManager::getInstance()->GetReactionFile());
-  //reaction = new NPL::Reaction("47K(d,p)48K@355");
   OriginalBeamEnergy = reaction.GetBeamEnergy();
-  //OriginalBeamEnergy = reaction->GetBeamEnergy();
   reaction.Print(); //TESTING PARSER
-  //reaction->Print(); //TESTING PARSER
 
   // get beam position from .reaction file
   Beam = (NPL::Beam*) reaction.GetParticle1(); 
-  //Beam = (NPL::Beam*) reaction->GetParticle1(); 
   XBeam = Beam->GetMeanX();
   YBeam = Beam->GetMeanY();
 
@@ -125,9 +121,7 @@ void Analysis::Init() {
   
   // energy losses
   string light = NPL::ChangeNameToG4Standard(reaction.GetParticle3()->GetName());
-  //string light = NPL::ChangeNameToG4Standard(reaction->GetParticle3()->GetName());
   string beam = NPL::ChangeNameToG4Standard(reaction.GetParticle1()->GetName());
-  //string beam = NPL::ChangeNameToG4Standard(reaction->GetParticle1()->GetName());
   LightTarget = NPL::EnergyLoss(light+"_"+TargetMaterial+".G4table","G4Table",100 );
   LightAl = NPL::EnergyLoss(light+"_Al.G4table" ,"G4Table",100);
   LightSi = NPL::EnergyLoss(light+"_Si.G4table" ,"G4Table",100);
@@ -135,7 +129,6 @@ void Analysis::Init() {
 
   FinalBeamEnergy = BeamTargetELoss.Slow(OriginalBeamEnergy, 0.5*TargetThickness, 0);
   reaction.SetBeamEnergy(FinalBeamEnergy); 
-  //reaction->SetBeamEnergy(FinalBeamEnergy); 
 
   cout << "Beam energy at mid-target: " << FinalBeamEnergy << endl;
 
@@ -164,13 +157,9 @@ void Analysis::Init() {
   //nbHits=0;
   //count=0;
   AHeavy=reaction.GetParticle4()->GetA();
-  //AHeavy=reaction->GetParticle4()->GetA();
   ALight=reaction.GetParticle3()->GetA(); 
-  //ALight=reaction->GetParticle3()->GetA(); 
   MHeavy=reaction.GetParticle4()->Mass();
-  //MHeavy=reaction->GetParticle4()->Mass();
   MLight=reaction.GetParticle3()->Mass();
-  //MLight=reaction->GetParticle3()->Mass();
   bool writetoscreen=true;
 
   for(int i=0;i<GATCONF_SIZE;i++){ // loop over the bits
@@ -209,12 +198,8 @@ void Analysis::TreatEvent(){
   TVector3 BeamDirection(0.,0.,1.);
   BeamImpact = TVector3(XBeam,YBeam,m_DetectorManager->GetTargetZ()); 
 
-  ParticleMult=M2->Si_E.size();////+MG->DSSD_E.size();
-
-  //ParticleMult=M2->Si_E.size();
-  //  FinalBeamEnergy=BeamCD2.Slow(OriginalBeamEnergy,0.5*TargetThickness,BeamDirection.Angle(TVector(0,0,1)));
-  //reaction.SetBeamEnergy(FinalBeamEnergy);
-
+  //ParticleMult=M2->Si_E.size();////+MG->DSSD_E.size();
+  ParticleMult=M2->Si_E.size()+MG->DSSD_E.size();
 
   ////////////////////////////////////////////////////////////////////////////
   //////////////////////////////// LOOP on MUST2  ////////////////////////////
@@ -274,13 +259,6 @@ void Analysis::TreatEvent(){
 
     RawEnergy.push_back(Energy);
 
-    /*
-    cout << M2->TelescopeNumber[0] << "   "
-         << M2->GetTelescopeNormal(countMust2).X() << "   "
-         << M2->GetTelescopeNormal(countMust2).Y() << "   "
-         << M2->GetTelescopeNormal(countMust2).Z() << endl;
-    */
-
 //    if(!isSim){
       // Evaluate energy using the thickness
       elab_tmp = LightAl.EvaluateInitialEnergy(Energy, 0.4*micrometer, ThetaM2Surface);
@@ -295,7 +273,6 @@ void Analysis::TreatEvent(){
     /************************************************/
     // Part 3 : Excitation Energy Calculation
     Ex.push_back(reaction.ReconstructRelativistic(elab_tmp,thetalab_tmp));
-    //Ex.push_back(reaction->ReconstructRelativistic(elab_tmp,thetalab_tmp));
     Ecm.push_back(Energy*(AHeavy+ALight)/(4*AHeavy*cos(thetalab_tmp)*cos(thetalab_tmp)));
     /************************************************/
 
@@ -303,7 +280,6 @@ void Analysis::TreatEvent(){
     // Part 4 : Theta CM Calculation
     
     ThetaCM.push_back(reaction.EnergyLabToThetaCM(elab_tmp, thetalab_tmp)/deg);
-    //ThetaCM.push_back(reaction->EnergyLabToThetaCM(elab_tmp, thetalab_tmp)/deg);
     /************************************************/
 
     ThetaLab.push_back(thetalab_tmp/deg);
@@ -354,11 +330,6 @@ void Analysis::TreatEvent(){
     ThetaMGSurface = HitDirection.Angle( MG -> GetTelescopeNormal(countMugast) );
     ThetaNormalTarget = HitDirection.Angle( TVector3(0.0,0.0,1.0) ) ;
 
-//cout << MG->TelescopeNumber[0] << "\t" 
-//     << "\t" << MG->GetTelescopeNormal(countMugast).X()
-//     << "\t" << MG->GetTelescopeNormal(countMugast).Y()
-//     << "\t" << MG->GetTelescopeNormal(countMugast).Z() << endl;
-
     // Part 2 : Impact Energy
     Energy = elab_tmp = 0;
     Energy = MG->GetEnergyDeposit(countMugast);
@@ -375,18 +346,18 @@ void Analysis::TreatEvent(){
 		    ThetaNormalTarget);  //angle of exit from target
     } else { //TESTING DIFFERENT ENERGY LOSSES IN SIMULATION
       elab_tmp = Energy; //so I can add and remove sections
-//      elab_tmp = LightSi.EvaluateInitialEnergy(
-//		    elab_tmp,              //particle energy after Si
-//		    0.5*300.*micrometer,      //thickness of Si
-//		    ThetaMGSurface);     //angle of impingement
+      //elab_tmp = LightSi.EvaluateInitialEnergy(
+      //	    elab_tmp,            //particle energy after Si
+      //	    0.5*500.*micrometer, //thickness of Si
+      //	    ThetaMGSurface);     //angle of impingement
       elab_tmp = LightAl.EvaluateInitialEnergy(
-		    elab_tmp,            //particle energy after Al
-		    0.4*micrometer,      //thickness of Al
-		    ThetaMGSurface);     //angle of impingement
+                    elab_tmp,            //particle energy after Al
+      	            0.4*micrometer,      //thickness of Al
+                    ThetaMGSurface);     //angle of impingement
       elab_tmp = LightTarget.EvaluateInitialEnergy(
-		    elab_tmp,            //particle energy after leaving target
-		    TargetThickness*0.5, //distance passed through target
-		    ThetaNormalTarget);  //angle of exit from target
+    		    elab_tmp,            //particle energy after leaving target
+    		    TargetThickness*0.5, //distance passed through target
+    		    ThetaNormalTarget);  //angle of exit from target
     }
 
     ELab.push_back(elab_tmp);
@@ -394,7 +365,6 @@ void Analysis::TreatEvent(){
     // Part 3 : Excitation Energy Calculation
     //if(!isSim){ //TESTING!!!!
       Ex.push_back(reaction.ReconstructRelativistic(elab_tmp,thetalab_tmp));
-      //Ex.push_back(reaction->ReconstructRelativistic(elab_tmp,thetalab_tmp));
       Ecm.push_back(elab_tmp*(AHeavy+ALight)/(4*AHeavy*cos(thetalab_tmp)*cos(thetalab_tmp)));
     //}
 
@@ -402,7 +372,6 @@ void Analysis::TreatEvent(){
     ThetaLab.push_back(thetalab_tmp/deg);
     PhiLab.push_back(philab_tmp/deg);
     ThetaCM.push_back(reaction.EnergyLabToThetaCM(elab_tmp, thetalab_tmp)/deg);
-    //ThetaCM.push_back(reaction->EnergyLabToThetaCM(elab_tmp, thetalab_tmp)/deg);
 
     if(sizeMG==1){
       MG_T = MG->DSSD_T[0];

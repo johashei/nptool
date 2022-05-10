@@ -16,10 +16,14 @@ int indexE;
 double globalS, globalSerr;
 
 /* Output volume toggle */
-bool loud = 1;
+bool loud = 0;
 
 /* Scale method toggle */
 bool scaleTogether = 1;
+
+/* String for image */
+string orbitalname;
+string orbital;
 
 ////////////////////////////////////////////////////////////////////////////////
 void CS(){
@@ -42,10 +46,39 @@ void CS(){
 
 ////////////////////////////////////////////////////////////////////////////////
 void CS(double Energy, double Spin, double spdf, double angmom){
-  // p3/5 -> spdf = 1, angmom = 1.5
+  // p3/2 -> spdf = 1, angmom = 1.5
   // J0 is incident spin, which is 47K g.s. therefore J0 = 1/2
   double J0 = 0.5;
   double ElasticNorm = 5.8, ElasticNormErr = 1.3; // DeuteronNorm in elastics, 5.8 +- 1.3
+  
+  orbitalname.clear();
+  orbital.clear();
+  if(spdf==1){
+    if(angmom==0.5){
+      orbitalname="p_{1/2}";
+      orbital="p12";
+    } else if (angmom==1.5){
+      orbitalname="p_{3/2}";
+      orbital="p32";
+    } else { 
+      orbitalname="?????";
+      orbital="???";
+    }
+  } else if (spdf==3){
+    if(angmom==2.5){
+      orbitalname="f_{5/2}";
+      orbital="f52";
+    } else if (angmom==3.5) {
+      orbitalname="f_{7/2}";
+      orbital="f72";
+    } else { 
+      orbitalname="?????";
+      orbital="???";
+    }
+  } else {
+    orbitalname="?????";
+    orbital="???";
+  }
 
   /* Reduce by factor of 10,000 */
   ElasticNorm /= 10000.;
@@ -89,7 +122,13 @@ void CS(double Energy, double Spin, double spdf, double angmom){
   }
 
   /* Solid Angle (from simulation) */
+  //cout << "USING SOLID ANGLE FILE 29Apr22_Flat3500_50M !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << endl;
+  //auto file = new TFile("../SolidAngle_HistFile_29Apr22_Flat3500_50M.root");
+  //auto file = new TFile("../SolidAngle_HistFile_New.root");
+  //auto file = new TFile("../SolidAngle_HistFile_17Apr22_3605.root");
+ 
   auto file = new TFile("../SolidAngle_HistFile_15Feb_47Kdp.root");
+  //auto file = new TFile("../SolidAngle_HistFile_06May_WideStripMatching_LargeRun.root");
   TH1F* SolidAngle = (TH1F*) file->FindObjectAny("SolidAngle_Lab_MG");
   TCanvas* c_SolidAngle = new TCanvas("c_SolidAngle","c_SolidAngle",1000,1000);
   SolidAngle->Draw();
@@ -236,13 +275,17 @@ void CS(double Energy, double Spin, double spdf, double angmom){
 
   TPad *pad1 = new TPad("pad1","pad1",0,0.25,1,1);
   TPad *pad2 = new TPad("pad2","pad2",0,0,1,0.25);
-  pad1->SetTopMargin(0.15);
+  pad1->SetTopMargin(0.1);
   pad1->SetBottomMargin(0.00001);
   pad1->SetBorderMode(0);
   pad1->SetLogy();
+  pad1->SetTickx();
+  pad1->SetTicky();
   pad2->SetTopMargin(0.00001);
   pad2->SetBottomMargin(0.3);
   pad2->SetBorderMode(0);
+  pad2->SetTickx();
+  pad2->SetTicky();
   pad1->Draw();
   pad2->Draw();
   pad1->cd();
@@ -251,14 +294,24 @@ void CS(double Energy, double Spin, double spdf, double angmom){
   gdSdO->SetLineColor(kRed);
   gdSdO->SetMarkerColor(kRed);
   gdSdO->SetMarkerStyle(21);
-  /* Construct title string */
+  /* Construct file name string */
+  /**/  ostringstream tempstream;
+  /**/  if(means[indexE]<1.0){tempstream << 0;}
+  /**/  tempstream << (int) (means[indexE]*1000);
+  /**/  tempstream << "_" << orbital; 
+  /**/  tempstream << "_spin" << Spin;
+  /**/  string tempstr = tempstream.str();
+  /* Construct hist title string */
   /**/  ostringstream textstream;
   /**/  textstream << std::fixed << setprecision(3);
-  /**/  textstream << "Peak " << means[indexE];
-  /**/  string tempstr = textstream.str();
-  /**/	textstream << ":  S = " << globalS 
+  /**/  textstream << "   " << means[indexE];
+  /**/  textstream << " MeV, ";
+  /**/  textstream <<  orbitalname;
+  /**/  textstream << ", spin " << (int)Spin;
+  /**/	textstream << " --> S = " << globalS 
   /**/	           << " +- " << globalSerr;
   /**/  string textstring = textstream.str(); 
+
   gdSdO->SetTitle(textstring.c_str());
   gdSdO->GetYaxis()->SetTitleOffset(1.3);
   gdSdO->GetYaxis()->SetTitleSize(0.042);
@@ -291,6 +344,10 @@ void CS(double Energy, double Spin, double spdf, double angmom){
   markzero->SetLineStyle(2);
   markzero->Draw("same");
 
+  //pad1->cd();
+  //TText* orb = new TText(0.5,0.2,"TESTING!!!!!!!!!!!");//orbitalname.c_str());
+  //orb->Draw("SAME");
+
   string savestring1 = "./CS2_Figures/"+tempstr+".root";
   string savestring2 = "./CS2_Figures/"+tempstr+".pdf";
   c_Chi2Min->SaveAs(savestring1.c_str());
@@ -318,30 +375,33 @@ vector<vector<double>> GetExpDiffCross(double Energy){
       TH1F* addEx = PullThetaLabHist(i,105.,5.); baseEx->Add(addEx,1.);
       TH1F* addPS = PullPhaseSpaceHist(i,105.,5.); basePS->Add(addPS,1.);
     }
+
     /* Subtract flat background equal to smallest bin in range */
-    TH1F* baseExCopy = baseEx;
-    baseExCopy->GetXaxis()->SetRange(baseExCopy->FindBin(-1.),baseExCopy->FindBin(7.9));
-    double minValueInRange = baseExCopy->GetBinContent(baseEx->GetMinimumBin());
+    baseEx->GetXaxis()->SetRange(baseEx->FindBin(-1.),baseEx->FindBin(1.));
+    double minValueInRange = baseEx->GetBinContent(baseEx->GetMinimumBin());
+    baseEx->GetXaxis()->UnZoom();
     cout << "Subtracting background of " << minValueInRange << endl;
     for(int b=1; b<baseEx->GetNbinsX() ; b++){
       baseEx->SetBinContent(b,baseEx->GetBinContent(b)-minValueInRange);
     }
+
     /* Begin scaling within range, track changes */
-    basePS->Scale(0.01);
-    trackScale = 0.01;
+    basePS->Scale(0.1);
+    trackScale = 0.1;
     int numbinsScale = baseEx->GetNbinsX();
-    int nbinlow = basePS->FindBin(2.); int nbinhigh = basePS->FindBin(7.5);
-    //for(int b=1; b<numbinsScale; b++){
+    int nbinlow = basePS->FindBin(4.); int nbinhigh = basePS->FindBin(8.0);
     for(int b=nbinlow; b<nbinhigh; b++){
-      while(basePS->GetBinContent(b) > baseEx->GetBinContent(b)){
-        basePS->Scale(0.99999);
-        trackScale *= 0.99999;
+      if(baseEx->GetBinContent(b) > 0.0 && basePS->GetBinContent(b) > baseEx->GetBinContent(b)){
+	while(basePS->GetBinContent(b) > baseEx->GetBinContent(b)){
+          basePS->Scale(0.99999);
+          trackScale *= 0.99999;
+        }
       }
     }
     baseEx->Add(basePS,-1.);
     baseEx->SetName("AllAngles");
     list->Add(baseEx);
-    cout << " !!!!!!!!!!!!!!!FINAL SCALING = " << trackScale << endl;
+    cout << "PhaseSpace -> ExpData scaling = " << trackScale << endl;
   }
 
   /* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! */

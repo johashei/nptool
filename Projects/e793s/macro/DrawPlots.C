@@ -559,6 +559,10 @@ void DrawPlots(){
   cout << "\t- FitKnownPeaks(histogram) "<< endl;
   cout << "\t- AGATA_efficiency(double Energy_kev) "<< endl;
   cout << "\t- CorrectForAGATAEffic(TH1F* hist) "<< endl;
+  cout << " April 2022 beta decay "<< endl;
+  cout << "\t- GammaSub_NoDoppler() "<< endl;
+  cout << "\t- GammaSub_WithDoppler() "<< endl;
+  cout << " Cross Sections "<< endl;
   cout << "\t- CS(stateEnergy, stateSpin, orbital_l, orbital_j, nodes) "<< endl;
   cout << "\t---- 0.143, p3/2 = CS(0.143, 2, 1, 1.5) "<< endl;
   cout << "\t---- 0.279, p3/2 = CS(0.279, 2, 1, 1.5) "<< endl;
@@ -566,7 +570,7 @@ void DrawPlots(){
   cout << "\t---- 0.968, p1/2 = CS(0.968, 0, 1, 0.5) "<< endl;
   cout << "\t---- 1.410, p3/2 = CS(1.410, 2, 1, 1.5) "<< endl;
   cout << "\t---- 1.981, p3/2 = CS(1.981, 2, 1, 1.5) "<< endl;
-  cout << "\t---- 2.410, p3/2 = CS(2.410, 2, 1, 1.5) "<< endl;
+  cout << "\t---- 2.410, p3/2 = CS(2.410, 0, 1, 0.5) "<< endl;
   cout << "\t---- 3.2  , f7/2 = CS(3.2  , 3, 3, 3.5) "<< endl;
   cout << "\t---- 3.6  , f5/2 = CS(3.6  , 3, 3, 2.5) "<< endl;
   cout << "\t---- 3.8  , f5/2 = CS(3.8  , 3, 3, 2.5) "<< endl;

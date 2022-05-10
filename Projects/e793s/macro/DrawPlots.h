@@ -8,6 +8,9 @@ using namespace std;
 TChain* chain=NULL ;
 char cond[1000];
 
+NPL::Reaction Cadp("47Ca(d,p)48Ca@355");
+NPL::Reaction Scdp("47Sc(d,p)48Sc@355");
+
 NPL::Reaction Kdp("47K(d,p)48K@355");
 NPL::Reaction Kdt("47K(d,t)46K@355");
 NPL::Reaction Kdd("47K(d,d)47K@355");
@@ -49,12 +52,9 @@ void LoadChainNP(){
   //files.push_back("../../../Outputs/Analysis/47Kdp_08Apr_PartI.root");
   //files.push_back("../../../Outputs/Analysis/47Kdp_08Apr_PartII.root");
 
+  /* With thresholds, strip mathcing, and bad strips out */
   files.push_back("../../../Outputs/Analysis/47Kdp_11Apr22_PartI.root");
   files.push_back("../../../Outputs/Analysis/47Kdp_11Apr22_PartII.root");
-
-  //  files.push_back("../../../Outputs/Analysis/47Kdp_17Feb_AGATA_RotateBYpi.root");
-
-//  files.push_back("../../../Outputs/Analysis/47Kdp_19Feb_AGATA_RotateBXYZ.root");
 
   chain = Chain("PhysicsTree",files,true);
 }
@@ -178,7 +178,8 @@ void Load_1DGamma(){
 void Draw_1DGamma_MG(){
   TCanvas *cEg = new TCanvas("cEg","cEg",1000,1000);
   gStyle->SetOptStat(0);
-  chain->Draw("AddBack_EDC>>Eg(5000,0,5)","abs(T_MUGAST_VAMOS-2700)<400 && Mugast.TelescopeNumber>0 && Mugast.TelescopeNumber<8");
+  chain->Draw("AddBack_EDC>>Eg(5000,0,5)",
+    "abs(T_MUGAST_VAMOS-2700)<400 && Mugast.TelescopeNumber>0 && Mugast.TelescopeNumber<8 && abs(AGATA_GammaE-2.013)>0.004 && abs(AGATA_GammaE-0.511)>0.003 && abs(AGATA_GammaE-0.564)>0.004 && abs(AGATA_GammaE-0.586)>0.003");
   TH1F* Eg = (TH1F*) gDirectory->Get("Eg");
   Eg->GetXaxis()->SetTitle("E_{#gamma} [MeV]");
   Eg->GetYaxis()->SetTitle("Counts / 0.001 MeV");
@@ -501,7 +502,7 @@ void GateParticle_SeeGamma(double particle, double width){
 
 }
 
-void GateParticle_SeeGamma_WithBG(double particle, double width, double bg){
+void GateParticle_SeeGamma_WithBG(double particle, double width, double bg, double width2){
   string gating = "abs(T_MUGAST_VAMOS-2700)<400 && Ex@.size()==1 && abs(Ex-" 
       + to_string(particle)
       + ")<"
@@ -509,10 +510,12 @@ void GateParticle_SeeGamma_WithBG(double particle, double width, double bg){
   string bggate = "abs(T_MUGAST_VAMOS-2700)<400 && Ex@.size()==1 && abs(Ex-" 
       + to_string(bg)
       + ")<"
-      + to_string(width);
+      + to_string(width2);
+
+  double ratio = width/width2;
 
   string title = "Gate: "+to_string(particle-width)+" to "+to_string(particle+width)+"."
-	  + "  BG: "+to_string(bg-width)+" to "+to_string(bg+width)+".";
+	  + "  BG: "+to_string(bg-width2)+" to "+to_string(bg+width2)+".";
 
   TCanvas *cEg_Gate = new TCanvas("cEg_Gate","cEg_Gate",1000,1000);
   chain->Draw("AddBack_EDC>>EgGate(1000,0,10)",gating.c_str(),"");
@@ -528,12 +531,42 @@ void GateParticle_SeeGamma_WithBG(double particle, double width, double bg){
 
   chain->Draw("AddBack_EDC>>EgBG(1000,0,10)",bggate.c_str(),"same");
   TH1F* EgBG = (TH1F*) gDirectory->Get("EgBG");
+  EgBG->Scale(ratio);
   EgBG->SetTitle(title.c_str());
   EgBG->SetLineColor(kRed);
   EgBG->SetFillColor(kRed);
   EgBG->SetFillStyle(3345);
 }
                                    
+void GateGamma_SeeGamma_ExcludeBeamDecay(double gamma, double width){
+  string gating 
+      = "abs(AGATA_GammaE-2.013)>0.004 && abs(AGATA_GammaE-0.511)>0.003 && abs(AGATA_GammaE-0.564)>0.004 && abs(AGATA_GammaE-0.586)>0.003 && abs(AddBack_EDC2-" 
+      + to_string(gamma)
+      + ")<"
+      + to_string(width);
+  string gating2
+      = "abs(AGATA_GammaE-2.013)>0.004 && abs(AGATA_GammaE-0.511)>0.003 && abs(AGATA_GammaE-0.564)>0.004 && abs(AGATA_GammaE-0.586)>0.003 && abs(AddBack_EDC-" 
+      + to_string(gamma)
+      + ")<"
+      + to_string(width);
+
+  string title = to_string(gamma-width) + " < Eg < " + to_string(gamma+width);
+  
+  TCanvas *cEx_Gate = new TCanvas("cggGate","cggGate",1000,1000);
+  //chain->Draw("AddBack_EDC>>ggGate(990,0.05,5)",gating.c_str(),"");
+  chain->Draw("AddBack_EDC>>ggGate(999,0.005,5)",gating.c_str(),"");
+  TH1F* ggGate = (TH1F*) gDirectory->Get("ggGate");
+  ggGate->GetXaxis()->SetTitle("Eg [MeV]");
+  ggGate->GetYaxis()->SetTitle("Counts / 0.005 MeV");
+  ggGate->SetTitle(title.c_str());
+
+  //chain->Draw("AddBack_EDC2>>ggGate2(990,0.05,5)",gating2.c_str(),"");
+  chain->Draw("AddBack_EDC2>>ggGate2(999,0.005,5)",gating2.c_str(),"");
+  TH1F* ggGate2 = (TH1F*) gDirectory->Get("ggGate2");
+  ggGate->Add(ggGate2,1);
+  ggGate->Draw();
+}
+
 void GateGamma_SeeGamma(double gamma, double width){
   string gating = "abs(AddBack_EDC2-" 
       + to_string(gamma)
@@ -560,8 +593,39 @@ void GateGamma_SeeGamma(double gamma, double width){
   ggGate->Add(ggGate2,1);
   ggGate->Draw();
 }
-                                   
-void GateGamma_SeeGamma_WithBG(double gamma, double width, double bg){
+
+void GateGamma_SeeGamma_TimeGate(double gamma, double width){
+  string gating = "abs(T_MUGAST_VAMOS-2700)<400 && abs(AddBack_EDC2-" 
+      + to_string(gamma)
+      + ")<"
+      + to_string(width);
+  string gating2 = "abs(T_MUGAST_VAMOS-2700)<400 && abs(AddBack_EDC-" 
+      + to_string(gamma)
+      + ")<"
+      + to_string(width);
+
+  string title = to_string(gamma-width) + " < Eg < " + to_string(gamma+width);
+  
+  TCanvas *cEx_Gate = new TCanvas("cggGate","cggGate",1000,1000);
+  //chain->Draw("AddBack_EDC>>ggGate(990,0.05,5)",gating.c_str(),"");
+  chain->Draw("AddBack_EDC>>ggGate(999,0.005,5)",gating.c_str(),"");
+  TH1F* ggGate = (TH1F*) gDirectory->Get("ggGate");
+  ggGate->GetXaxis()->SetTitle("Eg [MeV]");
+  ggGate->GetYaxis()->SetTitle("Counts / 0.005 MeV");
+  ggGate->SetTitle(title.c_str());
+
+  //chain->Draw("AddBack_EDC2>>ggGate2(990,0.05,5)",gating2.c_str(),"");
+  chain->Draw("AddBack_EDC2>>ggGate2(999,0.005,5)",gating2.c_str(),"");
+  TH1F* ggGate2 = (TH1F*) gDirectory->Get("ggGate2");
+  ggGate->Add(ggGate2,1);
+  ggGate->Draw();
+}
+
+
+
+
+
+void GateGamma_SeeGamma_WithBG(double gamma, double width, double bg, double width2){
 /**/
   string gating = "abs(AddBack_EDC2-" 
       + to_string(gamma)
@@ -570,7 +634,7 @@ void GateGamma_SeeGamma_WithBG(double gamma, double width, double bg){
   string bggate = "abs(AddBack_EDC2-" 
       + to_string(bg)
       + ")<"
-      + to_string(width);
+      + to_string(width2);
   string gating2 = "abs(AddBack_EDC-" 
       + to_string(gamma)
       + ")<"
@@ -578,9 +642,11 @@ void GateGamma_SeeGamma_WithBG(double gamma, double width, double bg){
   string bggate2 = "abs(AddBack_EDC-" 
       + to_string(bg)
       + ")<"
-      + to_string(width);
+      + to_string(width2);
 
-TCanvas *cggGate = new TCanvas("cggGate","cggGate",1000,1000);
+  double ratio = width/width2;
+  
+  TCanvas *cggGate = new TCanvas("cggGate","cggGate",1000,1000);
   chain->Draw("AddBack_EDC>>ggGate(999,0.005,5)",gating.c_str(),"");
   TH1F* ggGate = (TH1F*) gDirectory->Get("ggGate");
   chain->Draw("AddBack_EDC2>>ggGate2(999,0.005,5)",gating2.c_str(),"");
@@ -597,6 +663,7 @@ TCanvas *cggGate = new TCanvas("cggGate","cggGate",1000,1000);
   chain->Draw("AddBack_EDC2>>ggBG2(999,0.005,5)",bggate2.c_str(),"");
   TH1F* ggBG2 = (TH1F*) gDirectory->Get("ggBG2");
   ggBG->Add(ggBG2,1);
+  ggBG->Scale(ratio);
   ggBG->SetLineColor(kRed);
   ggBG->SetFillColor(kRed);
   ggBG->SetFillStyle(3345);
@@ -974,19 +1041,21 @@ void ExPhiLab_ForPoster(){
 void ExThetaLab(){
   TCanvas *diagnoseTheta = new TCanvas("diagnoseTheta","diagnoseTheta",1000,1000);
   chain->Draw(
-    "Ex:ThetaLab>>thetaHist(60,100,160,100,-1,9)", 
+    "Ex:ThetaLab>>thetaHist(120,100,160,180,-1,8)", 
     "abs(T_MUGAST_VAMOS-2700)<400 && Mugast.TelescopeNumber>0 && Mugast.TelescopeNumber<8",
     "colz");
   TH1F* thetaHist = (TH1F*) gDirectory->Get("thetaHist");  
-  thetaHist->GetXaxis()->SetTitle("Theta (degrees)");
+  thetaHist->GetXaxis()->SetTitle("#theta_{lab} [deg]");
   thetaHist->GetYaxis()->SetTitle("Ex [MeV]");
   thetaHist->SetTitle("Theta dependance testing");
   
   diagnoseTheta->Update();
+  
   TLine *l0000 = new TLine(100., 0.000, 160., 0.000);
     l0000->SetLineStyle(kDashed);
     l0000->SetLineColor(kRed);
     l0000->Draw();
+  /*
   TLine *l0143 = new TLine(100., 0.143, 160., 0.143);
     l0143->SetLineStyle(kDashed);
     l0143->SetLineColor(kRed);
@@ -1015,6 +1084,11 @@ void ExThetaLab(){
     l3600->SetLineStyle(kDotted);
     l3600->SetLineColor(kRed);
     l3600->Draw("same");
+  */
+  TLine *Sn = new TLine(100., 4.644, 160., 4.644);
+    Sn->SetLineStyle(kDashed);
+    Sn->SetLineColor(kRed);
+    Sn->Draw();
 }
 
 void ExThetaLab(double gamma, double width){
@@ -1072,7 +1146,7 @@ void ExThetaLab(double gamma, double width){
 void ELabThetaLab(){
   TCanvas *cELabTLaab = new TCanvas("cELabTLab","cELabTLab",1000,1000);
   gStyle->SetOptStat(0);
-  chain->Draw("ELab:ThetaLab>>hKine(360,0,180,450,0,7)","abs(T_MUGAST_VAMOS-2700)<400","col");
+  chain->Draw("ELab:ThetaLab>>hKine(360,0,180,500,0,10)","abs(T_MUGAST_VAMOS-2700)<400","col");
   TH2F* hKine = (TH2F*) gDirectory->Get("hKine");
   hKine->SetTitle("");
   hKine->GetXaxis()->SetTitle("#theta_{lab} [deg]");
@@ -1082,6 +1156,7 @@ void ELabThetaLab(){
   plot_kine(Kdp, 0.000, kBlack, 2, 1);
   plot_kine(Kdp, 4.644, kBlack, 2, 1);
 
+  /**
   plot_kine(Kdp, 0.143, kRed, 1, 2);
   plot_kine(Kdp, 0.968, kRed, 1, 2);
   plot_kine(Kdp, 1.410, kRed, 1, 2);
@@ -1089,14 +1164,18 @@ void ELabThetaLab(){
   plot_kine(Kdp, 2.410, kRed, 1, 2);
   plot_kine(Kdp, 2.907, kRed, 1, 2);
   plot_kine(Kdp, 3.600, kRed, 1, 2);
-  plot_kine(Kdp, 3.792, kRed, 1, 2);
+  plot_kine(Kdp, 3.8  , kRed, 1, 2);
+  plot_kine(Kdp, 4.3  , kRed, 1, 2);
+  plot_kine(Kdp, 4.507, kRed, 1, 2);
+  **/
 
-  plot_kine(Kdd, 0.000, kGreen+2, 2, 9);
-  plot_kine(Kpp, 0.000, kYellow, 2, 9);
+  plot_kine(Kdd, 0.000, kBlack, 2, 9);
+  plot_kine(Kpp, 0.000, kBlack, 2, 9);
 
-  plot_kine(Tidp, 0.000, kBlack, 2, 1);
-  plot_kine(Tidp, 5.652, kBlack, 2, 6); //strongest populated state according to PDBarnes(1965)
-
+  plot_kine(Cadp, 0.000, kRed, 2, 1);
+  plot_kine(Tidp, 0.000, kBlue, 2, 1);
+  plot_kine(Scdp, 0.000, kGreen, 2, 1);
+  //plot_kine(Tidp, 5.652, kBlack, 2, 6); //strongest populated state according to PDBarnes(1965)
 }
 
 void XYMust2(){
@@ -1398,6 +1477,47 @@ void GatePhaseSpaceByThetaLab_MultiWrite(double startTheta, double finishTheta, 
   file->ls();
 }
 
+void GammaSub_NoDoppler(){
+  TCanvas *cGammaSubNoDopp = new TCanvas("cGammaSubNoDopp","cGammaSubNoDopp",1000,1000);
+  chain->Draw("AGATA_GammaE>>hNoDoppler(5000,0,5)","abs(T_MUGAST_VAMOS-7000)<3000","");
+  TH1F* hNoDoppler = (TH1F*) gDirectory->Get("hNoDoppler");
+  hNoDoppler->SetTitle("AGATA, Timing gate 4k-10k, no doppler");
+}
+
+void GammaSub_WithDoppler(){
+  TCanvas *cGammaSubWithDopp = new TCanvas("cGammaSubWithDopp","cGammaSubWithDopp",1000,1000);
+  chain->Draw("AddBack_EDC>>hWithDoppler(5000,0,5)","abs(T_MUGAST_VAMOS-7000)<3000","");
+  TH1F* hWithDoppler = (TH1F*) gDirectory->Get("hWithDoppler");
+  hWithDoppler->SetTitle("AGATA, Timing gate 4k-10k, with doppler");
+}
+
+/*
+void GammaSub_Subbed(){
+  TCanvas *cGammaSub = new TCanvas("cGammaSub","cGammaSub",1000,1000);
+  chain->Draw("AddBack_EDC>>Eg_Sub(5000,0,5)","abs(T_MUGAST_VAMOS-2700)<400","");
+  TH1F* Eg_Sub = (TH1F*) gDirectory->Get("Eg_Sub");
+  chain->Draw("AddBack_EDC>>Eg_True(5000,0,5)","abs(T_MUGAST_VAMOS-2700)<400","");
+  TH1F* Eg_True = (TH1F*) gDirectory->Get("Eg_True");
+  //chain->Draw("AddBack_EDC>>Eg_False(5000,0,5)","abs(T_MUGAST_VAMOS-1250)<850 || abs(T_MUGAST_VAMOS-4650)<850");
+  chain->Draw("AddBack_EDC>>Eg_False(5000,0,5)",
+		  "abs(T_MUGAST_VAMOS-4050)<250 || abs(T_MUGAST_VAMOS-4900)<200 || abs(T_MUGAST_VAMOS-650)<250 || abs(T_MUGAST_VAMOS-1550)<250");
+  TH1F* Eg_False = (TH1F*) gDirectory->Get("Eg_False");
+
+  double scale = (400.*2.)/(500.+400.+500.+500.);
+  Eg_False->Scale(scale);
+  Eg_Sub->Add(Eg_False,-1);
+  Eg_Sub->Draw();
+}
+*/
+
+void GammaSub_Actual_ExcludeBeamDecay(){
+  TCanvas *cGammaSub = new TCanvas("cGammaSub","cGammaSub",1000,1000);
+  chain->Draw("AddBack_EDC>>Eg(5000,0,5)",
+		  "abs(T_MUGAST_VAMOS-2700)<400 && abs(AGATA_GammaE-2.013)>0.004 && abs(AGATA_GammaE-0.511)>0.003 && abs(AGATA_GammaE-0.564)>0.004 && abs(AGATA_GammaE-0.586)>0.003");
+  TH1F* Eg = (TH1F*) gDirectory->Get("Eg");
+  Eg->Draw();
+}
+
 
 /*
 void gg(){
@@ -1438,33 +1558,24 @@ void gg(){
 */
 
 void ggLoad(TTree* chain, TH2F* h){
+
    // Initilise the Mugast branch
    auto Mugast = new TMugastPhysics();
  
    // Initilise access variables for chain
-//   static double T_MUGAST_VAMOS;
-   static vector<double> //*X, *Y, *Z, *RawEnergy, 
-	   *AddBack_EDC;
- 
+   static double T_MUGAST_VAMOS;
+   static vector<double> *AddBack_EDC, *AGATA_GammaE;
+
    // Pull chain branches
-//   auto Energy_Branch = chain->GetBranch("RawEnergy");
    auto Gamma_Branch = chain->GetBranch("AddBack_EDC");
-//   auto X_Branch = chain->GetBranch("X");
-//   auto Y_Branch = chain->GetBranch("Y");
-//   auto Z_Branch = chain->GetBranch("Z");
-//   auto MugVam_Branch = chain->GetBranch("T_MUGAST_VAMOS");
- 
-   // Set Mugast branch address
-//   chain->SetBranchAddress("Mugast",&Mugast);
- 
+   auto RawGamma_Branch = chain->GetBranch("AGATA_GammaE");
+   auto MugVam_Branch = chain->GetBranch("T_MUGAST_VAMOS");
+
    // Set chain variable addresses
-//   Energy_Branch->SetAddress(&RawEnergy);
    Gamma_Branch->SetAddress(&AddBack_EDC);
-//   X_Branch->SetAddress(&X);
-//   Y_Branch->SetAddress(&Y);
-//   Z_Branch->SetAddress(&Z);
-//   MugVam_Branch->SetAddress(&T_MUGAST_VAMOS);
-  
+   RawGamma_Branch->SetAddress(&AGATA_GammaE);
+   MugVam_Branch->SetAddress(&T_MUGAST_VAMOS);
+ 
    // Build loop variables
    unsigned int numEntries = chain->GetEntries();
    unsigned int multiplicity = 0;
@@ -1472,31 +1583,37 @@ void ggLoad(TTree* chain, TH2F* h){
    // Loop on entries
    for(unsigned int i=0; i<numEntries; i++){
      chain->GetEntry(i);
-
- 
        // Gate on Timing
-//       if(abs(T_MUGAST_VAMOS-2700)<400){
+       if(abs(T_MUGAST_VAMOS-2700)<400){
          int gammaMultip = AddBack_EDC->size();
+	 //no muliplicity 1
          if(gammaMultip>=1){
-        
 	   double e1,e2;
+	   //loop through events
            for(unsigned int s=0 ; s<gammaMultip-1 ; s++){
-             e1=AddBack_EDC->at(s) ; e2 = AddBack_EDC->at(s+1);
-             // Folding of the matrix, always fill big first
-             if(e1>e2){
-               h->Fill(e1,e2);
-	     }
-	     else{
-               h->Fill(e2,e1);
+	     //remove beam decay gammas
+             if(abs(AGATA_GammaE->at(s)-2.013)>0.004 && abs(AGATA_GammaE->at(s)-0.511)>0.003 
+	     && abs(AGATA_GammaE->at(s)-0.564)>0.004 && abs(AGATA_GammaE->at(s)-0.586)>0.003){
+               e1=AddBack_EDC->at(s); e2 = AddBack_EDC->at(s+1);
+               // Folding of the matrix, always fill big first
+               if(e1>e2){
+                 h->Fill(e1,e2);
+	       }
+	       else{
+                 h->Fill(e2,e1);
+	       }
 	     }
            }
          }//if gamma
+      }//timing
    }//for i
 }
 
 //void gggLoad(TTree* chain, TH3F* h){
 void gggLoad(TTree* chain, THnSparseF* h){
-   // Initilise the Mugast branch
+
+cout << "THIS IS OLD!!!! UPDATE WITH THE BEAM EXCLUSION!!!" << endl;
+	// Initilise the Mugast branch
    auto Mugast = new TMugastPhysics();
  
    // Initilise access variables for chain
@@ -1577,21 +1694,20 @@ void gggLoad(TTree* chain, THnSparseF* h){
 
 void gg(){
  
+   cout << "LOADING FILES: 47Kdp_11Apr22_PartI & II" << endl;
+
    auto h=new TH2F("gg","gg",1000,0,10,1000,0,10);
-   auto DataFile = new TFile("../../../Outputs/Analysis/47Kdp_08Nov_PartI.root", "READ");
+   auto DataFile = new TFile("../../../Outputs/Analysis/47Kdp_11Apr22_PartI.root", "READ");
    auto chain = (TTree*) DataFile->FindObjectAny("PhysicsTree");
- 
    ggLoad(chain, h);
 
    auto h2=new TH2F("gg","gg",1000,0,10,1000,0,10);
-   auto DataFile2 = new TFile("../../../Outputs/Analysis/47Kdp_08Nov_PartII.root", "READ");
+   auto DataFile2 = new TFile("../../../Outputs/Analysis/47Kdp_11Apr22_PartII.root", "READ");
    auto chain2 = (TTree*) DataFile->FindObjectAny("PhysicsTree");
-
    ggLoad(chain2, h2);
 
    h->Add(h2,1);
 
-   h->Add(h2,1);
    TFile* file = new TFile("GGMatrix.root","RECREATE");
    h->Write();
    file->Close();
@@ -1668,3 +1784,50 @@ void ggGater(TH2F* h, double E, double gate){
 
 
 }
+
+
+
+void Figure_Eg_MG(){
+
+  chain->Draw("AddBack_EDC>>Eg(5000,0,5)","abs(T_MUGAST_VAMOS-2700)<400 && Mugast.TelescopeNumber>0 && Mugast.TelescopeNumber<8");
+  TH1F* Eg = (TH1F*) gDirectory->Get("Eg");
+  Eg->GetXaxis()->SetTitle("E_{#gamma} [MeV]");
+  Eg->GetYaxis()->SetTitle("Counts / 0.001 MeV");
+  Eg->SetTitle("#gamma-ray spectrum, requiring MUGAST upstream coincidence");
+
+  TH1F* Eg2 = (TH1F*) Eg->Clone();
+  Eg2->SetTitle("");
+
+  TCanvas* canv = new TCanvas("canv","canv",1000,1000);
+  gStyle->SetPadLeftMargin(0.10);
+  gStyle->SetPadRightMargin(0.03);
+  gStyle->SetOptStat(0);
+
+
+  TPad *pad1 = new TPad("pad1","pad1",0,0.5,1,1);
+  TPad *pad2 = new TPad("pad2","pad2",0,0,1,0.5);
+  pad1->SetTopMargin(0.08);
+  pad1->SetBottomMargin(0.08);
+  pad1->SetBorderMode(0);
+  pad2->SetTopMargin(0.08);
+  pad2->SetBottomMargin(0.08);
+  pad2->SetBorderMode(0);
+  pad1->Draw();
+  pad2->Draw();
+  pad1->cd();
+
+  Eg->GetXaxis()->SetRangeUser(0.,2.);
+  Eg->Draw();
+
+
+  pad2->cd();
+ 
+
+  Eg2->Rebin(2);
+  Eg2->GetYaxis()->SetTitle("Counts / 0.001 MeV");
+  Eg2->GetXaxis()->SetRangeUser(2.,4.5);
+  Eg2->Draw();
+
+
+}
+
