@@ -58,7 +58,7 @@ class GladFieldMap{
     TVector3 m_InitPos;
     TVector3 m_InitDir;
     TVector3 m_FinalPos;
-    TGraph* m_BrhoScan;
+
 
   public:
     void SetBfield(TVector3 vec) {m_Bfield = vec;}
@@ -84,6 +84,12 @@ class GladFieldMap{
     vector<TVector3> Propagate(double Brho, TVector3 Pos, TVector3 Dir);
     void func(NPL::Particle& N, TVector3 Pos, TVector3 Imp, TVector3& xk, TVector3& pk);
     double FindBrho(TVector3 Pos_init, TVector3 Dir_init, TVector3 Pos_final);
+
+  private:
+    TGraph* m_BrhoScan;
+    ROOT::Math::Minimizer* m_min;
+    ROOT::Math::Functor m_func;
+    double Delta(const double* parameter);
 
   private:
 

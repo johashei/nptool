@@ -35,7 +35,12 @@ ClassImp(GladFieldMap)
 
 //////////////////////////////////////////////////////////////////////
 GladFieldMap::GladFieldMap() {
+
   m_BrhoScan=NULL;
+  m_min = ROOT::Math::Factory::CreateMinimizer("Minuit2","Migrad");
+  m_func = ROOT::Math::Functor(this,&GladFieldMap::Delta,1);
+  m_min->SetFunction(m_func);
+  m_min->SetPrintLevel(-1);
   m_Bfield = TVector3(0,1.5/1000,0);
   m_Z_Glad = 4.434*m;
   m_Leff = 2.*m;
@@ -60,35 +65,64 @@ GladFieldMap::~GladFieldMap() {
 }
 
 //////////////////////////////////////////////////////////////////////
+double GladFieldMap::Delta(const double* parameter){
+  static double diff;
+  static vector<TVector3> vPos;
+
+  vPos = Propagate(parameter[0], m_InitPos, m_InitDir);
+  TVector3 M_inter = CalculateIntersectionPoint(vPos);
+
+  diff = abs(M_inter.X() - m_FinalPos.X()); 
+  return diff;
+}
+
+//////////////////////////////////////////////////////////////////////
 double GladFieldMap::FindBrho(TVector3 Pos_init, TVector3 Dir_init, TVector3 Pos_final){
-  double Brho;
   m_InitPos  = Pos_init;
   m_InitDir  = Dir_init;
   m_FinalPos = Pos_final;
 
-  m_InitDir = m_InitDir.Unit();
+  if(m_FinalPos.X()>-2000){
+    m_InitDir = m_InitDir.Unit();
 
-  if(!m_BrhoScan)
-    BrhoScan(1,11,0.2);
+    if(!m_BrhoScan)
+      BrhoScan(4.,14.,0.2);
 
-  Brho = m_BrhoScan->Eval(m_FinalPos.X());
+    double param[1];
+    param[0] = m_BrhoScan->Eval(m_FinalPos.X());
 
-  return Brho;
+    m_min->Clear();
+    m_min->SetPrecision(1e-6);
+    m_min->SetMaxFunctionCalls(1000);
+    m_min->SetLimitedVariable(0,"B",param[0],0.1,4,14);
+    m_min->Minimize();
+    //cout << "************" << endl;
+    //cout << m_min->MinValue() << endl;
+    //cout << param[0] << " / " << m_min->X()[0] << endl;
+    return m_min->X()[0];
+  }
+
+  else
+    return -1;
 }
+
 //////////////////////////////////////////////////////////////////////
 TGraph* GladFieldMap::BrhoScan(double Brho_min, double Brho_max, double Brho_step){
   if(m_BrhoScan)
     delete m_BrhoScan;
 
   m_BrhoScan = new TGraph();
-
   int i=0;
   for(double Brho=Brho_min; Brho<Brho_max; Brho+=Brho_step){
-    vector<TVector3> vPos = Propagate(Brho, m_InitPos, m_InitDir);
+    TVector3 pos = TVector3(0,0,0);
+    TVector3 dir = TVector3(0,0,1);
+    //vector<TVector3> vPos = Propagate(Brho, m_InitPos, m_InitDir);
+    vector<TVector3> vPos = Propagate(Brho, pos, dir);
 
     TVector3 M_inter = CalculateIntersectionPoint(vPos);
 
     m_BrhoScan->SetPoint(i,M_inter.X(),Brho);
+    //cout << Brho << " / " << M_inter.X() << endl;
     i++;
   }
 

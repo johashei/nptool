@@ -8,13 +8,13 @@
  *****************************************************************************/
 
 /*****************************************************************************
- * Original Author: Pierre Morfouace  contact address: pierre.morfouace@cea.fr *
- *                                                                             *
- * Creation Date  : 06/2021                                             *
+ * Original Author: P. Morfouace  contact address: pierre.morfouace@cea.fr   *
+ *                                                                           *
+ * Creation Date  : 06/2021                                                  *
  * Last update    :                                                          *
  *---------------------------------------------------------------------------*
  * Decription:                                                               *
- *  This class describe  Sofia analysis project                       *
+ *  This class describe  Sofia analysis project                              *
  *                                                                           *
  *---------------------------------------------------------------------------*
  * Comment:                                                                  *
@@ -35,6 +35,7 @@
 #include"TSofMwpcPhysics.h"
 #include"TSofBeamID.h"
 #include"TSofFissionFragment.h"
+#include "GladFieldMap.h"
 
 class Analysis: public NPL::VAnalysis{
   public:
@@ -66,6 +67,7 @@ class Analysis: public NPL::VAnalysis{
     TSofTofWPhysics* SofTofW;
     TSofBeamID* SofBeamID;
     TSofFissionFragment* SofFF;
+    GladFieldMap* m_GladField;
     int RunID;
 
   private:

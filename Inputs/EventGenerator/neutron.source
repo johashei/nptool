@@ -4,13 +4,14 @@
 %      Energy are given in MeV , Position in mm      % 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 Isotropic
- EnergyLow= 0
- EnergyHigh= 18
+ EnergyLow= 4
+ EnergyHigh= 15
  %EnergyDistribution= flat
+ EnergyDistribution= Watt
  %EnergyDistribution= 0.38*sqrt(x)*exp(-x/0.847212)
  %EnergyDistribution= -0.00372440431*pow(x,6)+0.387617479*pow(x,5)-14.3752948*pow(x,4)+225.888082*pow(x,3)-1555.60583*pow(x,2)+7983.24902*pow(x,1)+9069.96435
  %EnergyDistribution= 0.619676*TMath::SinH(sqrt(1.07777*x))*exp(-0.847212*x)
- EnergyDistribution= 1.0*TMath::SinH(sqrt(2.3075*x))*exp(-1.0193*x)
+ %EnergyDistribution= 1.5*TMath::SinH(sqrt(1.3*x))*exp(-0.89*x)
  HalfOpenAngleMin= 0
  HalfOpenAngleMax= 0
  x0= 0 

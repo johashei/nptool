@@ -62,7 +62,7 @@ using namespace CLHEP;
 namespace ChiNu_NS{
   // EJ309 Scintillator - Energy and time Resolution
   const double EnergyThreshold = 0.*MeV;
-  const double ResoTime = 0.5*ns ;
+  const double ResoTime = 0.686*ns ;
   const double ResoEnergy = 0.1*MeV ;
   const double Radius = 8.90*cm ; 
   const double Thickness = 5.08*cm ; 
