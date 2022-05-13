@@ -3,24 +3,26 @@
 Beam
   Particle= 47K 
   ExcitationEnergy= 0 MeV
+  %%-- 7.54789 MeV/u after CATS --%%
   Energy= 354.75 MeV
   SigmaEnergy= 0. MeV
   SigmaThetaX= 0.0  deg
   SigmaPhiY= 0.0    deg
-  SigmaX= 2.0 mm
-  SigmaY= 2.0 mm
+  SigmaX= 2.0 millimeter
+  SigmaY= 2.0 millimeter
   MeanThetaX= 0 deg
   MeanPhiY= 0 deg
   MeanX= -3.9164 millimeter 
   MeanY= +0.0550 millimeter
-  %EnergyProfilePath=
-  %XThetaXProfilePath=
-  %YPhiYProfilePath=
  
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-PhaseSpace
+TwoBodyReaction
  Beam= 47K
  Target= 2H
- Daughters= 1H 47K n
- ExcitationEnergies= 0 0 0 MeV 
- Fermi= 1
+ Light= 3H
+ Heavy= 46K
+ ExcitationEnergyLight= 0.0 MeV
+ ExcitationEnergyHeavy= 0.0 MeV
+ CrossSectionPath= flat.txt CSR
+ ShootLight= 1
+ ShootHeavy= 0

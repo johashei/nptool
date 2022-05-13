@@ -22,5 +22,5 @@ PhaseSpace
  Beam= 47K
  Target= 2H
  Daughters= 1H 47K n
- ExcitationEnergies= 0 0 0 MeV 
+ ExcitationEnergies= 0 0.360 0 MeV 
  Fermi= 1

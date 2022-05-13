@@ -122,11 +122,6 @@ void CS(double Energy, double Spin, double spdf, double angmom){
   }
 
   /* Solid Angle (from simulation) */
-  //cout << "USING SOLID ANGLE FILE 29Apr22_Flat3500_50M !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << endl;
-  //auto file = new TFile("../SolidAngle_HistFile_29Apr22_Flat3500_50M.root");
-  //auto file = new TFile("../SolidAngle_HistFile_New.root");
-  //auto file = new TFile("../SolidAngle_HistFile_17Apr22_3605.root");
- 
   auto file = new TFile("../SolidAngle_HistFile_15Feb_47Kdp.root");
   //auto file = new TFile("../SolidAngle_HistFile_06May_WideStripMatching_LargeRun.root");
   TH1F* SolidAngle = (TH1F*) file->FindObjectAny("SolidAngle_Lab_MG");
@@ -364,9 +359,10 @@ vector<vector<double>> GetExpDiffCross(double Energy){
   vector<vector<double>> OnePeak_AllGates;
   int numbins = 10;
   double x[numbins], y[numbins];
-  TList* list = new TList();
+  //TList* list = new TList();
 
   /* Determine scaling factor for PhaseSpace */
+  TCanvas* c_ExSubPSpace = new TCanvas("c_ExSubPSpace","c_ExSubPSpace",1000,1000);
   double trackScale = 0.0;
   if(scaleTogether){
     TH1F* baseEx = PullThetaLabHist(0,105.,5.);
@@ -399,8 +395,9 @@ vector<vector<double>> GetExpDiffCross(double Energy){
       }
     }
     baseEx->Add(basePS,-1.);
-    baseEx->SetName("AllAngles");
-    list->Add(baseEx);
+    baseEx->SetName("ExSubPSpace");
+    baseEx->SetTitle("ExSubPSpace");
+    baseEx->Draw();
     cout << "PhaseSpace -> ExpData scaling = " << trackScale << endl;
   }
 
@@ -457,6 +454,18 @@ vector<vector<double>> GetExpDiffCross(double Energy){
         gate->Add(pspace,-1);
       }
     }
+
+    /* Subtract flat background equal to smallest bin in range */
+    /* ????? */
+    /*
+    gate->GetXaxis()->SetRange(gate->FindBin(-1.),gate->FindBin(1.));
+    double minValueInRange = gate->GetBinContent(gate->GetMinimumBin());
+    gate->GetXaxis()->UnZoom();
+    cout << "Subtracting background of " << minValueInRange << endl;
+    for(int b=1; b<gate->GetNbinsX() ; b++){
+      gate->SetBinContent(b,gate->GetBinContent(b)-minValueInRange);
+    }
+    */
 
     /* Retrieve array containing all fits, for one angle gate. *
      * Specific peak of interest selected from the vector by   *
