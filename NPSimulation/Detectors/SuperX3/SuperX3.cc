@@ -116,7 +116,7 @@ void SuperX3::VolumeMaker(G4int DetecNumber, G4ThreeVector position, G4RotationM
 
   new G4PVPlacement(G4Transform3D(*rotation, position), logicSuperX3, Name, world, false, DetecNumber);
 
-  logicSuperX3->SetVisAttributes(G4VisAttributes::Invisible);
+  logicSuperX3->SetVisAttributes(G4VisAttributes::GetInvisible());
   if (m_non_sensitive_part_visiualisation)
     logicSuperX3->SetVisAttributes(G4VisAttributes(G4Colour(0.90, 0.90, 0.90)));
 
