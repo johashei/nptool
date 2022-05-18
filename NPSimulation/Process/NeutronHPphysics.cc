@@ -46,11 +46,11 @@
 #include "G4ParticleHPThermalScattering.hh"
 #include "G4ParticleHPThermalScatteringData.hh"
 
-//#include "G4NeutronInelasticProcess.hh"
+#include "G4NeutronInelasticProcess.hh"
 #include "G4ParticleHPInelastic.hh"
 #include "G4ParticleHPInelasticData.hh"
 
-//#include "G4HadronCaptureProcess.hh"
+#include "G4HadronCaptureProcess.hh"
 #include "G4ParticleHPCapture.hh"
 #include "G4ParticleHPCaptureData.hh"
 
