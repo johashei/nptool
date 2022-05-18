@@ -45,21 +45,25 @@ Analysis::~Analysis(){
 void Analysis::Init() {
  ///////////////////////////////////////////////////////////////////////////////  
 
-//    cout << " == == == == SIMULATION == == == ==" << endl;
-//      isSim=true;
-//      isPhaseSpace=false;
-//    cout << " == == == == EXPERIMENT == == == ==" << endl;
-//      isSim=false;
-//      isPhaseSpace=false;
+  if(NPOptionManager::getInstance()->HasDefinition("Sim")){
+    cout << " == == == == SIMULATION == == == ==" << endl;
+      isSim=true;
+      isPhaseSpace=false;
+  } else if (NPOptionManager::getInstance()->HasDefinition("Exp")) {
+    cout << " == == == == EXPERIMENT == == == ==" << endl;
+      isSim=false;
+      isPhaseSpace=false;
+  } else {
     cout << " == == == == PHASE SPACE == == == ==" << endl;
       isSim=false;
       isPhaseSpace=true;
-
+  }
 
   agata_zShift=51*mm;
   //BrhoRef=0.65;
 
   if(isSim && !isPhaseSpace){
+//cout << "here_InIsSimLoop" << endl;
     Initial = new TInitialConditions();
     ReactionConditions = new TReactionConditions(); 
     RootInput::getInstance()->GetChain()->SetBranchAddress("InitialConditions",&Initial);
@@ -160,7 +164,7 @@ void Analysis::Init() {
   ALight=reaction.GetParticle3()->GetA(); 
   MHeavy=reaction.GetParticle4()->Mass();
   MLight=reaction.GetParticle3()->Mass();
-  bool writetoscreen=true;
+  //bool writetoscreen=true;
 
   for(int i=0;i<GATCONF_SIZE;i++){ // loop over the bits
     GATCONF_Counter[i] = 0 ; 
@@ -168,14 +172,14 @@ void Analysis::Init() {
 
 //  ThetaCM_detected->Sumw2();
 //  ThetaLab_detected->Sumw2();
+//cout << "here_endInit" << endl;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 void Analysis::TreatEvent(){
-
   // Reinitiate calculated variable
+//cout << "here_TreatEvent" << endl;
   ReInitValue();
-
   if(isSim && !isPhaseSpace){
     ThetaCM_emmitted->Fill(ReactionConditions->GetThetaCM());
     ThetaLab_emmitted->Fill(ReactionConditions->GetTheta(0));
@@ -200,12 +204,13 @@ void Analysis::TreatEvent(){
 
   //ParticleMult=M2->Si_E.size();////+MG->DSSD_E.size();
   ParticleMult=M2->Si_E.size()+MG->DSSD_E.size();
-
+//cout << "here_BeforeMustLoop" << endl;
   ////////////////////////////////////////////////////////////////////////////
   //////////////////////////////// LOOP on MUST2  ////////////////////////////
   ////////////////////////////////////////////////////////////////////////////
   unsigned int sizeM2 = M2->Si_E.size();
   for(unsigned int countMust2 = 0; countMust2 < sizeM2; countMust2++){
+//cout << "here_InMustLoop" << endl;
 
     /************************************************/
     // Part 0 : Get the useful Data
@@ -284,9 +289,10 @@ void Analysis::TreatEvent(){
 
     ThetaLab.push_back(thetalab_tmp/deg);
     PhiLab.push_back(philab_tmp/deg);
+//cout << "here_EndMustLoop" << endl;
   }
 
-
+//cout << "here_BeforeMugastLoop" << endl;
   ////////////////////////////////////////////////////////////////////////////
   //////////////////////////////// LOOP on MUGAST ////////////////////////////
   ////////////////////////////////////////////////////////////////////////////
@@ -350,10 +356,10 @@ void Analysis::TreatEvent(){
       //	    elab_tmp,            //particle energy after Si
       //	    0.5*500.*micrometer, //thickness of Si
       //	    ThetaMGSurface);     //angle of impingement
-      elab_tmp = LightAl.EvaluateInitialEnergy(
-                    elab_tmp,            //particle energy after Al
-      	            0.4*micrometer,      //thickness of Al
-                    ThetaMGSurface);     //angle of impingement
+      //elab_tmp = LightAl.EvaluateInitialEnergy(
+      //              elab_tmp,            //particle energy after Al
+      //	            0.4*micrometer,      //thickness of Al
+      //              ThetaMGSurface);     //angle of impingement
       elab_tmp = LightTarget.EvaluateInitialEnergy(
     		    elab_tmp,            //particle energy after leaving target
     		    TargetThickness*0.5, //distance passed through target
@@ -682,6 +688,7 @@ void Analysis::End(){
 
 ////////////////////////////////////////////////////////////////////////////////
 void Analysis::InitOutputBranch(){
+//cout << "here_InitOutput" << endl;
   //RootOutput::getInstance()->GetTree()->Branch("Ex",&Ex,"Ex/D");
   RootOutput::getInstance()->GetTree()->Branch("Ex",&Ex);
   //RootOutput::getInstance()->GetTree()->Branch("EDC",&EDC,"EDC/D");
@@ -808,6 +815,8 @@ void Analysis::InitOutputBranch(){
 
 ////////////////////////////////////////////////////////////////////////////////
 void Analysis::InitInputBranch(){
+
+//cout << "here_InitInput" << endl;
   SetBranchStatus();
   // RootInput:: getInstance()->GetChain()->SetBranchAddress("GATCONF",&vGATCONF);
   //
@@ -878,6 +887,7 @@ void Analysis::InitInputBranch(){
 
 ////////////////////////////////////////////////////////////////////////////////
 void Analysis::SetBranchStatus(){
+//cout << "here_SetBranchStatus" << endl;
   // Set Branch status 
   RootInput::getInstance()->GetChain()->SetBranchStatus("LTS",true);
  /*   RootInput::getInstance()->GetChain()->SetBranchStatus("T_FPMW_CATS1",true);
@@ -941,6 +951,7 @@ void Analysis::SetBranchStatus(){
 
 ////////////////////////////////////////////////////////////////////////////////
 void Analysis::ReInitValue(){
+//cout << "here_ReInit" << endl;
   Ex.clear();
   Ecm.clear();
   AddBack_EDC.clear();
