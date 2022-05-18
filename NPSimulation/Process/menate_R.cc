@@ -217,7 +217,7 @@ void menate_R::ReadCrossSectionFile(G4String FileName, CrossSectionClass* theRea
       G4double theCrossSection;
       theFile >> theEnergy >> theCrossSection;
 
-      if (G4StrUtil::contains(FileName, "Iron") || G4StrUtil::contains(FileName, "Al27")) {
+      if (FileName.contains("Iron") || FileName.contains("Al27")) {
         theReactionXS[k].SetNumberOfLines(NumberOfLines);
         theReactionXS[k].SetElementName(ElementName_);
         theReactionXS[k].SetKinEng(theEnergy * eV);

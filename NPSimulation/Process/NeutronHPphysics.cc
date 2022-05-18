@@ -54,7 +54,7 @@
 #include "G4ParticleHPCapture.hh"
 #include "G4ParticleHPCaptureData.hh"
 
-//#include "G4HadronFissionProcess.hh"
+#include "G4HadronFissionProcess.hh"
 #include "G4ParticleHPFission.hh"
 #include "G4ParticleHPFissionData.hh"
 
