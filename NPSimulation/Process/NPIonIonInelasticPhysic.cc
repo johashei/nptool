@@ -40,13 +40,13 @@
 #include "G4SystemOfUnits.hh"
 
 // Total cross section for inelastic processes
-//#include "G4GeneralSpaceNNCrossSection.hh"
 #include "G4BGGNucleonElasticXS.hh"
 #include "G4ComponentGGHadronNucleusXsc.hh"
 #include "G4CrossSectionInelastic.hh"
+#include "G4GeneralSpaceNNCrossSection.hh"
 #include "G4IonsShenCrossSection.hh"
-//#include "G4TripathiCrossSection.hh"
-//#include "G4TripathiLightCrossSection.hh"
+#include "G4TripathiCrossSection.hh"
+#include "G4TripathiLightCrossSection.hh"
 
 // Elastic
 #include "G4DiffuseElastic.hh"
@@ -55,14 +55,14 @@
 #include "G4HadronElasticProcess.hh"
 
 // Inelastic
-//#include "G4AlphaInelasticProcess.hh"
+#include "G4AlphaInelasticProcess.hh"
 #include "G4BinaryLightIonReaction.hh"
-//#include "G4DeuteronInelasticProcess.hh"
-//#include "G4He3InelasticProcess.hh"
-//#include "G4IonInelasticProcess.hh"
-//#include "G4ProtonInelasticProcess.hh"
+#include "G4DeuteronInelasticProcess.hh"
+#include "G4He3InelasticProcess.hh"
+#include "G4IonInelasticProcess.hh"
+#include "G4ProtonInelasticProcess.hh"
 #include "G4QMDReaction.hh"
-//#include "G4TritonInelasticProcess.hh"
+#include "G4TritonInelasticProcess.hh"
 
 using namespace std;
 /////////////////////////////////////////////////////////////////////////////
