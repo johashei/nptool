@@ -352,7 +352,7 @@ void Helios::InitializeScorers() {
 
   // Otherwise the scorer is initialised
   G4VPrimitiveScorer* Resistive =
-      new DSSDScorers::PS_Resistive("Resistive", 1, Helios_NS::WaferLength, Helios_NS::WaferWidth, 1);
+      new DSSDScorers::PS_Resistive("Resistive", "z", 1, Helios_NS::WaferLength, Helios_NS::WaferWidth, 1);
   // and register it to the multifunctionnal detector
   m_HeliosScorer->RegisterPrimitive(Resistive);
   G4VPrimitiveScorer* Inter = new InteractionScorers::PS_Interactions("Resistive", ms_InterCoord, 1);

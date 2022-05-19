@@ -338,9 +338,9 @@ void SuperX3::InitializeScorers() {
 
   //..... resistive starts..
   G4VPrimitiveScorer* resistivestrip =
-      new DSSDScorers::PS_Resistive("resistivestrip", 1, SiliconFaceLength, SiliconFaceWidth, NbStrips);
+      new DSSDScorers::PS_Resistive("resistivestrip", "y", 0, SiliconFaceLength, SiliconFaceWidth, NbStrips, 0);
   G4VPrimitiveScorer* backstrip =
-      new DSSDScorers::PS_Rectangle("backstrip", 1, SiliconFaceLength, SiliconFaceWidth, 4, 1);
+      new DSSDScorers::PS_Rectangle("backstrip", 0, SiliconFaceLength, SiliconFaceWidth, 4, 1, 0);
 
   G4VPrimitiveScorer* interaction = new InteractionScorers::PS_Interactions("Interaction", ms_InterCoord, 0);
   //... resistive ends......
