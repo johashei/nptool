@@ -18,7 +18,7 @@ void Plots_47Kdt(){
   det_gate = "MUST2.TelescopeNumber>0 && MUST2.TelescopeNumber<5";
   
   cout << "==============================================" << endl;
-  cout << "=============== CROSS SECTIONS ===============" << endl;
+  cout << "=============== (d,t) reaction ===============" << endl;
   cout << "==============================================" << endl;
 
 }

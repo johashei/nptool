@@ -122,7 +122,8 @@ void CS(double Energy, double Spin, double spdf, double angmom){
   }
 
   /* Solid Angle (from simulation) */
-  auto file = new TFile("../SolidAngle_HistFile_15Feb_47Kdp.root");
+  //auto file = new TFile("../SolidAngle_HistFile_15Feb_47Kdp.root");
+  auto file = new TFile("../SolidAngle_HistFile_17May22_47Kdp_0143.root");
   //auto file = new TFile("../SolidAngle_HistFile_06May_WideStripMatching_LargeRun.root");
   TH1F* SolidAngle = (TH1F*) file->FindObjectAny("SolidAngle_Lab_MG");
   TCanvas* c_SolidAngle = new TCanvas("c_SolidAngle","c_SolidAngle",1000,1000);
@@ -503,6 +504,7 @@ vector<vector<double>> GetExpDiffCross(double Energy){
 
 ////////////////////////////////////////////////////////////////////////////////
 TH1F* PullThetaLabHist(int i, double minTheta, double gatesize){
+  //TFile* file = new TFile("GateThetaLabHistograms.root","READ");
   TFile* file = new TFile("GateThetaLabHistograms_ReadMe.root","READ");
   string histname = "cThetaLabGate_" 
 	          + to_string((int) (minTheta+(i*gatesize))) + "-" 
@@ -556,11 +558,33 @@ void Scale(TGraph* g , TGraphErrors* ex){
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+//TGraph* TWOFNR(double E, double J0, double J, double n, double l, double j, const char* model){
 TGraph* TWOFNR(double E, double J0, double J, double n, double l, double j){
   /* This function mved between directories in order to run TWOFNR in proper *
    * location. This is, weirdly, the least tempremental way of doing this.   */
 
   cout << "========================================================" << endl;
+  int johnson, tandyval;
+  cout << "Using Johnson-Soper ..."; johnson=5; tandyval=0;
+  //cout << "Using Johnson-Tandy 1 ..."; johnson=6; tandyval=1;
+  //cout << "Using Johnson-Tandy 2 ..."; johnson=6; tandyval=2;
+  //cout << "Using Johnson-Tandy 3 ..."; johnson=6; tandyval=3;
+  //cout << "Using Johnson-Tandy 4 ..."; johnson=6; tandyval=4;
+
+  int modelA,modelB;
+//  switch (model):{
+//    case 'K': case 'k':{
+//      cout << " ... Koning-Delaroche." << endl; modelA=6; modelB=4;
+//    }
+//    case 'C': case 'c':{
+      cout << " ... and Chapel-Hill." << endl; modelA=2; modelB=2;
+//    }      
+//    case 'B': case 'b':{
+//      cout << " ... Bechetti-Greenlees." << endl; modelA=1; modelB=1;
+//    }
+//  }
+
+
   char origDirchar[200];
   getcwd(origDirchar,200);
   string origDir{origDirchar};
@@ -597,12 +621,15 @@ TGraph* TWOFNR(double E, double J0, double J, double n, double l, double j){
   Front_Input << 1 << std::endl;
   Front_Input << J0 << std::endl;
   Front_Input << 1 << std::endl;
-  Front_Input << 5 << std::endl;
+  Front_Input << johnson << std::endl;
+  if(johnson==6){//JTandy selected, give version
+    Front_Input << tandyval << std::endl;
+  }
   Front_Input << 1 << std::endl;
   Front_Input << J << std::endl;
   Front_Input << 1 << std::endl;
-  Front_Input << 6 << std::endl;
-  Front_Input << 4 << std::endl;
+  Front_Input << modelA << std::endl;
+  Front_Input << modelB << std::endl;
   Front_Input << 1 << std::endl;
   Front_Input << 1 << std::endl;
   Front_Input << 1 << std::endl;
