@@ -4,18 +4,26 @@ TChain* chain=NULL;
 void LoadRootFile(){
   chain = new TChain("SimulatedTree");
 
-  chain->Add("../../../Outputs/Simulation/sofia_simu.root");
-  
-  //chain->Add("../../../Outputs/Simulation/sofia_simu_1.root");
-  //chain->Add("../../../Outputs/Simulation/sofia_simu_2.root");
-  //chain->Add("../../../Outputs/Simulation/sofia_simu_3.root");
-  //chain->Add("../../../Outputs/Simulation/sofia_simu_4.root");
-  //chain->Add("../../../Outputs/Simulation/sofia_simu_5.root");
-  //chain->Add("../../../Outputs/Simulation/sofia_simu_6.root");
-  //chain->Add("../../../Outputs/Simulation/sofia_simu_7.root");
-  //chain->Add("../../../Outputs/Simulation/sofia_simu_8.root");
-  //chain->Add("../../../Outputs/Simulation/sofia_simu_9.root");
-  //chain->Add("../../../Outputs/Simulation/sofia_simu_10.root");
+  chain->Add("../../../Outputs/Simulation/sofia_simu_glad_1.root");
+  chain->Add("../../../Outputs/Simulation/sofia_simu_glad_2.root");
+  chain->Add("../../../Outputs/Simulation/sofia_simu_glad_3.root");
+  chain->Add("../../../Outputs/Simulation/sofia_simu_glad_4.root");
+  chain->Add("../../../Outputs/Simulation/sofia_simu_glad_5.root");
+  chain->Add("../../../Outputs/Simulation/sofia_simu_glad_6.root");
+  chain->Add("../../../Outputs/Simulation/sofia_simu_glad_7.root");
+  chain->Add("../../../Outputs/Simulation/sofia_simu_glad_8.root");
+  chain->Add("../../../Outputs/Simulation/sofia_simu_glad_9.root");
+  chain->Add("../../../Outputs/Simulation/sofia_simu_glad_10.root");
+  chain->Add("../../../Outputs/Simulation/sofia_simu_glad_11.root");
+  chain->Add("../../../Outputs/Simulation/sofia_simu_glad_12.root");
+  chain->Add("../../../Outputs/Simulation/sofia_simu_glad_13.root");
+  chain->Add("../../../Outputs/Simulation/sofia_simu_glad_14.root");
+  chain->Add("../../../Outputs/Simulation/sofia_simu_glad_15.root");
+  chain->Add("../../../Outputs/Simulation/sofia_simu_glad_16.root");
+  chain->Add("../../../Outputs/Simulation/sofia_simu_glad_17.root");
+  chain->Add("../../../Outputs/Simulation/sofia_simu_glad_18.root");
+  chain->Add("../../../Outputs/Simulation/sofia_simu_glad_19.root");
+  chain->Add("../../../Outputs/Simulation/sofia_simu_glad_20.root");
 }
 
 //////////////////////////////////////////////////////////////////
@@ -23,7 +31,7 @@ void ShowResultSimu()
 {
   LoadRootFile();
 
-  chain->Draw("fDetected_Position_Y:fDetected_Position_X>>hpos(500,-1900,-900,500,-350,350)","fTOF_Energy@.size()==2","colz");
+  chain->Draw("fDetected_Position_Y:fDetected_Position_X>>hpos(200,-2100,-1100,200,-350,350)","fTOF_Energy@.size()==2","colz");
   TH2F* hpos = (TH2F*)gDirectory->FindObjectAny("hpos");
 
   chain->Draw("fFC_Fragment_Z>>h1(35,30,65)");
