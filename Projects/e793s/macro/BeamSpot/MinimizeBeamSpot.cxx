@@ -22,6 +22,7 @@ double devE(const double * parameter) {
   h5 -> Reset();
   h7 -> Reset();
   hT -> Reset();
+  hEL -> Reset();
 
   //Now that initial range is wide, crop to single peak
   if(refE==0.143){
@@ -75,13 +76,14 @@ double devE(const double * parameter) {
       0.5 * parameter[3] * micrometer, //pass through half target
       ThetaTarget                      //angle leaving target
     );
-
+    
 //cout << Energy << endl;
     //Final value of Ex
     double Ex = reaction.ReconstructRelativistic(Energy, ThetaTarget);
 
     //Fill histograms with
 //if(ThetaTarget/deg<130.){ // TESTING
+//if(ThetaTarget/deg>130.){ // TESTING
     if(allButMG3){
       if(detnum[i]!=3){
         h -> Fill(Ex);
@@ -93,6 +95,7 @@ double devE(const double * parameter) {
 //}
     DetectorSwitch(detnum[i], Ex);
     hT -> Fill(ThetaTarget/deg,Ex);
+    hEL -> Fill(ThetaTarget/deg,Energy-energy[i]);//ELoss in target and Al
   }
 
   //Initilise, Draw & Fit histograms
@@ -103,11 +106,11 @@ double devE(const double * parameter) {
 
   /*** Minimize by one peak ***/
 /**/
-  double multiplier = 0.10; //0.08;
-  //double metric = abs(FitResultMatrix[mgSelect][0]-refE) + abs(multiplier*FitResultMatrix[mgSelect][2]);
+  double multiplier = 0.05; //0.08;
+  double metric = abs(FitResultMatrix[mgSelect][0]-refE) + abs(multiplier*FitResultMatrix[mgSelect][2]);
   //double metric = abs(FitResultMatrix[mgSelect][0]-0.143) + abs(multiplier*FitResultMatrix[mgSelect][2]) + abs(FitResultMatrix[mgSelect][5]-1.410) + abs(multiplier*FitResultMatrix[mgSelect][6]);
   //double metric = abs(FitResultMatrix[mgSelect][0]-0.143) + abs(multiplier*FitResultMatrix[mgSelect][2]) + abs(FitResultMatrix[mgSelect][5]-1.410) + abs(multiplier*FitResultMatrix[mgSelect][6])+ abs(FitResultMatrix[mgSelect][7]-1.980) + abs(multiplier*FitResultMatrix[mgSelect][8]) ;
-  double metric = abs(FitResultMatrix[mgSelect][0]-0.143) + abs(multiplier*FitResultMatrix[mgSelect][2]);
+  //double metric = abs(FitResultMatrix[mgSelect][7]-1.981) + abs(multiplier*FitResultMatrix[mgSelect][8]); ;
 
 /**/
 
@@ -151,9 +154,8 @@ double devE(const double * parameter) {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void MinimizeBeamSpot() {
 
-  filename = "XYZE_GateOn1838_11Apr22.txt"; refE = 1.981; // the energy of the selected states
-  
-  //filename = "XYZE_GateOn0143_11Apr22.txt"; refE = 0.143; // the energy of the selected states
+  //filename = "XYZE_GateOn1838_11Apr22.txt"; refE = 1.981; // the energy of the selected states
+  filename = "XYZE_GateOn0143_11Apr22.txt"; refE = 0.143; // the energy of the selected states
 
 
   //Read data in
@@ -214,7 +216,16 @@ void MinimizeBeamSpot() {
     //-5.088554, +1.476001, +0.342552, +2.586484 
     //-5.088554, +1.476001, +0.236014, +2.523850 
     //-3.989139, 0.99116, 0.115426, 2.586484 
-    -3.989139, +0.991160, +0.587660, +2.586484
+    //-3.989139, +0.991160, +0.587660, +2.586484
+
+    //-3.989139, +0.991160, +0.587660, +2.586484
+    //-3.9164, +0.0550, 0.0, 2.6
+    //-3.9164, +0.0550, 0.0, +2.838327
+    //-3.912110, +0.083580, +0.000000, +2.838327
+    //-3.912110, +0.083580, +0.000000, +2.6
+    //-3.9164, +0.0550, +0.0, 2.3
+    //-3.9164, +0.0550, +0.0, +2.591512
+    -5.334864, -0.698900, +0.0, +2.591512
 
   };
 
@@ -239,15 +250,15 @@ void MinimizeBeamSpot() {
   minim -> SetFunction(func);
 
   //Assign variable limits
-  //minim -> SetLimitedVariable(0, "X", parameter[0], 0.20, -8.0, -0.0);
+  //minim -> SetLimitedVariable(0, "X", parameter[0], 0.10, -8.0, -0.0);
   minim -> SetFixedVariable(0, "X", parameter[0]); 
-  //minim -> SetLimitedVariable(1, "Y", parameter[1], 0.20, -6.0, +6.0);
+  //minim -> SetLimitedVariable(1, "Y", parameter[1], 0.10, -6.0, +6.0);
   minim -> SetFixedVariable(1, "Y", parameter[1]);
   //minim -> SetLimitedVariable(2, "Z", parameter[2], 0.05, 0.90, +1.10);
   //minim -> SetLimitedVariable(2, "Z", parameter[2], 0.10, -2.00, +2.00);
   minim -> SetFixedVariable(2, "Z", parameter[2]);
   //minim -> SetLimitedVariable(3, "T", parameter[3], 0.05, +0.9, +1.5); // ELASTICS, 1.2(3)
-  //minim -> SetLimitedVariable(3, "T", parameter[3], 0.20, +2.05, +3.25); // ELASTICS, 2.65(59)
+  //minim -> SetLimitedVariable(3, "T", parameter[3], 0.05, +2.05, +3.25); // ELASTICS, 2.65(59)
   minim -> SetFixedVariable(3, "T", parameter[3]);
 
 
