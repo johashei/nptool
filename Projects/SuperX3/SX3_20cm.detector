@@ -1,0 +1,26 @@
+%%%%%%%
+Target
+ THICKNESS= 0.1 micrometer
+ ANGLE= 0 deg
+ RADIUS= 15 mm
+ MATERIAL= CD2 
+ X= 0 mm
+ Y= 0 mm
+ Z= -20 cm
+ NbSlices= 10
+
+%%%%%%% Alias Phi
+% will create a new block for each value of Phi
+Alias Phi
+  Action= Copy
+  Value= 0 15 30 45 60 75 90 105 120 135 150 165 180 195 210 225 240 255 270 285 300 315 330 345
+
+%%%%%%% Detector 1 %%%%%%% 		
+SuperX3
+ THETA= 90 deg
+ PHI= @Phi deg
+ R= 198.4 mm
+ BETA= 0 0 0 deg
+ VIS= all					
+
+

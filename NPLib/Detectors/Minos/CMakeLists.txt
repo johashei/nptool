@@ -10,7 +10,7 @@ add_custom_command(OUTPUT TMinosClustDict.cxx COMMAND ../../scripts/build_dict.s
 add_custom_command(OUTPUT TMinosResultDict.cxx COMMAND ../../scripts/build_dict.sh TMinosResult.h TMinosResultDict.cxx TMinosResult.rootmap libNPMinos.dylib DEPENDS TMinosResult.h)
 
 ## Check if MINUIT is installed along with ROOT
-find_library(libMinuit_FOUND NAMES Minuit2 HINTS "$ENV{ROOTSYS}/lib")
+find_library(libMinuit_FOUND NAMES Minuit2 HINTS "$ENV{ROOTSYS}/lib" "/usr/lib64/root")
 if(libMinuit_FOUND)
   message(STATUS "Minuit support enabled for Minos.")
   add_definitions(-DHAVE_MINUIT)

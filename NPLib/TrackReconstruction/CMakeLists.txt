@@ -7,7 +7,7 @@ add_custom_command(OUTPUT NPClusterDict.cxx COMMAND ${CMAKE_BINARY_DIR}/scripts/
 add_custom_command(OUTPUT TrackingDict.cxx COMMAND ${CMAKE_BINARY_DIR}/scripts/build_dict.sh Tracking.h TrackingDict.cxx Tracking.rootmap libNPTrackReconstruction.so NPTrackReconstructionLinkDef.h DEPENDS Tracking.h)
 
 ## Check if MINUIT2 is installed along with ROOT
-find_library(libMinuit2_FOUND NAMES Minuit2 HINTS "${ROOTSYS}/lib")
+find_library(libMinuit2_FOUND NAMES Minuit2 HINTS "${ROOTSYS}/lib" "/usr/lib64/root")
 if(libMinuit2_FOUND)
   message(STATUS "Minuit2 support enabled for TrackReconstruction.")
   add_definitions(-DHAVE_MINUIT2)
