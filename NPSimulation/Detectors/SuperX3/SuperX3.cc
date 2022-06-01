@@ -183,7 +183,7 @@ void SuperX3::ReadConfiguration(NPL::InputParser parser) {
       if (blocks[i]->GetInt("VIS"))
         m_non_sensitive_part_visiualisation = true;
 
-      AddDetector(Theta, Phi, R, beta[0], beta[1], beta[2]);
+      AddDetector(R, Theta, Phi, beta[0], beta[1], beta[2]);
     }
 
     else {
@@ -237,18 +237,18 @@ void SuperX3::ConstructDetector(G4LogicalVolume* world) {
       // w perpendicular to (u,v) plan and pointing ThirdStage
       // Phi is angle between X axis and projection in (X,Y) plan
       // Theta is angle between  position vector and z axis
-      G4double wX = m_R[i] * sin(Theta / rad) * cos(Phi / rad);
-      G4double wY = m_R[i] * sin(Theta / rad) * sin(Phi / rad);
-      G4double wZ = m_R[i] * cos(Theta / rad);
+      G4double wX = m_R[i] * sin(Theta) * cos(Phi);
+      G4double wY = m_R[i] * sin(Theta) * sin(Phi);
+      G4double wZ = m_R[i] * cos(Theta);
       SuperX3w = G4ThreeVector(wX, wY, wZ);
 
       // vector corresponding to the center of the module
       SuperX3Center = SuperX3w;
 
       // vector parallel to one axis of silicon plane
-      G4double ii = cos(Theta / rad) * cos(Phi / rad);
-      G4double jj = cos(Theta / rad) * sin(Phi / rad);
-      G4double kk = -sin(Theta / rad);
+      G4double ii = cos(Theta) * cos(Phi);
+      G4double jj = cos(Theta) * sin(Phi);
+      G4double kk = -sin(Theta);
       G4ThreeVector Y = G4ThreeVector(ii, jj, kk);
 
       SuperX3w = SuperX3w.unit();
@@ -265,7 +265,7 @@ void SuperX3::ConstructDetector(G4LogicalVolume* world) {
       SuperX3rot->rotate(m_beta_v[i], SuperX3v);
       SuperX3rot->rotate(m_beta_w[i], SuperX3w);
       // translation to place Telescope
-      SuperX3pos = SuperX3w * Length * 0.5 + SuperX3Center;
+      SuperX3pos = SuperX3w * (SiliconThickness + AluStripThickness) * 0.5 + SuperX3Center;
     }
 
     VolumeMaker(i + 1, SuperX3pos, SuperX3rot, world);
