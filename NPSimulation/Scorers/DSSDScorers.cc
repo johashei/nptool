@@ -370,21 +370,22 @@ G4bool PS_Resistive::ProcessHits(G4Step* aStep, G4TouchableHistory*) {
 
   // Up
   vector<DSSDData>::iterator it;
-  it = m_HitUp.find(DSSDData::CalculateIndex(t_DetectorNumber, t_StripWidthNumber));
-  if (it != m_HitUp.end())
+  it = m_HitUp.find(DSSDData::CalculateIndex(t_StripWidthNumber, t_DetectorNumber));
+  if (it != m_HitUp.end()) {
     it->Add(t_EnergyUp);
-  else
+  }
+  else {
     m_HitUp.Set(t_EnergyUp, t_Time, t_StripWidthNumber, t_DetectorNumber);
-
+  }
   // Down
-  it = m_HitDown.find(DSSDData::CalculateIndex(t_DetectorNumber, t_StripWidthNumber));
+  it = m_HitDown.find(DSSDData::CalculateIndex(t_StripWidthNumber, t_DetectorNumber));
   if (it != m_HitDown.end())
     it->Add(t_EnergyDown);
   else
     m_HitDown.Set(t_EnergyDown, t_Time, t_StripWidthNumber, t_DetectorNumber);
 
   // Back
-  it = m_HitBack.find(DSSDData::CalculateIndex(t_DetectorNumber, t_StripWidthNumber));
+  it = m_HitBack.find(DSSDData::CalculateIndex(t_StripWidthNumber, t_DetectorNumber));
   if (it != m_HitBack.end())
     it->Add(t_Energy);
   else

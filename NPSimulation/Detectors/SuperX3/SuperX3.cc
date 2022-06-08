@@ -320,6 +320,8 @@ void SuperX3::ReadSensitive(const G4Event*) {
     m_Event->SetBackE(det, strip, energy);
     m_Event->SetBackT(det, strip, time);
   }
+  resistive->clear();
+  backstrip->clear();
 }
 
 void SuperX3::InitializeMaterials() {
