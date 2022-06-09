@@ -209,40 +209,52 @@ void TSofMwpcPhysics::BuildPhysicalEvent() {
       }
 
 
-      if(fClusterX.size()==fClusterY.size()){
-        int size = fClusterX.size();
-        vector<double> Xpos;
-        vector<double> Ypos;
-        for(unsigned int i=0; i<size; i++){
-          // *** strip X *** //
-          vector<pair<int,int>> hitX;
-          hitX = fClusterX[i];
-          double x = -1000;
-          int qleft = hitX[0].second;
-          int qmax = hitX[1].second;
-          int qright = hitX[2].second;
-          int padmax = hitX[2].first;
-          if(padmax>0 && padmax+1<288 && qmax>0 && qleft>0 && qright>0){
-            x = GetPositionX(det_num, qmax, padmax, qleft, qright);
-            Xpos.push_back(x);
-          }
+      // *** strip X *** //
+      int sizeX = fClusterX.size();
+      vector<double> Xpos;
+      for(unsigned int i=0; i<sizeX; i++){
+        vector<pair<int,int>> hitX;
+        hitX = fClusterX[i];
+        double x = -1000;
+        int qleft = hitX[0].second;
+        int qmax = hitX[1].second;
+        int qright = hitX[2].second;
+        int padmax = hitX[2].first;
+        if(padmax>0 && padmax+1<288 && qmax>0 && qleft>0 && qright>0){
+          x = GetPositionX(det_num, qmax, padmax, qleft, qright);
+          Xpos.push_back(x);
+        }
+      }
 
-          // *** strip Y *** //
-          vector<pair<int,int>> hitY;
-          hitY = fClusterY[i];
-          double y = -1000;
-          int qdown = hitY[0].second;
-          qmax = hitY[1].second;
-          int qup = hitY[2].second;
-          padmax = hitY[2].first;
-          if(padmax>0 && padmax+1<120 && qmax>0 && qdown>0 && qup>0){
-            y = GetPositionY(det_num, qmax, padmax, qdown, qup);
-            Ypos.push_back(y);
-          }
+      // *** strip Y *** //
+      int sizeY = fClusterY.size();
+      vector<double> Ypos;
+      for(unsigned int i=0; i<sizeY; i++){
+        vector<pair<int,int>> hitY;
+        hitY = fClusterY[i];
+        double y = -1000;
+        int qdown = hitY[0].second;
+        int qmax = hitY[1].second;
+        int qup = hitY[2].second;
+        int padmax = hitY[2].first;
+        if(padmax>0 && padmax+1<120 && qmax>0 && qdown>0 && qup>0){
+          y = GetPositionY(det_num, qmax, padmax, qdown, qup);
+          Ypos.push_back(y);
+        }
+      }
+
+      for(unsigned int i=0; i<Xpos.size(); i++){
+        if(Xpos.size()==Ypos.size()){
           DetectorNbr.push_back(det_num);
-          PositionX1.push_back(x);
+          PositionX1.push_back(Xpos[i]);
           PositionX2.push_back(-1000);
-          PositionY.push_back(y);
+          PositionY.push_back(Ypos[i]);
+        }
+        else{
+          DetectorNbr.push_back(det_num);
+          PositionX1.push_back(Xpos[i]);
+          PositionX2.push_back(-1000);
+          PositionY.push_back(-1000);
         }
       }
     }

@@ -20,7 +20,7 @@
  * Comment:                                                                  *
  *                                                                           *
  *****************************************************************************/
-//NPL
+// NPL
 #include "NPOptionManager.h"
 
 // NPS
@@ -56,8 +56,8 @@ MaterialManager::~MaterialManager() {}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 MaterialManager::MaterialManager() {
-  m_D   = NULL;
-  m_T   = NULL;
+  m_D = NULL;
+  m_T = NULL;
   m_He3 = NULL;
 }
 
@@ -75,14 +75,13 @@ void MaterialManager::ClearMaterialLibrary() {
   // we can forget about them but not delete it
   // as they can be deleted by the kernel e.g. when Cleaning the PVPStore
   m_Material.clear();
-  m_D   = NULL;
-  m_T   = NULL;
+  m_D = NULL;
+  m_T = NULL;
   m_He3 = NULL;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-G4Material* MaterialManager::GetMaterialFromLibrary(string Name,
-                                                    double density) {
+G4Material* MaterialManager::GetMaterialFromLibrary(string Name, double density) {
   // Search if the material is already instantiate
   map<string, G4Material*>::iterator it;
   it = m_Material.find(Name);
@@ -91,8 +90,7 @@ G4Material* MaterialManager::GetMaterialFromLibrary(string Name,
   if (it == m_Material.end()) {
 
     // Usual compound
-    if (Name == "Vacuum" || Name == "Vaccum" || Name == "Vaccuum"
-        || Name == "Vacum") {
+    if (Name == "Vacuum" || Name == "Vaccum" || Name == "Vaccuum" || Name == "Vacum") {
       if (!density)
         density = 0.000000001 * mg / cm3;
       G4Material* material = new G4Material("NPS_" + Name, density, 2);
@@ -148,7 +146,6 @@ G4Material* MaterialManager::GetMaterialFromLibrary(string Name,
       return material;
     }
 
- 
     else if (Name == "Rogers4003C") {
       if (!density)
         density = 1.79 * g / cm3;
@@ -224,9 +221,8 @@ G4Material* MaterialManager::GetMaterialFromLibrary(string Name,
     else if (Name == "N2_liquid") {
       if (!density)
         density = 0.808 * g / cm3;
-      G4Material* material = new G4Material("NPS_" + Name, 7, 14.01 * g / mole,
-                                            density, kStateLiquid, 77 * kelvin);
-      m_Material[Name]     = material;
+      G4Material* material = new G4Material("NPS_" + Name, 7, 14.01 * g / mole, density, kStateLiquid, 77 * kelvin);
+      m_Material[Name] = material;
       return material;
     }
 
@@ -264,11 +260,9 @@ G4Material* MaterialManager::GetMaterialFromLibrary(string Name,
     else if (Name == "EJ200") {
       if (!density)
         density = 1.023 * g / cm3;
-      G4Material* material = new G4Material("NPS_" + Name, density, 2,
-                                            kStateSolid, 293 * kelvin);
-      G4Element*  C        = new G4Element("C", "C", 6, 12 * g / mole);
-      G4Element*  H
-          = new G4Element("TS_H_of_Polyethylene", "H", 1., 1.0079 * g / mole);
+      G4Material* material = new G4Material("NPS_" + Name, density, 2, kStateSolid, 293 * kelvin);
+      G4Element* C = new G4Element("C", "C", 6, 12 * g / mole);
+      G4Element* H = new G4Element("TS_H_of_Polyethylene", "H", 1., 1.0079 * g / mole);
       material->AddElement(C, 5);
       material->AddElement(H, 4);
       // material->AddElement(GetElementFromLibrary("C"), 5);
@@ -299,7 +293,6 @@ G4Material* MaterialManager::GetMaterialFromLibrary(string Name,
       return material;
     }
 
-
     else if (Name == "Cu") {
       if (!density)
         density = 8.96 * g / cm3;
@@ -326,8 +319,7 @@ G4Material* MaterialManager::GetMaterialFromLibrary(string Name,
       G4Isotope* isotope = new G4Isotope("235U", 92, 235);
       U235->AddIsotope(isotope, 1);
 
-      G4Material* material = new G4Material("NPS_" + Name, density, 1,
-                                            kStateSolid, 293.15 * kelvin);
+      G4Material* material = new G4Material("NPS_" + Name, density, 1, kStateSolid, 293.15 * kelvin);
       material->AddElement(U235, 1);
       m_Material[Name] = material;
       return material;
@@ -341,8 +333,7 @@ G4Material* MaterialManager::GetMaterialFromLibrary(string Name,
       G4Isotope* isotope = new G4Isotope("238U", 92, 238);
       U238->AddIsotope(isotope, 1);
 
-      G4Material* material = new G4Material("NPS_" + Name, density, 1,
-                                            kStateSolid, 293.15 * kelvin);
+      G4Material* material = new G4Material("NPS_" + Name, density, 1, kStateSolid, 293.15 * kelvin);
       material->AddElement(U238, 1);
       m_Material[Name] = material;
       return material;
@@ -372,8 +363,7 @@ G4Material* MaterialManager::GetMaterialFromLibrary(string Name,
       isotope = new G4Isotope("160Gd", 64, 160);
       Gd->AddIsotope(isotope, 0.2186);
 
-      G4Material* material = new G4Material("NPS_" + Name, density, 1,
-                                            kStateSolid, 293.15 * kelvin);
+      G4Material* material = new G4Material("NPS_" + Name, density, 1, kStateSolid, 293.15 * kelvin);
       material->AddElement(Gd, 1);
       m_Material[Name] = material;
       return material;
@@ -423,28 +413,32 @@ G4Material* MaterialManager::GetMaterialFromLibrary(string Name,
       material->AddElement(GetElementFromLibrary("H"), 2);
       m_Material[Name] = material;
       return material;
-    } else if (Name == "H2_gas") {
+    }
+    else if (Name == "H2_gas") {
       if (!density)
         density = 3.34e-11 * g / cm3;
       G4Material* material = new G4Material("NPS_" + Name, density, 1);
       material->AddElement(GetElementFromLibrary("H"), 2);
       m_Material[Name] = material;
       return material;
-    } else if (Name == "He_gas") {
+    }
+    else if (Name == "He_gas") {
       if (!density)
         density = 0.0001665 * g / cm3; // room temp, 1 atm
       G4Material* material = new G4Material("NPS_" + Name, density, 1);
       material->AddElement(GetElementFromLibrary("He"), 1);
       m_Material[Name] = material;
       return material;
-    } else if (Name == "O2_gas") {
+    }
+    else if (Name == "O2_gas") {
       if (!density)
         density = 0.001331 * g / cm3; // room temp, 1 atm
       G4Material* material = new G4Material("NPS_" + Name, density, 1);
       material->AddElement(GetElementFromLibrary("O"), 2);
       m_Material[Name] = material;
       return material;
-    } else if (Name == "Ti") {
+    }
+    else if (Name == "Ti") {
       if (!density)
         density = 4.5189 * g / cm3;
       G4Material* material = new G4Material("NPS_" + Name, density, 1);
@@ -461,7 +455,7 @@ G4Material* MaterialManager::GetMaterialFromLibrary(string Name,
       material->AddElement(GetElementFromLibrary("O"), 1);
       m_Material[Name] = material;
       return material;
-    } 
+    }
     else if (Name == "mixMINOS") { // cyril
       if (!density)
         density = 0.0019836 * g / cm3;
@@ -471,7 +465,7 @@ G4Material* MaterialManager::GetMaterialFromLibrary(string Name,
       material->AddElement(GetElementFromLibrary("Ar"), .82);
       m_Material[Name] = material;
       return material;
-    } 
+    }
     else if (Name == "mumetal") { // cyril
       if (!density)
         density = 8.7 * g / cm3;
@@ -481,14 +475,16 @@ G4Material* MaterialManager::GetMaterialFromLibrary(string Name,
       material->AddElement(GetElementFromLibrary("Mo"), .05);
       m_Material[Name] = material;
       return material;
-    } else if (Name == "LH2") { // cyril
+    }
+    else if (Name == "LH2") { // cyril
       if (!density)
         density = 0.07293 * g / cm3;
       G4Material* material = new G4Material("NPS_" + Name, density, 1);
       material->AddElement(GetElementFromLibrary("H"), 2);
       m_Material[Name] = material;
       return material;
-    } else if (Name == "Rohacell") { // cyril
+    }
+    else if (Name == "Rohacell") { // cyril
       if (!density)
         density = 0.075 * g / cm3;
       G4Material* material = new G4Material("NPS_" + Name, density, 4);
@@ -508,15 +504,15 @@ G4Material* MaterialManager::GetMaterialFromLibrary(string Name,
       material->AddElement(GetElementFromLibrary("Si"), 1);
 
       // Adding Optical property:
-      double* energy_r   = new double[2];
-      double* rindex     = new double[2];
+      double* energy_r = new double[2];
+      double* rindex = new double[2];
       double* absorption = new double[2];
 
       energy_r[0] = 1 * eV;
       energy_r[1] = 1 * MeV;
 
-      rindex[0]     = 1;
-      rindex[1]     = 1;
+      rindex[0] = 1;
+      rindex[1] = 1;
       absorption[0] = 1 * um;
       absorption[1] = 1 * um;
 
@@ -596,23 +592,23 @@ G4Material* MaterialManager::GetMaterialFromLibrary(string Name,
 
     else if (Name == "para-Terphenyl_Scintillator") {
       if (!density)
-        density = 1.23 * g / cm3; // good
+        density = 1.23 * g / cm3;                                       // good
       G4Material* material = new G4Material("NPS_" + Name, density, 2); // check
-      material->AddElement(GetElementFromLibrary("H"), 14); // good
-      material->AddElement(GetElementFromLibrary("C"), 18); // good
+      material->AddElement(GetElementFromLibrary("H"), 14);             // good
+      material->AddElement(GetElementFromLibrary("C"), 18);             // good
       // Adding Scintillation property:
-      int     NumberOfPoints = 10; // check
-      double  wlmin          = 0.25 * um; // check
-      double  wlmax          = 67 * um; // check
-      double  step           = (wlmax - wlmin) / NumberOfPoints;
-      double* energy_r       = new double[NumberOfPoints];
-      double* rindex         = new double[NumberOfPoints];
-      double* absorption     = new double[NumberOfPoints];
+      int NumberOfPoints = 10;  // check
+      double wlmin = 0.25 * um; // check
+      double wlmax = 67 * um;   // check
+      double step = (wlmax - wlmin) / NumberOfPoints;
+      double* energy_r = new double[NumberOfPoints];
+      double* rindex = new double[NumberOfPoints];
+      double* absorption = new double[NumberOfPoints];
 
       double* energy_e = new double[5];
-      double* fast     = new double[5];
-      double* slow     = new double[5];
-      double* scint    = new double[5];
+      double* fast = new double[5];
+      double* slow = new double[5];
+      double* scint = new double[5];
 
       // check block below
       energy_e[0] = h_Planck * c_light / (450 * nm);
@@ -624,7 +620,7 @@ G4Material* MaterialManager::GetMaterialFromLibrary(string Name,
       for (int i = 0; i < 5; i++) {
         // fast[0] = 1 ; fast[1]=1;
         // slow[0] = 1 ; slow[1]=1;
-        fast[i] = 2.1; // good
+        fast[i] = 2.1;  // good
         slow[i] = 22.6; // check
       }
       // check below block
@@ -640,14 +636,10 @@ G4Material* MaterialManager::GetMaterialFromLibrary(string Name,
       for (int i = 0; i < NumberOfPoints; i++) {
         wl = wlmin + i * step;
         // Formula from www.refractiveindex.info
-        rindex[i] = sqrt(1 + 0.27587 + 0.68689 / (1 - pow(0.130 / wl, 2))
-                         + 0.26090 / (1 - pow(0.147 / wl, 2))
-                         + 0.06256 / (1 - pow(0.163 / wl, 2))
-                         + 0.06527 / (1 - pow(0.177 / wl, 2))
-                         + 0.14991 / (1 - pow(0.185 / wl, 2))
-                         + 0.51818 / (1 - pow(0.206 / wl, 2))
-                         + 0.01918 / (1 - pow(0.218 / wl, 2))
-                         + 3.38229 / (1 - pow(161.29 / wl, 2)));
+        rindex[i] = sqrt(1 + 0.27587 + 0.68689 / (1 - pow(0.130 / wl, 2)) + 0.26090 / (1 - pow(0.147 / wl, 2)) +
+                         0.06256 / (1 - pow(0.163 / wl, 2)) + 0.06527 / (1 - pow(0.177 / wl, 2)) +
+                         0.14991 / (1 - pow(0.185 / wl, 2)) + 0.51818 / (1 - pow(0.206 / wl, 2)) +
+                         0.01918 / (1 - pow(0.218 / wl, 2)) + 3.38229 / (1 - pow(161.29 / wl, 2)));
         // check below block
         energy_r[i] = h_Planck * c_light / wl;
         // To be defined properly
@@ -657,19 +649,19 @@ G4Material* MaterialManager::GetMaterialFromLibrary(string Name,
       G4MaterialPropertiesTable* MPT = new G4MaterialPropertiesTable();
 
       // From St Gobain
-      MPT->AddConstProperty("SCINTILLATIONYIELD", 27000000 / keV); // good
-      MPT->AddProperty("SCINTILLATION", energy_e, scint, 5); // check
+      MPT->AddConstProperty("SCINTILLATIONYIELD", 27000000 / keV);  // good
+      MPT->AddProperty("SCINTILLATION", energy_e, scint, 5);        // check
       MPT->AddProperty("RINDEX", energy_r, rindex, NumberOfPoints); // check
       MPT->AddProperty("ABSLENGTH", energy_r, absorption,
-                       NumberOfPoints); // check
+                       NumberOfPoints);                     // check
       MPT->AddProperty("FASTCOMPONENT", energy_e, fast, 5); // good
       MPT->AddProperty("SLOWCOMPONENT", energy_e, slow, 5); // good
-      MPT->AddConstProperty("RESOLUTIONSCALE", 1.0); // check
+      MPT->AddConstProperty("RESOLUTIONSCALE", 1.0);        // check
       MPT->AddConstProperty("FASTTIMECONSTANT", 1000 * ns); // check
       MPT->AddConstProperty("SLOWTIMECONSTANT", 1000 * ns); // check
-      MPT->AddConstProperty("YIELDRATIO", 1.0); // check
-      material->SetMaterialPropertiesTable(MPT); // good
-      m_Material[Name] = material; // good
+      MPT->AddConstProperty("YIELDRATIO", 1.0);             // check
+      material->SetMaterialPropertiesTable(MPT);            // good
+      m_Material[Name] = material;                          // good
       return material;
     }
 
@@ -742,18 +734,18 @@ G4Material* MaterialManager::GetMaterialFromLibrary(string Name,
       material->AddElement(GetElementFromLibrary("Cs"), 1);
       material->AddElement(GetElementFromLibrary("I"), 1);
       // Adding Scintillation property:
-      int     NumberOfPoints = 10;
-      double  wlmin          = 0.25 * um;
-      double  wlmax          = 67 * um;
-      double  step           = (wlmax - wlmin) / NumberOfPoints;
-      double* energy_r       = new double[NumberOfPoints];
-      double* rindex         = new double[NumberOfPoints];
-      double* absorption     = new double[NumberOfPoints];
+      int NumberOfPoints = 10;
+      double wlmin = 0.25 * um;
+      double wlmax = 67 * um;
+      double step = (wlmax - wlmin) / NumberOfPoints;
+      double* energy_r = new double[NumberOfPoints];
+      double* rindex = new double[NumberOfPoints];
+      double* absorption = new double[NumberOfPoints];
 
       double* energy_e = new double[5];
-      double* fast     = new double[5];
-      double* slow     = new double[5];
-      double* scint    = new double[5];
+      double* fast = new double[5];
+      double* slow = new double[5];
+      double* scint = new double[5];
 
       energy_e[0] = h_Planck * c_light / (450 * nm);
       energy_e[1] = h_Planck * c_light / (500 * nm);
@@ -778,14 +770,10 @@ G4Material* MaterialManager::GetMaterialFromLibrary(string Name,
       for (int i = 0; i < NumberOfPoints; i++) {
         wl = wlmin + i * step;
         // Formula from www.refractiveindex.info
-        rindex[i] = sqrt(1 + 0.27587 + 0.68689 / (1 - pow(0.130 / wl, 2))
-                         + 0.26090 / (1 - pow(0.147 / wl, 2))
-                         + 0.06256 / (1 - pow(0.163 / wl, 2))
-                         + 0.06527 / (1 - pow(0.177 / wl, 2))
-                         + 0.14991 / (1 - pow(0.185 / wl, 2))
-                         + 0.51818 / (1 - pow(0.206 / wl, 2))
-                         + 0.01918 / (1 - pow(0.218 / wl, 2))
-                         + 3.38229 / (1 - pow(161.29 / wl, 2)));
+        rindex[i] = sqrt(1 + 0.27587 + 0.68689 / (1 - pow(0.130 / wl, 2)) + 0.26090 / (1 - pow(0.147 / wl, 2)) +
+                         0.06256 / (1 - pow(0.163 / wl, 2)) + 0.06527 / (1 - pow(0.177 / wl, 2)) +
+                         0.14991 / (1 - pow(0.185 / wl, 2)) + 0.51818 / (1 - pow(0.206 / wl, 2)) +
+                         0.01918 / (1 - pow(0.218 / wl, 2)) + 3.38229 / (1 - pow(161.29 / wl, 2)));
 
         energy_r[i] = h_Planck * c_light / wl;
         // To be defined properly
@@ -823,11 +811,35 @@ G4Material* MaterialManager::GetMaterialFromLibrary(string Name,
     else if (Name == "LaBr3_Ce") {
       if (!density)
         density = 5.29 * g / cm3;
-      G4Material* base     = GetMaterialFromLibrary("LaBr3");
+      G4Material* base = GetMaterialFromLibrary("LaBr3");
       G4Material* material = new G4Material("NPS_" + Name, density, 2);
       material->AddMaterial(base, 95 * perCent);
       material->AddElement(GetElementFromLibrary("Ce"), 5 * perCent);
 
+      m_Material[Name] = material;
+      return material;
+    }
+
+    else if (Name == "Lyso" || Name == "LYSO") {
+      if (!density)
+        density = 7.1 * g / cm3;
+      G4Material* material = new G4Material("NPS_" + Name, density, 5);
+      material->AddElement(GetElementFromLibrary("Lu"), 2);
+      material->AddElement(GetElementFromLibrary("Y"), 2);
+      material->AddElement(GetElementFromLibrary("Si"), 1);
+      material->AddElement(GetElementFromLibrary("O"), 5);
+      material->AddElement(GetElementFromLibrary("Ce"), 1);
+      m_Material[Name] = material;
+      return material;
+    }
+
+    else if (Name == "BGO") {
+      if (!density)
+        density = 7.13 * g / cm3;
+      G4Material* material = new G4Material("NPS_" + Name, density, 3);
+      material->AddElement(GetElementFromLibrary("Bi"), 4);
+      material->AddElement(GetElementFromLibrary("Ge"), 3);
+      material->AddElement(GetElementFromLibrary("O"), 12);
       m_Material[Name] = material;
       return material;
     }
@@ -891,8 +903,7 @@ G4Material* MaterialManager::GetMaterialFromLibrary(string Name,
     else if (Name == "P10_1atm") {
       if (!density)
         density = 1.74 * mg / cm3;
-      G4Material* material
-          = new G4Material("NPS_" + Name, density, 3); //@ 0K, 1 atm
+      G4Material* material = new G4Material("NPS_" + Name, density, 3); //@ 0K, 1 atm
       material->AddElement(GetElementFromLibrary("Ar"), 0.9222);
       material->AddElement(GetElementFromLibrary("C"), 0.0623);
       material->AddElement(GetElementFromLibrary("H"), 0.0155);
@@ -903,8 +914,7 @@ G4Material* MaterialManager::GetMaterialFromLibrary(string Name,
     else if (Name == "P10") {
       if (!density)
         density = 0.57 * mg / cm3;
-      G4Material* material
-          = new G4Material("NPS_" + Name, density, 3); //@ 0K, 1/3 atm
+      G4Material* material = new G4Material("NPS_" + Name, density, 3); //@ 0K, 1/3 atm
       material->AddElement(GetElementFromLibrary("Ar"), 0.9222);
       material->AddElement(GetElementFromLibrary("C"), 0.0623);
       material->AddElement(GetElementFromLibrary("H"), 0.0155);
@@ -923,7 +933,7 @@ G4Material* MaterialManager::GetMaterialFromLibrary(string Name,
     }
 
     else if (Name == "iC4H10" || Name == "Isobutane" || Name == "isobutane") {
-      density              = 0.002506 * g / cm3;
+      density = 0.002506 * g / cm3;
       G4Material* material = new G4Material("NPS_" + Name, density, 2);
       material->AddElement(GetElementFromLibrary("C"), 4);
       material->AddElement(GetElementFromLibrary("H"), 10);
@@ -934,8 +944,7 @@ G4Material* MaterialManager::GetMaterialFromLibrary(string Name,
     else if (Name == "CF4") { // 52 torr
       if (!density)
         density = 3.78 * mg / cm3;
-      G4Material* material = new G4Material("NPS_" + Name, density, 2,
-                                            kStateGas, 300, 0.0693276 * bar);
+      G4Material* material = new G4Material("NPS_" + Name, density, 2, kStateGas, 300, 0.0693276 * bar);
       material->AddElement(GetElementFromLibrary("C"), 1);
       material->AddElement(GetElementFromLibrary("F"), 4);
       material->GetIonisation()->SetMeanExcitationEnergy(20.0 * eV);
@@ -991,17 +1000,13 @@ G4Material* MaterialManager::GetMaterialFromLibrary(string Name,
       //--------------------- PMMA optical Properties ---------------------//
       const G4int NUMENTRIES = 15;
 
-      G4double PMMA_PP[NUMENTRIES]
-          = {10 * eV,    3.25 * eV,  3.099 * eV, 2.88 * eV,  2.695 * eV,
-             2.53 * eV,  2.38 * eV,  2.254 * eV, 2.138 * eV, 2.033 * eV,
-             1.937 * eV, 1.859 * eV, 1.771 * eV, 1.6 * eV,   0 * eV};
-      G4double PMMA_RIND[NUMENTRIES]
-          = {1.47, 1.47, 1.47, 1.47, 1.47, 1.47, 1.47, 1.47,
-             1.47, 1.47, 1.47, 1.47, 1.47, 1.47, 1.47};
-      G4double PMMA_ABSL[NUMENTRIES]
-          = {35. * cm, 35. * cm, 35. * cm, 35. * cm, 35. * cm,
-             35. * cm, 35. * cm, 35. * cm, 35. * cm, 35. * cm,
-             35. * cm, 35. * cm, 35. * cm, 35. * cm, 35. * cm};
+      G4double PMMA_PP[NUMENTRIES] = {10 * eV,    3.25 * eV,  3.099 * eV, 2.88 * eV,  2.695 * eV,
+                                      2.53 * eV,  2.38 * eV,  2.254 * eV, 2.138 * eV, 2.033 * eV,
+                                      1.937 * eV, 1.859 * eV, 1.771 * eV, 1.6 * eV,   0 * eV};
+      G4double PMMA_RIND[NUMENTRIES] = {1.47, 1.47, 1.47, 1.47, 1.47, 1.47, 1.47, 1.47,
+                                        1.47, 1.47, 1.47, 1.47, 1.47, 1.47, 1.47};
+      G4double PMMA_ABSL[NUMENTRIES] = {35. * cm, 35. * cm, 35. * cm, 35. * cm, 35. * cm, 35. * cm, 35. * cm, 35. * cm,
+                                        35. * cm, 35. * cm, 35. * cm, 35. * cm, 35. * cm, 35. * cm, 35. * cm};
 
       G4MaterialPropertiesTable* myMPT2 = new G4MaterialPropertiesTable();
       myMPT2->AddProperty("RINDEX", PMMA_PP, PMMA_RIND, NUMENTRIES);
@@ -1017,9 +1022,9 @@ G4Material* MaterialManager::GetMaterialFromLibrary(string Name,
       if (!density)
         density = 2.71 * g / cm3;
       G4Material* material = new G4Material("NPS_" + Name, density, 2);
-      material->AddElement(GetElementFromLibrary("Al"), 99.5/100.);
+      material->AddElement(GetElementFromLibrary("Al"), 99.5 / 100.);
       // To get to 100%
-      material->AddElement(GetElementFromLibrary("Fe"), 0.5/100.);
+      material->AddElement(GetElementFromLibrary("Fe"), 0.5 / 100.);
       // Not 100% from wiki...
       // material->AddElement(GetElementFromLibrary("Cu"), 0.05/100.);
       // material->AddElement(GetElementFromLibrary("Fe"), 0.4/100.);
@@ -1037,9 +1042,9 @@ G4Material* MaterialManager::GetMaterialFromLibrary(string Name,
       if (!density)
         density = 2.67 * g / cm3;
       G4Material* material = new G4Material("NPS_" + Name, density, 2);
-      //Realistic
-      material->AddElement(GetElementFromLibrary("Al"), 97/100.);
-      material->AddElement(GetElementFromLibrary("Mg"), 3/100.);
+      // Realistic
+      material->AddElement(GetElementFromLibrary("Al"), 97 / 100.);
+      material->AddElement(GetElementFromLibrary("Mg"), 3 / 100.);
       // Not 100% from Wiki...
       // material->AddElement(GetElementFromLibrary("Al"), 97.4/100.);
       // material->AddElement(GetElementFromLibrary("Cr"), 0.3/100.);
@@ -1053,7 +1058,6 @@ G4Material* MaterialManager::GetMaterialFromLibrary(string Name,
       m_Material[Name] = material;
       return material;
     }
-
 
     else if (Name == "NE213") {
       if (!density)
@@ -1075,22 +1079,16 @@ G4Material* MaterialManager::GetMaterialFromLibrary(string Name,
 
       //--------------------- Optical Properties ---------------------//
       const G4int NUMENTRIES = 15;
-      G4double    CsI_PP[NUMENTRIES]
-          = {10 * eV,    3.5 * eV,  3.25 * eV, 3.2 * eV,  3.15 * eV,
-             3.099 * eV, 3.0 * eV,  2.95 * eV, 2.88 * eV, 2.75 * eV,
-             2.695 * eV, 2.53 * eV, 2.38 * eV, 2.30 * eV, 0 * eV};
+      G4double CsI_PP[NUMENTRIES] = {10 * eV,    3.5 * eV,  3.25 * eV, 3.2 * eV,  3.15 * eV,
+                                     3.099 * eV, 3.0 * eV,  2.95 * eV, 2.88 * eV, 2.75 * eV,
+                                     2.695 * eV, 2.53 * eV, 2.38 * eV, 2.30 * eV, 0 * eV};
 
-      G4double CsI_SCINT[NUMENTRIES]
-          = {0.0,  0.0, 0.1, 0.2,  0.4,  0.65, 0.8, 0.95,
-             0.82, 0.7, 0.5, 0.21, 0.05, 0,    0};
+      G4double CsI_SCINT[NUMENTRIES] = {0.0, 0.0, 0.1, 0.2, 0.4, 0.65, 0.8, 0.95, 0.82, 0.7, 0.5, 0.21, 0.05, 0, 0};
 
-      G4double CsI_RIND[NUMENTRIES]
-          = {1.505, 1.505, 1.505, 1.505, 1.505, 1.505, 1.505, 1.505,
-             1.505, 1.505, 1.505, 1.505, 1.505, 1.505, 1.505};
-      G4double CsI_ABSL[NUMENTRIES]
-          = {1.5 * m, 1.5 * m, 1.5 * m, 1.5 * m, 1.5 * m,
-             1.5 * m, 1.5 * m, 1.5 * m, 1.5 * m, 1.5 * m,
-             1.5 * m, 1.5 * m, 1.5 * m, 1.5 * m, 1.5 * m};
+      G4double CsI_RIND[NUMENTRIES] = {1.505, 1.505, 1.505, 1.505, 1.505, 1.505, 1.505, 1.505,
+                                       1.505, 1.505, 1.505, 1.505, 1.505, 1.505, 1.505};
+      G4double CsI_ABSL[NUMENTRIES] = {1.5 * m, 1.5 * m, 1.5 * m, 1.5 * m, 1.5 * m, 1.5 * m, 1.5 * m, 1.5 * m,
+                                       1.5 * m, 1.5 * m, 1.5 * m, 1.5 * m, 1.5 * m, 1.5 * m, 1.5 * m};
 
       G4MaterialPropertiesTable* myMPT1 = new G4MaterialPropertiesTable();
       myMPT1->AddProperty("RINDEX", CsI_PP, CsI_RIND, NUMENTRIES); /// Constant?
@@ -1115,13 +1113,12 @@ G4Material* MaterialManager::GetMaterialFromLibrary(string Name,
 
     else {
       cout << "INFO: trying to get " << Name << " material from NIST" << endl;
-      G4NistManager* man      = G4NistManager::Instance();
-      G4Material*    material = man->FindOrBuildMaterial(Name.c_str());
-      m_Material[Name]        = material;
+      G4NistManager* man = G4NistManager::Instance();
+      G4Material* material = man->FindOrBuildMaterial(Name.c_str());
+      m_Material[Name] = material;
       material->SetName("NPS_" + material->GetName());
       if (!material) {
-        cout << "ERROR: Material requested \"" << Name
-             << "\" is not available in the nptool material library or NIST"
+        cout << "ERROR: Material requested \"" << Name << "\" is not available in the nptool material library or NIST"
              << endl;
         exit(1);
       }
@@ -1136,17 +1133,14 @@ G4Material* MaterialManager::GetMaterialFromLibrary(string Name,
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-void MaterialManager::AddMaterialToLibrary(G4Material* material) {
-  m_Material[material->GetName()] = material;
-}
+void MaterialManager::AddMaterialToLibrary(G4Material* material) { m_Material[material->GetName()] = material; }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 G4Element* MaterialManager::GetElementFromLibrary(string Name) {
   if (Name == "D" || Name == "d") {
     if (!m_D) {
       m_D = new G4Element(Name.c_str(), Name.c_str(), 1);
-      G4Isotope* isotope
-          = new G4Isotope(Name.c_str(), 1, 2, 2.01410178 * g / mole);
+      G4Isotope* isotope = new G4Isotope(Name.c_str(), 1, 2, 2.01410178 * g / mole);
       m_D->AddIsotope(isotope, 1);
     }
     return m_D;
@@ -1155,8 +1149,7 @@ G4Element* MaterialManager::GetElementFromLibrary(string Name) {
   else if (Name == "T" || Name == "t") {
     if (!m_T) {
       m_T = new G4Element(Name.c_str(), Name.c_str(), 1);
-      G4Isotope* isotope
-          = new G4Isotope(Name.c_str(), 1, 3, 3.0160492 * g / mole);
+      G4Isotope* isotope = new G4Isotope(Name.c_str(), 1, 3, 3.0160492 * g / mole);
       m_T->AddIsotope(isotope, 1);
     }
     return m_T;
@@ -1165,8 +1158,7 @@ G4Element* MaterialManager::GetElementFromLibrary(string Name) {
   else if (Name == "He3" || Name == "3He") {
     if (!m_He3) {
       m_He3 = new G4Element(Name.c_str(), Name.c_str(), 1);
-      G4Isotope* isotope
-          = new G4Isotope(Name.c_str(), 2, 1, 3.0160293 * g / mole);
+      G4Isotope* isotope = new G4Isotope(Name.c_str(), 2, 1, 3.0160293 * g / mole);
       m_He3->AddIsotope(isotope, 1);
     }
     return m_He3;
@@ -1178,11 +1170,10 @@ G4Element* MaterialManager::GetElementFromLibrary(string Name) {
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //
-G4Material* MaterialManager::GetGasFromLibrary(string Name, double Pressure,
-                                               double Temperature) {
+G4Material* MaterialManager::GetGasFromLibrary(string Name, double Pressure, double Temperature) {
   ostringstream oss;
   oss << Name << "_" << Pressure << "_" << Temperature;
-  string                             newName = oss.str();
+  string newName = oss.str();
   map<string, G4Material*>::iterator it;
   it = m_Material.find(Name);
 
@@ -1193,12 +1184,11 @@ G4Material* MaterialManager::GetGasFromLibrary(string Name, double Pressure,
   // The element is not found
   if (it == m_Material.end()) {
     if (Name == "CF4") { // 52 torr
-      density        = 3.72 * kg / m3;
+      density = 3.72 * kg / m3;
       double refTemp = (273.15 + 15) * kelvin;
       double refPres = 1.01325 * bar;
-      density        = density * (refTemp / Temperature) / (refPres / Pressure);
-      G4Material* material = new G4Material("NPS_" + newName, density, 2,
-                                            kStateGas, Temperature, Pressure);
+      density = density * (refTemp / Temperature) / (refPres / Pressure);
+      G4Material* material = new G4Material("NPS_" + newName, density, 2, kStateGas, Temperature, Pressure);
       material->AddElement(GetElementFromLibrary("C"), 1);
       material->AddElement(GetElementFromLibrary("F"), 4);
       m_Material[newName] = material;
@@ -1206,18 +1196,16 @@ G4Material* MaterialManager::GetGasFromLibrary(string Name, double Pressure,
     }
 
     if (Name == "He") {
-      density              = (4.0026 / Vm) * mg / cm3;
-      G4Material* material = new G4Material("NPS_" + newName, density, 1,
-                                            kStateGas, Temperature, Pressure);
+      density = (4.0026 / Vm) * mg / cm3;
+      G4Material* material = new G4Material("NPS_" + newName, density, 1, kStateGas, Temperature, Pressure);
       material->AddElement(GetElementFromLibrary("He"), 1);
       m_Material[newName] = material;
       return material;
     }
 
     if (Name == "iC4H10" || Name == "Isobutane" || Name == "isobutane") {
-      density              = ((4 * 12.0107 + 10 * 1.00794) / Vm) * mg / cm3;
-      G4Material* material = new G4Material("NPS_" + newName, density, 2,
-                                            kStateGas, Temperature, Pressure);
+      density = ((4 * 12.0107 + 10 * 1.00794) / Vm) * mg / cm3;
+      G4Material* material = new G4Material("NPS_" + newName, density, 2, kStateGas, Temperature, Pressure);
       material->AddElement(GetElementFromLibrary("C"), 4);
       material->AddElement(GetElementFromLibrary("H"), 10);
       m_Material[newName] = material;
@@ -1225,9 +1213,8 @@ G4Material* MaterialManager::GetGasFromLibrary(string Name, double Pressure,
     }
 
     if (Name == "CH4") {
-      density              = ((12.0107 + 4 * 1.00794) / Vm) * mg / cm3;
-      G4Material* material = new G4Material("NPS_" + newName, density, 2,
-                                            kStateGas, Temperature, Pressure);
+      density = ((12.0107 + 4 * 1.00794) / Vm) * mg / cm3;
+      G4Material* material = new G4Material("NPS_" + newName, density, 2, kStateGas, Temperature, Pressure);
       material->AddElement(GetElementFromLibrary("C"), 1);
       material->AddElement(GetElementFromLibrary("H"), 4);
       m_Material[newName] = material;
@@ -1235,9 +1222,8 @@ G4Material* MaterialManager::GetGasFromLibrary(string Name, double Pressure,
     }
 
     if (Name == "P80") {
-      density              = ((0.2*36 + 0.8*(12.0107 + 4 * 1.00794) )/ Vm) * mg / cm3;
-      G4Material* material = new G4Material("NPS_" + newName, density, 3,
-                                            kStateGas, Temperature, Pressure);
+      density = ((0.2 * 36 + 0.8 * (12.0107 + 4 * 1.00794)) / Vm) * mg / cm3;
+      G4Material* material = new G4Material("NPS_" + newName, density, 3, kStateGas, Temperature, Pressure);
       material->AddElement(GetElementFromLibrary("Ar"), 0.2);
       material->AddElement(GetElementFromLibrary("C"), 0.64);
       material->AddElement(GetElementFromLibrary("H"), 0.16);
@@ -1245,11 +1231,9 @@ G4Material* MaterialManager::GetGasFromLibrary(string Name, double Pressure,
       return material;
     }
 
-
     if (Name == "CO2") {
-      density              = ((12.0107 + 2 * 16) / Vm) * mg / cm3;
-      G4Material* material = new G4Material("NPS_" + newName, density, 2,
-                                            kStateGas, Temperature, Pressure);
+      density = ((12.0107 + 2 * 16) / Vm) * mg / cm3;
+      G4Material* material = new G4Material("NPS_" + newName, density, 2, kStateGas, Temperature, Pressure);
       material->AddElement(GetElementFromLibrary("C"), 1);
       material->AddElement(GetElementFromLibrary("O"), 2);
       m_Material[newName] = material;
@@ -1257,9 +1241,8 @@ G4Material* MaterialManager::GetGasFromLibrary(string Name, double Pressure,
     }
 
     if (Name == "H2") {
-      density              = (2 * 1.00794 / Vm) * mg / cm3;
-      G4Material* material = new G4Material("NPS_" + newName, density, 1,
-                                            kStateGas, Temperature, Pressure);
+      density = (2 * 1.00794 / Vm) * mg / cm3;
+      G4Material* material = new G4Material("NPS_" + newName, density, 1, kStateGas, Temperature, Pressure);
       material->AddElement(GetElementFromLibrary("H"), 2);
       // material->AddElement(GetElementFromLibrary("H"), 1);
       m_Material[newName] = material;
@@ -1267,27 +1250,25 @@ G4Material* MaterialManager::GetGasFromLibrary(string Name, double Pressure,
     }
 
     if (Name == "D2") {
-      density              = (2 * 2.0140 / Vm) * mg / cm3;
-      G4Material* material = new G4Material("NPS_" + newName, density, 1,
-                                            kStateGas, Temperature, Pressure);
+      density = (2 * 2.0140 / Vm) * mg / cm3;
+      G4Material* material = new G4Material("NPS_" + newName, density, 1, kStateGas, Temperature, Pressure);
       material->AddElement(GetElementFromLibrary("D"), 2);
       // material->AddElement(GetElementFromLibrary("D"), 1);
       m_Material[newName] = material;
       return material;
     }
 
-    if (Name == "MixTwinMusic") { 
-      density              = ((0.01*(12.0107 + 2*16.) + 0.2*36 + 0.79*(12.0107 + 4 * 1.00794) )/ Vm) * mg / cm3;
-      G4Material* material = new G4Material("NPS_" + newName, density, 3,
-                                            kStateGas, Temperature, Pressure);
-      
-      material->AddMaterial(GetGasFromLibrary("CH4",Pressure,Temperature),0.79);
-      material->AddMaterial(GetGasFromLibrary("CO2",Pressure,Temperature),0.01);
+    if (Name == "MixTwinMusic") {
+      density = ((0.01 * (12.0107 + 2 * 16.) + 0.2 * 36 + 0.79 * (12.0107 + 4 * 1.00794)) / Vm) * mg / cm3;
+      G4Material* material = new G4Material("NPS_" + newName, density, 3, kStateGas, Temperature, Pressure);
+
+      material->AddMaterial(GetGasFromLibrary("CH4", Pressure, Temperature), 0.79);
+      material->AddMaterial(GetGasFromLibrary("CO2", Pressure, Temperature), 0.01);
       material->AddElement(GetElementFromLibrary("Ar"), .20);
       m_Material[Name] = material;
       return material;
-    } 
- 
+    }
+
     else {
       exit(1);
     }
@@ -1297,19 +1278,18 @@ G4Material* MaterialManager::GetGasFromLibrary(string Name, double Pressure,
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //   Generate a DEDX file table using the material used in the geometry
-void MaterialManager::WriteDEDXTable(G4ParticleDefinition* Particle,
-                                     G4double Emin, G4double Emax) {
+void MaterialManager::WriteDEDXTable(G4ParticleDefinition* Particle, G4double Emin, G4double Emax) {
   map<string, G4Material*>::iterator it;
   if (Particle->GetPDGCharge() == 0)
     return;
   for (it = m_Material.begin(); it != m_Material.end(); it++) {
     //   Opening hte output file
-    G4String GlobalPath =NPOptionManager::getInstance()->GetEnergyLossPath();
-    G4String Name       = it->second->GetName();
+    G4String GlobalPath = NPOptionManager::getInstance()->GetEnergyLossPath();
+    G4String Name = it->second->GetName();
 
     // Remove NPS name
     Name.erase(0, 4);
-    G4String Path = GlobalPath +"/"+ Particle->GetParticleName() + "_" + Name + ".G4table";
+    G4String Path = GlobalPath + "/" + Particle->GetParticleName() + "_" + Name + ".G4table";
 
     ofstream File;
     File.open(Path);
@@ -1318,22 +1298,20 @@ void MaterialManager::WriteDEDXTable(G4ParticleDefinition* Particle,
       return;
 
     File << "Table from Geant4 generate using NPSimulation \t"
-         << "Particle: " << Particle->GetParticleName()
-         << "\tMaterial: " << it->second->GetName() << G4endl;
+         << "Particle: " << Particle->GetParticleName() << "\tMaterial: " << it->second->GetName() << G4endl;
     // G4cout <<  Particle->GetParticleName() << "\tMaterial: " <<
     // it->second->GetName()  <<endl;
 
     G4EmCalculator emCalculator;
-    G4double       dedx;
+    G4double dedx;
     // Tipical Range needed, if Emax is larger, then adapted
     if (Emax < 1 * TeV)
       Emax = 1 * TeV;
-    double step   = 1 * keV;
+    double step = 1 * keV;
     double before = 0;
 
     for (G4double E = Emin; E < Emax; E += step) {
-      dedx = emCalculator.ComputeTotalDEDX(E, Particle, it->second)
-             / (MeV / micrometer);
+      dedx = emCalculator.ComputeTotalDEDX(E, Particle, it->second) / (MeV / micrometer);
       if (before) {
         if (abs(before - dedx) / abs(before) < 0.01)
           step *= 2;
@@ -1348,20 +1326,17 @@ void MaterialManager::WriteDEDXTable(G4ParticleDefinition* Particle,
 }
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //   Generate a DEDX file table using the material used in the geometry
-void MaterialManager::WriteDEDXTable(std::set<string> Particle, G4double Emin,
-                                     G4double Emax) {
+void MaterialManager::WriteDEDXTable(std::set<string> Particle, G4double Emin, G4double Emax) {
   std::set<string>::iterator it;
   for (it = Particle.begin(); it != Particle.end(); it++) {
-    G4ParticleDefinition* p
-        = G4ParticleTable::GetParticleTable()->FindParticle((*it));
+    G4ParticleDefinition* p = G4ParticleTable::GetParticleTable()->FindParticle((*it));
     WriteDEDXTable(p, Emin, Emax);
   }
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //   Generate Cross Section table using the material used in the geomtry
-void MaterialManager::WriteCrossSectionTable(G4ParticleDefinition* Particle,
-                                             G4double Emin, G4double Emax) {
+void MaterialManager::WriteCrossSectionTable(G4ParticleDefinition* Particle, G4double Emin, G4double Emax) {
   G4HadronicProcessStore* store = G4HadronicProcessStore::Instance();
 
   map<string, G4Material*>::iterator it;
@@ -1378,16 +1353,12 @@ void MaterialManager::WriteCrossSectionTable(G4ParticleDefinition* Particle,
       G4String path4;
       G4String ParticleName = Particle->GetParticleName();
       G4String MaterialName = it->second->GetName();
-      G4String ElementName  = it->second->GetElement(i)->GetName();
+      G4String ElementName = it->second->GetElement(i)->GetName();
 
-      path1 = GlobalPath + "/Inputs/CrossSection/" + "G4XS_elastic_"
-              + ParticleName + "_" + ElementName + ".dat";
-      path2 = GlobalPath + "/Inputs/CrossSection/" + "G4XS_inelastic_"
-              + ParticleName + "_" + ElementName + ".dat";
-      path3 = GlobalPath + "/Inputs/CrossSection/" + "G4XS_capture_"
-              + ParticleName + "_" + ElementName + ".dat";
-      path4 = GlobalPath + "/Inputs/CrossSection/" + "G4XS_fission_"
-              + ParticleName + "_" + ElementName + ".dat";
+      path1 = GlobalPath + "/Inputs/CrossSection/" + "G4XS_elastic_" + ParticleName + "_" + ElementName + ".dat";
+      path2 = GlobalPath + "/Inputs/CrossSection/" + "G4XS_inelastic_" + ParticleName + "_" + ElementName + ".dat";
+      path3 = GlobalPath + "/Inputs/CrossSection/" + "G4XS_capture_" + ParticleName + "_" + ElementName + ".dat";
+      path4 = GlobalPath + "/Inputs/CrossSection/" + "G4XS_fission_" + ParticleName + "_" + ElementName + ".dat";
 
       ofstream ofile_elastic;
       ofstream ofile_inelastic;
@@ -1400,7 +1371,7 @@ void MaterialManager::WriteCrossSectionTable(G4ParticleDefinition* Particle,
       // std::cout << path << std::endl;
       double xs;
       double step_keV = 1 * keV;
-      double step_eV  = 1 * eV;
+      double step_eV = 1 * eV;
       double step_meV = 50e-3 * eV;
       // for(G4double E=Emin+step; E<Emax; E+=step){
       double E = Emin;
@@ -1415,23 +1386,19 @@ void MaterialManager::WriteCrossSectionTable(G4ParticleDefinition* Particle,
           E += step_keV;
         if (E > 1 * keV) {
           // Elastic Cross Section
-          xs = store->GetElasticCrossSectionPerAtom(
-              Particle, E, it->second->GetElement(i), it->second);
+          xs = store->GetElasticCrossSectionPerAtom(Particle, E, it->second->GetElement(i), it->second);
           ofile_elastic << E / MeV << " " << xs / barn << G4endl;
 
           // Inelastic Cross Section
-          xs = store->GetInelasticCrossSectionPerAtom(
-              Particle, E, it->second->GetElement(i), it->second);
+          xs = store->GetInelasticCrossSectionPerAtom(Particle, E, it->second->GetElement(i), it->second);
           ofile_inelastic << E / MeV << " " << xs / barn << G4endl;
         }
         // Capture Cross Section
-        xs = store->GetCaptureCrossSectionPerAtom(
-            Particle, E, it->second->GetElement(i), it->second);
+        xs = store->GetCaptureCrossSectionPerAtom(Particle, E, it->second->GetElement(i), it->second);
         ofile_capture << E / MeV << " " << xs / barn << G4endl;
 
         // Fission Cross Section
-        xs = store->GetFissionCrossSectionPerAtom(
-            Particle, E, it->second->GetElement(i), it->second);
+        xs = store->GetFissionCrossSectionPerAtom(Particle, E, it->second->GetElement(i), it->second);
         ofile_fission << E / MeV << " " << xs / barn << G4endl;
       }
 
@@ -1445,12 +1412,10 @@ void MaterialManager::WriteCrossSectionTable(G4ParticleDefinition* Particle,
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //   Generate Cross Section table using the material used in the geomtry
-void MaterialManager::WriteCrossSectionTable(std::set<string> Particle,
-                                             G4double Emin, G4double Emax) {
+void MaterialManager::WriteCrossSectionTable(std::set<string> Particle, G4double Emin, G4double Emax) {
   std::set<string>::iterator it;
   for (it = Particle.begin(); it != Particle.end(); it++) {
-    G4ParticleDefinition* p
-        = G4ParticleTable::GetParticleTable()->FindParticle((*it));
+    G4ParticleDefinition* p = G4ParticleTable::GetParticleTable()->FindParticle((*it));
     if (p->GetParticleName() == "neutron") {
       WriteCrossSectionTable(p, Emin, Emax);
     }
@@ -1463,20 +1428,17 @@ void MaterialManager::CreateSampleVolumes(G4LogicalVolume* world_log) {
 
   // Create a micrometer size cube for each material
   G4double SampleSize = 1 * um;
-  G4double WorldSize  = 10.0 * m;
-  G4Box*   sample_box
-      = new G4Box("sample_box", SampleSize, SampleSize, SampleSize);
-  G4int                              i      = 1;
-  G4double                           Coord1 = WorldSize - SampleSize;
-  G4double                           Coord2 = 0;
+  G4double WorldSize = 10.0 * m;
+  G4Box* sample_box = new G4Box("sample_box", SampleSize, SampleSize, SampleSize);
+  G4int i = 1;
+  G4double Coord1 = WorldSize - SampleSize;
+  G4double Coord2 = 0;
   map<string, G4Material*>::iterator it;
   for (it = m_Material.begin(); it != m_Material.end(); it++) {
-    G4LogicalVolume* sample_log
-        = new G4LogicalVolume(sample_box, it->second, "sample_log", 0, 0, 0);
-    sample_log->SetVisAttributes(G4VisAttributes::Invisible);
+    G4LogicalVolume* sample_log = new G4LogicalVolume(sample_box, it->second, "sample_log", 0, 0, 0);
+    sample_log->SetVisAttributes(G4VisAttributes::GetInvisible());
     Coord2 = WorldSize - i * 2 * SampleSize;
     i++;
-    new G4PVPlacement(0, G4ThreeVector(Coord1, Coord2, -Coord1), sample_log,
-                      "sample", world_log, false, 0);
+    new G4PVPlacement(0, G4ThreeVector(Coord1, Coord2, -Coord1), sample_log, "sample", world_log, false, 0);
   }
 }

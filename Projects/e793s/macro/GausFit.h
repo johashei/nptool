@@ -598,7 +598,7 @@ void SingleGaus(TH1F* hist, bool isGamma){
 
     if(isGamma){
       areaSet = 1000.; areaMax = 10000.; meanRange = 0.005;
-      sigSet = 0.001; sigMin = 0.0005; sigMax = 0.005;
+      sigSet = 0.001; sigMin = 0.0005; sigMax = 0.015;
       bgMax = 1000.;
     } else {
       areaSet = 100.; areaMax = 1000.; meanRange = 1.0;

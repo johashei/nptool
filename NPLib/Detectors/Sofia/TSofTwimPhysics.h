@@ -63,6 +63,7 @@ class TSofTwimPhysics : public TObject, public NPL::VDetector {
     vector<int>      SectionNbr;
     vector<double>   EnergySection;
     vector<double>   DriftTime;
+    vector<double>   Theta;
     vector<int>      AnodeNbr;
     vector<int>      AnodeSecNbr;
     vector<double>   AnodeEnergy;

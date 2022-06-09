@@ -1,0 +1,38 @@
+%%%%%%%%%%%%%%%%%%%%%% E793S %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Beam
+  Particle= 47K 
+  ExcitationEnergy= 0 MeV
+  Energy= 354.75 MeV
+  SigmaEnergy= 0. MeV
+  SigmaThetaX= 0.0  deg
+  SigmaPhiY= 0.0    deg
+  SigmaX= 2.0 mm
+  SigmaY= 2.0 mm
+  MeanThetaX= 0 deg
+  MeanPhiY= 0 deg
+  MeanX= -3.9164 millimeter 
+  MeanY= +0.0550 millimeter
+  %EnergyProfilePath=
+  %XThetaXProfilePath=
+  %YPhiYProfilePath=
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+TwoBodyReaction
+ Beam= 47K
+ Target= 2H
+ Light= 1H
+ Heavy= 48K
+ ExcitationEnergyLight= 0.0 MeV
+ ExcitationEnergyHeavy= 0.0 MeV
+ CrossSectionPath= flat.txt CSR
+ ShootLight= 1
+ ShootHeavy= 0
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+PhaseSpace
+ Beam= 47K
+ Target= 2H
+ Daughters= 1H 47K n
+ ExcitationEnergies= 0 0 0 MeV 
+ Fermi= 1

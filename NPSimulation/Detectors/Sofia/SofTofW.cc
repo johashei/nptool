@@ -199,7 +199,7 @@ G4LogicalVolume* SofTofW::BuildGLADFromSTL()
     auto mesh = CADMesh::TessellatedMesh::FromSTL((char*) path.c_str());
     mesh->SetScale(mm);
 
-    G4Material* GLAD_Material = MaterialManager::getInstance()->GetMaterialFromLibrary("Al");
+    G4Material* GLAD_Material = MaterialManager::getInstance()->GetMaterialFromLibrary("Inox");
 
     auto cad_solid = mesh->GetSolid();
     m_GLAD_STL = new G4LogicalVolume(cad_solid,GLAD_Material,"GLAD_Magnet",0,0,0);
@@ -318,7 +318,8 @@ void SofTofW::ConstructDetector(G4LogicalVolume* world){
     u = u.unit();
 
     G4RotationMatrix* Rot = new G4RotationMatrix(u,v,w);
-    G4ThreeVector Z_translation = G4ThreeVector(0,0,4*m);
+    //G4ThreeVector Z_translation = G4ThreeVector(0,0,4*m);
+    G4ThreeVector Z_translation = G4ThreeVector(0,0,m_GLAD_DistanceFromTarget);
     Det_pos += Z_translation;
     BuildTOFDetector()->MakeImprint(world,Det_pos,Rot);
   }

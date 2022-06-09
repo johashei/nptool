@@ -93,9 +93,9 @@ Strasse Outer
 % Base= ./geometry/STRASSE_Base.stl
 % Blades= ./geometry/STRASSE_Blades.stl
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%1
-%Catana CSV
-% Path= geometry/Catana.csv 
-% Pos= 0 0 100 mm
-% Rshift= 100 micrometer
+Catana CSV
+ Path= geometry/Catana.csv 
+ Pos= 0 0 100 mm
+ Rshift= 100 micrometer
 
 

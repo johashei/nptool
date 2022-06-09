@@ -3,7 +3,7 @@
 #include <cmath>
 #include "stdlib.h"
 
-const int numPeaks = 15; 
+const int numPeaks = 16;//15; 
 array<double,numPeaks> means = { 0.000,
                            0.143,
                            0.279,
@@ -11,15 +11,47 @@ array<double,numPeaks> means = { 0.000,
 			   0.968,
 			   1.410,
 			   1.981,
-			   2.410,
+			   2.412,
 			   2.910,
-			   3.2,
+			   3.246,
 			   3.605,
-			   3.87,//3.792, 
-			   4.04,//4.1, 
-			   4.4,
-			   5.24
+			   3.797,//Split in two?
+			   3.876,//Split in two? 
+			   4.055,//4.1,
+			   4.38,
+			   4.51//,
+			   //5.24
                            };
+
+array<double,27> knowngammas = { 0.143,
+					0.279,
+					0.449,
+					0.968,
+					1.130,
+					1.410,
+					1.267,
+					//0.575,
+					1.013,
+					1.838,
+					1.981,
+					1.000,
+					2.412,
+					2.767,
+					2.518,
+					3.325,
+					2.878,
+					3.605,
+					2.839,
+					2.734,
+					3.522,
+					3.076,
+					3.875,
+					0.834,
+					3.325,
+					3.77,
+					4.037,
+					4.364					
+					};
 
 /*
 Double_t f_bg(Double_t *x, Double_t *par){
@@ -113,9 +145,9 @@ vector<vector<double>> FitKnownPeaks_RtrnArry(TH1F* hist){
     full->SetParLimits((i*3)+3,0.0,1e5);
   }
   //full->SetParameter(0,30.);
-  full->SetParLimits(0,0.,40.); /* FOR TOTAL SPECTRUM FITTING */
-  //full->SetParLimits(0,0.,10.); /* FOR ANGLE GATED FITTING */
-  //full->FixParameter(0,0.);
+  //full->SetParLimits(0,0.,40.); /* FOR TOTAL SPECTRUM FITTING */
+  full->SetParLimits(0,0.,10.); /* FOR ANGLE GATED FITTING */
+  //full->SetParLimits(0,0.,1.); /* FOR ANGLE GATED FITTING WITH BG SUBTRACTED */
   //full->FixParameter(9,0.); //??
 
   // Specific limits

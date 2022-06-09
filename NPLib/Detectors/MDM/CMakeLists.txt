@@ -6,7 +6,7 @@ add_custom_command(OUTPUT TMDMDataDict.cxx COMMAND ${CMAKE_BINARY_DIR}/scripts/b
 
 ##
 ## Check if MINUIT2 is installed along with ROOT
-find_library(libMinuit2_FOUND NAMES Minuit2 HINTS "${ROOTSYS}/lib")
+find_library(libMinuit2_FOUND NAMES Minuit2 HINTS "${ROOTSYS}/lib" "/usr/lib64/root")
 if(libMinuit2_FOUND)
   message(STATUS "Minuit2 support enabled for MDM.")
   add_definitions(-DHAVE_MINUIT2)

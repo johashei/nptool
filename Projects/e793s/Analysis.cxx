@@ -45,21 +45,25 @@ Analysis::~Analysis(){
 void Analysis::Init() {
  ///////////////////////////////////////////////////////////////////////////////  
 
-//    isPhaseSpace=true;
-    isPhaseSpace=true;
-
-//  if(NPOptionManager::getInstance()->HasDefinition("simulation")){
+  if(NPOptionManager::getInstance()->HasDefinition("Sim")){
     cout << " == == == == SIMULATION == == == ==" << endl;
-//    isSim=true;
-//  } else {
+      isSim=true;
+      isPhaseSpace=false;
+  } else if (NPOptionManager::getInstance()->HasDefinition("Exp")) {
     cout << " == == == == EXPERIMENT == == == ==" << endl;
-    isSim=false;
-//  }
+      isSim=false;
+      isPhaseSpace=false;
+  } else {
+    cout << " == == == == PHASE SPACE == == == ==" << endl;
+      isSim=false;
+      isPhaseSpace=true;
+  }
 
   agata_zShift=51*mm;
   //BrhoRef=0.65;
 
   if(isSim && !isPhaseSpace){
+//cout << "here_InIsSimLoop" << endl;
     Initial = new TInitialConditions();
     ReactionConditions = new TReactionConditions(); 
     RootInput::getInstance()->GetChain()->SetBranchAddress("InitialConditions",&Initial);
@@ -99,15 +103,11 @@ void Analysis::Init() {
 
   // get reaction information
   reaction.ReadConfigurationFile(NPOptionManager::getInstance()->GetReactionFile());
-  //reaction = new NPL::Reaction("47K(d,p)48K@355");
   OriginalBeamEnergy = reaction.GetBeamEnergy();
-  //OriginalBeamEnergy = reaction->GetBeamEnergy();
   reaction.Print(); //TESTING PARSER
-  //reaction->Print(); //TESTING PARSER
 
   // get beam position from .reaction file
   Beam = (NPL::Beam*) reaction.GetParticle1(); 
-  //Beam = (NPL::Beam*) reaction->GetParticle1(); 
   XBeam = Beam->GetMeanX();
   YBeam = Beam->GetMeanY();
 
@@ -125,9 +125,7 @@ void Analysis::Init() {
   
   // energy losses
   string light = NPL::ChangeNameToG4Standard(reaction.GetParticle3()->GetName());
-  //string light = NPL::ChangeNameToG4Standard(reaction->GetParticle3()->GetName());
   string beam = NPL::ChangeNameToG4Standard(reaction.GetParticle1()->GetName());
-  //string beam = NPL::ChangeNameToG4Standard(reaction->GetParticle1()->GetName());
   LightTarget = NPL::EnergyLoss(light+"_"+TargetMaterial+".G4table","G4Table",100 );
   LightAl = NPL::EnergyLoss(light+"_Al.G4table" ,"G4Table",100);
   LightSi = NPL::EnergyLoss(light+"_Si.G4table" ,"G4Table",100);
@@ -135,7 +133,6 @@ void Analysis::Init() {
 
   FinalBeamEnergy = BeamTargetELoss.Slow(OriginalBeamEnergy, 0.5*TargetThickness, 0);
   reaction.SetBeamEnergy(FinalBeamEnergy); 
-  //reaction->SetBeamEnergy(FinalBeamEnergy); 
 
   cout << "Beam energy at mid-target: " << FinalBeamEnergy << endl;
 
@@ -164,14 +161,10 @@ void Analysis::Init() {
   //nbHits=0;
   //count=0;
   AHeavy=reaction.GetParticle4()->GetA();
-  //AHeavy=reaction->GetParticle4()->GetA();
   ALight=reaction.GetParticle3()->GetA(); 
-  //ALight=reaction->GetParticle3()->GetA(); 
   MHeavy=reaction.GetParticle4()->Mass();
-  //MHeavy=reaction->GetParticle4()->Mass();
   MLight=reaction.GetParticle3()->Mass();
-  //MLight=reaction->GetParticle3()->Mass();
-  bool writetoscreen=true;
+  //bool writetoscreen=true;
 
   for(int i=0;i<GATCONF_SIZE;i++){ // loop over the bits
     GATCONF_Counter[i] = 0 ; 
@@ -179,14 +172,14 @@ void Analysis::Init() {
 
 //  ThetaCM_detected->Sumw2();
 //  ThetaLab_detected->Sumw2();
+//cout << "here_endInit" << endl;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 void Analysis::TreatEvent(){
-
   // Reinitiate calculated variable
+//cout << "here_TreatEvent" << endl;
   ReInitValue();
-
   if(isSim && !isPhaseSpace){
     ThetaCM_emmitted->Fill(ReactionConditions->GetThetaCM());
     ThetaLab_emmitted->Fill(ReactionConditions->GetTheta(0));
@@ -209,18 +202,15 @@ void Analysis::TreatEvent(){
   TVector3 BeamDirection(0.,0.,1.);
   BeamImpact = TVector3(XBeam,YBeam,m_DetectorManager->GetTargetZ()); 
 
-  ParticleMult=M2->Si_E.size();////+MG->DSSD_E.size();
-
-  //ParticleMult=M2->Si_E.size();
-  //  FinalBeamEnergy=BeamCD2.Slow(OriginalBeamEnergy,0.5*TargetThickness,BeamDirection.Angle(TVector(0,0,1)));
-  //reaction.SetBeamEnergy(FinalBeamEnergy);
-
-
+  //ParticleMult=M2->Si_E.size();////+MG->DSSD_E.size();
+  ParticleMult=M2->Si_E.size()+MG->DSSD_E.size();
+//cout << "here_BeforeMustLoop" << endl;
   ////////////////////////////////////////////////////////////////////////////
   //////////////////////////////// LOOP on MUST2  ////////////////////////////
   ////////////////////////////////////////////////////////////////////////////
   unsigned int sizeM2 = M2->Si_E.size();
   for(unsigned int countMust2 = 0; countMust2 < sizeM2; countMust2++){
+//cout << "here_InMustLoop" << endl;
 
     /************************************************/
     // Part 0 : Get the useful Data
@@ -264,9 +254,9 @@ void Analysis::TreatEvent(){
     if(CsI_E_M2>0 ){
       // The energy in CsI is calculate form dE/dx Table because
       Energy = CsI_E_M2;
-      if(!isSim){
-        Energy = LightAl.EvaluateInitialEnergy(Energy, 0.4*micrometer, ThetaM2Surface);
-      }
+      //if(!isSim){
+      Energy = LightAl.EvaluateInitialEnergy(Energy, 0.4*micrometer, ThetaM2Surface);
+      //}
       Energy+=Si_E_M2;
     }
     else
@@ -274,19 +264,12 @@ void Analysis::TreatEvent(){
 
     RawEnergy.push_back(Energy);
 
-    /*
-    cout << M2->TelescopeNumber[0] << "   "
-         << M2->GetTelescopeNormal(countMust2).X() << "   "
-         << M2->GetTelescopeNormal(countMust2).Y() << "   "
-         << M2->GetTelescopeNormal(countMust2).Z() << endl;
-    */
-
-    if(!isSim){
+//    if(!isSim){
       // Evaluate energy using the thickness
       elab_tmp = LightAl.EvaluateInitialEnergy(Energy, 0.4*micrometer, ThetaM2Surface);
       // Target Correction
       elab_tmp = LightTarget.EvaluateInitialEnergy(elab_tmp, 0.5*TargetThickness, ThetaNormalTarget);
-    } else {elab_tmp = Energy;}
+//    } else {elab_tmp = Energy;}
 
     ELab.push_back(elab_tmp);
 
@@ -295,7 +278,6 @@ void Analysis::TreatEvent(){
     /************************************************/
     // Part 3 : Excitation Energy Calculation
     Ex.push_back(reaction.ReconstructRelativistic(elab_tmp,thetalab_tmp));
-    //Ex.push_back(reaction->ReconstructRelativistic(elab_tmp,thetalab_tmp));
     Ecm.push_back(Energy*(AHeavy+ALight)/(4*AHeavy*cos(thetalab_tmp)*cos(thetalab_tmp)));
     /************************************************/
 
@@ -303,14 +285,14 @@ void Analysis::TreatEvent(){
     // Part 4 : Theta CM Calculation
     
     ThetaCM.push_back(reaction.EnergyLabToThetaCM(elab_tmp, thetalab_tmp)/deg);
-    //ThetaCM.push_back(reaction->EnergyLabToThetaCM(elab_tmp, thetalab_tmp)/deg);
     /************************************************/
 
     ThetaLab.push_back(thetalab_tmp/deg);
     PhiLab.push_back(philab_tmp/deg);
+//cout << "here_EndMustLoop" << endl;
   }
 
-
+//cout << "here_BeforeMugastLoop" << endl;
   ////////////////////////////////////////////////////////////////////////////
   //////////////////////////////// LOOP on MUGAST ////////////////////////////
   ////////////////////////////////////////////////////////////////////////////
@@ -354,11 +336,6 @@ void Analysis::TreatEvent(){
     ThetaMGSurface = HitDirection.Angle( MG -> GetTelescopeNormal(countMugast) );
     ThetaNormalTarget = HitDirection.Angle( TVector3(0.0,0.0,1.0) ) ;
 
-//cout << MG->TelescopeNumber[0] << "\t" 
-//     << "\t" << MG->GetTelescopeNormal(countMugast).X()
-//     << "\t" << MG->GetTelescopeNormal(countMugast).Y()
-//     << "\t" << MG->GetTelescopeNormal(countMugast).Z() << endl;
-
     // Part 2 : Impact Energy
     Energy = elab_tmp = 0;
     Energy = MG->GetEnergyDeposit(countMugast);
@@ -373,22 +350,34 @@ void Analysis::TreatEvent(){
 		    elab_tmp,            //particle energy after leaving target
 		    TargetThickness*0.5, //distance passed through target
 		    ThetaNormalTarget);  //angle of exit from target
-    } else {elab_tmp = Energy;}
+    } else { //TESTING DIFFERENT ENERGY LOSSES IN SIMULATION
+      elab_tmp = Energy; //so I can add and remove sections
+      //elab_tmp = LightSi.EvaluateInitialEnergy(
+      //	    elab_tmp,            //particle energy after Si
+      //	    0.5*500.*micrometer, //thickness of Si
+      //	    ThetaMGSurface);     //angle of impingement
+      //elab_tmp = LightAl.EvaluateInitialEnergy(
+      //              elab_tmp,            //particle energy after Al
+      //	            0.4*micrometer,      //thickness of Al
+      //              ThetaMGSurface);     //angle of impingement
+      elab_tmp = LightTarget.EvaluateInitialEnergy(
+    		    elab_tmp,            //particle energy after leaving target
+    		    TargetThickness*0.5, //distance passed through target
+    		    ThetaNormalTarget);  //angle of exit from target
+    }
 
     ELab.push_back(elab_tmp);
 
     // Part 3 : Excitation Energy Calculation
-    if(!isSim){
+    //if(!isSim){ //TESTING!!!!
       Ex.push_back(reaction.ReconstructRelativistic(elab_tmp,thetalab_tmp));
-      //Ex.push_back(reaction->ReconstructRelativistic(elab_tmp,thetalab_tmp));
       Ecm.push_back(elab_tmp*(AHeavy+ALight)/(4*AHeavy*cos(thetalab_tmp)*cos(thetalab_tmp)));
-    }
+    //}
 
     // Part 4 : Theta CM Calculation
     ThetaLab.push_back(thetalab_tmp/deg);
     PhiLab.push_back(philab_tmp/deg);
     ThetaCM.push_back(reaction.EnergyLabToThetaCM(elab_tmp, thetalab_tmp)/deg);
-    //ThetaCM.push_back(reaction->EnergyLabToThetaCM(elab_tmp, thetalab_tmp)/deg);
 
     if(sizeMG==1){
       MG_T = MG->DSSD_T[0];
@@ -688,14 +677,18 @@ void Analysis::End(){
     for(int i=0; i<5; i++){HistList->Add(SolidAngle_CM_MMX[i]);}
     for(int i=0; i<5; i++){HistList->Add(SolidAngle_Lab_MMX[i]);}
     
-    auto HistoFile = new TFile("SolidAngle_HistFile_15Feb.root","RECREATE");
+    auto HistoFile = new TFile("~/Programs/nptool/Projects/e793s/SolidAngle_HistFile_New.root","RECREATE");
     HistList->Write();
     HistoFile->Close();
+
+
+    cout << "!!! MAKE SURE YOU RENAME THE SOLID ANGLE FILE! !!!" << endl;
   }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 void Analysis::InitOutputBranch(){
+//cout << "here_InitOutput" << endl;
   //RootOutput::getInstance()->GetTree()->Branch("Ex",&Ex,"Ex/D");
   RootOutput::getInstance()->GetTree()->Branch("Ex",&Ex);
   //RootOutput::getInstance()->GetTree()->Branch("EDC",&EDC,"EDC/D");
@@ -721,11 +714,11 @@ void Analysis::InitOutputBranch(){
   RootOutput::getInstance()->GetTree()->Branch("Y",&Y);
   RootOutput::getInstance()->GetTree()->Branch("Z",&Z);
   RootOutput::getInstance()->GetTree()->Branch("dE",&dE,"dE/D");
-////  RootOutput::getInstance()->GetTree()->Branch("MG_T",MG_T);
-////  RootOutput::getInstance()->GetTree()->Branch("MG_E",MG_E);
-////  RootOutput::getInstance()->GetTree()->Branch("MG_X",MG_X);
-////  RootOutput::getInstance()->GetTree()->Branch("MG_Y",MG_Y);
-////  RootOutput::getInstance()->GetTree()->Branch("MG_D",MG_D);
+  RootOutput::getInstance()->GetTree()->Branch("MG_T",MG_T);
+  RootOutput::getInstance()->GetTree()->Branch("MG_E",MG_E);
+  RootOutput::getInstance()->GetTree()->Branch("MG_X",MG_X);
+  RootOutput::getInstance()->GetTree()->Branch("MG_Y",MG_Y);
+  RootOutput::getInstance()->GetTree()->Branch("MG_D",MG_D);
 
   // Vamos 
   RootOutput::getInstance()->GetTree()->Branch("LTS",&LTS,"LTS/l");
@@ -822,6 +815,8 @@ void Analysis::InitOutputBranch(){
 
 ////////////////////////////////////////////////////////////////////////////////
 void Analysis::InitInputBranch(){
+
+//cout << "here_InitInput" << endl;
   SetBranchStatus();
   // RootInput:: getInstance()->GetChain()->SetBranchAddress("GATCONF",&vGATCONF);
   //
@@ -892,6 +887,7 @@ void Analysis::InitInputBranch(){
 
 ////////////////////////////////////////////////////////////////////////////////
 void Analysis::SetBranchStatus(){
+//cout << "here_SetBranchStatus" << endl;
   // Set Branch status 
   RootInput::getInstance()->GetChain()->SetBranchStatus("LTS",true);
  /*   RootInput::getInstance()->GetChain()->SetBranchStatus("T_FPMW_CATS1",true);
@@ -955,6 +951,7 @@ void Analysis::SetBranchStatus(){
 
 ////////////////////////////////////////////////////////////////////////////////
 void Analysis::ReInitValue(){
+//cout << "here_ReInit" << endl;
   Ex.clear();
   Ecm.clear();
   AddBack_EDC.clear();

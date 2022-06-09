@@ -1,0 +1,20 @@
+%%%%%%%
+Target
+ THICKNESS= 0.1 micrometer
+ ANGLE= 0 deg
+ RADIUS= 15 mm
+ MATERIAL= CD2 
+ X= 0 mm
+ Y= 0 mm
+ Z= 0 mm
+ NbSlices= 10
+
+%%%%%%% Detector 1 %%%%%%% 		
+SuperX3
+ THETA= 0 deg
+ PHI= 0 deg
+ R= 150 mm
+ BETA= 0 0 0
+ VIS= all					
+
+
