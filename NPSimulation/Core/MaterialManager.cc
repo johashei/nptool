@@ -531,7 +531,7 @@ G4Material* MaterialManager::GetMaterialFromLibrary(string Name,
       return material;
     }
 
-    else if (Name == "Ge") {
+    else if (Name == "Ge" || Name=="Germanium") {
       if (!density)
         density = 5.323 * g / cm3;
       G4Material* material = new G4Material("NPS_" + Name, density, 1);
