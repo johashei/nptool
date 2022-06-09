@@ -22,7 +22,7 @@ QFSReaction
  Heavy= 11B
  ExcitationEnergyBeam= 0.0 MeV
  ExcitationEnergyHeavy= 0.0 MeV
- MomentumSigma= 50.0 
+ MomentumSigma= 100.0 
  ShootHeavy= 1
  ShootLight= 1
   
