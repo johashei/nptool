@@ -34,13 +34,9 @@ class TFissionChamberData : public TObject {
   // data members are hold into vectors in order 
   // to allow multiplicity treatment
   private: 
-    // Energy
-    vector<UShort_t>   fFissionChamber_E_DetectorNbr;
-    vector<Double_t>   fFissionChamber_Energy;
-
-    // Time
-    vector<UShort_t>   fFissionChamber_T_DetectorNbr;
-    vector<Double_t>   fFissionChamber_Time;
+    vector<UShort_t>   fFC_AnodeNbr;
+    vector<Double_t>   fFC_Energy;
+    vector<Double_t>   fFC_Time;
 
 
   //////////////////////////////////////////////////////////////
@@ -65,35 +61,20 @@ class TFissionChamberData : public TObject {
   // add //! to avoid ROOT creating dictionnary for the methods
   public:
     //////////////////////    SETTERS    ////////////////////////
-    // Energy
-    inline void SetEnergy(const UShort_t& DetNbr,const Double_t& Energy){
-      fFissionChamber_E_DetectorNbr.push_back(DetNbr);
-      fFissionChamber_Energy.push_back(Energy);
-    };//!
-
-    // Time
-    inline void SetTime(const UShort_t& DetNbr,const Double_t& Time)	{
-      fFissionChamber_T_DetectorNbr.push_back(DetNbr);     
-      fFissionChamber_Time.push_back(Time);
-    };//!
-
+    inline void SetAnodeNbr(const UShort_t& AnodeNbr){fFC_AnodeNbr.push_back(AnodeNbr);}//!
+    inline void SetEnergy(const Double_t& Energy){fFC_Energy.push_back(Energy);}//!
+    inline void SetTime(const Double_t& Time){fFC_Time.push_back(Time);}//!
 
     //////////////////////    GETTERS    ////////////////////////
     // Energy
     inline UShort_t GetMultEnergy() const
-      {return fFissionChamber_E_DetectorNbr.size();}
-    inline UShort_t GetE_DetectorNbr(const unsigned int &i) const 
-      {return fFissionChamber_E_DetectorNbr[i];}//!
-    inline Double_t Get_Energy(const unsigned int &i) const 
-      {return fFissionChamber_Energy[i];}//!
-
-    // Time
-    inline UShort_t GetMultTime() const
-      {return fFissionChamber_T_DetectorNbr.size();}
-    inline UShort_t GetT_DetectorNbr(const unsigned int &i) const 
-      {return fFissionChamber_T_DetectorNbr[i];}//!
-    inline Double_t Get_Time(const unsigned int &i) const 
-      {return fFissionChamber_Time[i];}//!
+      {return fFC_Energy.size();}
+    inline UShort_t GetAnodeNbr(const unsigned int &i) const 
+      {return fFC_AnodeNbr[i];}//!
+    inline Double_t GetEnergy(const unsigned int &i) const 
+      {return fFC_Energy[i];}//!
+    inline Double_t GetTime(const unsigned int &i) const 
+      {return fFC_Time[i];}//!
 
 
   //////////////////////////////////////////////////////////////

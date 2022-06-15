@@ -50,6 +50,7 @@ TVendetaPhysics::TVendetaPhysics()
      m_Spectra(0),
      m_E_RAW_Threshold(0), // adc channels
      m_E_Threshold(0),     // MeV
+     m_AnodeNumber(-1),
      m_NumberOfDetectors(0) {
 }
 
@@ -79,21 +80,23 @@ void TVendetaPhysics::BuildSimplePhysicalEvent() {
 
 ///////////////////////////////////////////////////////////////////////////
 void TVendetaPhysics::BuildPhysicalEvent() {
+  // Treat Event, only if Fission Chamber has triggered
+  if(m_AnodeNumber==-1)
+    return;
+
   // apply thresholds and calibration
   PreTreat();
 
   // match energy and time together
   unsigned int mysizeE = m_PreTreatedData->GetMultEnergy();
-  unsigned int mysizeT = m_PreTreatedData->GetMultTime();
   for (UShort_t e = 0; e < mysizeE ; e++) {
-    for (UShort_t t = 0; t < mysizeT ; t++) {
-      if (m_PreTreatedData->GetE_DetectorNbr(e) == m_PreTreatedData->GetT_DetectorNbr(t)) {
-        DetectorNumber.push_back(m_PreTreatedData->GetE_DetectorNbr(e));
-        Energy.push_back(m_PreTreatedData->Get_Energy(e));
-        Time.push_back(m_PreTreatedData->Get_Time(t));
-      }
-    }
+    DetectorNumber.push_back(m_PreTreatedData->GetDetectorNbr(e));
+    Q1.push_back(m_PreTreatedData->GetQ1(e));
+    Q2.push_back(m_PreTreatedData->GetQ2(e));
+    Time.push_back(m_PreTreatedData->GetTime(e));
   }
+
+  m_AnodeNumber=-1;
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -110,19 +113,24 @@ void TVendetaPhysics::PreTreat() {
   // Energy
   unsigned int mysize = m_EventData->GetMultEnergy();
   for (UShort_t i = 0; i < mysize ; ++i) {
-    if (m_EventData->Get_Energy(i) > m_E_RAW_Threshold) {
-      Double_t Energy = Cal->ApplyCalibration("Vendeta/ENERGY"+NPL::itoa(m_EventData->GetE_DetectorNbr(i)),m_EventData->Get_Energy(i));
-      if (Energy > m_E_Threshold) {
-        m_PreTreatedData->SetEnergy(m_EventData->GetE_DetectorNbr(i), Energy);
+    if (m_EventData->GetQ1(i) > m_E_RAW_Threshold && m_EventData->GetQ2(i) > m_E_RAW_Threshold) {
+      int det = m_EventData->GetDetectorNbr(i);
+      bool isHG = m_PreTreatedData->GetHighGainStatus(i);
+      double TimeOffset=0;
+      if(isHG==0){
+        TimeOffset = Cal->GetValue("Vendeta/DET"+NPL::itoa(det)+"_LG_ANODE"+NPL::itoa(m_AnodeNumber)+"_TIMEOFFSET",0);
       }
-    }
-  }
+      else if(isHG==1){ 
+        TimeOffset = Cal->GetValue("Vendeta/DET"+NPL::itoa(det)+"_LG_ANODE"+NPL::itoa(m_AnodeNumber)+"_TIMEOFFSET",0);
+      }
 
-  // Time 
-  mysize = m_EventData->GetMultTime();
-  for (UShort_t i = 0; i < mysize; ++i) {
-    Double_t Time= Cal->ApplyCalibration("Vendeta/TIME"+NPL::itoa(m_EventData->GetT_DetectorNbr(i)),m_EventData->Get_Time(i));
-    m_PreTreatedData->SetTime(m_EventData->GetT_DetectorNbr(i), Time);
+      double Time = m_EventData->GetTime(i - TimeOffset);
+      m_PreTreatedData->SetDetectorNbr(det);
+      m_PreTreatedData->SetQ1(m_EventData->GetQ1(i));
+      m_PreTreatedData->SetQ2(m_EventData->GetQ2(i));
+      m_PreTreatedData->SetTime(Time);
+      m_PreTreatedData->SetHighGainStatus(isHG);
+    }
   }
 }
 
@@ -195,8 +203,10 @@ void TVendetaPhysics::ReadAnalysisConfig() {
 ///////////////////////////////////////////////////////////////////////////
 void TVendetaPhysics::Clear() {
   DetectorNumber.clear();
-  Energy.clear();
+  Q1.clear();
+  Q2.clear();
   Time.clear();
+  isHG.clear();
 }
 
 

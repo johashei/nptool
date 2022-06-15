@@ -24,6 +24,8 @@ using namespace std;
 #include"Analysis.h"
 #include"NPAnalysisFactory.h"
 #include"NPDetectorManager.h"
+#include"NPOptionManager.h"
+
 ////////////////////////////////////////////////////////////////////////////////
 Analysis::Analysis(){
 }
@@ -33,11 +35,42 @@ Analysis::~Analysis(){
 
 ////////////////////////////////////////////////////////////////////////////////
 void Analysis::Init(){
-   Vendeta= (TVendetaPhysicsPhysics*) m_DetectorManager->GetDetector("Vendeta");
+  Vendeta= (TVendetaPhysics*) m_DetectorManager->GetDetector("Vendeta");
+  FC= (TFissionChamberPhysics*) m_DetectorManager->GetDetector("FissionChamber");
+
+  InitOutputBranch();
+
+  neutron = new NPL::Particle("1n");
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 void Analysis::TreatEvent(){
+  ReInitValue();
+
+  unsigned int FC_mult = FC->Energy.size();
+  if(FC_mult==1){
+    int anode = FC->AnodeNumber[0];
+
+    Vendeta->SetAnodeNumber(anode);
+    Vendeta->BuildPhysicalEvent();
+  }
+
+}
+
+////////////////////////////////////////////////////////////////////////////////
+void Analysis::InitOutputBranch(){
+  RootOutput::getInstance()->GetTree()->Branch("ThetaLab",&ThetaLab);
+  RootOutput::getInstance()->GetTree()->Branch("ELab",&ELab);
+  RootOutput::getInstance()->GetTree()->Branch("Tof",&Tof);
+  RootOutput::getInstance()->GetTree()->Branch("Charge",&Charge);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+void Analysis::ReInitValue(){
+  ThetaLab.clear();
+  ELab.clear();
+  Tof.clear();
+  Charge.clear();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -56,13 +89,13 @@ NPL::VAnalysis* Analysis::Construct(){
 //            Registering the construct method to the factory                 //
 ////////////////////////////////////////////////////////////////////////////////
 extern "C"{
-class proxy{
-  public:
-    proxy(){
-      NPL::AnalysisFactory::getInstance()->SetConstructor(Analysis::Construct);
-    }
-};
+  class proxy{
+    public:
+      proxy(){
+        NPL::AnalysisFactory::getInstance()->SetConstructor(Analysis::Construct);
+      }
+  };
 
-proxy p;
+  proxy p;
 }
 

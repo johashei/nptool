@@ -1,0 +1,18 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Alias Theta
+ Action= Copy
+ Value= 20 33 46 59 72 85 98 111 124 137 150 163 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Alias Phi
+ Action= Copy
+ Value= -20 15 50 130 165 200
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Vendeta
+ R= 1000 mm
+ THETA= @Theta deg
+ PHI= @Phi deg
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+FissionChamber
+  POS= 0 0 0 mm
+  GasMaterial= CF4
+  Pressure= 1 bar

@@ -23,6 +23,10 @@
 
 #include"NPVAnalysis.h"
 #include"TVendetaPhysics.h"
+#include"TFissionChamberPhysics.h"
+#include "NPParticle.h"
+#include "TRandom3.h"
+
 class Analysis: public NPL::VAnalysis{
   public:
     Analysis();
@@ -32,11 +36,22 @@ class Analysis: public NPL::VAnalysis{
     void Init();
     void TreatEvent();
     void End();
+    void InitOutputBranch();
+    void ReInitValue();
 
    static NPL::VAnalysis* Construct();
 
   private:
-   TVendetaPhysics* Vendeta;
+   vector<double> ThetaLab;
+   vector<double> ELab;
+   vector<double> Tof;
+   vector<double> Charge;
 
+  private:
+   TVendetaPhysics* Vendeta;
+   TFissionChamberPhysics* FC;
+
+   NPL::Particle* neutron;
+   TRandom3 ra;
 };
 #endif

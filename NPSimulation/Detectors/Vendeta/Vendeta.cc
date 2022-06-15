@@ -297,8 +297,11 @@ void Vendeta::ReadSensitive(const G4Event* ){
     if(Energy>Vendeta_NS::EnergyThreshold){
       double Time = RandGauss::shoot(Scorer->GetTime(i),Vendeta_NS::ResoTime);
       int DetectorNbr = level[0]-1;
-      m_Event->SetEnergy(DetectorNbr,Energy);
-      m_Event->SetTime(DetectorNbr,Time); 
+      m_Event->SetDetectorNbr(DetectorNbr);
+      m_Event->SetQ1(0.2*Energy);
+      m_Event->SetQ2(Energy);
+      m_Event->SetTime(Time); 
+      m_Event->SetHighGain(0); 
     }
   }
 }

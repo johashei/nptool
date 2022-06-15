@@ -62,7 +62,7 @@ class TFissionChamberPhysics : public TObject, public NPL::VDetector {
   // data obtained after BuildPhysicalEvent() and stored in
   // output ROOT file
   public:
-    vector<int>      DetectorNumber;
+    vector<int>      AnodeNumber;
     vector<double>   Energy;
     vector<double>   Time;
 

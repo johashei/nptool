@@ -114,19 +114,14 @@ void TFissionChamberSpectra::FillRawSpectra(TFissionChamberData* RawData) {
   // Energy 
   unsigned int sizeE = RawData->GetMultEnergy();
   for (unsigned int i = 0; i < sizeE; i++) {
-    name = "FissionChamber"+NPL::itoa(RawData->GetE_DetectorNbr(i))+"_ENERGY_RAW";
+    name = "FissionChamber"+NPL::itoa(RawData->GetAnodeNbr(i))+"_ENERGY_RAW";
     family = "FissionChamber/RAW";
+    FillSpectra(family,name,RawData->GetEnergy(i));
 
-    FillSpectra(family,name,RawData->Get_Energy(i));
-  }
-
-  // Time
-  unsigned int sizeT = RawData->GetMultTime();
-  for (unsigned int i = 0; i < sizeT; i++) {
-    name = "FissionChamber"+NPL::itoa(RawData->GetT_DetectorNbr(i))+"_TIME_RAW";
+    name = "FissionChamber"+NPL::itoa(RawData->GetAnodeNbr(i))+"_TIME_RAW";
     family = "FissionChamber/RAW";
+    FillSpectra(family,name,RawData->GetTime(i));
 
-    FillSpectra(family,name,RawData->Get_Time(i));
   }
 }
 
@@ -140,19 +135,13 @@ void TFissionChamberSpectra::FillPreTreatedSpectra(TFissionChamberData* PreTreat
   // Energy 
   unsigned int sizeE = PreTreatedData->GetMultEnergy();
   for (unsigned int i = 0; i < sizeE; i++) {
-    name = "FissionChamber"+NPL::itoa(PreTreatedData->GetE_DetectorNbr(i))+"_ENERGY_CAL";
+    name = "FissionChamber"+NPL::itoa(PreTreatedData->GetAnodeNbr(i))+"_ENERGY_CAL";
     family = "FissionChamber/CAL";
-
-    FillSpectra(family,name,PreTreatedData->Get_Energy(i));
-  }
-
-  // Time
-  unsigned int sizeT = PreTreatedData->GetMultTime();
-  for (unsigned int i = 0; i < sizeT; i++) {
-    name = "FissionChamber"+NPL::itoa(PreTreatedData->GetT_DetectorNbr(i))+"_TIME_CAL";
+    FillSpectra(family,name,PreTreatedData->GetEnergy(i));
+  
+    name = "FissionChamber"+NPL::itoa(PreTreatedData->GetAnodeNbr(i))+"_TIME_CAL";
     family = "FissionChamber/CAL";
-
-    FillSpectra(family,name,PreTreatedData->Get_Time(i));
+    FillSpectra(family,name,PreTreatedData->GetTime(i));
   }
 }
 

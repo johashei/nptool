@@ -34,13 +34,11 @@ class TVendetaData : public TObject {
   // data members are hold into vectors in order 
   // to allow multiplicity treatment
   private: 
-    // Energy
-    vector<UShort_t>   fVendeta_E_DetectorNbr;
-    vector<Double_t>   fVendeta_Energy;
-
-    // Time
-    vector<UShort_t>   fVendeta_T_DetectorNbr;
+    vector<UShort_t>   fVendeta_DetectorNbr;
+    vector<Double_t>   fVendeta_Q1;
+    vector<Double_t>   fVendeta_Q2;
     vector<Double_t>   fVendeta_Time;
+    vector<Bool_t>     fVendeta_isHG; 
 
 
   //////////////////////////////////////////////////////////////
@@ -66,35 +64,19 @@ class TVendetaData : public TObject {
   public:
     //////////////////////    SETTERS    ////////////////////////
     // Energy
-    inline void SetEnergy(const UShort_t& DetNbr,const Double_t& Energy){
-      fVendeta_E_DetectorNbr.push_back(DetNbr);
-      fVendeta_Energy.push_back(Energy);
-    };//!
-
-    // Time
-    inline void SetTime(const UShort_t& DetNbr,const Double_t& Time)	{
-      fVendeta_T_DetectorNbr.push_back(DetNbr);     
-      fVendeta_Time.push_back(Time);
-    };//!
-
+    inline void SetDetectorNbr(const UShort_t& DetNbr) {fVendeta_DetectorNbr.push_back(DetNbr);};//!
+    inline void SetQ1(const Double_t& Q1) {fVendeta_Q1.push_back(Q1);};//!
+    inline void SetQ2(const Double_t& Q2) {fVendeta_Q2.push_back(Q2);};//!
+    inline void SetTime(const Double_t& Time) {fVendeta_Time.push_back(Time);};//!
+    inline void SetHighGainStatus(const Bool_t& isHG) {fVendeta_isHG.push_back(isHG);};//
 
     //////////////////////    GETTERS    ////////////////////////
-    // Energy
-    inline UShort_t GetMultEnergy() const
-      {return fVendeta_E_DetectorNbr.size();}
-    inline UShort_t GetE_DetectorNbr(const unsigned int &i) const 
-      {return fVendeta_E_DetectorNbr[i];}//!
-    inline Double_t Get_Energy(const unsigned int &i) const 
-      {return fVendeta_Energy[i];}//!
-
-    // Time
-    inline UShort_t GetMultTime() const
-      {return fVendeta_T_DetectorNbr.size();}
-    inline UShort_t GetT_DetectorNbr(const unsigned int &i) const 
-      {return fVendeta_T_DetectorNbr[i];}//!
-    inline Double_t Get_Time(const unsigned int &i) const 
-      {return fVendeta_Time[i];}//!
-
+    inline UShort_t GetMultEnergy() const {return fVendeta_DetectorNbr.size();}
+    inline UShort_t GetDetectorNbr(const unsigned int &i) const {return fVendeta_DetectorNbr[i];}//!
+    inline Double_t GetQ1(const unsigned int &i) const {return fVendeta_Q1[i];}//!
+    inline Double_t GetQ2(const unsigned int &i) const {return fVendeta_Q2[i];}//!
+    inline Double_t GetTime(const unsigned int &i) const {return fVendeta_Time[i];}//!
+    inline Bool_t GetHighGainStatus(const unsigned int &i) const {return fVendeta_isHG[i];}//!
 
   //////////////////////////////////////////////////////////////
   // Required for ROOT dictionnary
