@@ -301,7 +301,7 @@ void Vendeta::ReadSensitive(const G4Event* ){
       m_Event->SetQ1(0.2*Energy);
       m_Event->SetQ2(Energy);
       m_Event->SetTime(Time); 
-      m_Event->SetHighGain(0); 
+      m_Event->SetHighGainStatus(0); 
     }
   }
 }
