@@ -56,7 +56,7 @@ TVendetaPhysics::TVendetaPhysics()
 
 ///////////////////////////////////////////////////////////////////////////
 /// A usefull method to bundle all operation to add a detector
-void TVendetaPhysics::AddDetector(TVector3 , string ){
+void TVendetaPhysics::AddDetector(TVector3 ){
   // In That simple case nothing is done
   // Typically for more complex detector one would calculate the relevant 
   // positions (stripped silicon) or angles (gamma array)
@@ -64,11 +64,12 @@ void TVendetaPhysics::AddDetector(TVector3 , string ){
 } 
 
 ///////////////////////////////////////////////////////////////////////////
-void TVendetaPhysics::AddDetector(double R, double Theta, double Phi, string shape){
+void TVendetaPhysics::AddDetector(double R, double Theta, double Phi){
   // Compute the TVector3 corresponding
   TVector3 Pos(R*sin(Theta)*cos(Phi),R*sin(Theta)*sin(Phi),R*cos(Theta));
   // Call the cartesian method
-  AddDetector(Pos,shape);
+  AddDetector(Pos);
+  m_DetectorPosition.push_back(Pos);
 } 
   
 ///////////////////////////////////////////////////////////////////////////
@@ -121,10 +122,10 @@ void TVendetaPhysics::PreTreat() {
         TimeOffset = Cal->GetValue("Vendeta/DET"+NPL::itoa(det)+"_LG_ANODE"+NPL::itoa(m_AnodeNumber)+"_TIMEOFFSET",0);
       }
       else if(isHG==1){ 
-        TimeOffset = Cal->GetValue("Vendeta/DET"+NPL::itoa(det)+"_LG_ANODE"+NPL::itoa(m_AnodeNumber)+"_TIMEOFFSET",0);
+        TimeOffset = Cal->GetValue("Vendeta/DET"+NPL::itoa(det)+"_HG_ANODE"+NPL::itoa(m_AnodeNumber)+"_TIMEOFFSET",0);
       }
 
-      double Time = m_EventData->GetTime(i - TimeOffset);
+      double Time = m_EventData->GetTime(i) + TimeOffset;
       m_PreTreatedData->SetDetectorNbr(det);
       m_PreTreatedData->SetQ1(m_EventData->GetQ1(i));
       m_PreTreatedData->SetQ2(m_EventData->GetQ2(i));
@@ -227,7 +228,7 @@ void TVendetaPhysics::ReadConfiguration(NPL::InputParser parser) {
     
       TVector3 Pos = blocks[i]->GetTVector3("POS","mm");
       string Shape = blocks[i]->GetString("Shape");
-      AddDetector(Pos,Shape);
+      AddDetector(Pos);
     }
     else if(blocks[i]->HasTokenList(sphe)){
       if(NPOptionManager::getInstance()->GetVerboseLevel())
@@ -236,7 +237,7 @@ void TVendetaPhysics::ReadConfiguration(NPL::InputParser parser) {
       double Theta = blocks[i]->GetDouble("Theta","deg");
       double Phi = blocks[i]->GetDouble("Phi","deg");
       string Shape = blocks[i]->GetString("Shape");
-      AddDetector(R,Theta,Phi,Shape);
+      AddDetector(R,Theta,Phi);
     }
     else{
       cout << "ERROR: check your input file formatting " << endl;
@@ -296,8 +297,10 @@ void TVendetaPhysics::WriteSpectra() {
 void TVendetaPhysics::AddParameterToCalibrationManager() {
   CalibrationManager* Cal = CalibrationManager::getInstance();
   for (int i = 0; i < m_NumberOfDetectors; ++i) {
-    Cal->AddParameter("Vendeta", "D"+ NPL::itoa(i+1)+"_ENERGY","Vendeta_D"+ NPL::itoa(i+1)+"_ENERGY");
-    Cal->AddParameter("Vendeta", "D"+ NPL::itoa(i+1)+"_TIME","Vendeta_D"+ NPL::itoa(i+1)+"_TIME");
+    for(int j = 0; j < 11; j++){
+    Cal->AddParameter("Vendeta","DET"+NPL::itoa(i+1)+"_LG_ANODE"+NPL::itoa(j+1)+"_TIMEOFFSET","Vendeta_DET"+ NPL::itoa(i+1)+"_LG_ANODE"+NPL::itoa(j+1)+"_TIMEOFFSET");
+    Cal->AddParameter("Vendeta","DET"+NPL::itoa(i+1)+"_HG_ANODE"+NPL::itoa(j+1)+"_TIMEOFFSET","Vendeta_DET"+ NPL::itoa(i+1)+"_HG_ANODE"+NPL::itoa(j+1)+"_TIMEOFFSET");
+    }
   }
 }
 

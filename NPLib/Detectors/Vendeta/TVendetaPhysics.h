@@ -69,9 +69,12 @@ class TVendetaPhysics : public TObject, public NPL::VDetector {
     vector<bool>     isHG;
 
   /// A usefull method to bundle all operation to add a detector
-  void AddDetector(TVector3 POS, string shape); 
-  void AddDetector(double R, double Theta, double Phi, string shape); 
-  
+  void AddDetector(TVector3 POS); 
+  void AddDetector(double R, double Theta, double Phi); 
+ 
+  double GetDistanceFromTarget(int DetNbr) {return m_DetectorPosition[DetNbr-1].Mag();}
+  TVector3 GetVectorDetectorPosition(int DetNbr) {return m_DetectorPosition[DetNbr-1];}
+
   //////////////////////////////////////////////////////////////
   // methods inherited from the VDetector ABC class
   public:
@@ -169,6 +172,7 @@ class TVendetaPhysics : public TObject, public NPL::VDetector {
   // number of detectors
   private:
     int m_NumberOfDetectors;  //!
+    vector<TVector3> m_DetectorPosition; //!
 
   // spectra class
   private:

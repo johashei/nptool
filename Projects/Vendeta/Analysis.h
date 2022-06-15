@@ -39,19 +39,20 @@ class Analysis: public NPL::VAnalysis{
     void InitOutputBranch();
     void ReInitValue();
 
-   static NPL::VAnalysis* Construct();
+    static NPL::VAnalysis* Construct();
 
   private:
-   vector<double> ThetaLab;
-   vector<double> ELab;
-   vector<double> Tof;
-   vector<double> Charge;
+    vector<double> ThetaLab;
+    vector<double> ELab;
+    vector<double> Tof;
+    vector<double> Charge;
+    vector<bool> isHG;
 
   private:
-   TVendetaPhysics* Vendeta;
-   TFissionChamberPhysics* FC;
+    TVendetaPhysics* Vendeta;
+    TFissionChamberPhysics* FC;
 
-   NPL::Particle* neutron;
-   TRandom3 ra;
+    NPL::Particle* neutron;
+    TRandom3 ra;
 };
 #endif

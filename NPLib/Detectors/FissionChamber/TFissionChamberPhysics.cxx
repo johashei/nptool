@@ -105,11 +105,15 @@ void TFissionChamberPhysics::PreTreat() {
   unsigned int mysize = m_EventData->GetMultEnergy();
   for (UShort_t i = 0; i < mysize ; ++i) {
     if (m_EventData->GetEnergy(i) > m_E_RAW_Threshold) {
-      Double_t Energy = Cal->ApplyCalibration("FissionChamber/ENERGY"+NPL::itoa(m_EventData->GetAnodeNbr(i)),m_EventData->GetEnergy(i));
+      Double_t Energy = Cal->ApplyCalibration("FissionChamber/ANODE"+NPL::itoa(m_EventData->GetAnodeNbr(i))+"_ENERGY",m_EventData->GetEnergy(i));
       if (Energy > m_E_Threshold) {
-        m_PreTreatedData->SetAnodeNbr(m_EventData->GetAnodeNbr(i));
+        int AnodeNumber = m_EventData->GetAnodeNbr(i);
+        double TimeOffset = Cal->GetValue("FissionChamber/ANODE"+NPL::itoa(AnodeNumber)+"_TIMEOFFSET",0);
+        double Time = m_EventData->GetTime(i) + TimeOffset;
+
+        m_PreTreatedData->SetAnodeNbr(AnodeNumber);
         m_PreTreatedData->SetEnergy(Energy);
-        m_PreTreatedData->SetTime(m_EventData->GetTime(i));
+        m_PreTreatedData->SetTime(Time);
       }
     }
   }
@@ -277,8 +281,8 @@ void TFissionChamberPhysics::WriteSpectra() {
 void TFissionChamberPhysics::AddParameterToCalibrationManager() {
   CalibrationManager* Cal = CalibrationManager::getInstance();
   for (int i = 0; i < m_NumberOfDetectors; ++i) {
-    Cal->AddParameter("FissionChamber", "D"+ NPL::itoa(i+1)+"_ENERGY","FissionChamber_D"+ NPL::itoa(i+1)+"_ENERGY");
-    Cal->AddParameter("FissionChamber", "D"+ NPL::itoa(i+1)+"_TIME","FissionChamber_D"+ NPL::itoa(i+1)+"_TIME");
+    Cal->AddParameter("FissionChamber", "ANODE"+ NPL::itoa(i+1)+"_ENERGY","FissionChamber_ANODE"+ NPL::itoa(i+1)+"_ENERGY");
+    Cal->AddParameter("FissionChamber", "ANODE"+ NPL::itoa(i+1)+"_TIMEOFFSET","FissionChamber_ANODE"+ NPL::itoa(i+1)+"_TIMEOFFSET");
   }
 }
 

@@ -47,6 +47,8 @@ void TFissionChamberData::Clear() {
   fFC_AnodeNbr.clear();
   fFC_Energy.clear();
   fFC_Time.clear();
+  fFC_Time_HF.clear();
+  fFC_isFakeFission.clear();
 }
 
 

@@ -407,6 +407,8 @@ void FissionChamber::ReadSensitive(const G4Event* ){
       m_Event->SetAnodeNbr(DetectorNbr);
       m_Event->SetEnergy(Energy);
       m_Event->SetTime(Time); 
+      m_Event->SetTimeHF(0); 
+      m_Event->SetFakeFissionStatus(0); 
     }
   }
 }

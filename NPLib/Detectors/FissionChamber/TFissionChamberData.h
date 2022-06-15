@@ -37,7 +37,8 @@ class TFissionChamberData : public TObject {
     vector<UShort_t>   fFC_AnodeNbr;
     vector<Double_t>   fFC_Energy;
     vector<Double_t>   fFC_Time;
-
+    vector<Bool_t>     fFC_isFakeFission;
+    vector<Double_t>   fFC_Time_HF;
 
   //////////////////////////////////////////////////////////////
   // Constructor and destructor
@@ -64,6 +65,8 @@ class TFissionChamberData : public TObject {
     inline void SetAnodeNbr(const UShort_t& AnodeNbr){fFC_AnodeNbr.push_back(AnodeNbr);}//!
     inline void SetEnergy(const Double_t& Energy){fFC_Energy.push_back(Energy);}//!
     inline void SetTime(const Double_t& Time){fFC_Time.push_back(Time);}//!
+    inline void SetTimeHF(const Double_t& Time){fFC_Time_HF.push_back(Time);}//!
+    inline void SetFakeFissionStatus(const Bool_t& isFF){fFC_isFakeFission.push_back(isFF);}//!
 
     //////////////////////    GETTERS    ////////////////////////
     // Energy
@@ -75,6 +78,12 @@ class TFissionChamberData : public TObject {
       {return fFC_Energy[i];}//!
     inline Double_t GetTime(const unsigned int &i) const 
       {return fFC_Time[i];}//!
+    inline Double_t GetTimeHF(const unsigned int &i) const 
+      {return fFC_Time_HF[i];}//!
+    inline Bool_t GetFakeFissionStatus(const unsigned int &i) const 
+      {return fFC_isFakeFission[i];}//!
+
+
 
 
   //////////////////////////////////////////////////////////////
