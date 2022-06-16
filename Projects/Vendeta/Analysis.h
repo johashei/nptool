@@ -45,8 +45,9 @@ class Analysis: public NPL::VAnalysis{
     vector<double> ThetaLab;
     vector<double> ELab;
     vector<double> Tof;
-    vector<double> Charge;
-    vector<bool> isHG;
+    vector<double> Q1;
+    vector<double> Q2;
+    vector<bool>   HG_status;
 
   private:
     TVendetaPhysics* Vendeta;

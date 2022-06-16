@@ -47,7 +47,7 @@ void Analysis::Init(){
 void Analysis::TreatEvent(){
   ReInitValue();
 
-  unsigned int FC_mult = FC->Energy.size();
+  unsigned int FC_mult = FC->AnodeNumber.size();
   if(FC_mult==1){
     int anode = FC->AnodeNumber[0];
     double Time_FC = FC->Time[0];
@@ -58,7 +58,6 @@ void Analysis::TreatEvent(){
     for(unsigned int i=0; i<Vendeta_mult; i++){
       int DetNbr          = Vendeta->DetectorNumber[i];
       double Time_Vendeta = Vendeta->Time[i];
-      bool HG_status      = Vendeta->isHG[i];
       double Rdet         = Vendeta->GetDistanceFromTarget(DetNbr);
       TVector3 DetPos     = Vendeta->GetVectorDetectorPosition(DetNbr);
 
@@ -75,7 +74,9 @@ void Analysis::TreatEvent(){
       Tof.push_back(DT);
       ELab.push_back(En);
       ThetaLab.push_back(Theta_random);
-      isHG.push_back(HG_status);
+      Q1.push_back(Vendeta->Q1[i]);
+      Q2.push_back(Vendeta->Q2[i]);
+      HG_status.push_back(Vendeta->isHG[i]);
     }
   }
 
@@ -86,8 +87,9 @@ void Analysis::InitOutputBranch(){
   RootOutput::getInstance()->GetTree()->Branch("ThetaLab",&ThetaLab);
   RootOutput::getInstance()->GetTree()->Branch("ELab",&ELab);
   RootOutput::getInstance()->GetTree()->Branch("Tof",&Tof);
-  RootOutput::getInstance()->GetTree()->Branch("Charge",&Charge);
-  RootOutput::getInstance()->GetTree()->Branch("isHG",&isHG);
+  RootOutput::getInstance()->GetTree()->Branch("Q1",&Q1);
+  RootOutput::getInstance()->GetTree()->Branch("Q2",&Q2);
+  RootOutput::getInstance()->GetTree()->Branch("HG_status",&HG_status);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -95,8 +97,9 @@ void Analysis::ReInitValue(){
   ThetaLab.clear();
   ELab.clear();
   Tof.clear();
-  Charge.clear();
-  isHG.clear();
+  Q1.clear();
+  Q2.clear();
+  HG_status.clear();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
