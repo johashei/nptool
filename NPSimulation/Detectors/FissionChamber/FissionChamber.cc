@@ -405,7 +405,8 @@ void FissionChamber::ReadSensitive(const G4Event* ){
       double Time = RandGauss::shoot(Scorer->GetTime(i),FissionChamber_NS::ResoTime);
       int DetectorNbr = level[0];
       m_Event->SetAnodeNbr(DetectorNbr);
-      m_Event->SetEnergy(Energy);
+      m_Event->SetQ1(Energy);
+      m_Event->SetQ2(Energy);
       m_Event->SetTime(Time); 
       m_Event->SetTimeHF(0); 
       m_Event->SetFakeFissionStatus(0); 

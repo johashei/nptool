@@ -35,7 +35,8 @@ class TFissionChamberData : public TObject {
   // to allow multiplicity treatment
   private: 
     vector<UShort_t>   fFC_AnodeNbr;
-    vector<Double_t>   fFC_Energy;
+    vector<Double_t>   fFC_Q1;
+    vector<Double_t>   fFC_Q2;
     vector<Double_t>   fFC_Time;
     vector<Bool_t>     fFC_isFakeFission;
     vector<Double_t>   fFC_Time_HF;
@@ -63,19 +64,22 @@ class TFissionChamberData : public TObject {
   public:
     //////////////////////    SETTERS    ////////////////////////
     inline void SetAnodeNbr(const UShort_t& AnodeNbr){fFC_AnodeNbr.push_back(AnodeNbr);}//!
-    inline void SetEnergy(const Double_t& Energy){fFC_Energy.push_back(Energy);}//!
+    inline void SetQ1(const Double_t& Q1){fFC_Q1.push_back(Q1);}//!
+    inline void SetQ2(const Double_t& Q2){fFC_Q2.push_back(Q2);}//!
     inline void SetTime(const Double_t& Time){fFC_Time.push_back(Time);}//!
     inline void SetTimeHF(const Double_t& Time){fFC_Time_HF.push_back(Time);}//!
     inline void SetFakeFissionStatus(const Bool_t& isFF){fFC_isFakeFission.push_back(isFF);}//!
 
     //////////////////////    GETTERS    ////////////////////////
     // Energy
-    inline UShort_t GetMultEnergy() const
-      {return fFC_Energy.size();}
+    inline UShort_t GetMultiplicity() const
+      {return fFC_AnodeNbr.size();}
     inline UShort_t GetAnodeNbr(const unsigned int &i) const 
       {return fFC_AnodeNbr[i];}//!
-    inline Double_t GetEnergy(const unsigned int &i) const 
-      {return fFC_Energy[i];}//!
+    inline Double_t GetQ1(const unsigned int &i) const 
+      {return fFC_Q1[i];}//!
+    inline Double_t GetQ2(const unsigned int &i) const 
+      {return fFC_Q2[i];}//!
     inline Double_t GetTime(const unsigned int &i) const 
       {return fFC_Time[i];}//!
     inline Double_t GetTimeHF(const unsigned int &i) const 

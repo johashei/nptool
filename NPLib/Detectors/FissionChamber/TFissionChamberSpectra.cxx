@@ -69,7 +69,7 @@ void TFissionChamberSpectra::InitRawSpectra() {
   static string name;
   for (unsigned int i = 0; i < fNumberOfDetectors; i++) { // loop on number of detectors
     // Energy 
-    name = "FissionChamber"+NPL::itoa(i+1)+"_ENERGY_RAW";
+    name = "FissionChamber"+NPL::itoa(i+1)+"_Q1_RAW";
     AddHisto1D(name, name, 4096, 0, 16384, "FissionChamber/RAW");
     // Time 
     name = "FissionChamber"+NPL::itoa(i+1)+"_TIME_RAW";
@@ -84,7 +84,7 @@ void TFissionChamberSpectra::InitPreTreatedSpectra() {
   static string name;
   for (unsigned int i = 0; i < fNumberOfDetectors; i++) { // loop on number of detectors
     // Energy 
-    name = "FissionChamber"+NPL::itoa(i+1)+"_ENERGY_CAL";
+    name = "FissionChamber"+NPL::itoa(i+1)+"_Q1_CAL";
     AddHisto1D(name, name, 500, 0, 25, "FissionChamber/CAL");
     // Time
     name = "FissionChamber"+NPL::itoa(i+1)+"_TIME_CAL";
@@ -112,11 +112,11 @@ void TFissionChamberSpectra::FillRawSpectra(TFissionChamberData* RawData) {
   static string family;
 
   // Energy 
-  unsigned int sizeE = RawData->GetMultEnergy();
+  unsigned int sizeE = RawData->GetMultiplicity();
   for (unsigned int i = 0; i < sizeE; i++) {
-    name = "FissionChamber"+NPL::itoa(RawData->GetAnodeNbr(i))+"_ENERGY_RAW";
+    name = "FissionChamber"+NPL::itoa(RawData->GetAnodeNbr(i))+"_Q1_RAW";
     family = "FissionChamber/RAW";
-    FillSpectra(family,name,RawData->GetEnergy(i));
+    FillSpectra(family,name,RawData->GetQ1(i));
 
     name = "FissionChamber"+NPL::itoa(RawData->GetAnodeNbr(i))+"_TIME_RAW";
     family = "FissionChamber/RAW";
@@ -133,11 +133,11 @@ void TFissionChamberSpectra::FillPreTreatedSpectra(TFissionChamberData* PreTreat
   static string family;
   
   // Energy 
-  unsigned int sizeE = PreTreatedData->GetMultEnergy();
+  unsigned int sizeE = PreTreatedData->GetMultiplicity();
   for (unsigned int i = 0; i < sizeE; i++) {
-    name = "FissionChamber"+NPL::itoa(PreTreatedData->GetAnodeNbr(i))+"_ENERGY_CAL";
+    name = "FissionChamber"+NPL::itoa(PreTreatedData->GetAnodeNbr(i))+"_Q1_CAL";
     family = "FissionChamber/CAL";
-    FillSpectra(family,name,PreTreatedData->GetEnergy(i));
+    FillSpectra(family,name,PreTreatedData->GetQ1(i));
   
     name = "FissionChamber"+NPL::itoa(PreTreatedData->GetAnodeNbr(i))+"_TIME_CAL";
     family = "FissionChamber/CAL";
@@ -154,10 +154,10 @@ void TFissionChamberSpectra::FillPhysicsSpectra(TFissionChamberPhysics* Physics)
   family= "FissionChamber/PHY";
 
   // Energy vs time
-  unsigned int sizeE = Physics->Energy.size();
+  unsigned int sizeE = Physics->Q1.size();
   for(unsigned int i = 0 ; i < sizeE ; i++){
-    name = "FissionChamber_ENERGY_TIME";
-    FillSpectra(family,name,Physics->Energy[i],Physics->Time[i]);
+    name = "FissionChamber_Q1_TIME";
+    FillSpectra(family,name,Physics->Q1[i],Physics->Time[i]);
   }
 }
 

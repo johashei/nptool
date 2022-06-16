@@ -87,7 +87,7 @@ void TVendetaPhysics::BuildPhysicalEvent() {
 
   // apply thresholds and calibration
   PreTreat();
-
+  
   // match energy and time together
   unsigned int mysizeE = m_PreTreatedData->GetMultEnergy();
   for (UShort_t e = 0; e < mysizeE ; e++) {
@@ -95,6 +95,7 @@ void TVendetaPhysics::BuildPhysicalEvent() {
     Q1.push_back(m_PreTreatedData->GetQ1(e));
     Q2.push_back(m_PreTreatedData->GetQ2(e));
     Time.push_back(m_PreTreatedData->GetTime(e));
+    isHG.push_back(m_PreTreatedData->GetHighGainStatus(e));
   }
 
   m_AnodeNumber=-1;
@@ -111,27 +112,24 @@ void TVendetaPhysics::PreTreat() {
   // instantiate CalibrationManager
   static CalibrationManager* Cal = CalibrationManager::getInstance();
 
-  // Energy
   unsigned int mysize = m_EventData->GetMultEnergy();
-  for (UShort_t i = 0; i < mysize ; ++i) {
-    if (m_EventData->GetQ1(i) > m_E_RAW_Threshold && m_EventData->GetQ2(i) > m_E_RAW_Threshold) {
-      int det = m_EventData->GetDetectorNbr(i);
-      bool isHG = m_PreTreatedData->GetHighGainStatus(i);
-      double TimeOffset=0;
-      if(isHG==0){
-        TimeOffset = Cal->GetValue("Vendeta/DET"+NPL::itoa(det)+"_LG_ANODE"+NPL::itoa(m_AnodeNumber)+"_TIMEOFFSET",0);
+  for (UShort_t i = 0; i < mysize ; ++i){
+    int det = m_EventData->GetDetectorNbr(i);
+    bool isHG = m_EventData->GetHighGainStatus(i);
+    double TimeOffset=0;
+    if(isHG==0){
+      TimeOffset = Cal->GetValue("Vendeta/DET"+NPL::itoa(det)+"_LG_ANODE"+NPL::itoa(m_AnodeNumber)+"_TIMEOFFSET",0);
       }
-      else if(isHG==1){ 
-        TimeOffset = Cal->GetValue("Vendeta/DET"+NPL::itoa(det)+"_HG_ANODE"+NPL::itoa(m_AnodeNumber)+"_TIMEOFFSET",0);
+    else if(isHG==1){ 
+      TimeOffset = Cal->GetValue("Vendeta/DET"+NPL::itoa(det)+"_HG_ANODE"+NPL::itoa(m_AnodeNumber)+"_TIMEOFFSET",0);
       }
 
-      double Time = m_EventData->GetTime(i) + TimeOffset;
-      m_PreTreatedData->SetDetectorNbr(det);
-      m_PreTreatedData->SetQ1(m_EventData->GetQ1(i));
-      m_PreTreatedData->SetQ2(m_EventData->GetQ2(i));
-      m_PreTreatedData->SetTime(Time);
-      m_PreTreatedData->SetHighGainStatus(isHG);
-    }
+    double Time = m_EventData->GetTime(i) + TimeOffset;
+    m_PreTreatedData->SetDetectorNbr(det);
+    m_PreTreatedData->SetQ1(m_EventData->GetQ1(i));
+    m_PreTreatedData->SetQ2(m_EventData->GetQ2(i));
+    m_PreTreatedData->SetTime(Time);
+    m_PreTreatedData->SetHighGainStatus(isHG);
   }
 }
 
@@ -218,8 +216,8 @@ void TVendetaPhysics::ReadConfiguration(NPL::InputParser parser) {
   if(NPOptionManager::getInstance()->GetVerboseLevel())
     cout << "//// " << blocks.size() << " detectors found " << endl; 
 
-  vector<string> cart = {"POS","Shape"};
-  vector<string> sphe = {"R","Theta","Phi","Shape"};
+  vector<string> cart = {"POS"};
+  vector<string> sphe = {"R","Theta","Phi"};
 
   for(unsigned int i = 0 ; i < blocks.size() ; i++){
     if(blocks[i]->HasTokenList(cart)){
@@ -227,7 +225,6 @@ void TVendetaPhysics::ReadConfiguration(NPL::InputParser parser) {
         cout << endl << "////  Vendeta " << i+1 <<  endl;
     
       TVector3 Pos = blocks[i]->GetTVector3("POS","mm");
-      string Shape = blocks[i]->GetString("Shape");
       AddDetector(Pos);
     }
     else if(blocks[i]->HasTokenList(sphe)){
@@ -236,7 +233,6 @@ void TVendetaPhysics::ReadConfiguration(NPL::InputParser parser) {
       double R = blocks[i]->GetDouble("R","mm");
       double Theta = blocks[i]->GetDouble("Theta","deg");
       double Phi = blocks[i]->GetDouble("Phi","deg");
-      string Shape = blocks[i]->GetString("Shape");
       AddDetector(R,Theta,Phi);
     }
     else{

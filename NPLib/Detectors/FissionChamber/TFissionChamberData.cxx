@@ -45,7 +45,8 @@ TFissionChamberData::~TFissionChamberData() {
 //////////////////////////////////////////////////////////////////////
 void TFissionChamberData::Clear() {
   fFC_AnodeNbr.clear();
-  fFC_Energy.clear();
+  fFC_Q1.clear();
+  fFC_Q2.clear();
   fFC_Time.clear();
   fFC_Time_HF.clear();
   fFC_isFakeFission.clear();
@@ -58,12 +59,13 @@ void TFissionChamberData::Dump() const {
   // This method is very useful for debuging and worth the dev.
   cout << "XXXXXXXXXXXXXXXXXXXXXXXX New Event [TFissionChamberData::Dump()] XXXXXXXXXXXXXXXXX" << endl;
 
-  size_t mysize = fFC_Energy.size();
+  size_t mysize = fFC_Q1.size();
   cout << "FissionChamber_E_Mult: " << mysize << endl;
  
   for (size_t i = 0 ; i < mysize ; i++){
     cout << "AnodeNbr: " << fFC_AnodeNbr[i]
-         << " Energy: " << fFC_Energy[i]
+         << " Q1: " << fFC_Q1[i]
+         << " Q2: " << fFC_Q2[i]
          << " Time: " << fFC_Time[i];
   }
 }
