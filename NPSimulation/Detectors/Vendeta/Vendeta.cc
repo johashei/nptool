@@ -74,9 +74,11 @@ Vendeta::Vendeta(){
   m_VendetaScorer = 0;
   m_VendetaDetector = 0;
   m_SensitiveCell = 0;
+  m_MecanicalStructure = 0;  
+  m_Build_MecanicalStructure = 1;
 
   // RGB Color + Transparency
-  m_VisAl      = new G4VisAttributes(G4Colour(0.5, 0.5, 0.5, 0.8));   
+  m_VisAl      = new G4VisAttributes(G4Colour(0.5, 0.5, 0.5));   
   m_VisEJ309   = new G4VisAttributes(G4Colour(0.2, 0.85, 0.85, 1));   
   m_VisMuMetal = new G4VisAttributes(G4Colour(0.55, 0.5, 0.5, 0.7));   
   m_VisPyrex   = new G4VisAttributes(G4Colour(0.1, 0.5, 0.7, 1));   
@@ -201,6 +203,43 @@ G4AssemblyVolume* Vendeta::BuildVendetaDetector(){
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+G4AssemblyVolume* Vendeta::BuildMecanicalStructure()
+{
+  if(!m_MecanicalStructure){
+    m_MecanicalStructure = new G4AssemblyVolume();
+
+    G4RotationMatrix* Rot = new G4RotationMatrix();
+    G4ThreeVector Pos = G4ThreeVector(0,0,0);
+   
+    string basepath = getenv("NPTOOL");
+    // *** Steel part of the strucutre *** //
+    string path = basepath + "/NPSimulation/Detectors/Vendeta/Structure_meca_stl/Structure_Acier.stl";
+
+    auto mesh = CADMesh::TessellatedMesh::FromSTL((char*) path.c_str());
+    mesh->SetScale(mm);
+    
+    auto cad_solid = mesh->GetSolid();
+    m_MecanicalStructure_Steel = new G4LogicalVolume(cad_solid,m_Inox,"Structure_Steel",0,0,0);
+    m_MecanicalStructure_Steel->SetVisAttributes(m_VisInox);
+
+    m_MecanicalStructure->AddPlacedVolume(m_MecanicalStructure_Steel,Pos,Rot);
+  
+
+    // *** Aluminium part *** //
+    path = basepath + "/NPSimulation/Detectors/Vendeta/Structure_meca_stl/Structure_Alu.stl";
+    mesh = CADMesh::TessellatedMesh::FromSTL((char*) path.c_str());
+    mesh->SetScale(mm);
+    
+    cad_solid = mesh->GetSolid();
+    m_MecanicalStructure_Al = new G4LogicalVolume(cad_solid,m_Al,"Structure_Al",0,0,0);
+    m_MecanicalStructure_Al->SetVisAttributes(m_VisAl);
+
+    m_MecanicalStructure->AddPlacedVolume(m_MecanicalStructure_Al,Pos,Rot);
+  }
+
+  return m_MecanicalStructure;
+}
+
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 // Virtual Method of NPS::VDetector class
@@ -267,6 +306,14 @@ void Vendeta::ConstructDetector(G4LogicalVolume* world){
 
     BuildVendetaDetector()->MakeImprint(world,Det_pos,Rot,i+1);
   }
+
+  if(m_Build_MecanicalStructure==1){
+    G4RotationMatrix* RotMeca = new G4RotationMatrix();
+    G4ThreeVector PosMeca = G4ThreeVector(0,0,0);
+
+    BuildMecanicalStructure()->MakeImprint(world,PosMeca,RotMeca);
+  }
+
 }
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 // Add Detector branch to the EventTree.

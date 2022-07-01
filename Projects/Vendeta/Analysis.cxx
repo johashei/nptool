@@ -66,8 +66,9 @@ void Analysis::TreatEvent(){
       double DeltaTheta = atan(63.5/Rdet);
       double Theta_Vendeta = DetPos.Theta();
       double Theta_random = ra.Uniform(Theta_Vendeta-DeltaTheta,Theta_Vendeta+DeltaTheta);
-
-      neutron->SetTimeOfFlight(DT/(Rdet));
+      //cout << DT << " " << Rdet << endl;
+      //neutron->SetTimeOfFlight(DT*1e-9/(Rdet*1e-3));
+      neutron->SetTimeOfFlight(DT*1e-9/(0.55));
       double En = neutron->GetEnergy();
 
       // Filling output tree
