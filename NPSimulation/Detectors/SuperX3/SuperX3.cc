@@ -299,8 +299,14 @@ void SuperX3::ReadSensitive(const G4Event*) {
     double time = resistive->GetTimeUp(i);
     int det = resistive->GetDetectorUp(i);
     int strip = resistive->GetStripUp(i);
-    m_Event->SetUpE(det, strip, energy);
-    m_Event->SetUpT(det, strip, time);
+    if (energy > EnergyThresholdResitive) {
+      m_Event->SetUpE(det, strip, energy);
+      m_Event->SetUpT(det, strip, time);
+    }
+    else {
+      m_Event->SetUpE(det, strip, 0);
+      m_Event->SetUpT(det, strip, 0);
+    }
   }
   auto sizeDown = resistive->GetDownMult();
   for (unsigned int i = 0; i < sizeDown; i++) {
@@ -308,8 +314,15 @@ void SuperX3::ReadSensitive(const G4Event*) {
     double time = resistive->GetTimeDown(i);
     int det = resistive->GetDetectorDown(i);
     int strip = resistive->GetStripDown(i);
-    m_Event->SetDownE(det, strip, energy);
-    m_Event->SetDownT(det, strip, time);
+    if (energy > EnergyThresholdResitive) {
+      m_Event->SetDownE(det, strip, energy);
+      m_Event->SetDownT(det, strip, time);
+    }
+
+    else {
+      m_Event->SetDownE(det, strip, 0);
+      m_Event->SetDownT(det, strip, 0);
+    }
   }
   auto sizeBack = backstrip->GetLengthMult();
   for (unsigned int i = 0; i < sizeBack; i++) {
@@ -317,8 +330,14 @@ void SuperX3::ReadSensitive(const G4Event*) {
     double time = backstrip->GetTimeLength(i);
     int det = backstrip->GetDetectorLength(i);
     int strip = backstrip->GetStripLength(i);
-    m_Event->SetBackE(det, strip, energy);
-    m_Event->SetBackT(det, strip, time);
+    if (energy > EnergyThresholdBack) {
+      m_Event->SetBackE(det, strip, energy);
+      m_Event->SetBackT(det, strip, time);
+    }
+    else {
+      m_Event->SetBackE(det, strip, 0);
+      m_Event->SetBackT(det, strip, 0);
+    }
   }
   resistive->clear();
   backstrip->clear();
