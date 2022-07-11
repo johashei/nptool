@@ -25,6 +25,7 @@ using namespace std;
 #include"NPAnalysisFactory.h"
 #include"NPDetectorManager.h"
 #include"NPOptionManager.h"
+#include"RootInput.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 Analysis::Analysis(){
@@ -35,10 +36,10 @@ Analysis::~Analysis(){
 
 ////////////////////////////////////////////////////////////////////////////////
 void Analysis::Init(){
+  InitOutputBranch();
+
   Vendeta= (TVendetaPhysics*) m_DetectorManager->GetDetector("Vendeta");
   FC= (TFissionChamberPhysics*) m_DetectorManager->GetDetector("FissionChamber");
-
-  InitOutputBranch();
 
   neutron = new NPL::Particle("1n");
 }
@@ -54,6 +55,7 @@ void Analysis::TreatEvent(){
 
     Vendeta->SetAnodeNumber(anode);
     Vendeta->BuildPhysicalEvent();
+
     unsigned int Vendeta_mult = Vendeta->DetectorNumber.size();
     for(unsigned int i=0; i<Vendeta_mult; i++){
       int DetNbr          = Vendeta->DetectorNumber[i];
