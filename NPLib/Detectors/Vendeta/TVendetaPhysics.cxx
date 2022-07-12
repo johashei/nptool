@@ -52,7 +52,7 @@ TVendetaPhysics::TVendetaPhysics()
      m_E_Threshold(0),     // MeV
      m_AnodeNumber(-1),
      m_NumberOfDetectors(0) {
-}
+     }
 
 ///////////////////////////////////////////////////////////////////////////
 /// A usefull method to bundle all operation to add a detector

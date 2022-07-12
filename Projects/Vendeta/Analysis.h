@@ -36,6 +36,7 @@ class Analysis: public NPL::VAnalysis{
     void Init();
     void TreatEvent();
     void End();
+    void InitInputBranch();
     void InitOutputBranch();
     void ReInitValue();
 
