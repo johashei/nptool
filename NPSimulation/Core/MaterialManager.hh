@@ -24,18 +24,18 @@
  *****************************************************************************/
 
 // Geant4
-#include "G4Material.hh"
 #include "G4Element.hh"
-#include "G4ParticleDefinition.hh"
 #include "G4LogicalVolume.hh"
+#include "G4Material.hh"
+#include "G4ParticleDefinition.hh"
 // STL
-#include<map>
-#include<set>
+#include <map>
+#include <set>
 using namespace std;
 
-class MaterialManager{
+class MaterialManager {
 
-public:
+ public:
   // Designed to be a singleton (i.e. only one instance
   // can exist). A member function called Instance is defined, which allows
   // the user to get a pointer to the existing instance or to create it if
@@ -48,23 +48,26 @@ public:
   // called directly):
   static void Destroy();
 
-protected:
-    // Constructor and Destructor are not public
-    MaterialManager();
-    ~MaterialManager();
+ protected:
+  // Constructor and Destructor are not public
+  MaterialManager();
+  ~MaterialManager();
 
-private:
+ private:
   // The static instance of MaterialManager:
   static MaterialManager* instance;
-  
+
   // Map of element and material:
-  map<string,G4Material*> m_Material; 
- 
-private:
+  map<string, G4Material*> m_Material;
+
+ private:
   G4Element* m_D;
   G4Element* m_T;
   G4Element* m_He3;
-public:
+  G4Element* m_Li6;
+  G4Element* m_Li7;
+
+ public:
   // clear all exising material from the library
   void ClearMaterialLibrary();
 
@@ -78,32 +81,30 @@ public:
   G4Material* GetGasFromLibrary(string Name, double Pressure, double Temperature);
 
   // Same as above but for Element.
-  G4Element*  GetElementFromLibrary(string Name);
-  
+  G4Element* GetElementFromLibrary(string Name);
+
   // Let the user directly add a custom material to the library
   // It is howver overwritting existing material having the same name
   void AddMaterialToLibrary(G4Material*);
 
-  // Create tiny block of active material so the DEDX tables are generated 
+  // Create tiny block of active material so the DEDX tables are generated
   // prevent crash if the user define material but don't use it
   void CreateSampleVolumes(G4LogicalVolume* world_log);
 
   // Write the DEDx table for all material instantiate in the MaterialManager
   // for a given particle
-  void WriteDEDXTable(G4ParticleDefinition* Particle ,G4double Emin,G4double Emax);
+  void WriteDEDXTable(G4ParticleDefinition* Particle, G4double Emin, G4double Emax);
 
   // Write the DEDx table for all material instantiate in the MaterialManager
   // for a list of particle name
-  void WriteDEDXTable(std::set<string> Particle ,G4double Emin,G4double Emax);
+  void WriteDEDXTable(std::set<string> Particle, G4double Emin, G4double Emax);
 
   // Write the Cross Section table for all material instantiate in the MaterialManager
   // for a given particle
-  void WriteCrossSectionTable(G4ParticleDefinition* Particle ,G4double Emin,G4double Emax);
+  void WriteCrossSectionTable(G4ParticleDefinition* Particle, G4double Emin, G4double Emax);
 
   // Write the Cross Section table for all material instantiate in the MaterialManager
   // for a list of particle name
-  void WriteCrossSectionTable(std::set<string> Particle ,G4double Emin,G4double Emax);
-
-
+  void WriteCrossSectionTable(std::set<string> Particle, G4double Emin, G4double Emax);
 };
 #endif

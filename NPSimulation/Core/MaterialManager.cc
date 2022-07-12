@@ -59,6 +59,8 @@ MaterialManager::MaterialManager() {
   m_D = NULL;
   m_T = NULL;
   m_He3 = NULL;
+  m_Li6 = NULL;
+  m_Li7 = NULL;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -78,6 +80,8 @@ void MaterialManager::ClearMaterialLibrary() {
   m_D = NULL;
   m_T = NULL;
   m_He3 = NULL;
+  m_Li6 = NULL;
+  m_Li7 = NULL;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -216,7 +220,30 @@ G4Material* MaterialManager::GetMaterialFromLibrary(string Name, double density)
       m_Material[Name] = material;
       return material;
     }
-
+    else if (Name == "Li") {
+      if (!density)
+        density = 0.534 * g / cm3;
+      G4Material* material = new G4Material("NPS_" + Name, density, 1);
+      material->AddElement(GetElementFromLibrary("Li"), 1);
+      m_Material[Name] = material;
+      return material;
+    }
+    else if (Name == "6Li") {
+      if (!density)
+        density = 0.534 * g / cm3;
+      G4Material* material = new G4Material("NPS_" + Name, density, 1);
+      material->AddElement(GetElementFromLibrary("Li6"), 1);
+      m_Material[Name] = material;
+      return material;
+    }
+    else if (Name == "7Li") {
+      if (!density)
+        density = 0.534 * g / cm3;
+      G4Material* material = new G4Material("NPS_" + Name, density, 1);
+      material->AddElement(GetElementFromLibrary("Li7"), 1);
+      m_Material[Name] = material;
+      return material;
+    }
     // Cooling
     else if (Name == "N2_liquid") {
       if (!density)
@@ -527,7 +554,7 @@ G4Material* MaterialManager::GetMaterialFromLibrary(string Name, double density)
       return material;
     }
 
-    else if (Name == "Ge" || Name=="Germanium") {
+    else if (Name == "Ge" || Name == "Germanium") {
       if (!density)
         density = 5.323 * g / cm3;
       G4Material* material = new G4Material("NPS_" + Name, density, 1);
@@ -1162,6 +1189,22 @@ G4Element* MaterialManager::GetElementFromLibrary(string Name) {
       m_He3->AddIsotope(isotope, 1);
     }
     return m_He3;
+  }
+  else if (Name == "Li6" || Name == "6Li") {
+    if (!m_Li6) {
+      m_Li6 = new G4Element(Name.c_str(), Name.c_str(), 1);
+      G4Isotope* isotope = new G4Isotope(Name.c_str(), 3, 3, 6.01512289 * g / mole);
+      m_Li6->AddIsotope(isotope, 1);
+    }
+    return m_Li6;
+  }
+  else if (Name == "Li7" || Name == "7Li") {
+    if (!m_Li7) {
+      m_Li7 = new G4Element(Name.c_str(), Name.c_str(), 1);
+      G4Isotope* isotope = new G4Isotope(Name.c_str(), 3, 4, 7.01600343 * g / mole);
+      m_Li7->AddIsotope(isotope, 1);
+    }
+    return m_Li7;
   }
 
   G4NistManager* man = G4NistManager::Instance();
