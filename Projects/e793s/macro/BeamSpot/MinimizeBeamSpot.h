@@ -32,14 +32,42 @@ int writeCount = 0;
 //Histograms
 string filename;
 double refE; // the energy of the selected states
-static auto h = new TH1D("h","All MG#'s", 40,-1.0,3.0);
-static auto h1 = new TH1D("h1","Individual MG#'s", 40,-1.0,3.0);
-static auto h2 = new TH1D("h2","h2", 40,-1.0,3.0);
-static auto h3 = new TH1D("h3","h3", 40,-1.0,3.0);
-static auto h4 = new TH1D("h4","h4", 40,-1.0,3.0);
-static auto h5 = new TH1D("h5","h5", 40,-1.0,3.0);
-static auto h7 = new TH1D("h7","h7", 40,-1.0,3.0);
-static auto hT = new TH2F("hT","hT", 20,100.,160.,20,-0.1,0.4);
+static auto h = new TH1D("h","All MG#'s", 200,-1.0,3.0);
+static auto h1 = new TH1D("h1","Individual MG#'s", 80,-1.0,3.0);
+static auto h2 = new TH1D("h2","h2", 80,-1.0,3.0);
+static auto h3 = new TH1D("h3","h3", 80,-1.0,3.0);
+static auto h4 = new TH1D("h4","h4", 80,-1.0,3.0);
+static auto h5 = new TH1D("h5","h5", 80,-1.0,3.0);
+static auto h7 = new TH1D("h7","h7", 80,-1.0,3.0);
+static auto hT = new TH2F("hT","hT", 60,100.,160.,80,-1.0,3.0);
+static auto hEL = new TH2F("hEL","hEL", 60,100.,160.,2000,0.0,0.1);
+
+
+
+
+Double_t f_full(Double_t *x, Double_t *par) {
+  float xx = x[0];
+  double result, norm;
+  // Flat background
+  //result = par[0];
+  result = 0;
+  // Add N peaks
+  for(int pk=0; pk<3; pk++){
+    result += (par[3+(pk*3)]/(par[1+(pk*3)]*sqrt(2*pi)))
+	      * exp(-0.5*pow((xx-par[2+(pk*3)])/par[1+(pk*3)],2));
+  }
+  return result;
+}
+
+Double_t f_one(Double_t *x, Double_t *par) {
+  float xx = x[0];
+  double result, norm;
+  result = (par[3]/(par[1]*sqrt(2*pi)))
+	      * exp(-0.5*pow((xx-par[2])/par[1],2));
+  return result;
+}
+
+//static auto hT = new TH2F("hT","hT", 20,100.,160.,20,-1.0,1.0);
 ////////////////////////////////////////////////////////////////////////////////
 void LoadFile(){
   // Open XYZE gamma-gated file
@@ -68,16 +96,22 @@ void LoadFile(){
 }
 ////////////////////////////////////////////////////////////////////////////////
 void FillMatrix(double* matrix, TFitResultPtr fit){
-  matrix[0] = fit->Parameter(1);    //Mean
-  matrix[1] = fit->ParError(1);
-  matrix[2] = fit->Parameter(2);    //StdDev
-  matrix[3] = fit->ParError(2);
+  matrix[0] = fit->Parameter(2);    //Mean
+  matrix[1] = fit->ParError(2);
+  matrix[2] = fit->Parameter(1);    //StdDev
+  matrix[3] = fit->ParError(1);
   matrix[4] = fit->Chi2()/fit->Ndf(); //Chi2/NDF
+  matrix[5] = fit->Parameter(5);//(8);    //Mean2
+  matrix[6] = fit->Parameter(4);//(7);    //StdDev2
+  matrix[7] = fit->Parameter(8);//(8);    //Mean2
+  matrix[8] = fit->Parameter(7);//(7);    //StdDev2
 
   if(flagDraw){
     cout << "\n        Mean = " << matrix[0] << " +/- " << matrix[1] << endl;
     cout << "      StdDev = " << matrix[2] << " +/- " << matrix[3] << endl;
     cout << "    Chi2/NDF = " << matrix[4] << endl;
+    cout << "    Mean2 = " << matrix[5] << " StdDev2 = " << matrix[6] << endl;
+    cout << "    Mean3 = " << matrix[7] << " StdDev2 = " << matrix[8] << endl;
   }
 }
 ////////////////////////////////////////////////////////////////////////////////
@@ -152,6 +186,14 @@ void WriteToCout(double* result, double thick, double metric){
     << result[4]
     << "    Metric: " 
     << metric
+    << "    Mean2: " 
+    << result[5] 
+    << "    StdDev2: " 
+    << result[6] 
+    << "    Mean3: " 
+    << result[7] 
+    << "    StdDev3: " 
+    << result[8] 
     << endl;
 }
 ////////////////////////////////////////////////////////////////////////////////
@@ -194,22 +236,52 @@ void DrawOneHistogram(TH1D* hist, int mg, int colour, int fill, double *FitResul
 
   const char* settings;
   if (drawFit){
-    settings = "WQS";
+    settings = "RBWQS";
   } else {
-    settings = "WQSN";
+    settings = "RBWQSN";
   }  
+/*
+  //TFitResultPtr fit;
+  //if(abs(refE-0.143)<0.05){
+    TF1 *full = new TF1("fitThreePeaks", f_full, -1.0, +2.6, (int) 1+(3*3));
+    for(int i=0; i<3; i++) {
+      full->SetParameter((i*3)+1,0.14);
+      full->SetParameter((i*3)+3,1e3);
+    }
+    full->SetParameter((0*3)+2,0.143);
+    full->SetParameter((1*3)+2,1.410);
+    full->SetParameter((2*3)+2,1.981);
+    //fit = hist->Fit(full, settings, "", -1.0, +2.6);
+    TFitResultPtr fit = hist->Fit(full, settings, "", -1.0, +2.6);
+  //} else {
+  //  TF1 *one = new TF1("fitOne", f_one, -1.0, +2.6, (int) 1+(3*3));
+  //  one->SetParameter(1,0.14);
+  //  one->SetParameter(3,1e3);
+  //  one->SetParameter(2,refE);
+  //  fit = hist->Fit(one, settings, "", -1.0, +2.6);
+  //}
+*/
+  TF1 *full = new TF1("fitThreePeaks", f_full, -1.0, +2.6, (int) 1+(3*3));
+  for(int i=0; i<3; i++) {
+    full->SetParameter((i*3)+1,0.14);
+    full->SetParameter((i*3)+3,1e3);
+  }
+  full->SetParameter((0*3)+2,0.143);
+  full->SetParameter((1*3)+2,1.410);
+  full->SetParameter((2*3)+2,1.981);
 
-  TFitResultPtr fit = hist->Fit("gaus",settings); //N=stop drawing, Q=stop writing
+  TFitResultPtr fit = hist->Fit(full, settings, "", -1.0, +2.6);
   FillMatrix(FitResultMatrixMG,fit);
 } 
 ////////////////////////////////////////////////////////////////////////////////
-void InitiliseCanvas(double FitResultMatrix[7][5]){
+void InitiliseCanvas(double FitResultMatrix[7][9]){
 
   //Canvas setup
   TCanvas *canv = new TCanvas("canv","Ex Histograms",20,20,1600,800);
   gStyle->SetOptStat(0);
   //canv->Divide(2,1,0.005,0.005,0);
-  canv->Divide(3,1,0.005,0.005,0);
+  //canv->Divide(3,1,0.005,0.005,0);
+  canv->Divide(2,2,0.005,0.005,0);
   canv->cd(1)->SetLeftMargin(0.15);
   canv->cd(1)->SetBottomMargin(0.15);
   gPad->SetTickx();
@@ -218,9 +290,12 @@ void InitiliseCanvas(double FitResultMatrix[7][5]){
   canv->cd(2)->SetBottomMargin(0.15);
   gPad->SetTickx();
   gPad->SetTicky();
-
   canv->cd(3)->SetLeftMargin(0.15);
   canv->cd(3)->SetBottomMargin(0.15);
+  gPad->SetTickx();
+  gPad->SetTicky();
+  canv->cd(4)->SetLeftMargin(0.15);
+  canv->cd(4)->SetBottomMargin(0.15);
   gPad->SetTickx();
   gPad->SetTicky();
 
@@ -249,13 +324,14 @@ void InitiliseCanvas(double FitResultMatrix[7][5]){
   line->Draw();
 
   //Format legend
-  auto legend = new TLegend(0.15,0.7,0.35,0.9);
-  legend->AddEntry(h1,"MUGAST 1","f");
-  legend->AddEntry(h2,"MUGAST 2","f");
-  legend->AddEntry(h3,"MUGAST 3","f");
-  legend->AddEntry(h4,"MUGAST 4","f");
-  legend->AddEntry(h5,"MUGAST 5","f");
-  legend->AddEntry(h7,"MUGAST 7","f");
+  auto legend = new TLegend(0.15,0.7,0.45,0.9);
+  legend->AddEntry(h1,"MG #1","f");
+  legend->AddEntry(h2,"MG #2","f");
+  legend->AddEntry(h3,"MG #3","f");
+  legend->AddEntry(h4,"MG #4","f");
+  legend->AddEntry(h5,"MG #5","f");
+  legend->AddEntry(h7,"MG #7","f");
+  //legend->SetTextSize(20);
   legend->Draw();
   
   //Histogram setup - Sum
@@ -278,9 +354,15 @@ void InitiliseCanvas(double FitResultMatrix[7][5]){
   hT->Draw("colz");
   canv->Update();
   TLine *l0143 = new TLine(100., 0.143, 160., 0.143);
+  TLine *l1981 = new TLine(100., 1.981, 160., 1.981);
   l0143->SetLineStyle(kDashed);
   l0143->SetLineColor(kRed);
   l0143->Draw("same");
+
+  canv->cd(4);
+  hEL->GetXaxis()->SetTitle("Theta (degrees)");
+  hEL->GetYaxis()->SetTitle("Energy loss in Target + Al [MeV]");
+  hEL->Draw();
 
   //Refresh
   gPad->Update();

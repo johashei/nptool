@@ -15,7 +15,7 @@ array<double,numPeaks> means = { 0.000,
 			   2.910,
 			   3.246,
 			   3.605,
-			   3.801,//Split in two?
+			   3.797,//Split in two?
 			   3.876,//Split in two? 
 			   4.055,//4.1,
 			   4.38,
@@ -23,14 +23,14 @@ array<double,numPeaks> means = { 0.000,
 			   //5.24
                            };
 
-array<double,28> knowngammas = { 0.143,
+array<double,27> knowngammas = { 0.143,
 					0.279,
 					0.449,
 					0.968,
 					1.130,
 					1.410,
 					1.267,
-					0.575,
+					//0.575,
 					1.013,
 					1.838,
 					1.981,
@@ -147,7 +147,7 @@ vector<vector<double>> FitKnownPeaks_RtrnArry(TH1F* hist){
   //full->SetParameter(0,30.);
   //full->SetParLimits(0,0.,40.); /* FOR TOTAL SPECTRUM FITTING */
   full->SetParLimits(0,0.,10.); /* FOR ANGLE GATED FITTING */
-  //full->FixParameter(0,0.);
+  //full->SetParLimits(0,0.,1.); /* FOR ANGLE GATED FITTING WITH BG SUBTRACTED */
   //full->FixParameter(9,0.); //??
 
   // Specific limits

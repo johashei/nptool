@@ -6,13 +6,13 @@
  *****************************************************************************/
 
 /*****************************************************************************
- * Original Author: P. Morfouace contact address: pierre.morfouace2@cea.fr   *
+ * Original Author: P. Morfouace contact address: pierre.morfouace@cea.fr    *
  *                                                                           *
  * Creation Date  : June 2021                                                *
  * Last update    :                                                          *
  *---------------------------------------------------------------------------*
  * Decription:                                                               *
- *  This class describe  Sofia analysis project                       *
+ *  This class describe  Sofia analysis project                              *
  *                                                                           *
  *---------------------------------------------------------------------------*
  * Comment:                                                                  *
@@ -51,7 +51,11 @@ struct TofPair
   int section = -1;
   double Esec = -1;
   double DT = -100;
+  double x2twim = -1000;
+  double x2 = -1000;
   double x3 = -1000;
+  double x3lab = 0;
+  double z3lab = 0;
 };
 
 
@@ -72,6 +76,7 @@ void Analysis::Init(){
   SofTofW= (TSofTofWPhysics*) m_DetectorManager->GetDetector("SofTofW");
   SofAt= (TSofAtPhysics*) m_DetectorManager->GetDetector("SofAt");
   SofMwpc= (TSofMwpcPhysics*) m_DetectorManager->GetDetector("SofMwpc");
+  m_GladField = new GladFieldMap();
 
   InitParameter();
   InitOutputBranch();
@@ -206,30 +211,46 @@ void Analysis::FissionFragmentAnalysis(){
   vector<double> Y2;
   vector<double> Y3;
   for(unsigned int i=0; i<SofMwpc->DetectorNbr.size(); i++){
+    // *** MWPC1 *** //
     if(SofMwpc->DetectorNbr[i]==2){
-      SofFF->SetPosX1(SofMwpc->PositionX1[i]);
-      SofFF->SetPosY1(SofMwpc->PositionY[i]);
+      if(SofMwpc->PositionX1[i]!=-1000){
+        X1.push_back(SofMwpc->PositionX1[i]);
+      }
+      if(SofMwpc->PositionX2[i]!=-1000){
+        X1.push_back(SofMwpc->PositionX2[i]);
+      }
+      if(SofMwpc->PositionY[i]!=-1000){
+        Y1.push_back(SofMwpc->PositionY[i]);
+      }
     }
+    // *** MWPC2 *** //
     if(SofMwpc->DetectorNbr[i]==3){
-      SofFF->SetPosX2(SofMwpc->PositionX1[i]);
-      SofFF->SetPosY2(SofMwpc->PositionY[i]);
+      if(SofMwpc->PositionX1[i]!=-1000){
+        X2.push_back(SofMwpc->PositionX1[i]);
+      }
+      if(SofMwpc->PositionX2[i]!=-1000){
+        X2.push_back(SofMwpc->PositionX2[i]);
+      }
+      if(SofMwpc->PositionY[i]!=-1000){
+        Y2.push_back(SofMwpc->PositionY[i]);
+      }
     }
+
+    // *** MWPC3 *** //
     if(SofMwpc->DetectorNbr[i]==4){
       if(SofMwpc->PositionX1[i]!=-1000)
         X3.push_back(SofMwpc->PositionX1[i]);
       
       if(SofMwpc->PositionY[i]!=-1000)
         Y3.push_back(SofMwpc->PositionY[i]);
-
-      //SofFF->SetPosX3(SofMwpc->PositionX1[i]);
-      //SofFF->SetPosY3(SofMwpc->PositionY[i]);
     }
   }
   
 
   for(unsigned int i=0; i<2; i++){
     double tofx = TofHit[i].x;
-    for(unsigned int k=0; k<X3.size(); k++){
+
+   for(unsigned int k=0; k<X3.size(); k++){
       double posx = X3[k];
       if(abs(tofx-posx) < 150){
         if(abs(tofx-posx)<abs(tofx-TofHit[i].x3))
@@ -237,6 +258,28 @@ void Analysis::FissionFragmentAnalysis(){
       }
     }
   }
+  int ileft=0;
+  int iright=0;
+  if(TofHit[0].x3>TofHit[1].x3){
+    ileft  = 0;
+    iright = 1;
+  }
+  else{  
+    ileft  = 1;
+    iright = 0;
+  }
+  if(X2.size()==2){
+    if(X2[0]>X2[1]){
+      TofHit[ileft].x2 = X2[0];
+      TofHit[iright].x2 = X2[1];
+    }
+    else if(X2[0]<X2[1]){
+      TofHit[ileft].x2 = X2[1];
+      TofHit[iright].x2 = X2[0];
+    }
+  }
+
+
 
   int mult1 = SofTwim->mult1;
   int mult2 = SofTwim->mult2;
@@ -479,11 +522,11 @@ void Analysis::FissionFragmentAnalysis(){
       for(int i=0; i<2; i++){
         int section = TofHit[i].section;
 
-        double drift_time;
+        /*double drift_time;
         if(section==1) drift_time = DT1;
         if(section==2) drift_time = DT2;
         if(section==3) drift_time = DT3;
-        if(section==4) drift_time = DT4;
+        if(section==4) drift_time = DT4;*/
 
         double DT_eval;
         if(section<3) DT_eval=55;
@@ -491,7 +534,7 @@ void Analysis::FissionFragmentAnalysis(){
         if(section>0){
           TofHit[i].Esec = TofHit[i].Esec / fcorr_z_beta[section-1]->Eval(TofHit[i].beta) * fcorr_z_beta[section-1]->Eval(Beta_norm);
 
-          TofHit[i].Esec = TofHit[i].Esec / fcorr_z_dt[section-1]->Eval(drift_time) * fcorr_z_dt[section-1]->Eval(DT_eval);
+          TofHit[i].Esec = TofHit[i].Esec / fcorr_z_dt[section-1]->Eval(TofHit[i].DT) * fcorr_z_dt[section-1]->Eval(DT_eval);
         }
       }
 
@@ -505,13 +548,16 @@ void Analysis::FissionFragmentAnalysis(){
       double ZC;
       double XMW3 = -1436.;
       double ZMW3 = 8380;
-      double X3lab;
-      double Z3lab;
+      double ZMW2 = 2576;
+      double X3lab = 0;
+      double Z3lab = 0;;
       double Tilt = 14.*deg;
       TVector3 vOut;
       TVector3 vZ = TVector3(0,0,1);
       TVector3 vC;
-      TVector3 v3lab;
+      TVector3 InitPos[2];
+      TVector3 InitDir[2];
+      TVector3 FinalPos[2];
       for(int i=0; i<2; i++){
         XA = TofHit[i].DT;
         XC = (XA+(ZG-ZA)*tan(TofHit[i].theta_in)) / (1-tan(Tilt)*tan(TofHit[i].theta_in));
@@ -519,9 +565,14 @@ void Analysis::FissionFragmentAnalysis(){
 
         X3lab = TofHit[i].x3*cos(Theta0) + XMW3;
         Z3lab = TofHit[i].x3*sin(Theta0) + ZMW3;
+        TofHit[i].x3lab = X3lab;
+        TofHit[i].z3lab = Z3lab;
 
+        InitPos[i]  = TVector3(XA,0,ZA);
+        InitDir[i]  = TVector3(sin(TofHit[i].theta_in),0,cos(TofHit[i].theta_in));
+        FinalPos[i] = TVector3(X3lab,0,Z3lab);
+        
         vC    = TVector3(XC,0,ZC);
-        v3lab = TVector3(X3lab,0,Z3lab);
         vOut  = TVector3(X3lab-XC,0,Z3lab-ZC);
 
         double PathLength = vC.Mag() + vOut.Mag() + 74.;
@@ -531,6 +582,7 @@ void Analysis::FissionFragmentAnalysis(){
         TofHit[i].velocity = PathLength/TofHit[i].tof;
         TofHit[i].beta     = TofHit[i].velocity * m/ns / NPUNITS::c_light;
         TofHit[i].theta_out = angle;
+        TofHit[i].x2twim = XA + (ZMW2-ZA)*tan(TofHit[i].theta_in);
       }
 
       Z1 = TofHit[0].Esec;
@@ -552,13 +604,27 @@ void Analysis::FissionFragmentAnalysis(){
       }
 
       double MagB = 2185*2.2/3584;
+      double Bx = 0;
+      double By = MagB/1000.;
+      double Bz = 0;
+      TVector3 B = TVector3(Bx,By,Bz);
       double Leff = 2.067;
-      //double rho1 = Leff/abs(2*sin(0.5*(TofHit[0].theta_out - TofHit[0].theta_in)));
-      //double rho2 = Leff/abs(2*sin(0.5*(TofHit[1].theta_out - TofHit[1].theta_in)));
-      double rho1 = Leff/abs(2*sin(0.5*(TofHit[0].theta_out-TofHit[0].theta_in))*cos(Tilt-0.5*(TofHit[0].theta_out-TofHit[0].theta_in)));
+      /*double rho1 = Leff/abs(2*sin(0.5*(TofHit[0].theta_out-TofHit[0].theta_in))*cos(Tilt-0.5*(TofHit[0].theta_out-TofHit[0].theta_in)));
       double rho2 = Leff/abs(2*sin(0.5*(TofHit[1].theta_out-TofHit[1].theta_in))*cos(Tilt-0.5*(TofHit[1].theta_out-TofHit[1].theta_in)));
       double Brho1 = MagB*rho1;
-      double Brho2 = MagB*rho2;
+      double Brho2 = MagB*rho2;*/
+
+      m_GladField->SetBfield(B);
+      m_GladField->SetZGlad(4.434*m);
+      m_GladField->SetLeff(2.067*m);
+      m_GladField->SetGladTiltAngle(14.*deg);
+      m_GladField->SetCentralTheta(20.*deg);
+      m_GladField->SetX_MWPC3(-1.436*m);
+      m_GladField->SetZ_MWPC3(8.380*m);
+      
+      double Brho1 = m_GladField->FindBrho(InitPos[0], InitDir[0], FinalPos[0]);
+      double Brho2 = m_GladField->FindBrho(InitPos[1], InitDir[1], FinalPos[1]);
+      
       Beta_Z1 = TofHit[0].beta;
       Beta_Z2 = TofHit[1].beta;
       Gamma1 = 1. / sqrt(1 - Beta_Z1 * Beta_Z1);
@@ -579,8 +645,14 @@ void Analysis::FissionFragmentAnalysis(){
       SofFF->SetTofPosY(TofHit[1].y);
       SofFF->SetPlastic(TofHit[0].plastic);
       SofFF->SetPlastic(TofHit[1].plastic);
-      SofFF->SetPosX3(TofHit[0].x3);
-      SofFF->SetPosX3(TofHit[1].x3);
+
+      SofFF->SetPosX1(TofHit[0].x2twim);
+      SofFF->SetPosX1(TofHit[1].x2twim);
+      SofFF->SetPosX2(TofHit[0].x2);
+      SofFF->SetPosX2(TofHit[1].x2);
+      SofFF->SetPosX3(TofHit[0].x3lab);
+      SofFF->SetPosX3(TofHit[1].x3lab);
+
       SofFF->SetThetaIn(TofHit[0].theta_in);
       SofFF->SetThetaIn(TofHit[1].theta_in);
       SofFF->SetThetaOut(TofHit[0].theta_out);

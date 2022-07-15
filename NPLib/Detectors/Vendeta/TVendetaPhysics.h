@@ -63,13 +63,18 @@ class TVendetaPhysics : public TObject, public NPL::VDetector {
   // output ROOT file
   public:
     vector<int>      DetectorNumber;
-    vector<double>   Energy;
+    vector<double>   Q1;
+    vector<double>   Q2;
     vector<double>   Time;
+    vector<bool>     isHG;
 
   /// A usefull method to bundle all operation to add a detector
-  void AddDetector(TVector3 POS, string shape); 
-  void AddDetector(double R, double Theta, double Phi, string shape); 
-  
+  void AddDetector(TVector3 POS); 
+  void AddDetector(double R, double Theta, double Phi); 
+ 
+  double GetDistanceFromTarget(int DetNbr) {return m_DetectorPosition[DetNbr-1].Mag();}
+  TVector3 GetVectorDetectorPosition(int DetNbr) {return m_DetectorPosition[DetNbr-1];}
+
   //////////////////////////////////////////////////////////////
   // methods inherited from the VDetector ABC class
   public:
@@ -141,7 +146,9 @@ class TVendetaPhysics : public TObject, public NPL::VDetector {
     // give and external TVendetaData object to TVendetaPhysics. 
     // needed for online analysis for example
     void SetRawDataPointer(TVendetaData* rawDataPointer) {m_EventData = rawDataPointer;}
-    
+   
+    void SetAnodeNumber(int AnodeNbr) {m_AnodeNumber = AnodeNbr;}; //!
+
   // objects are not written in the TTree
   private:
     TVendetaData*         m_EventData;        //!
@@ -159,9 +166,13 @@ class TVendetaPhysics : public TObject, public NPL::VDetector {
     double m_E_RAW_Threshold; //!
     double m_E_Threshold;     //!
 
+  private:
+    // Anode number from fission chamber for time offset calibration
+    int m_AnodeNumber; //!
   // number of detectors
   private:
     int m_NumberOfDetectors;  //!
+    vector<TVector3> m_DetectorPosition; //!
 
   // spectra class
   private:

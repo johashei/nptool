@@ -60,7 +60,7 @@ using namespace CLHEP;
 namespace PLASTIC{
   // Energy and time Resolution
   const G4double ResoTime    = 1.         ;// Resolution in ns  //
-  //const G4double ResoEnergy  = 0.1         ;// Resolution in %
+  //const G4double ResoEnergy  = 0.08/2.35         ;// Resolution in %
   const G4double ResoEnergy  = 1*keV;         // Resolution 
 }
 
@@ -347,6 +347,7 @@ void Plastic::ReadSensitive(const G4Event* event){
 
   unsigned int size = Scorer->GetMult();
   for(unsigned int i=0; i<size; i++){
+    //double Energy = RandGauss::shoot(Scorer->GetEnergy(i), Scorer->GetEnergy(i)*ResoEnergy);
     double Energy = RandGauss::shoot(Scorer->GetEnergy(i), ResoEnergy);
     double Time = RandGauss::shoot(Scorer->GetTime(i), ResoTime);
     int DetectorNbr = Scorer->GetLevel(i)[0];

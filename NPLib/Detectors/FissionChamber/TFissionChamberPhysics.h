@@ -62,9 +62,12 @@ class TFissionChamberPhysics : public TObject, public NPL::VDetector {
   // data obtained after BuildPhysicalEvent() and stored in
   // output ROOT file
   public:
-    vector<int>      DetectorNumber;
-    vector<double>   Energy;
+    vector<int>      AnodeNumber;
+    vector<double>   Q1;
+    vector<double>   Q2;
     vector<double>   Time;
+    vector<bool>     isFakeFission;
+    vector<double>   Time_HF;
 
   /// A usefull method to bundle all operation to add a detector
   void AddDetector(TVector3 POS); 

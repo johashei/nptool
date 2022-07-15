@@ -116,7 +116,7 @@ void SuperX3::VolumeMaker(G4int DetecNumber, G4ThreeVector position, G4RotationM
 
   new G4PVPlacement(G4Transform3D(*rotation, position), logicSuperX3, Name, world, false, DetecNumber);
 
-  logicSuperX3->SetVisAttributes(G4VisAttributes::Invisible);
+  logicSuperX3->SetVisAttributes(G4VisAttributes::GetInvisible());
   if (m_non_sensitive_part_visiualisation)
     logicSuperX3->SetVisAttributes(G4VisAttributes(G4Colour(0.90, 0.90, 0.90)));
 
@@ -183,7 +183,7 @@ void SuperX3::ReadConfiguration(NPL::InputParser parser) {
       if (blocks[i]->GetInt("VIS"))
         m_non_sensitive_part_visiualisation = true;
 
-      AddDetector(Theta, Phi, R, beta[0], beta[1], beta[2]);
+      AddDetector(R, Theta, Phi, beta[0], beta[1], beta[2]);
     }
 
     else {
@@ -237,18 +237,18 @@ void SuperX3::ConstructDetector(G4LogicalVolume* world) {
       // w perpendicular to (u,v) plan and pointing ThirdStage
       // Phi is angle between X axis and projection in (X,Y) plan
       // Theta is angle between  position vector and z axis
-      G4double wX = m_R[i] * sin(Theta / rad) * cos(Phi / rad);
-      G4double wY = m_R[i] * sin(Theta / rad) * sin(Phi / rad);
-      G4double wZ = m_R[i] * cos(Theta / rad);
+      G4double wX = m_R[i] * sin(Theta) * cos(Phi);
+      G4double wY = m_R[i] * sin(Theta) * sin(Phi);
+      G4double wZ = m_R[i] * cos(Theta);
       SuperX3w = G4ThreeVector(wX, wY, wZ);
 
       // vector corresponding to the center of the module
       SuperX3Center = SuperX3w;
 
       // vector parallel to one axis of silicon plane
-      G4double ii = cos(Theta / rad) * cos(Phi / rad);
-      G4double jj = cos(Theta / rad) * sin(Phi / rad);
-      G4double kk = -sin(Theta / rad);
+      G4double ii = cos(Theta) * cos(Phi);
+      G4double jj = cos(Theta) * sin(Phi);
+      G4double kk = -sin(Theta);
       G4ThreeVector Y = G4ThreeVector(ii, jj, kk);
 
       SuperX3w = SuperX3w.unit();
@@ -265,7 +265,7 @@ void SuperX3::ConstructDetector(G4LogicalVolume* world) {
       SuperX3rot->rotate(m_beta_v[i], SuperX3v);
       SuperX3rot->rotate(m_beta_w[i], SuperX3w);
       // translation to place Telescope
-      SuperX3pos = SuperX3w * Length * 0.5 + SuperX3Center;
+      SuperX3pos = SuperX3w * (SiliconThickness + AluStripThickness) * 0.5 + SuperX3Center;
     }
 
     VolumeMaker(i + 1, SuperX3pos, SuperX3rot, world);
@@ -299,8 +299,14 @@ void SuperX3::ReadSensitive(const G4Event*) {
     double time = resistive->GetTimeUp(i);
     int det = resistive->GetDetectorUp(i);
     int strip = resistive->GetStripUp(i);
-    m_Event->SetUpE(det, strip, energy);
-    m_Event->SetUpT(det, strip, time);
+    if (energy > EnergyThresholdResitive) {
+      m_Event->SetUpE(det, strip, energy);
+      m_Event->SetUpT(det, strip, time);
+    }
+    else {
+      m_Event->SetUpE(det, strip, 0);
+      m_Event->SetUpT(det, strip, 0);
+    }
   }
   auto sizeDown = resistive->GetDownMult();
   for (unsigned int i = 0; i < sizeDown; i++) {
@@ -308,8 +314,15 @@ void SuperX3::ReadSensitive(const G4Event*) {
     double time = resistive->GetTimeDown(i);
     int det = resistive->GetDetectorDown(i);
     int strip = resistive->GetStripDown(i);
-    m_Event->SetDownE(det, strip, energy);
-    m_Event->SetDownT(det, strip, time);
+    if (energy > EnergyThresholdResitive) {
+      m_Event->SetDownE(det, strip, energy);
+      m_Event->SetDownT(det, strip, time);
+    }
+
+    else {
+      m_Event->SetDownE(det, strip, 0);
+      m_Event->SetDownT(det, strip, 0);
+    }
   }
   auto sizeBack = backstrip->GetLengthMult();
   for (unsigned int i = 0; i < sizeBack; i++) {
@@ -317,9 +330,17 @@ void SuperX3::ReadSensitive(const G4Event*) {
     double time = backstrip->GetTimeLength(i);
     int det = backstrip->GetDetectorLength(i);
     int strip = backstrip->GetStripLength(i);
-    m_Event->SetBackE(det, strip, energy);
-    m_Event->SetBackT(det, strip, time);
+    if (energy > EnergyThresholdBack) {
+      m_Event->SetBackE(det, strip, energy);
+      m_Event->SetBackT(det, strip, time);
+    }
+    else {
+      m_Event->SetBackE(det, strip, 0);
+      m_Event->SetBackT(det, strip, 0);
+    }
   }
+  resistive->clear();
+  backstrip->clear();
 }
 
 void SuperX3::InitializeMaterials() {
@@ -338,9 +359,9 @@ void SuperX3::InitializeScorers() {
 
   //..... resistive starts..
   G4VPrimitiveScorer* resistivestrip =
-      new DSSDScorers::PS_Resistive("resistivestrip", 1, SiliconFaceLength, SiliconFaceWidth, NbStrips);
+      new DSSDScorers::PS_Resistive("resistivestrip", "y", 0, SiliconFaceLength, SiliconFaceWidth, NbStrips, 0);
   G4VPrimitiveScorer* backstrip =
-      new DSSDScorers::PS_Rectangle("backstrip", 1, SiliconFaceLength, SiliconFaceWidth, 4, 1);
+      new DSSDScorers::PS_Rectangle("backstrip", 0, SiliconFaceLength, SiliconFaceWidth, 4, 1, 0);
 
   G4VPrimitiveScorer* interaction = new InteractionScorers::PS_Interactions("Interaction", ms_InterCoord, 0);
   //... resistive ends......

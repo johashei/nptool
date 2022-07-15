@@ -22,22 +22,24 @@ double devE(const double * parameter) {
   h5 -> Reset();
   h7 -> Reset();
   hT -> Reset();
+  hEL -> Reset();
 
   //Now that initial range is wide, crop to single peak
   if(refE==0.143){
-    h->SetAxisRange(-1.0, +1.0, "X");
-    h1->SetAxisRange(-1.0, +1.0, "X");
-    h2->SetAxisRange(-1.0, +1.0, "X");
-    h3->SetAxisRange(-1.0, +1.0, "X");
-    h4->SetAxisRange(-1.0, +1.0, "X");
-    h5->SetAxisRange(-1.0, +1.0, "X");
-    h7->SetAxisRange(-1.0, +1.0, "X");
+    h->SetAxisRange( -1.0, +2.6, "X");
+    h1->SetAxisRange(-1.0, +2.6, "X");
+    h2->SetAxisRange(-1.0, +2.6, "X");
+    h3->SetAxisRange(-1.0, +2.6, "X");
+    h4->SetAxisRange(-1.0, +2.6, "X");
+    h5->SetAxisRange(-1.0, +2.6, "X");
+    h7->SetAxisRange(-1.0, +2.6, "X");
   }
 
   //Initilize results array
   //    7 => Sum in 0 and them MG's in 1-6
-  //    5 => Mean, MeanErr, StdDev, StdDevErr, Chi2/NDF
-  double FitResultMatrix[7][5];
+  //    7 => Mean, MeanErr, StdDev, StdDevErr, Chi2/NDF, 
+  //    Mean2, StdDev2, Mean3, StdDev3
+  double FitResultMatrix[7][9];
 
   //Loop over events
   for (unsigned int i = 0; i < size; i++) {
@@ -59,7 +61,7 @@ double devE(const double * parameter) {
     double ThetaTarget = dir.Angle(TVector3(0.0, 0.0, 1.0));
     double ThetaMugast = dir.Angle(MugastNormal);
     double Energy = energy[i];
-
+//cout << "@ angle " << ThetaTarget/deg << "   " << Energy << " -> ";
     //Energy loss in Al
     Energy = Al.EvaluateInitialEnergy(
       Energy,           //energy  Al 
@@ -67,17 +69,21 @@ double devE(const double * parameter) {
       ThetaMugast       //angle impinging on MUGAST
     );
 
+//cout << Energy << " -> ";
     //Energy loss in target
     Energy = CD2.EvaluateInitialEnergy(
       Energy,                          //energy after leaving target
       0.5 * parameter[3] * micrometer, //pass through half target
       ThetaTarget                      //angle leaving target
     );
-
+    
+//cout << Energy << endl;
     //Final value of Ex
     double Ex = reaction.ReconstructRelativistic(Energy, ThetaTarget);
 
-    //Fill histograms with 
+    //Fill histograms with
+//if(ThetaTarget/deg<130.){ // TESTING
+//if(ThetaTarget/deg>130.){ // TESTING
     if(allButMG3){
       if(detnum[i]!=3){
         h -> Fill(Ex);
@@ -86,8 +92,10 @@ double devE(const double * parameter) {
     } else {
       h -> Fill(Ex);
     }
+//}
     DetectorSwitch(detnum[i], Ex);
     hT -> Fill(ThetaTarget/deg,Ex);
+    hEL -> Fill(ThetaTarget/deg,Energy-energy[i]);//ELoss in target and Al
   }
 
   //Initilise, Draw & Fit histograms
@@ -98,14 +106,18 @@ double devE(const double * parameter) {
 
   /*** Minimize by one peak ***/
 /**/
-  double multiplier = 0.80; //0.08;
+  double multiplier = 0.05; //0.08;
   double metric = abs(FitResultMatrix[mgSelect][0]-refE) + abs(multiplier*FitResultMatrix[mgSelect][2]);
+  //double metric = abs(FitResultMatrix[mgSelect][0]-0.143) + abs(multiplier*FitResultMatrix[mgSelect][2]) + abs(FitResultMatrix[mgSelect][5]-1.410) + abs(multiplier*FitResultMatrix[mgSelect][6]);
+  //double metric = abs(FitResultMatrix[mgSelect][0]-0.143) + abs(multiplier*FitResultMatrix[mgSelect][2]) + abs(FitResultMatrix[mgSelect][5]-1.410) + abs(multiplier*FitResultMatrix[mgSelect][6])+ abs(FitResultMatrix[mgSelect][7]-1.980) + abs(multiplier*FitResultMatrix[mgSelect][8]) ;
+  //double metric = abs(FitResultMatrix[mgSelect][7]-1.981) + abs(multiplier*FitResultMatrix[mgSelect][8]); ;
+
 /**/
 
   /*** Minimize by all peaks ***/
 /**
   //double multiplier = 0.125;
-  double multiplier = 0.005;
+  double multiplier = 0.05;
   double metric = 
 	            (1.0/6.0)*abs(FitResultMatrix[1][0]-refE) 
   	          + (1.0/6.0)*abs(FitResultMatrix[2][0]-refE) 
@@ -113,13 +125,13 @@ double devE(const double * parameter) {
  	          + (1.0/6.0)*abs(FitResultMatrix[4][0]-refE)
  	          + (1.0/6.0)*abs(FitResultMatrix[5][0]-refE)
   	          + (1.0/6.0)*abs(FitResultMatrix[6][0]-refE)
-  	          + 1.0*abs(FitResultMatrix[0][0]-refE) 
-		  //+ multiplier*FitResultMatrix[1][2]
-		  //+ multiplier*FitResultMatrix[2][2]
-		  //+ multiplier*FitResultMatrix[3][2]
-		  //+ multiplier*FitResultMatrix[4][2]
-		  //+ multiplier*FitResultMatrix[5][2]
-		  //+ multiplier*FitResultMatrix[6][2]
+  	          //+ 1.0*abs(FitResultMatrix[0][0]-refE) 
+		  + multiplier*FitResultMatrix[1][2]
+		  + multiplier*FitResultMatrix[2][2]
+		  + multiplier*FitResultMatrix[3][2]
+		  + multiplier*FitResultMatrix[4][2]
+		  + multiplier*FitResultMatrix[5][2]
+		  + multiplier*FitResultMatrix[6][2]
                   ;  
 **/
 
@@ -139,17 +151,11 @@ double devE(const double * parameter) {
   
   return metric;
 }
-////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void MinimizeBeamSpot() {
 
-  ////filename = "XYZE_ShiftMG3_GateOn1838.txt";
-  //filename = "XYZE_GateOn1838.txt";
-  //refE = 1.981; // the energy of the selected states
-  
-  ////filename = "XYZE_ShiftMG3_GateOn0143.txt";
-  filename = "XYZE_GateOn0143.txt";
-  refE = 0.143; // the energy of the selected states
+  //filename = "XYZE_GateOn1838_11Apr22.txt"; refE = 1.981; // the energy of the selected states
+  filename = "XYZE_GateOn0143_11Apr22.txt"; refE = 0.143; // the energy of the selected states
 
 
   //Read data in
@@ -193,7 +199,34 @@ void MinimizeBeamSpot() {
   //Start with beam (0,0,0) and 4.76um 0.5mg/c2 target
   double parameter[4] = {
     //0.0, 0.0, 0.0, 4.76 
-    -3.9164, +0.0550, 1.0151, 1.1883
+    //-3.9164, +0.0550, 1.3958, 1.3008
+
+    //-3.9164, +0.0550, +1.0, +2.4
+    //-3.9164, +0.0550, +0.681611, +2.256769
+    //-3.9164, +0.0550, +0.786721, +2.113878
+
+    //-3.9164, 0.0550, 0.5, 2.6
+    //-3.9164, 0.0550, +0.146952, +2.517784
+
+    //-4.675715, +0.143686, +0.115426, +2.586484
+    //-4.636827, -0.206620, +0.115426, +2.586484 
+
+
+    //-4., +1.0, +0.115426, +2.586484 
+    //-5.088554, +1.476001, +0.342552, +2.586484 
+    //-5.088554, +1.476001, +0.236014, +2.523850 
+    //-3.989139, 0.99116, 0.115426, 2.586484 
+    //-3.989139, +0.991160, +0.587660, +2.586484
+
+    //-3.989139, +0.991160, +0.587660, +2.586484
+    //-3.9164, +0.0550, 0.0, 2.6
+    //-3.9164, +0.0550, 0.0, +2.838327
+    //-3.912110, +0.083580, +0.000000, +2.838327
+    //-3.912110, +0.083580, +0.000000, +2.6
+    //-3.9164, +0.0550, +0.0, 2.3
+    //-3.9164, +0.0550, +0.0, +2.591512
+    -5.334864, -0.698900, +0.0, +2.591512
+
   };
 
   //Don't draw iterations of minimizer
@@ -211,20 +244,23 @@ void MinimizeBeamSpot() {
   minim -> SetMaxFunctionCalls(100000000); // used by Minuit and Minuit2 
   minim -> SetMaxIterations(100000000); // used by GSL
   minim -> SetPrintLevel(3);
-  minim -> SetPrecision(1e-08);
+  minim -> SetPrecision(1e-06);
 
   //Set minimizer function
   minim -> SetFunction(func);
 
   //Assign variable limits
-  minim -> SetLimitedVariable(0, "X", parameter[0], 0.10, -8.0, -0.0);
-  //minim -> SetFixedVariable(0, "X", parameter[0]); 
-  minim -> SetLimitedVariable(1, "Y", parameter[1], 0.10, -6.0, +6.0);
-  //minim -> SetFixedVariable(1, "Y", parameter[1]);
-  minim -> SetLimitedVariable(2, "Z", parameter[2], 0.05, -1.50, +1.50);
-  //minim -> SetFixedVariable(2, "Z", parameter[2]);
-  minim -> SetLimitedVariable(3, "T", parameter[3], 0.05, +1.0, +1.4); // ELASTICS VALUE = 1.2(2)
-  //minim -> SetFixedVariable(3, "T", parameter[3]);
+  //minim -> SetLimitedVariable(0, "X", parameter[0], 0.10, -8.0, -0.0);
+  minim -> SetFixedVariable(0, "X", parameter[0]); 
+  //minim -> SetLimitedVariable(1, "Y", parameter[1], 0.10, -6.0, +6.0);
+  minim -> SetFixedVariable(1, "Y", parameter[1]);
+  //minim -> SetLimitedVariable(2, "Z", parameter[2], 0.05, 0.90, +1.10);
+  //minim -> SetLimitedVariable(2, "Z", parameter[2], 0.10, -2.00, +2.00);
+  minim -> SetFixedVariable(2, "Z", parameter[2]);
+  //minim -> SetLimitedVariable(3, "T", parameter[3], 0.05, +0.9, +1.5); // ELASTICS, 1.2(3)
+  //minim -> SetLimitedVariable(3, "T", parameter[3], 0.05, +2.05, +3.25); // ELASTICS, 2.65(59)
+  minim -> SetFixedVariable(3, "T", parameter[3]);
+
 
   //Don't draw iterations of minimizer
   flagDraw = 0;

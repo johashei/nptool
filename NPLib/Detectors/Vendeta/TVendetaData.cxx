@@ -44,12 +44,11 @@ TVendetaData::~TVendetaData() {
 
 //////////////////////////////////////////////////////////////////////
 void TVendetaData::Clear() {
-  // Energy
-  fVendeta_E_DetectorNbr.clear();
-  fVendeta_Energy.clear();
-  // Time
-  fVendeta_T_DetectorNbr.clear();
+  fVendeta_DetectorNbr.clear();
+  fVendeta_Q1.clear();
+  fVendeta_Q2.clear();
   fVendeta_Time.clear();
+  fVendeta_isHG.clear();
 }
 
 
@@ -59,21 +58,13 @@ void TVendetaData::Dump() const {
   // This method is very useful for debuging and worth the dev.
   cout << "XXXXXXXXXXXXXXXXXXXXXXXX New Event [TVendetaData::Dump()] XXXXXXXXXXXXXXXXX" << endl;
 
-  // Energy
-  size_t mysize = fVendeta_E_DetectorNbr.size();
+  size_t mysize = fVendeta_DetectorNbr.size();
   cout << "Vendeta_E_Mult: " << mysize << endl;
  
   for (size_t i = 0 ; i < mysize ; i++){
-    cout << "DetNbr: " << fVendeta_E_DetectorNbr[i]
-         << " Energy: " << fVendeta_Energy[i];
-  }
-  
-  // Time
-  mysize = fVendeta_T_DetectorNbr.size();
-  cout << "Vendeta_T_Mult: " << mysize << endl;
- 
-  for (size_t i = 0 ; i < mysize ; i++){
-    cout << "DetNbr: " << fVendeta_T_DetectorNbr[i]
+    cout << "DetNbr: " << fVendeta_DetectorNbr[i]
+         << " Q1: " << fVendeta_Q1[i]
+         << " Q2: " << fVendeta_Q2[i]
          << " Time: " << fVendeta_Time[i];
   }
 }

@@ -50,12 +50,13 @@ TVendetaPhysics::TVendetaPhysics()
      m_Spectra(0),
      m_E_RAW_Threshold(0), // adc channels
      m_E_Threshold(0),     // MeV
+     m_AnodeNumber(-1),
      m_NumberOfDetectors(0) {
-}
+     }
 
 ///////////////////////////////////////////////////////////////////////////
 /// A usefull method to bundle all operation to add a detector
-void TVendetaPhysics::AddDetector(TVector3 , string ){
+void TVendetaPhysics::AddDetector(TVector3 ){
   // In That simple case nothing is done
   // Typically for more complex detector one would calculate the relevant 
   // positions (stripped silicon) or angles (gamma array)
@@ -63,11 +64,12 @@ void TVendetaPhysics::AddDetector(TVector3 , string ){
 } 
 
 ///////////////////////////////////////////////////////////////////////////
-void TVendetaPhysics::AddDetector(double R, double Theta, double Phi, string shape){
+void TVendetaPhysics::AddDetector(double R, double Theta, double Phi){
   // Compute the TVector3 corresponding
   TVector3 Pos(R*sin(Theta)*cos(Phi),R*sin(Theta)*sin(Phi),R*cos(Theta));
   // Call the cartesian method
-  AddDetector(Pos,shape);
+  AddDetector(Pos);
+  m_DetectorPosition.push_back(Pos);
 } 
   
 ///////////////////////////////////////////////////////////////////////////
@@ -79,21 +81,24 @@ void TVendetaPhysics::BuildSimplePhysicalEvent() {
 
 ///////////////////////////////////////////////////////////////////////////
 void TVendetaPhysics::BuildPhysicalEvent() {
+  // Treat Event, only if Fission Chamber has triggered
+  if(m_AnodeNumber==-1)
+    return;
+
   // apply thresholds and calibration
   PreTreat();
-
+  
   // match energy and time together
   unsigned int mysizeE = m_PreTreatedData->GetMultEnergy();
-  unsigned int mysizeT = m_PreTreatedData->GetMultTime();
   for (UShort_t e = 0; e < mysizeE ; e++) {
-    for (UShort_t t = 0; t < mysizeT ; t++) {
-      if (m_PreTreatedData->GetE_DetectorNbr(e) == m_PreTreatedData->GetT_DetectorNbr(t)) {
-        DetectorNumber.push_back(m_PreTreatedData->GetE_DetectorNbr(e));
-        Energy.push_back(m_PreTreatedData->Get_Energy(e));
-        Time.push_back(m_PreTreatedData->Get_Time(t));
-      }
-    }
+    DetectorNumber.push_back(m_PreTreatedData->GetDetectorNbr(e));
+    Q1.push_back(m_PreTreatedData->GetQ1(e));
+    Q2.push_back(m_PreTreatedData->GetQ2(e));
+    Time.push_back(m_PreTreatedData->GetTime(e));
+    isHG.push_back(m_PreTreatedData->GetHighGainStatus(e));
   }
+
+  m_AnodeNumber=-1;
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -107,22 +112,24 @@ void TVendetaPhysics::PreTreat() {
   // instantiate CalibrationManager
   static CalibrationManager* Cal = CalibrationManager::getInstance();
 
-  // Energy
   unsigned int mysize = m_EventData->GetMultEnergy();
-  for (UShort_t i = 0; i < mysize ; ++i) {
-    if (m_EventData->Get_Energy(i) > m_E_RAW_Threshold) {
-      Double_t Energy = Cal->ApplyCalibration("Vendeta/ENERGY"+NPL::itoa(m_EventData->GetE_DetectorNbr(i)),m_EventData->Get_Energy(i));
-      if (Energy > m_E_Threshold) {
-        m_PreTreatedData->SetEnergy(m_EventData->GetE_DetectorNbr(i), Energy);
+  for (UShort_t i = 0; i < mysize ; ++i){
+    int det = m_EventData->GetDetectorNbr(i);
+    bool isHG = m_EventData->GetHighGainStatus(i);
+    double TimeOffset=0;
+    if(isHG==0){
+      TimeOffset = Cal->GetValue("Vendeta/DET"+NPL::itoa(det)+"_LG_ANODE"+NPL::itoa(m_AnodeNumber)+"_TIMEOFFSET",0);
       }
-    }
-  }
+    else if(isHG==1){ 
+      TimeOffset = Cal->GetValue("Vendeta/DET"+NPL::itoa(det)+"_HG_ANODE"+NPL::itoa(m_AnodeNumber)+"_TIMEOFFSET",0);
+      }
 
-  // Time 
-  mysize = m_EventData->GetMultTime();
-  for (UShort_t i = 0; i < mysize; ++i) {
-    Double_t Time= Cal->ApplyCalibration("Vendeta/TIME"+NPL::itoa(m_EventData->GetT_DetectorNbr(i)),m_EventData->Get_Time(i));
-    m_PreTreatedData->SetTime(m_EventData->GetT_DetectorNbr(i), Time);
+    double Time = m_EventData->GetTime(i) + TimeOffset;
+    m_PreTreatedData->SetDetectorNbr(det);
+    m_PreTreatedData->SetQ1(m_EventData->GetQ1(i));
+    m_PreTreatedData->SetQ2(m_EventData->GetQ2(i));
+    m_PreTreatedData->SetTime(Time);
+    m_PreTreatedData->SetHighGainStatus(isHG);
   }
 }
 
@@ -195,8 +202,10 @@ void TVendetaPhysics::ReadAnalysisConfig() {
 ///////////////////////////////////////////////////////////////////////////
 void TVendetaPhysics::Clear() {
   DetectorNumber.clear();
-  Energy.clear();
+  Q1.clear();
+  Q2.clear();
   Time.clear();
+  isHG.clear();
 }
 
 
@@ -207,8 +216,8 @@ void TVendetaPhysics::ReadConfiguration(NPL::InputParser parser) {
   if(NPOptionManager::getInstance()->GetVerboseLevel())
     cout << "//// " << blocks.size() << " detectors found " << endl; 
 
-  vector<string> cart = {"POS","Shape"};
-  vector<string> sphe = {"R","Theta","Phi","Shape"};
+  vector<string> cart = {"POS"};
+  vector<string> sphe = {"R","Theta","Phi"};
 
   for(unsigned int i = 0 ; i < blocks.size() ; i++){
     if(blocks[i]->HasTokenList(cart)){
@@ -216,8 +225,7 @@ void TVendetaPhysics::ReadConfiguration(NPL::InputParser parser) {
         cout << endl << "////  Vendeta " << i+1 <<  endl;
     
       TVector3 Pos = blocks[i]->GetTVector3("POS","mm");
-      string Shape = blocks[i]->GetString("Shape");
-      AddDetector(Pos,Shape);
+      AddDetector(Pos);
     }
     else if(blocks[i]->HasTokenList(sphe)){
       if(NPOptionManager::getInstance()->GetVerboseLevel())
@@ -225,8 +233,7 @@ void TVendetaPhysics::ReadConfiguration(NPL::InputParser parser) {
       double R = blocks[i]->GetDouble("R","mm");
       double Theta = blocks[i]->GetDouble("Theta","deg");
       double Phi = blocks[i]->GetDouble("Phi","deg");
-      string Shape = blocks[i]->GetString("Shape");
-      AddDetector(R,Theta,Phi,Shape);
+      AddDetector(R,Theta,Phi);
     }
     else{
       cout << "ERROR: check your input file formatting " << endl;
@@ -286,8 +293,10 @@ void TVendetaPhysics::WriteSpectra() {
 void TVendetaPhysics::AddParameterToCalibrationManager() {
   CalibrationManager* Cal = CalibrationManager::getInstance();
   for (int i = 0; i < m_NumberOfDetectors; ++i) {
-    Cal->AddParameter("Vendeta", "D"+ NPL::itoa(i+1)+"_ENERGY","Vendeta_D"+ NPL::itoa(i+1)+"_ENERGY");
-    Cal->AddParameter("Vendeta", "D"+ NPL::itoa(i+1)+"_TIME","Vendeta_D"+ NPL::itoa(i+1)+"_TIME");
+    for(int j = 0; j < 11; j++){
+    Cal->AddParameter("Vendeta","DET"+NPL::itoa(i+1)+"_LG_ANODE"+NPL::itoa(j+1)+"_TIMEOFFSET","Vendeta_DET"+ NPL::itoa(i+1)+"_LG_ANODE"+NPL::itoa(j+1)+"_TIMEOFFSET");
+    Cal->AddParameter("Vendeta","DET"+NPL::itoa(i+1)+"_HG_ANODE"+NPL::itoa(j+1)+"_TIMEOFFSET","Vendeta_DET"+ NPL::itoa(i+1)+"_HG_ANODE"+NPL::itoa(j+1)+"_TIMEOFFSET");
+    }
   }
 }
 

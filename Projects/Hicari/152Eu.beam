@@ -1,0 +1,16 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%% 152Eu sourc test reaction %%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Beam
+ Particle= 152Eu
+ Energy= 0
+ SigmaEnergy= 0
+ SigmaThetaX= 0
+ SigmaPhiY= 0
+ SigmaX= 0
+ SigmaY= 0
+ MeanThetaX= 0
+ MeanPhiY= 0
+ MeanX= 0
+ MeanY= 0
+ ZEmission= 0

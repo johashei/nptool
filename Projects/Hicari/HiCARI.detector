@@ -1,0 +1,19 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% HICARI test
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%Target
+% THICKNESS= 1 mm
+% RADIUS=	10 mm
+% MATERIAL= Vacuum
+% ANGLE= 0 deg
+% X= 0 mm
+% Y= 0 mm
+% Z= 0 mm
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Hicari
+  asolid= ./geometry/fall2020/solid.list
+  aclust= ./geometry/fall2020/clust.list
+  aeuler= ./geometry/fall2020/euler.list
+  awalls= ./geometry/fall2020/walls.list
+  aslice= ./geometry/fall2020/slice.list
+  
