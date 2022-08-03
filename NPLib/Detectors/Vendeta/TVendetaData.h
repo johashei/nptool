@@ -34,53 +34,71 @@ class TVendetaData : public TObject {
   // data members are hold into vectors in order 
   // to allow multiplicity treatment
   private: 
-    vector<UShort_t>   fVendeta_DetectorNbr;
-    vector<Double_t>   fVendeta_Q1;
-    vector<Double_t>   fVendeta_Q2;
-    vector<Double_t>   fVendeta_Time;
-    vector<Bool_t>     fVendeta_isHG; 
+    
+    vector<UShort_t>   fVendeta_LG_DetectorNbr;
+    vector<Double_t>   fVendeta_LG_Q1;
+    vector<Double_t>   fVendeta_LG_Q2;
+    vector<Double_t>   fVendeta_LG_Time;
+    vector<Double_t>   fVendeta_LG_Qmax; 
 
+    vector<UShort_t>   fVendeta_HG_DetectorNbr;
+    vector<Double_t>   fVendeta_HG_Q1;
+    vector<Double_t>   fVendeta_HG_Q2;
+    vector<Double_t>   fVendeta_HG_Time;
+    vector<Double_t>   fVendeta_HG_Qmax; 
 
-  //////////////////////////////////////////////////////////////
-  // Constructor and destructor
+    //////////////////////////////////////////////////////////////
+    // Constructor and destructor
   public: 
     TVendetaData();
     ~TVendetaData();
-    
 
-  //////////////////////////////////////////////////////////////
-  // Inherited from TObject and overriden to avoid warnings
+    //////////////////////////////////////////////////////////////
+    // Inherited from TObject and overriden to avoid warnings
   public:
     void Clear();
     void Clear(const Option_t*) {};
     void Dump() const;
 
-
-  //////////////////////////////////////////////////////////////
-  // Getters and Setters
-  // Prefer inline declaration to avoid unnecessary called of 
-  // frequently used methods
-  // add //! to avoid ROOT creating dictionnary for the methods
+    //////////////////////////////////////////////////////////////
+    // Getters and Setters
+    // Prefer inline declaration to avoid unnecessary called of 
+    // frequently used methods
+    // add //! to avoid ROOT creating dictionnary for the methods
   public:
     //////////////////////    SETTERS    ////////////////////////
     // Energy
-    inline void SetDetectorNbr(const UShort_t& DetNbr) {fVendeta_DetectorNbr.push_back(DetNbr);};//!
-    inline void SetQ1(const Double_t& Q1) {fVendeta_Q1.push_back(Q1);};//!
-    inline void SetQ2(const Double_t& Q2) {fVendeta_Q2.push_back(Q2);};//!
-    inline void SetTime(const Double_t& Time) {fVendeta_Time.push_back(Time);};//!
-    inline void SetHighGainStatus(const Bool_t& isHG) {fVendeta_isHG.push_back(isHG);};//
+    
+    inline void SetLGDetectorNbr(const UShort_t& DetNbr) {fVendeta_LG_DetectorNbr.push_back(DetNbr);};//!
+    inline void SetLGQ1(const Double_t& Q1) {fVendeta_LG_Q1.push_back(Q1);};//!
+    inline void SetLGQ2(const Double_t& Q2) {fVendeta_LG_Q2.push_back(Q2);};//!
+    inline void SetLGTime(const Double_t& Time) {fVendeta_LG_Time.push_back(Time);};//!
+    inline void SetLGQmax(const Double_t& Qmax) {fVendeta_LG_Qmax.push_back(Qmax);};//
+
+    inline void SetHGDetectorNbr(const UShort_t& DetNbr) {fVendeta_HG_DetectorNbr.push_back(DetNbr);};//!
+    inline void SetHGQ1(const Double_t& Q1) {fVendeta_HG_Q1.push_back(Q1);};//!
+    inline void SetHGQ2(const Double_t& Q2) {fVendeta_HG_Q2.push_back(Q2);};//!
+    inline void SetHGTime(const Double_t& Time) {fVendeta_HG_Time.push_back(Time);};//!
+    inline void SetHGQmax(const Double_t& Qmax) {fVendeta_HG_Qmax.push_back(Qmax);};//
 
     //////////////////////    GETTERS    ////////////////////////
-    inline UShort_t GetMultEnergy() const {return fVendeta_DetectorNbr.size();}
-    inline UShort_t GetDetectorNbr(const unsigned int &i) const {return fVendeta_DetectorNbr[i];}//!
-    inline Double_t GetQ1(const unsigned int &i) const {return fVendeta_Q1[i];}//!
-    inline Double_t GetQ2(const unsigned int &i) const {return fVendeta_Q2[i];}//!
-    inline Double_t GetTime(const unsigned int &i) const {return fVendeta_Time[i];}//!
-    inline Bool_t GetHighGainStatus(const unsigned int &i) const {return fVendeta_isHG[i];}//!
+    inline UShort_t GetLGMultEnergy() const {return fVendeta_LG_DetectorNbr.size();}
+    inline UShort_t GetLGDetectorNbr(const unsigned int &i) const {return fVendeta_LG_DetectorNbr[i];}//!
+    inline Double_t GetLGQ1(const unsigned int &i) const {return fVendeta_LG_Q1[i];}//!
+    inline Double_t GetLGQ2(const unsigned int &i) const {return fVendeta_LG_Q2[i];}//!
+    inline Double_t GetLGTime(const unsigned int &i) const {return fVendeta_LG_Time[i];}//!
+    inline Double_t GetLGQmax(const unsigned int &i) const {return fVendeta_LG_Qmax[i];}//!
 
-  //////////////////////////////////////////////////////////////
-  // Required for ROOT dictionnary
-  ClassDef(TVendetaData,1)  // VendetaData structure
+    inline UShort_t GetHGMultEnergy() const {return fVendeta_HG_DetectorNbr.size();}
+    inline UShort_t GetHGDetectorNbr(const unsigned int &i) const {return fVendeta_HG_DetectorNbr[i];}//!
+    inline Double_t GetHGQ1(const unsigned int &i) const {return fVendeta_HG_Q1[i];}//!
+    inline Double_t GetHGQ2(const unsigned int &i) const {return fVendeta_HG_Q2[i];}//!
+    inline Double_t GetHGTime(const unsigned int &i) const {return fVendeta_HG_Time[i];}//!
+    inline Double_t GetHGQmax(const unsigned int &i) const {return fVendeta_HG_Qmax[i];}//!
+
+    //////////////////////////////////////////////////////////////
+    // Required for ROOT dictionnary
+    ClassDef(TVendetaData,1)  // VendetaData structure
 };
 
 #endif

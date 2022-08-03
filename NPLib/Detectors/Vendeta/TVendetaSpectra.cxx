@@ -111,15 +111,15 @@ void TVendetaSpectra::FillRawSpectra(TVendetaData* RawData) {
   static string name;
   static string family;
 
-  unsigned int sizeE = RawData->GetMultEnergy();
+  unsigned int sizeE = RawData->GetLGMultEnergy();
   for (unsigned int i = 0; i < sizeE; i++) {
-    name = "Vendeta"+NPL::itoa(RawData->GetDetectorNbr(i))+"_ENERGY_RAW";
+    name = "Vendeta"+NPL::itoa(RawData->GetLGDetectorNbr(i))+"_ENERGY_RAW";
     family = "Vendeta/RAW";
-    FillSpectra(family,name,RawData->GetQ1(i));
+    FillSpectra(family,name,RawData->GetLGQ1(i));
 
-    name = "Vendeta"+NPL::itoa(RawData->GetDetectorNbr(i))+"_TIME_RAW";
+    name = "Vendeta"+NPL::itoa(RawData->GetLGDetectorNbr(i))+"_TIME_RAW";
     family = "Vendeta/RAW";
-    FillSpectra(family,name,RawData->GetTime(i));
+    FillSpectra(family,name,RawData->GetLGTime(i));
  
   }
 }
@@ -132,15 +132,15 @@ void TVendetaSpectra::FillPreTreatedSpectra(TVendetaData* PreTreatedData) {
   static string family;
   
   // Energy 
-  unsigned int sizeE = PreTreatedData->GetMultEnergy();
+  unsigned int sizeE = PreTreatedData->GetLGMultEnergy();
   for (unsigned int i = 0; i < sizeE; i++) {
-    name = "Vendeta"+NPL::itoa(PreTreatedData->GetDetectorNbr(i))+"_ENERGY_CAL";
+    name = "Vendeta"+NPL::itoa(PreTreatedData->GetLGDetectorNbr(i))+"_ENERGY_CAL";
     family = "Vendeta/CAL";
-    FillSpectra(family,name,PreTreatedData->GetQ1(i));
+    FillSpectra(family,name,PreTreatedData->GetLGQ1(i));
 
-    name = "Vendeta"+NPL::itoa(PreTreatedData->GetDetectorNbr(i))+"_TIME_CAL";
+    name = "Vendeta"+NPL::itoa(PreTreatedData->GetLGDetectorNbr(i))+"_TIME_CAL";
     family = "Vendeta/CAL";
-    FillSpectra(family,name,PreTreatedData->GetTime(i));
+    FillSpectra(family,name,PreTreatedData->GetLGTime(i));
  
   }
 }
@@ -154,13 +154,13 @@ void TVendetaSpectra::FillPhysicsSpectra(TVendetaPhysics* Physics) {
   family= "Vendeta/PHY";
 
   // Energy vs time
-  unsigned int sizeE = Physics->DetectorNumber.size();
+  unsigned int sizeE = Physics->LG_DetectorNumber.size();
   for(unsigned int i = 0 ; i < sizeE ; i++){
     name = "Vendeta_Q1_Q2";
-    FillSpectra(family,name,Physics->Q1[i],Physics->Q2[i]);
+    FillSpectra(family,name,Physics->LG_Q1[i],Physics->LG_Q2[i]);
 
     name = "Vendeta_Q2_Time";
-    FillSpectra(family,name,Physics->Time[i],Physics->Q2[i]);
+    FillSpectra(family,name,Physics->LG_Time[i],Physics->LG_Q2[i]);
   }
 }
 

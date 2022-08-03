@@ -50,7 +50,7 @@ TVendetaPhysics::TVendetaPhysics()
      m_Spectra(0),
      m_E_RAW_Threshold(0), // adc channels
      m_E_Threshold(0),     // MeV
-     m_AnodeNumber(-1),
+     m_AnodeNumber(1),
      m_NumberOfDetectors(0) {
      }
 
@@ -81,24 +81,35 @@ void TVendetaPhysics::BuildSimplePhysicalEvent() {
 
 ///////////////////////////////////////////////////////////////////////////
 void TVendetaPhysics::BuildPhysicalEvent() {
+
   // Treat Event, only if Fission Chamber has triggered
   if(m_AnodeNumber==-1)
     return;
-
+  
   // apply thresholds and calibration
   PreTreat();
   
   // match energy and time together
-  unsigned int mysizeE = m_PreTreatedData->GetMultEnergy();
-  for (UShort_t e = 0; e < mysizeE ; e++) {
-    DetectorNumber.push_back(m_PreTreatedData->GetDetectorNbr(e));
-    Q1.push_back(m_PreTreatedData->GetQ1(e));
-    Q2.push_back(m_PreTreatedData->GetQ2(e));
-    Time.push_back(m_PreTreatedData->GetTime(e));
-    isHG.push_back(m_PreTreatedData->GetHighGainStatus(e));
+  unsigned int mysizeLGE = m_PreTreatedData->GetLGMultEnergy();
+  unsigned int mysizeHGE = m_PreTreatedData->GetHGMultEnergy();
+
+  for (UShort_t e = 0; e < mysizeLGE ; e++) {
+    LG_DetectorNumber.push_back(m_PreTreatedData->GetLGDetectorNbr(e));
+    LG_Q1.push_back(m_PreTreatedData->GetLGQ1(e));
+    LG_Q2.push_back(m_PreTreatedData->GetLGQ2(e));
+    LG_Time.push_back(m_PreTreatedData->GetLGTime(e));
+    LG_Qmax.push_back(m_PreTreatedData->GetLGQmax(e));
+  }
+  
+  for (UShort_t e = 0; e < mysizeHGE ; e++) {
+    HG_DetectorNumber.push_back(m_PreTreatedData->GetHGDetectorNbr(e));
+    HG_Q1.push_back(m_PreTreatedData->GetHGQ1(e));
+    HG_Q2.push_back(m_PreTreatedData->GetHGQ2(e));
+    HG_Time.push_back(m_PreTreatedData->GetHGTime(e));
+    HG_Qmax.push_back(m_PreTreatedData->GetHGQmax(e));
   }
 
-  m_AnodeNumber=-1;
+  /* m_AnodeNumber=-1; */
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -111,26 +122,46 @@ void TVendetaPhysics::PreTreat() {
 
   // instantiate CalibrationManager
   static CalibrationManager* Cal = CalibrationManager::getInstance();
+  unsigned int mysizeLG = m_EventData->GetLGMultEnergy();
+  unsigned int mysizeHG = m_EventData->GetHGMultEnergy();
 
-  unsigned int mysize = m_EventData->GetMultEnergy();
-  for (UShort_t i = 0; i < mysize ; ++i){
-    int det = m_EventData->GetDetectorNbr(i);
-    bool isHG = m_EventData->GetHighGainStatus(i);
+  // LG pretreat 
+  for (UShort_t i = 0; i < mysizeLG ; ++i){
+    int det = m_EventData->GetLGDetectorNbr(i);
+    double Qmax = m_EventData->GetLGQmax(i);
     double TimeOffset=0;
-    if(isHG==0){
-      TimeOffset = Cal->GetValue("Vendeta/DET"+NPL::itoa(det)+"_LG_ANODE"+NPL::itoa(m_AnodeNumber)+"_TIMEOFFSET",0);
-      }
-    else if(isHG==1){ 
-      TimeOffset = Cal->GetValue("Vendeta/DET"+NPL::itoa(det)+"_HG_ANODE"+NPL::itoa(m_AnodeNumber)+"_TIMEOFFSET",0);
-      }
+    
+    TimeOffset = Cal->GetValue("Vendeta/DET"+NPL::itoa(det)+"_LG_ANODE"+NPL::itoa(m_AnodeNumber)+"_TIMEOFFSET",0);
 
-    double Time = m_EventData->GetTime(i) + TimeOffset;
-    m_PreTreatedData->SetDetectorNbr(det);
-    m_PreTreatedData->SetQ1(m_EventData->GetQ1(i));
-    m_PreTreatedData->SetQ2(m_EventData->GetQ2(i));
-    m_PreTreatedData->SetTime(Time);
-    m_PreTreatedData->SetHighGainStatus(isHG);
+    double Time = m_EventData->GetLGTime(i) + TimeOffset;
+    
+    m_PreTreatedData->SetLGDetectorNbr(det);
+    m_PreTreatedData->SetLGQ1(m_EventData->GetLGQ1(i));
+    m_PreTreatedData->SetLGQ2(m_EventData->GetLGQ2(i));
+    m_PreTreatedData->SetLGTime(Time);
+    m_PreTreatedData->SetLGQmax(Qmax);
+    
   }
+   
+  // HG pretreat
+  for (UShort_t i = 0; i < mysizeHG ; ++i){
+    
+    int det = m_EventData->GetHGDetectorNbr(i);
+    double Qmax = m_EventData->GetHGQmax(i);
+    double TimeOffset=0;
+    TimeOffset = Cal->GetValue("Vendeta/DET"+NPL::itoa(det)+"_HG_ANODE"+NPL::itoa(m_AnodeNumber)+"_TIMEOFFSET",0);
+
+    double Time = m_EventData->GetHGTime(i) + TimeOffset;
+    m_PreTreatedData->SetHGDetectorNbr(det);
+    m_PreTreatedData->SetHGQ1(m_EventData->GetHGQ1(i));
+    m_PreTreatedData->SetHGQ2(m_EventData->GetHGQ2(i));
+    m_PreTreatedData->SetHGTime(Time);
+    m_PreTreatedData->SetHGQmax(Qmax);
+
+  }
+
+
+
 }
 
 
@@ -201,11 +232,18 @@ void TVendetaPhysics::ReadAnalysisConfig() {
 
 ///////////////////////////////////////////////////////////////////////////
 void TVendetaPhysics::Clear() {
-  DetectorNumber.clear();
-  Q1.clear();
-  Q2.clear();
-  Time.clear();
-  isHG.clear();
+  LG_DetectorNumber.clear();
+  LG_Q1.clear();
+  LG_Q2.clear();
+  LG_Time.clear();
+  LG_Qmax.clear();
+
+  HG_DetectorNumber.clear();
+  HG_Q1.clear();
+  HG_Q2.clear();
+  HG_Time.clear();
+  HG_Qmax.clear();
+
 }
 
 
@@ -223,7 +261,7 @@ void TVendetaPhysics::ReadConfiguration(NPL::InputParser parser) {
     if(blocks[i]->HasTokenList(cart)){
       if(NPOptionManager::getInstance()->GetVerboseLevel())
         cout << endl << "////  Vendeta " << i+1 <<  endl;
-    
+
       TVector3 Pos = blocks[i]->GetTVector3("POS","mm");
       AddDetector(Pos);
     }
@@ -294,8 +332,8 @@ void TVendetaPhysics::AddParameterToCalibrationManager() {
   CalibrationManager* Cal = CalibrationManager::getInstance();
   for (int i = 0; i < m_NumberOfDetectors; ++i) {
     for(int j = 0; j < 11; j++){
-    Cal->AddParameter("Vendeta","DET"+NPL::itoa(i+1)+"_LG_ANODE"+NPL::itoa(j+1)+"_TIMEOFFSET","Vendeta_DET"+ NPL::itoa(i+1)+"_LG_ANODE"+NPL::itoa(j+1)+"_TIMEOFFSET");
-    Cal->AddParameter("Vendeta","DET"+NPL::itoa(i+1)+"_HG_ANODE"+NPL::itoa(j+1)+"_TIMEOFFSET","Vendeta_DET"+ NPL::itoa(i+1)+"_HG_ANODE"+NPL::itoa(j+1)+"_TIMEOFFSET");
+      Cal->AddParameter("Vendeta","DET"+NPL::itoa(i+1)+"_LG_ANODE"+NPL::itoa(j+1)+"_TIMEOFFSET","Vendeta_DET"+ NPL::itoa(i+1)+"_LG_ANODE"+NPL::itoa(j+1)+"_TIMEOFFSET");
+      Cal->AddParameter("Vendeta","DET"+NPL::itoa(i+1)+"_HG_ANODE"+NPL::itoa(j+1)+"_TIMEOFFSET","Vendeta_DET"+ NPL::itoa(i+1)+"_HG_ANODE"+NPL::itoa(j+1)+"_TIMEOFFSET");
     }
   }
 }
@@ -340,14 +378,14 @@ NPL::VDetector* TVendetaPhysics::Construct() {
 //            Registering the construct method to the factory                 //
 ////////////////////////////////////////////////////////////////////////////////
 extern "C"{
-class proxy_Vendeta{
-  public:
-    proxy_Vendeta(){
-      NPL::DetectorFactory::getInstance()->AddToken("Vendeta","Vendeta");
-      NPL::DetectorFactory::getInstance()->AddDetector("Vendeta",TVendetaPhysics::Construct);
-    }
-};
+  class proxy_Vendeta{
+    public:
+      proxy_Vendeta(){
+        NPL::DetectorFactory::getInstance()->AddToken("Vendeta","Vendeta");
+        NPL::DetectorFactory::getInstance()->AddDetector("Vendeta",TVendetaPhysics::Construct);
+      }
+  };
 
-proxy_Vendeta p_Vendeta;
+  proxy_Vendeta p_Vendeta;
 }
 

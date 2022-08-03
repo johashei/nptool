@@ -62,11 +62,18 @@ class TVendetaPhysics : public TObject, public NPL::VDetector {
   // data obtained after BuildPhysicalEvent() and stored in
   // output ROOT file
   public:
-    vector<int>      DetectorNumber;
-    vector<double>   Q1;
-    vector<double>   Q2;
-    vector<double>   Time;
-    vector<bool>     isHG;
+    vector<int>      LG_DetectorNumber;
+    vector<double>   LG_Q1;
+    vector<double>   LG_Q2;
+    vector<double>   LG_Time;
+    vector<double>   LG_Qmax;
+   
+    vector<int>      HG_DetectorNumber;
+    vector<double>   HG_Q1;
+    vector<double>   HG_Q2;
+    vector<double>   HG_Time;
+    vector<double>   HG_Qmax;
+
 
   /// A usefull method to bundle all operation to add a detector
   void AddDetector(TVector3 POS); 
