@@ -47,6 +47,7 @@ void TFissionChamberData::Clear() {
   fFC_AnodeNbr.clear();
   fFC_Q1.clear();
   fFC_Q2.clear();
+  fFC_Qmax.clear();
   fFC_Time.clear();
   fFC_Time_HF.clear();
   fFC_isFakeFission.clear();
@@ -66,6 +67,7 @@ void TFissionChamberData::Dump() const {
     cout << "AnodeNbr: " << fFC_AnodeNbr[i]
          << " Q1: " << fFC_Q1[i]
          << " Q2: " << fFC_Q2[i]
+         << " Qmax: " << fFC_Qmax[i]
          << " Time: " << fFC_Time[i];
   }
 }
