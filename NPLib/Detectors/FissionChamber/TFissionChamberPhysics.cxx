@@ -81,7 +81,7 @@ void TFissionChamberPhysics::BuildSimplePhysicalEvent() {
 void TFissionChamberPhysics::BuildPhysicalEvent() {
   // apply thresholds and calibration
   PreTreat();
-
+    
   // match energy and time together
   unsigned int mysizeE = m_PreTreatedData->GetMultiplicity();
   for (UShort_t e = 0; e < mysizeE ; e++) {
@@ -89,9 +89,14 @@ void TFissionChamberPhysics::BuildPhysicalEvent() {
     Q1.push_back(m_PreTreatedData->GetQ1(e));
     Q2.push_back(m_PreTreatedData->GetQ2(e));
     Time.push_back(m_PreTreatedData->GetTime(e));
-    Time_HF.push_back(m_PreTreatedData->GetTimeHF(e));
     isFakeFission.push_back(m_PreTreatedData->GetFakeFissionStatus(e));
   }
+  
+  unsigned int mysizeHF = m_PreTreatedData->GetHFMultiplicity();
+  for(UShort_t e =0; e < mysizeHF ; e++){  
+    Time_HF.push_back(m_PreTreatedData->GetTimeHF(e));
+  }
+
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -119,9 +124,13 @@ void TFissionChamberPhysics::PreTreat() {
       m_PreTreatedData->SetQ2(Q2);
       m_PreTreatedData->SetTime(Time);
       m_PreTreatedData->SetFakeFissionStatus(m_EventData->GetFakeFissionStatus(i));
-      m_PreTreatedData->SetTimeHF(m_EventData->GetTimeHF(i));
     }
   }
+  unsigned int mysizeHF = m_EventData->GetHFMultiplicity();
+  for (UShort_t i = 0; i < mysizeHF ; ++i) {
+    m_PreTreatedData->SetTimeHF(m_EventData->GetTimeHF(i));
+  }
+
 }
 
 
@@ -215,7 +224,7 @@ void TFissionChamberPhysics::ReadConfiguration(NPL::InputParser parser) {
     if(blocks[i]->HasTokenList(cart)){
       if(NPOptionManager::getInstance()->GetVerboseLevel())
         cout << endl << "////  FissionChamber " << i+1 <<  endl;
-    
+
       TVector3 Pos = blocks[i]->GetTVector3("POS","mm");
       string gas = blocks[i]->GetString("GasMaterial");
       double pressure = blocks[i]->GetDouble("Pressure","bar");
@@ -334,14 +343,14 @@ NPL::VDetector* TFissionChamberPhysics::Construct() {
 //            Registering the construct method to the factory                 //
 ////////////////////////////////////////////////////////////////////////////////
 extern "C"{
-class proxy_FissionChamber{
-  public:
-    proxy_FissionChamber(){
-      NPL::DetectorFactory::getInstance()->AddToken("FissionChamber","FissionChamber");
-      NPL::DetectorFactory::getInstance()->AddDetector("FissionChamber",TFissionChamberPhysics::Construct);
-    }
-};
+  class proxy_FissionChamber{
+    public:
+      proxy_FissionChamber(){
+        NPL::DetectorFactory::getInstance()->AddToken("FissionChamber","FissionChamber");
+        NPL::DetectorFactory::getInstance()->AddDetector("FissionChamber",TFissionChamberPhysics::Construct);
+      }
+  };
 
-proxy_FissionChamber p_FissionChamber;
+  proxy_FissionChamber p_FissionChamber;
 }
 

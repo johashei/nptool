@@ -88,6 +88,8 @@ class TFissionChamberData : public TObject {
       {return fFC_Time[i];}//!
     inline Double_t GetTimeHF(const unsigned int &i) const 
       {return fFC_Time_HF[i];}//!
+    inline UShort_t GetHFMultiplicity() const 
+      {return fFC_Time_HF.size();}//!
     inline Bool_t GetFakeFissionStatus(const unsigned int &i) const 
       {return fFC_isFakeFission[i];}//!
 
