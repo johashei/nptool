@@ -93,12 +93,15 @@ void TVendetaPhysics::BuildPhysicalEvent() {
   unsigned int mysizeLGE = m_PreTreatedData->GetLGMultEnergy();
   unsigned int mysizeHGE = m_PreTreatedData->GetHGMultEnergy();
 
+
   for (UShort_t e = 0; e < mysizeLGE ; e++) {
+    
     LG_DetectorNumber.push_back(m_PreTreatedData->GetLGDetectorNbr(e));
     LG_Q1.push_back(m_PreTreatedData->GetLGQ1(e));
     LG_Q2.push_back(m_PreTreatedData->GetLGQ2(e));
     LG_Time.push_back(m_PreTreatedData->GetLGTime(e));
     LG_Qmax.push_back(m_PreTreatedData->GetLGQmax(e));
+  
   }
   
   for (UShort_t e = 0; e < mysizeHGE ; e++) {
@@ -108,6 +111,7 @@ void TVendetaPhysics::BuildPhysicalEvent() {
     HG_Time.push_back(m_PreTreatedData->GetHGTime(e));
     HG_Qmax.push_back(m_PreTreatedData->GetHGQmax(e));
   }
+
 
   /* m_AnodeNumber=-1; */
 }
@@ -119,48 +123,62 @@ void TVendetaPhysics::PreTreat() {
 
   // clear pre-treated object
   ClearPreTreatedData();
-
   // instantiate CalibrationManager
   static CalibrationManager* Cal = CalibrationManager::getInstance();
   unsigned int mysizeLG = m_EventData->GetLGMultEnergy();
   unsigned int mysizeHG = m_EventData->GetHGMultEnergy();
-
-  // LG pretreat 
+  
+  // LG pretreat
+  static double LG_Limits[4] = {16172,16804,16810,16341};
+  int ID_Saturation = -1;
+  int ID_Echoes =-1;
   for (UShort_t i = 0; i < mysizeLG ; ++i){
     int det = m_EventData->GetLGDetectorNbr(i);
     double Qmax = m_EventData->GetLGQmax(i);
     double TimeOffset=0;
-    
     TimeOffset = Cal->GetValue("Vendeta/DET"+NPL::itoa(det)+"_LG_ANODE"+NPL::itoa(m_AnodeNumber)+"_TIMEOFFSET",0);
 
     double Time = m_EventData->GetLGTime(i) + TimeOffset;
-    
-    m_PreTreatedData->SetLGDetectorNbr(det);
-    m_PreTreatedData->SetLGQ1(m_EventData->GetLGQ1(i));
-    m_PreTreatedData->SetLGQ2(m_EventData->GetLGQ2(i));
-    m_PreTreatedData->SetLGTime(Time);
-    m_PreTreatedData->SetLGQmax(Qmax);
-    
+    // Remove saturated detector and echoes (signals after a specific amplitude) 
+    if(Qmax < LG_Limits[det-1] && det != ID_Saturation && det != ID_Echoes ){ 
+      m_PreTreatedData->SetLGDetectorNbr(det);
+      m_PreTreatedData->SetLGQ1(m_EventData->GetLGQ1(i));
+      m_PreTreatedData->SetLGQ2(m_EventData->GetLGQ2(i));
+      m_PreTreatedData->SetLGTime(Time);
+      m_PreTreatedData->SetLGQmax(Qmax);
+      if(Qmax > 17000){
+        ID_Echoes = det;
+      }
+    }
+    else if(Qmax > LG_Limits[det-1]){
+        ID_Saturation = det;
+    }
   }
-   
+
   // HG pretreat
+  static double HG_Limits[4] = {16292,16314,16604,16399};
+  ID_Saturation = -1;
+  ID_Echoes =-1;
   for (UShort_t i = 0; i < mysizeHG ; ++i){
-    
     int det = m_EventData->GetHGDetectorNbr(i);
     double Qmax = m_EventData->GetHGQmax(i);
     double TimeOffset=0;
     TimeOffset = Cal->GetValue("Vendeta/DET"+NPL::itoa(det)+"_HG_ANODE"+NPL::itoa(m_AnodeNumber)+"_TIMEOFFSET",0);
-
     double Time = m_EventData->GetHGTime(i) + TimeOffset;
-    m_PreTreatedData->SetHGDetectorNbr(det);
-    m_PreTreatedData->SetHGQ1(m_EventData->GetHGQ1(i));
-    m_PreTreatedData->SetHGQ2(m_EventData->GetHGQ2(i));
-    m_PreTreatedData->SetHGTime(Time);
-    m_PreTreatedData->SetHGQmax(Qmax);
-
+    if(Qmax < HG_Limits[det-1] && det != ID_Saturation && det != ID_Echoes ){ 
+      m_PreTreatedData->SetHGDetectorNbr(det);
+      m_PreTreatedData->SetHGQ1(m_EventData->GetHGQ1(i));
+      m_PreTreatedData->SetHGQ2(m_EventData->GetHGQ2(i));
+      m_PreTreatedData->SetHGTime(Time);
+      m_PreTreatedData->SetHGQmax(Qmax);
+      if(Qmax > 17000){
+        ID_Echoes = det;
+      }
+    }
+    else if(Qmax > HG_Limits[det-1]){
+      ID_Saturation = det;
+    }
   }
-
-
 
 }
 
