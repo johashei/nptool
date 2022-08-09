@@ -3,24 +3,25 @@
 #include <cmath>
 #include "stdlib.h"
 
-const int numPeaks = 16;//15; 
+const int numPeaks = 17; 
 array<double,numPeaks> means = { 0.000,
                            0.143,
                            0.279,
 			   0.728,
 			   0.968,
 			   1.410,
-			   1.981,
+			   1.981,//1.952,//1.981,
 			   2.412,
 			   2.910,
-			   3.246,
+			   3.253,
 			   3.605,
-			   3.797,//Split in two?
-			   3.876,//Split in two? 
-			   4.055,//4.1,
-			   4.38,
-			   4.51//,
-			   //5.24
+			   3.795,//Split in two?
+			   3.870,//Split in two? 
+			   4.045,//4.1,
+			   4.393,
+			   //4.51//,
+			   5.15,
+			   5.82
                            };
 
 array<double,27> knowngammas = { 0.143,
@@ -76,16 +77,18 @@ Double_t f_full(Double_t *x, Double_t *par) {
   float xx = x[0];
   double result, norm;
   // Flat background
-  result = par[0];
+//  result = par[0];
+  result = 0;
   // Add N peaks
   for(int pk=0; pk<numPeaks; pk++){
     result += (par[3+(pk*3)]/(par[1+(pk*3)]*sqrt(2*pi)))
-	      * exp(-0.5*pow((xx-par[2+(pk*3)])/par[1+(pk*3)],2));
+	      //* exp(-0.5*pow((xx-par[2+(pk*3)])/par[1+(pk*3)],2));
+	      * exp(-0.5*pow((xx-par[2+(pk*3)]-par[0])/par[1+(pk*3)],2)); //added par 0 as shift in energy
   }
   return result;
 }
 
-vector<vector<double>> FitKnownPeaks_RtrnArry(TH1F* hist){
+vector<vector<double>> FitKnownPeaks_RtrnArry(TH1F* hist, double slideshift){
   double minFit=-1.0, maxFit=8.0; 
   double binWidth = hist->GetXaxis()->GetBinWidth(3);
   double sigma = 0.14;
@@ -124,6 +127,17 @@ vector<vector<double>> FitKnownPeaks_RtrnArry(TH1F* hist){
     allPeaks[i]->SetParNames("Sigma", "Mean", "Area*BinWidth");
   } 
 
+  //Subtract flat background equal to smallest bin in range
+  
+  hist->GetXaxis()->SetRange(hist->FindBin(-0.9), hist->FindBin(-0.4));
+  double bgmin = hist->GetBinContent(hist->GetMinimumBin());
+  hist->GetXaxis()->UnZoom();
+  cout << "Subtracting background of " << bgmin << endl;
+  for(int b=1; b<hist->GetNbinsX() ; b++){
+      hist->SetBinContent(b,hist->GetBinContent(b)-bgmin);
+  }
+ 
+
   //Build background function
   TF1 *bg = new TF1 ("bg","[0]",minFit, maxFit);
   bg->SetLineColor(kGreen);
@@ -137,23 +151,19 @@ vector<vector<double>> FitKnownPeaks_RtrnArry(TH1F* hist){
   for(int i=0; i<numPeaks; i++) {
     full->FixParameter((i*3)+1,sigma);
     full->FixParameter((i*3)+2,means.at(i));
-      // Set max 279 counts to 100
-      //full->SetParameter((i*3)+3,0.);//1e1);
-      //if(i==2){full->SetParLimits((i*3)+3,0.0,1e2);}
-      //else{full->SetParLimits((i*3)+3,0.0,1e5);}
     full->SetParameter((i*3)+3,1e1);
     full->SetParLimits((i*3)+3,0.0,1e5);
+    //full->SetParLimits((i*3)+3,10.0,1e5);
   }
-  //full->SetParameter(0,30.);
   //full->SetParLimits(0,0.,40.); /* FOR TOTAL SPECTRUM FITTING */
-  full->SetParLimits(0,0.,10.); /* FOR ANGLE GATED FITTING */
-  //full->SetParLimits(0,0.,1.); /* FOR ANGLE GATED FITTING WITH BG SUBTRACTED */
-  //full->FixParameter(9,0.); //??
-
-  // Specific limits
-  // Set max 279 counts to 100
-  //full->FixParameter(9,0.0);
-  //full->SetParLimits(9,0.0,1e2); // Doesnt work???
+  //full->SetParLimits(0,0.,10.); /* FOR ANGLE GATED FITTING */
+  //full->FixParameter(0,0.); /* FOR ANGLE GATED FITTING WITH BG SUBTRACTED */
+  full->FixParameter(9,0.); /* FIX 0.279 AREA TO ZERO */
+  full->SetParLimits(0,-0.5,+0.5); /* FOR WHEN PAR[0] IS VARIABLE ENERGY CENTRIOD SLIDER */
+  //full->FixParameter(0,slideshift); /* FOR WHEN PAR[0] IS FIXED ENERGY CENTRIOD SLIDER */
+  full->SetParameter(52,0.39); /* SET 5.8MeV SIGMA */
+  full->SetParLimits(52,0.34,0.44); /* SET 5.8MeV SIGMA */
+  
   allPeaks[14]->SetLineColor(kOrange);
 
   //Fit full function to histogram
@@ -211,5 +221,5 @@ vector<vector<double>> FitKnownPeaks_RtrnArry(TH1F* hist){
 
 void FitKnownPeaks(TH1F* hist){
   //Shell function to call Rtrn_Arry without writing vector<vector<double>> to screen
-  vector<vector<double>> shell = FitKnownPeaks_RtrnArry(hist);
+  vector<vector<double>> shell = FitKnownPeaks_RtrnArry(hist,0.0);
 }
