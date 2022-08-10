@@ -2,7 +2,6 @@
 #include "NPReaction.h"
 #include <string>
 #include <sstream>
-
 using namespace std;
 
 TChain* chain=NULL ;
@@ -10,6 +9,7 @@ char cond[1000];
 
 NPL::Reaction Cadp("47Ca(d,p)48Ca@355");
 NPL::Reaction Scdp("47Sc(d,p)48Sc@355");
+NPL::Reaction K46dp("46K(d,p)47K@355");
 
 NPL::Reaction Kdp("47K(d,p)48K@355");
 NPL::Reaction Kdt("47K(d,t)46K@355");
@@ -22,8 +22,8 @@ NPL::Reaction Tidd("47Ti(d,d)47Ti@355");
 NPL::Reaction Ti12C12C("47Ti(12C,12C)47Ti@355");
 
 void KnownLines_Ex(bool isVertical, double rangemin, double rangemax, Style_t lType, Color_t lColour);
-void AddGammaLinesMG(TH1F* hist, double particle, double ymax);
-void AddPlacedGammasMG(TH1F* hist, double ymax);
+void AddGammaLines(TH1F* hist, double particle, double ymax);
+void AddPlacedGammas(TH1F* hist, double ymax);
 
 double tCentre;
 double tRange;
@@ -48,23 +48,83 @@ TChain* Chain(std::string TreeName, std::vector<std::string>& file, bool EventLi
 void LoadChain47Kdp(){
   vector<string> files;
   
+//  files.push_back("../../../Outputs/Analysis/OriginalValues_ptI.root");
+//  files.push_back("../../../Outputs/Analysis/OriginalValues_ptII.root");
+//  files.push_back("../../../Outputs/Analysis/OriginalValues_ptIII.root");
+
   //files.push_back("../../../Outputs/Analysis/47Kdp_08Nov_PartI.root");
   //files.push_back("../../../Outputs/Analysis/47Kdp_08Nov_PartII.root");
   
-  //files.push_back("../../../Outputs/Analysis/47Kdp_08Apr_PartI.root");
-  //files.push_back("../../../Outputs/Analysis/47Kdp_08Apr_PartII.root");
+  /* With thresholds, strip matching, and bad strips out */
+  //files.push_back("../../../Outputs/Analysis/47Kdp_11Apr22_PartI.root");
+  //files.push_back("../../../Outputs/Analysis/47Kdp_11Apr22_PartII.root");
 
-  /* With thresholds, strip mathcing, and bad strips out */
-  files.push_back("../../../Outputs/Analysis/47Kdp_11Apr22_PartI.root");
-  files.push_back("../../../Outputs/Analysis/47Kdp_11Apr22_PartII.root");
+  /* As above, with thicker target! */
+  //files.push_back("../../../Outputs/Analysis/47Kdp_26May22_v2_PartI.root");
+  //files.push_back("../../../Outputs/Analysis/47Kdp_26May22_v2_PartII.root");
+
+  /* Fix Z=0 */
+  //files.push_back("../../../Outputs/Analysis/47Kdp_27May22_PartI.root");
+  //files.push_back("../../../Outputs/Analysis/47Kdp_27May22_PartII.root");
+
+  /* Not fixed, but Z near 0 */
+  //files.push_back("../../../Outputs/Analysis/47Kdp_01Jul22_PartI.root");
+  //files.push_back("../../../Outputs/Analysis/47Kdp_01Jul22_PartII.root");
+
+  /* New target thickness analysis */
+  files.push_back("../../../Outputs/Analysis/47Kdp_11Jul22_PartI.root");
+  files.push_back("../../../Outputs/Analysis/47Kdp_11Jul22_PartII.root");
+
 
   chain = Chain("PhysicsTree",files,true);
 }
 
 void LoadChain47Kdt(){
   vector<string> files;
-  files.push_back("../../../Outputs/Analysis/47Kdt_13May22_PartI.root");
-  files.push_back("../../../Outputs/Analysis/47Kdt_13May22_PartII.root");
+  //files.push_back("../../../Outputs/Analysis/47Kdt_13May22_PartI.root");
+  //files.push_back("../../../Outputs/Analysis/47Kdt_13May22_PartII.root");
+  //files.push_back("../../../Outputs/Analysis/47Kdt_25May22_TestingDiffTimeCalib_PartI.root");
+  //files.push_back("../../../Outputs/Analysis/47Kdt_25May22_TestingDiffTimeCalib_PartII.root");
+  
+  /* Offset MM1 timing by -5 */
+  //files.push_back("../../../Outputs/Analysis/47Kdt_22Jun22_PartI.root");
+  //files.push_back("../../../Outputs/Analysis/47Kdt_22Jun22_PartII.root");
+
+  /* As above, with 01Jul22 XYZT */
+  //files.push_back("../../../Outputs/Analysis/47Kdt_22Jun22_PartI.root");
+  //files.push_back("../../../Outputs/Analysis/47Kdt_22Jun22_PartII.root");
+
+  /* As above, with 11Jul22 XYZT */
+  //files.push_back("../../../Outputs/Analysis/47Kdt_11Jul22_PartI.root");
+  //files.push_back("../../../Outputs/Analysis/47Kdt_11Jul22_PartII.root");
+
+  files.push_back("../../../Outputs/Analysis/47Kdt_14Jul22_PartI.root");
+  files.push_back("../../../Outputs/Analysis/47Kdt_14Jul22_PartII.root");
+
+
+  //files.push_back("../../../Outputs/Analysis/TESTING_PartII.root");
+
+  chain = Chain("PhysicsTree",files,true);
+}
+
+void LoadChain47Kdd(){
+  vector<string> files;
+  //files.push_back("../../../Outputs/Analysis/47Kdd_08Nov_PartI.root");
+  //files.push_back("../../../Outputs/Analysis/47Kdd_08Nov_PartII.root");
+
+  files.push_back("../../../Outputs/Analysis/47Kdd_11Jul22_PartI.root");
+  files.push_back("../../../Outputs/Analysis/47Kdd_11Jul22_PartII.root");
+ 
+  chain = Chain("PhysicsTree",files,true);
+}
+
+void LoadChain47Kpp(){
+  vector<string> files;
+  //files.push_back("../../../Outputs/Analysis/47Kpp_08Nov_PartI.root");
+  //files.push_back("../../../Outputs/Analysis/47Kpp_08Nov_PartII.root");
+
+  files.push_back("../../../Outputs/Analysis/47Kpp_11Jul22_PartI.root");
+  files.push_back("../../../Outputs/Analysis/47Kpp_11Jul22_PartII.root");
 
   chain = Chain("PhysicsTree",files,true);
 }
@@ -100,6 +160,16 @@ void DrawParticleStates(TCanvas* canvas){
     gs->SetLineColor(kGreen);
     gs->SetLineStyle(7);
     gs->Draw();
+
+  TLine** lines = new TLine*[numPeaks];
+  for(int j = 0; j < numPeaks; j++){
+    lines[j] = new TLine(means[j],0.0,means[j],max);
+    lines[j]->SetLineStyle(8);
+    lines[j]->SetLineColor(kGray);
+    lines[j]->Draw();
+  }
+
+/*
   TLine *l0143 = new TLine(0.143, 0.0, 0.143, max);
     l0143->SetLineStyle(kDashed);
     l0143->Draw();
@@ -139,6 +209,8 @@ void DrawParticleStates(TCanvas* canvas){
  TLine *l4510 = new TLine(4.51, 0.0, 4.51, max);
     l4510->SetLineStyle(kDotted);
     l4510->Draw("same");
+
+*/
 }
 
 void plot_kine(NPL::Reaction r, double Ex,Color_t c,int w, int s){
@@ -171,10 +243,7 @@ void AddTiStates(double E){
 
 string timegate; /* defined by choice of dp or dt */
 string det_gate; /* defined by choice of dp or dt */
-//string mg_gate = "Mugast.TelescopeNumber>0 && Mugast.TelescopeNumber<8";
-//string mm_gate = "MUST2.TelescopeNumber>0";
-//string mm_lt5_gate = "MUST2.TelescopeNumber<5";
-//string mm_eq5_gate = "MUST2.TelescopeNumber==5";
+string reactionName; /* defined by choice of dp or dt */
 string exclBmDcy = "abs(AGATA_GammaE-2.013)>0.004 && abs(AGATA_GammaE-0.511)>0.003 && abs(AGATA_GammaE-0.564)>0.004 && abs(AGATA_GammaE-0.586)>0.003";
 
 void Draw_1DGamma(){
@@ -205,6 +274,70 @@ void Draw_1DGamma_DetGate(){
   TH1F* Eg = (TH1F*) gDirectory->Get("Eg");
   Eg->GetXaxis()->SetTitle("E_{#gamma} [MeV]");
   Eg->GetYaxis()->SetTitle("Counts / 0.001 MeV");
+}
+
+void Draw_1DGamma_DetGate_x10x100(){
+  string gate = timegate 
+	      + " && " + det_gate
+	      + " && " + exclBmDcy;
+
+  TCanvas *cEg = new TCanvas("cEg","cEg",1000,1000);
+  gStyle->SetOptStat(0);
+  chain->Draw("AddBack_EDC>>Eg(1250,0,5)",gate.c_str(),"");
+  TH1F* Eg = (TH1F*) gDirectory->Get("Eg");
+  Eg->GetXaxis()->SetTitle("E_{#gamma} [MeV]");
+  Eg->GetYaxis()->SetTitle("Counts / 0.004 MeV");
+  
+  for(int b = 126; b<501; b++){
+    Eg->SetBinContent(b,(Eg->GetBinContent(b) * 10.));
+  }
+  for(int b = 501; b<1250; b++){
+    Eg->SetBinContent(b,(Eg->GetBinContent(b) * 100.));
+  }
+
+  Eg->Draw();
+
+  TLine *x10 = new TLine(0.5, 0.0, 0.5, 3000.);
+    x10->SetLineColor(kBlack); x10->SetLineStyle(7);
+    x10->Draw("same");
+  TLine *x100 = new TLine(2.0, 0.0, 2.0, 3000.);
+    x100->SetLineColor(kBlack); x100->SetLineStyle(7);
+    x100->Draw("same");
+
+}
+
+void Draw_1DGamma_DetGate_SplitCanv(){
+  string gate = timegate 
+	      + " && " + det_gate
+	      + " && " + exclBmDcy;
+
+  TCanvas *cEg = new TCanvas("cEg","cEg",1000,1000);
+  gStyle->SetOptStat(0);
+  cEg->Divide(2,1,0.005,0.005,0);
+  cEg->cd(1); 
+    gStyle->SetPadLeftMargin(0.0);
+    gStyle->SetPadRightMargin(0.0);
+    gPad->SetTickx();
+    gPad->SetTicky();
+  cEg->cd(2); 
+    gStyle->SetPadLeftMargin(0.0);
+    gStyle->SetPadRightMargin(0.0);
+    gPad->SetTickx();
+    gPad->SetTicky();
+
+  cEg->cd(1);
+  chain->Draw("AddBack_EDC>>Eg(5000,0,5)",gate.c_str(),"");
+  TH1F* Eg = (TH1F*) gDirectory->Get("Eg");
+  Eg->GetXaxis()->SetTitle("E_{#gamma} [MeV]");
+  Eg->GetYaxis()->SetTitle("Counts / 0.001 MeV");
+  Eg->GetXaxis()->SetRangeUser(0.,2.);
+
+  cEg->cd(2);
+  chain->Draw("AddBack_EDC>>Eg2(1250,0,5)",gate.c_str(),"");
+  TH1F* Eg2 = (TH1F*) gDirectory->Get("Eg2");
+  Eg2->GetXaxis()->SetTitle("E_{#gamma} [MeV]");
+  Eg2->GetYaxis()->SetTitle("Counts / 0.004 MeV");
+  Eg2->GetXaxis()->SetRangeUser(2.,4.5);
 }
 
 void Load_1DGamma_MG(){
@@ -261,14 +394,35 @@ void Draw_2DParticleGamma(){
               + " && Ex@.size()==1";
 
   TCanvas *cExEg = new TCanvas("cExEg","cExEg",1000,1000);
-  chain->Draw("AddBack_EDC:Ex>>ExEg(600,-15,15,2500,0,5)", gate.c_str(), "colz");
+  gStyle->SetOptStat(0);
+  //chain->Draw("AddBack_EDC:Ex>>ExEg(600,-15,15,2500,0,5)", gate.c_str(), "colz");
+  chain->Draw("Ex:AddBack_EDC>>ExEg(5000,0,5,3000,-15,15)", gate.c_str(), "");
   TH1F* ExEg = (TH1F*) gDirectory->Get("ExEg");
-  ExEg->SetTitle("Ex-Egamma");
-  ExEg->GetXaxis()->SetTitle("Ex [MeV]");
-  ExEg->GetYaxis()->SetTitle("Eg [MeV]");
-  TLine *XeqY = new TLine(0,0,9,9);
-  XeqY->SetLineColor(kRed);
-  XeqY->Draw();
+  ExEg->SetTitle("");
+  //ExEg->GetXaxis()->SetTitle("Ex [MeV]");
+  ExEg->GetYaxis()->SetTitle("Ex [MeV]");
+  //ExEg->GetYaxis()->SetTitle("Eg [MeV]");
+  ExEg->GetXaxis()->SetTitle("E_{#gamma} [MeV]");
+  ExEg->GetYaxis()->SetRangeUser(-1.0,7.0);
+  ExEg->Draw();
+  TLine *XeqY = new TLine(0,0,5,5);
+    XeqY->SetLineColor(kRed);
+    XeqY->Draw("same");
+  TLine *Sn = new TLine(0,4.644,4.644,4.644);
+    Sn->SetLineColor(kRed);Sn->SetLineStyle(2);
+    Sn->Draw("same");
+  TLatex *TSn = new TLatex(.5,.5,"S_{n}");
+    TSn->SetTextColor(kRed);
+    TSn->SetTextSize(0.05);
+    TSn->SetX(2.50);
+    TSn->SetY(4.90);
+    TSn->Draw("same");
+  TLatex *Texeg = new TLatex(.5,.5,"Ex = E_{#gamma}");
+    Texeg->SetTextColor(kRed);
+    Texeg->SetTextSize(0.05);
+    Texeg->SetX(2.35);
+    Texeg->SetY(1.50);
+    Texeg->Draw("same");
 }
 
 void Load_2DGammaGamma(){
@@ -281,15 +435,20 @@ void Load_2DGammaGamma(){
 }
 
 void Draw_2DGammaGamma_ExcludeBeam(){
+  string gate = timegate 
+              + " && " + exclBmDcy;
+
   TCanvas *cEgEg = new TCanvas("cEgEg","cEgEg",1000,1000);
-  chain->Draw("AddBack_EDC:AddBack_EDC2>>EgEg(999,0.005,5,999,0.005,5)","abs(AGATA_GammaE-2.013)>0.004 && abs(AGATA_GammaE-0.511)>0.003 && abs(AGATA_GammaE-0.564)>0.004 && abs(AGATA_GammaE-0.586)>0.003","colz");
+  chain->Draw("AddBack_EDC:AddBack_EDC2>>EgEg(2500,0,5,2500,0,5)",gate.c_str(),"colz");
   TH1F* EgEg = (TH1F*) gDirectory->Get("EgEg");
-  chain->Draw("AddBack_EDC2:AddBack_EDC>>EgEg2(999,0.005,5,999,0.005,5)","abs(AGATA_GammaE-2.013)>0.004 && abs(AGATA_GammaE-0.511)>0.003 && abs(AGATA_GammaE-0.564)>0.004 && abs(AGATA_GammaE-0.586)>0.003","colz");
+  chain->Draw("AddBack_EDC2:AddBack_EDC>>EgEg2(2500,0,5,2500,0,5)",gate.c_str(),"colz");
   TH1F* EgEg2 = (TH1F*) gDirectory->Get("EgEg2");
   EgEg->Add(EgEg2,1);
   EgEg->SetTitle("Egamma-Egamma");
-  EgEg->GetXaxis()->SetTitle("Eg [MeV]");
-  EgEg->GetYaxis()->SetTitle("Eg [MeV]");
+  EgEg->GetXaxis()->SetTitle("Eg [Counts / 0.002 MeV]");
+  EgEg->GetYaxis()->SetTitle("Eg [Counts / 0.002 MeV]");
+  EgEg->GetXaxis()->SetRangeUser(0.005,5.0);
+  EgEg->GetYaxis()->SetRangeUser(0.005,5.0);
   EgEg->Draw("colz");
   TLine *XeqY = new TLine(0,0,5,5);
   XeqY->SetLineColor(kRed);
@@ -315,14 +474,16 @@ void gg(){
 void Draw_2DGammaGamma_TimeGated(){
   string gate = timegate;
   TCanvas *cEgEg = new TCanvas("cEgEg","cEgEg",1000,1000);
-  chain->Draw("AddBack_EDC:AddBack_EDC2>>EgEg(999,0.005,5,999,0.005,5)",gate.c_str(),"colz");
+  chain->Draw("AddBack_EDC:AddBack_EDC2>>EgEg(2500,0,5,2500,0,5)",gate.c_str(),"colz");
   TH1F* EgEg = (TH1F*) gDirectory->Get("EgEg");
-  chain->Draw("AddBack_EDC2:AddBack_EDC>>EgEg2(999,0.005,5,999,0.005,5)",gate.c_str(),"colz");
+  chain->Draw("AddBack_EDC2:AddBack_EDC>>EgEg2(2500,0,5,2500,0,5)",gate.c_str(),"colz");
   TH1F* EgEg2 = (TH1F*) gDirectory->Get("EgEg2");
   EgEg->Add(EgEg2,1);
   EgEg->SetTitle("Egamma-Egamma");
-  EgEg->GetXaxis()->SetTitle("Eg [MeV]");
-  EgEg->GetYaxis()->SetTitle("Eg [MeV]");
+  EgEg->GetXaxis()->SetTitle("Eg [Counts / 0.002 MeV]");
+  EgEg->GetYaxis()->SetTitle("Eg [Counts / 0.002 MeV]");
+  EgEg->GetXaxis()->SetRangeUser(0.005,5.0);
+  EgEg->GetYaxis()->SetRangeUser(0.005,5.0);
   EgEg->Draw("colz");
   TLine *XeqY = new TLine(0,0,5,5);
   XeqY->SetLineColor(kRed);
@@ -425,8 +586,6 @@ void GateGamma_SeeParticle_WithBG(double gamma, double width, double bg, double 
   DrawParticleStates(cEx_Gate);
 }
 
-
-
 void GateParticle_SeeGamma(double particle, double width){ 
   gStyle->SetOptStat("nemMrRi");
 
@@ -452,7 +611,8 @@ void GateParticle_SeeGamma(double particle, double width){
 
   EgGate->Draw();
   limit->Draw();
-  AddGammaLinesMG(EgGate, particle, cEg_Gate->GetUymax());
+
+  AddGammaLines(EgGate, particle, cEg_Gate->GetUymax());
 
 }
 
@@ -1082,12 +1242,26 @@ void ExThetaLab(double gamma, double width){
 void ELabThetaLab(){
   TCanvas *cELabTLaab = new TCanvas("cELabTLab","cELabTLab",1000,1000);
   gStyle->SetOptStat(0);
-  chain->Draw("ELab:ThetaLab>>hKine(360,0,180,500,0,10)","abs(T_MUGAST_VAMOS-2700)<400","col");
+
+  string gate = timegate 
+	      + " && " + det_gate;
+  if(reactionName=="47K(d,t)"){
+    gate = gate + " && cutTritons";
+  }
+
+
+cout << "test" << endl;
+  chain->Draw("ELab:ThetaLab>>hKine(360,0,180,500,0,10)",gate.c_str(),"col");
+cout << "test2" << endl;
   TH2F* hKine = (TH2F*) gDirectory->Get("hKine");
+cout << "test3" << endl;
   hKine->SetTitle("");
   hKine->GetXaxis()->SetTitle("#theta_{lab} [deg]");
   hKine->GetYaxis()->SetTitle("E_{lab} [MeV]");
   plot_kine(Kdt, 0.000, kBlack, 2, 1);
+  
+  plot_kine(Kdd, 0.000, kRed, 2, 1);
+  plot_kine(Kpp, 0.000, kRed, 2, 1);
   
   plot_kine(Kdp, 0.000, kBlack, 2, 1);
   plot_kine(Kdp, 4.644, kBlack, 2, 1);
@@ -1111,6 +1285,7 @@ void ELabThetaLab(){
   plot_kine(Cadp, 0.000, kRed, 2, 1);
   plot_kine(Tidp, 0.000, kBlue, 2, 1);
   plot_kine(Scdp, 0.000, kGreen, 2, 1);
+  plot_kine(K46dp, 0.000, kViolet, 2, 1);
   //plot_kine(Tidp, 5.652, kBlack, 2, 6); //strongest populated state according to PDBarnes(1965)
 }
 
@@ -1154,7 +1329,6 @@ void MM5_ExThetaLab(){
 		  "abs(T_MUGAST_VAMOS-2700)<400 && Must2.TelescopeNumber==5",
 		  "colz");
 }
-
 
 void thickness(){
 
@@ -1508,12 +1682,8 @@ double expPyErr2[15]={0.5,
 
 }
 
+/*
 void ExThetaAnalysis(double gamma, double width, int version){
-//  int version;
-//  bool running = 1;
-
-//  cout << "Constructing Ex:ThetaLab..." << endl;
-
 
   string gating = "abs(T_MUGAST_VAMOS-2777)<600 && Mugast.TelescopeNumber>0 && Mugast.TelescopeNumber<8 && abs(AddBack_EDC-"
 	        + to_string(gamma) + ") < " + to_string(width); 
@@ -1568,12 +1738,32 @@ void ExThetaAnalysis(double gamma, double width, int version){
 
     }//else{running=0;}
 //  }
-
 }
+*/
 
+void ExTheta_Analysis(double gamma, double width){
+  string gate = timegate 
+	      + " && " + det_gate
+              + " && Ex@.size()==1"
+              + " && abs(AddBack_EDC-"
+	      + to_string(gamma) + ")<"
+	      + to_string(width)
+	      ;
+  string gateLow = gate + " && abs(ThetaLab-117.5)<12.5";
+  string gateHigh = gate + " && abs(ThetaLab-142.5)<12.5";
 
+  TCanvas *diagnosis_ExTheta = new TCanvas("diagnosis_ExTheta","diagnosis_ExTheta",1000,1000);
+  chain->Draw("Ex>>thetaHistLow(200,-1,9)", gateLow.c_str(),"");
+  TH2F* thetaHistLow = (TH2F*) gDirectory->Get("thetaHistLow");  
+  thetaHistLow->SetLineColor(kBlue);
 
+  chain->Draw("Ex>>thetaHistHigh(200,-1,9)", gateHigh.c_str(),"");
+  TH2F* thetaHistHigh = (TH2F*) gDirectory->Get("thetaHistHigh");  
+  thetaHistHigh->SetLineColor(kRed);
 
+  thetaHistLow->Draw();
+  thetaHistHigh->Draw("SAME");
+}
 
 void ExMugast_ForPoster(){
 
@@ -1685,12 +1875,16 @@ void AGATA_efficiency(double Energy_keV){
 }
 
 void ElasticsGate(double EMin, double EMax){
-  string gates = "abs(T_MUGAST_VAMOS-2700)<400 && MUST2.TelescopeNumber==5 && ELab > " 
-	       + to_string(EMin) 
-	       + " && ELab < " 
-	       + to_string(EMax);
+  double width = EMax-EMin;
+  double centre = EMin+(0.5*width);
+//  string gates = "abs(T_MUGAST_VAMOS-2700)<400 && MUST2.TelescopeNumber==5 && abs(ELab - " 
+  string gate = timegate + "&&" + det_gate 
+               + "&& abs(ELab - "
+	       + to_string(centre) 
+	       + ")< " 
+	       + to_string(width);
 
-  chain->Draw("ThetaLab>>hist(80,50,90)", gates.c_str(), "");
+  chain->Draw("ThetaLab>>hist(160,50,90)", gate.c_str(), "");
 }
 
 void GateThetaCM(double minTheta, double maxTheta, double binsize){
@@ -1766,7 +1960,10 @@ void GateThetaLab_AllOverlaid(){
 }
 
 void GateThetaLab_MultiWrite(double startTheta, double finishTheta, int numGates, double binsize){
-  string core = "abs(T_MUGAST_VAMOS-2700)<400 && Mugast.TelescopeNumber>0 && Mugast.TelescopeNumber<8 && ThetaLab > ";
+   string core = timegate 
+	      + " && " + det_gate
+              + " && Ex@.size()==1 && ThetaLab > ";
+// string core = "abs(T_MUGAST_VAMOS-2700)<400 && Mugast.TelescopeNumber>0 && Mugast.TelescopeNumber<8 && ThetaLab > ";
   string ytitle = "Counts / " + to_string(binsize) + " MeV";
   double gatesize = (finishTheta-startTheta)/numGates;
   TList* list = new TList();
@@ -1797,13 +1994,135 @@ void GateThetaLab_MultiWrite(double startTheta, double finishTheta, int numGates
   file->ls();
 }
 
+void GateThetaLab_MultiWrite(double startTheta, double finishTheta, int numGates, double binsize, double gateGammaE, double gateGammaWdth){
+    string core = timegate 
+	      + " && " + det_gate
+	      + " && abs(AddBack_EDC-" + to_string(gateGammaE) + ")<" + to_string(gateGammaWdth)
+              + " && Ex@.size()==1 && ThetaLab > ";
+// string core = "abs(T_MUGAST_VAMOS-2700)<400 && Mugast.TelescopeNumber>0 && abs(AddBack_EDC-" + to_string(gateGammaE) + ")<" + to_string(gateGammaWdth) + " && Mugast.TelescopeNumber<8 && ThetaLab > ";
+  string ytitle = "Counts / " + to_string(binsize) + " MeV";
+  double gatesize = (finishTheta-startTheta)/numGates;
+  TList* list = new TList();
+
+  for (int i=0; i<numGates; i++){
+    double minTheta = startTheta + (i * gatesize);
+    string title = to_string((int) minTheta)+" < ThetaLab < "+to_string((int) (minTheta+gatesize));
+    string gating = core
+        + to_string(minTheta)
+        + " && ThetaLab < "
+        + to_string(minTheta+gatesize);
+    string histname = "cThetaLabGate_" + to_string((int) minTheta) + "-" + to_string((int) (minTheta+gatesize));
+    string draw = "Ex>>" + histname + "(" + to_string(30.0/binsize) + ",-15,15)";
+
+    TCanvas *cEx_ThetaLabGate = new TCanvas(histname.c_str(),histname.c_str(),1000,1000);
+    chain->Draw(draw.c_str(),gating.c_str(),"colz");
+    TH1F* Ex_ThetaLabGate = (TH1F*) gDirectory->Get(histname.c_str());
+    Ex_ThetaLabGate->GetXaxis()->SetTitle("Ex [MeV]");
+    Ex_ThetaLabGate->GetYaxis()->SetTitle(ytitle.c_str());
+    Ex_ThetaLabGate->Sumw2();
+    Ex_ThetaLabGate->SetTitle(title.c_str());
+    list->Add(Ex_ThetaLabGate);
+    delete cEx_ThetaLabGate;
+  }
+
+  TFile* file = new TFile("GateThetaLabHistograms_GammaGate.root","RECREATE");
+  list->Write("GateThetaLabHistograms",TObject::kSingleKey);
+  file->ls();
+}
+
+void CompareThetaLabGatesFromFile(){
+  TFile* oldF = new TFile("GateThetaLabHistograms_11Apr22_20angles.root","READ");
+  TList* oldL = (TList*) oldF->FindObjectAny("GateThetaLabHistograms");
+  
+  TFile* newF = new TFile("GateThetaLabHistograms_11Jul22.root","READ");
+  TList* newL = (TList*) newF->FindObjectAny("GateThetaLabHistograms");
+
+  double minTheta=105.;
+  double gatesize=2.5;
+  int numGates=20;
+
+  TCanvas* cOldNew = new TCanvas("cOldNew","cOldNew",2000,1000);
+  gStyle->SetOptStat(0);
+  cOldNew->Divide(3,2,0.01,0.01,0);
+  /*SetPad(xlow, ylow, xupp, yupp) */
+  cOldNew->cd(1)->SetPad(0., 0.5, 0.5, 1.0);
+  cOldNew->cd(2)->SetPad(0.5, 0.5, 0.75, 1.0 );
+  cOldNew->cd(3)->SetPad(0.75, 0.5, 1, 1.0 );
+  cOldNew->cd(4)->SetPad(0., 0., 0.5, 0.5);
+  cOldNew->cd(5)->SetPad(0.5, 0., 0.75, 0.5 );
+  cOldNew->cd(6)->SetPad(0.75, 0., 1, 0.5 );
+
+  for (int i=0; i<numGates; i++){ 
+    string hname = "cThetaLabGate_" 
+	         + to_string((int) (minTheta+(i*gatesize))) 
+	         + "-" 
+	         + to_string((int) (minTheta+((i+1.)*gatesize)));
+
+    cout << " Looking for " << hname << endl;
+    
+    TH1F* oldH = (TH1F*) oldL->FindObject(hname.c_str());
+    TH1F* newH = (TH1F*) newL->FindObject(hname.c_str());
+
+    //would be faster to set some of these on just the last one but speed not issue here
+    cOldNew->cd(1);
+    oldH->SetLineColor(30+i);
+    oldH->Rebin(2);
+    oldH->GetYaxis()->SetTitle("Counts / 0.100000 MeV");
+    oldH->GetXaxis()->SetRangeUser(-1,7);
+    oldH->GetYaxis()->SetRangeUser(0,400);
+    oldH->SetTitle("08Nov22: 1.3008 um CD2");
+    oldH->Draw("HIST SAME");
+
+    cOldNew->cd(2);
+    TH1F* oldH1 = (TH1F*) oldH->Clone();
+    oldH1->SetName("oldH1");
+    oldH1->GetXaxis()->SetRangeUser(-1,1);
+    oldH1->SetTitle("");
+    oldH1->Draw("HIST SAME");
+ 
+    cOldNew->cd(3);
+    TH1F* oldH2 = (TH1F*) oldH->Clone();
+    oldH2->GetYaxis()->SetRangeUser(0,250);
+    oldH2->SetName("oldH2");
+    oldH2->GetXaxis()->SetRangeUser(1.5,2.5);
+    oldH2->SetTitle("");
+    oldH2->Draw("HIST SAME");
+   
+    cOldNew->cd(4);
+    newH->GetXaxis()->SetRangeUser(-1,7);
+    newH->GetYaxis()->SetRangeUser(0,400);
+    newH->SetLineColor(30+i);
+    newH->SetTitle("11Jul22: 2.8798 um CD2");
+    newH->Draw("HIST SAME");
+
+    cOldNew->cd(5);
+    TH1F* newH1 = (TH1F*) newH->Clone();
+    newH1->SetName("newH1");
+    newH1->GetXaxis()->SetRangeUser(-1,1);
+    newH1->SetTitle("");
+    newH1->Draw("HIST SAME");
+ 
+    cOldNew->cd(6);
+    TH1F* newH2 = (TH1F*) newH->Clone();
+    newH2->GetYaxis()->SetRangeUser(0,250);
+    newH2->SetName("newH2");
+    newH2->GetXaxis()->SetRangeUser(1.5,2.5);
+    newH2->SetTitle("");
+    newH2->Draw("HIST SAME");
+
+  }
+
+
+}
+
 void GatePhaseSpaceByThetaLab_MultiWrite(double startTheta, double finishTheta, int numGates, double binsize){
   string core = "EventWeight*(Mugast.TelescopeNumber>0 && Mugast.TelescopeNumber<8 && ThetaLab > ";
   string ytitle = "Counts / " + to_string(binsize) + " MeV";
   double gatesize = (finishTheta-startTheta)/numGates;
   TList* list = new TList();
 
-  TFile* psfile = new TFile("../../../Outputs/Analysis/Sim_02Mar_47Kdp_PhaseSpace.root","READ");
+  //TFile* psfile = new TFile("../../../Outputs/Analysis/Sim_02Mar_47Kdp_PhaseSpace.root","READ");
+  TFile* psfile = new TFile("../../../Outputs/Analysis/Sim_PhaseSpace_11Jul22.root","READ");
   TTree* PSTree = (TTree*) psfile->FindObjectAny("PhysicsTree");
 
   for (int i=0; i<numGates; i++){
@@ -1873,7 +2192,6 @@ void GammaSub_Actual_ExcludeBeamDecay(){
   TH1F* Eg = (TH1F*) gDirectory->Get("Eg");
   Eg->Draw();
 }
-
 
 /*
 void gg(){
@@ -2047,18 +2365,20 @@ cout << "THIS IS OLD!!!! UPDATE WITH THE BEAM EXCLUSION!!!" << endl;
    }//for i
 }
 
-
 void gg(){
  
-   cout << "LOADING FILES: 47Kdp_11Apr22_PartI & II" << endl;
+   //cout << "LOADING FILES: 47Kdp_11Apr22_PartI & II" << endl;
+   cout << "LOADING FILES: 47Kdp_11Jul22_PartI & II" << endl;
 
    auto h=new TH2F("gg","gg",1000,0,10,1000,0,10);
-   auto DataFile = new TFile("../../../Outputs/Analysis/47Kdp_11Apr22_PartI.root", "READ");
+   //auto DataFile = new TFile("../../../Outputs/Analysis/47Kdp_11Apr22_PartI.root", "READ");
+   auto DataFile = new TFile("../../../Outputs/Analysis/47Kdp_11Jul22_PartI.root", "READ");
    auto chain = (TTree*) DataFile->FindObjectAny("PhysicsTree");
    ggLoad(chain, h);
 
    auto h2=new TH2F("gg","gg",1000,0,10,1000,0,10);
-   auto DataFile2 = new TFile("../../../Outputs/Analysis/47Kdp_11Apr22_PartII.root", "READ");
+   //auto DataFile2 = new TFile("../../../Outputs/Analysis/47Kdp_11Apr22_PartII.root", "READ");
+   auto DataFile2 = new TFile("../../../Outputs/Analysis/47Kdp_11Jul22_PartII.root", "READ");
    auto chain2 = (TTree*) DataFile->FindObjectAny("PhysicsTree");
    ggLoad(chain2, h2);
 
@@ -2141,10 +2461,7 @@ void ggGater(TH2F* h, double E, double gate){
 
 }
 
-
-
 void Figure_Eg_MG(){
-
   chain->Draw("AddBack_EDC>>Eg(5000,0,5)","abs(T_MUGAST_VAMOS-2700)<400 && Mugast.TelescopeNumber>0 && Mugast.TelescopeNumber<8");
   TH1F* Eg = (TH1F*) gDirectory->Get("Eg");
   Eg->GetXaxis()->SetTitle("E_{#gamma} [MeV]");
@@ -2185,5 +2502,193 @@ void Figure_Eg_MG(){
   Eg2->Draw();
 
 
+}
+
+void Figure_GateGamma_SeeParticle(double gamma, double width, double bg, double widthbg, double gammaBinWidth, double particleBinWidth){
+  string gating = timegate + "&&" + det_gate + " && Ex@.size()==1 && abs(AddBack_EDC-" 
+      + to_string(gamma)
+      + ")<"
+      + to_string(width);
+  string bggate = timegate + "&&" + det_gate + " && Ex@.size()==1 && abs(AddBack_EDC-" 
+      + to_string(bg)
+      + ")<"
+      + to_string(widthbg);
+
+  string gammagate = timegate 
+	      + " && " + det_gate
+	      + " && " + exclBmDcy;
+
+  double ratio = width/widthbg;
+
+  ////////////////////////////////////////////////
+
+  TCanvas *cFig_GGSP = new TCanvas("cFig_GGSP","cFig_GGSP",1000,1000);
+  gStyle->SetOptStat(0);
+  cFig_GGSP->Divide(1,2,0.005,0.005,0);
+  cFig_GGSP->cd(1); 
+    gStyle->SetPadLeftMargin(0.10);
+    gStyle->SetPadRightMargin(0.01);
+    gPad->SetTickx();
+    gPad->SetTicky();
+  cFig_GGSP->cd(2); 
+    gStyle->SetPadLeftMargin(0.10);
+    gStyle->SetPadRightMargin(0.01);
+    gPad->SetTickx();
+    gPad->SetTicky();
+ 
+  cFig_GGSP->cd(2);
+  string draw1 = "Ex>>hEx(" + to_string(30./particleBinWidth) + ",-15,15)";
+  chain->Draw(draw1.c_str(),gating.c_str(),"");
+  TH1F* ExGate = (TH1F*) gDirectory->Get("hEx");
+  ExGate->GetXaxis()->SetTitle("Ex [MeV]");
+  string nameExYaxis = "Counts / " + to_string(particleBinWidth) + " MeV";
+  ExGate->GetYaxis()->SetTitle(nameExYaxis.c_str());
+  ExGate->SetLineColor(kGreen);
+  ExGate->SetFillColor(kGreen);
+  ExGate->SetFillStyle(3154);
+  ExGate->SetTitle("");
+  ExGate->GetXaxis()->SetTitleSize(0.05);
+  ExGate->GetXaxis()->SetLabelSize(0.05);
+  ExGate->GetYaxis()->SetTitleSize(0.05);
+  ExGate->GetYaxis()->SetLabelSize(0.05);
+  ExGate->GetYaxis()->SetTitleOffset(0.5);
+  ExGate->GetYaxis()->SetNdivisions(520);
+  ExGate->GetXaxis()->SetRangeUser(-1.,7.);
+
+  string draw2 = "Ex>>hExBG(" + to_string(30./particleBinWidth) + ",-15,15)";
+  chain->Draw(draw2.c_str(),bggate.c_str(),"same hist");
+  TH1F* ExBG = (TH1F*) gDirectory->Get("hExBG");
+  ExBG->Scale(ratio);
+  ExBG->SetLineColor(kRed);
+  ExBG->SetFillColor(kRed);
+  ExBG->SetFillStyle(3345);
+  ExBG->SetTitle("");
+  ExBG->GetXaxis()->SetRangeUser(-1.,7.);
+  ExBG->Draw("same hist");
+
+  cFig_GGSP->Update();
+  double maxEx = cFig_GGSP->cd(2)->GetUymax();
+  TLine *Sn = new TLine(4.644, 0.0, 4.644, maxEx);
+    Sn->SetLineColor(kBlack); Sn->SetLineStyle(7);
+    Sn->Draw();
+  TLine *gs = new TLine(0.000, 0.0, 0.000, maxEx);
+    gs->SetLineColor(kBlack); gs->SetLineStyle(1);
+    gs->Draw();
+
+  cFig_GGSP->cd(1);
+  string drawg = "AddBack_EDC>>hEg(" + to_string(5./gammaBinWidth) + ",0,5)";
+  chain->Draw(drawg.c_str(),gammagate.c_str(),"");
+  TH1F* hEg = (TH1F*) gDirectory->Get("hEg");
+  hEg->SetLineColor(kBlack);
+  string nameEgYaxis = "Counts / " + to_string(gammaBinWidth) + " MeV";
+  hEg->GetXaxis()->SetTitle("E_{#gamma} [MeV]");
+  hEg->GetYaxis()->SetTitle(nameEgYaxis.c_str());
+  double zoomMin = min((double) floor((gamma-width)*10)/10., (double) floor((bg-widthbg)*10)/10.);
+  double zoomMax = max((double) ceil((gamma+width)*10)/10.,  (double) ceil((bg+widthbg)*10)/10.);
+  hEg->GetXaxis()->SetRangeUser(zoomMin,zoomMax);
+  hEg->SetTitle("");
+  hEg->GetXaxis()->SetTitleSize(0.05);
+  hEg->GetXaxis()->SetLabelSize(0.05);
+  hEg->GetYaxis()->SetTitleSize(0.05);
+  hEg->GetYaxis()->SetLabelSize(0.05);
+  hEg->GetYaxis()->SetTitleOffset(0.5);
+  hEg->Draw();
+
+  cFig_GGSP->Update();
+  double max = cFig_GGSP->cd(1)->GetUymax();
+  TLine* gateL = new TLine(gamma-width,0,gamma-width,max);
+    gateL->SetLineColor(kGreen); gateL->SetLineStyle(10);
+  TLine* gateH = new TLine(gamma+width,0,gamma+width,max);
+    gateH->SetLineColor(kGreen); gateH->SetLineStyle(10);
+  TLine* bgL = new TLine(bg-widthbg,0,bg-widthbg,max);
+    bgL->SetLineColor(kRed); bgL->SetLineStyle(10);
+  TLine* bgH = new TLine(bg+widthbg,0,bg+widthbg,max);
+    bgH->SetLineColor(kRed); bgH->SetLineStyle(10);
+  gateL->Draw("SAME");
+  gateH->Draw("SAME");
+  bgL->Draw("SAME");
+  bgH->Draw("SAME");
+
+}
+
+
+
+
+
+
+
+
+
+
+
+void Figure_TopGamma_BottomParticle(double gammaBinWidth, double particleBinWidth){
+  string gating = timegate + "&&" + det_gate + " && Ex@.size()==1";
+  string gammagate = timegate 
+	      + " && " + det_gate
+	      + " && " + exclBmDcy;
+
+  ////////////////////////////////////////////////
+
+  TCanvas *cFig_GGSP = new TCanvas("cFig_GGSP","cFig_GGSP",1000,1000);
+  gStyle->SetOptStat(0);
+  cFig_GGSP->Divide(1,2,0.005,0.005,0);
+  cFig_GGSP->cd(1); 
+    gStyle->SetPadLeftMargin(0.10);
+    gStyle->SetPadRightMargin(0.01);
+    gPad->SetTickx();
+    gPad->SetTicky();
+  cFig_GGSP->cd(2); 
+    gStyle->SetPadLeftMargin(0.10);
+    gStyle->SetPadRightMargin(0.01);
+    gPad->SetTickx();
+    gPad->SetTicky();
+ 
+  cFig_GGSP->cd(2);
+  string draw1 = "Ex>>hEx(" + to_string(30./particleBinWidth) + ",-15,15)";
+  chain->Draw(draw1.c_str(),gating.c_str(),"");
+  TH1F* hEx = (TH1F*) gDirectory->Get("hEx");
+  hEx->GetXaxis()->SetTitle("Ex [MeV]");
+  string nameExYaxis = "Counts / " + to_string(particleBinWidth) + " MeV";
+  hEx->GetYaxis()->SetTitle(nameExYaxis.c_str());
+  //ExGate->SetLineColor(kGreen);
+  //ExGate->SetFillColor(kGreen);
+  //ExGate->SetFillStyle(3154);
+  hEx->SetTitle("");
+  hEx->GetXaxis()->SetTitleSize(0.05);
+  hEx->GetXaxis()->SetLabelSize(0.05);
+  hEx->GetYaxis()->SetTitleSize(0.05);
+  hEx->GetYaxis()->SetLabelSize(0.05);
+  hEx->GetYaxis()->SetTitleOffset(0.5);
+  hEx->GetYaxis()->SetNdivisions(520);
+  hEx->GetXaxis()->SetRangeUser(-1.,7.);
+  hEx->Draw();
+  FitKnownPeaks(hEx);
+
+  cFig_GGSP->Update();
+  double maxEx = cFig_GGSP->cd(2)->GetUymax();
+  TLine *Sn = new TLine(4.644, 0.0, 4.644, maxEx);
+    Sn->SetLineColor(kBlack); Sn->SetLineStyle(7);
+    Sn->Draw();
+  TLine *gs = new TLine(0.000, 0.0, 0.000, maxEx);
+    gs->SetLineColor(kBlack); gs->SetLineStyle(1);
+    gs->Draw();
+
+  cFig_GGSP->cd(1);
+  string drawg = "AddBack_EDC>>hEg(" + to_string(5./gammaBinWidth) + ",0,5)";
+  chain->Draw(drawg.c_str(),gammagate.c_str(),"");
+  TH1F* hEg = (TH1F*) gDirectory->Get("hEg");
+  hEg->SetLineColor(kBlack);
+  string nameEgYaxis = "Counts / " + to_string(gammaBinWidth) + " MeV";
+  hEg->GetXaxis()->SetTitle("E_{#gamma} [MeV]");
+  hEg->GetYaxis()->SetTitle(nameEgYaxis.c_str());
+  hEg->SetTitle("");
+  hEg->GetXaxis()->SetTitleSize(0.05);
+  hEg->GetXaxis()->SetLabelSize(0.05);
+  hEg->GetYaxis()->SetTitleSize(0.05);
+  hEg->GetYaxis()->SetLabelSize(0.05);
+  hEg->GetYaxis()->SetTitleOffset(0.5);
+  hEg->Draw();
+
+  cFig_GGSP->Update();
 }
 
