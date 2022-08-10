@@ -137,7 +137,7 @@ void TVendetaPhysics::PreTreat() {
     double Qmax = m_EventData->GetLGQmax(i);
     double TimeOffset=0;
     TimeOffset = Cal->GetValue("Vendeta/DET"+NPL::itoa(det)+"_LG_ANODE"+NPL::itoa(m_AnodeNumber)+"_TIMEOFFSET",0);
-
+    TimeOffset=0;
     double Time = m_EventData->GetLGTime(i) + TimeOffset;
     // Remove saturated detector and echoes (signals after a specific amplitude) 
     if(Qmax < LG_Limits[det-1] && det != ID_Saturation && det != ID_Echoes ){ 
@@ -164,6 +164,7 @@ void TVendetaPhysics::PreTreat() {
     double Qmax = m_EventData->GetHGQmax(i);
     double TimeOffset=0;
     TimeOffset = Cal->GetValue("Vendeta/DET"+NPL::itoa(det)+"_HG_ANODE"+NPL::itoa(m_AnodeNumber)+"_TIMEOFFSET",0);
+    TimeOffset=0;
     double Time = m_EventData->GetHGTime(i) + TimeOffset;
     if(Qmax < HG_Limits[det-1] && det != ID_Saturation && det != ID_Echoes ){ 
       m_PreTreatedData->SetHGDetectorNbr(det);
@@ -171,7 +172,7 @@ void TVendetaPhysics::PreTreat() {
       m_PreTreatedData->SetHGQ2(m_EventData->GetHGQ2(i));
       m_PreTreatedData->SetHGTime(Time);
       m_PreTreatedData->SetHGQmax(Qmax);
-      if(Qmax > 17000){
+      if(Qmax > 1500){
         ID_Echoes = det;
       }
     }
