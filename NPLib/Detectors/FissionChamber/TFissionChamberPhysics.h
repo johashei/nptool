@@ -65,6 +65,7 @@ class TFissionChamberPhysics : public TObject, public NPL::VDetector {
     vector<int>      AnodeNumber;
     vector<double>   Q1;
     vector<double>   Q2;
+    vector<double>   Qmax;
     vector<double>   Time;
     vector<bool>     isFakeFission;
     vector<double>   Time_HF;

@@ -88,6 +88,7 @@ void TFissionChamberPhysics::BuildPhysicalEvent() {
     AnodeNumber.push_back(m_PreTreatedData->GetAnodeNbr(e));
     Q1.push_back(m_PreTreatedData->GetQ1(e));
     Q2.push_back(m_PreTreatedData->GetQ2(e));
+    Qmax.push_back(m_PreTreatedData->GetQmax(e));
     Time.push_back(m_PreTreatedData->GetTime(e));
     isFakeFission.push_back(m_PreTreatedData->GetFakeFissionStatus(e));
   }
@@ -109,21 +110,24 @@ void TFissionChamberPhysics::PreTreat() {
 
   // instantiate CalibrationManager
   static CalibrationManager* Cal = CalibrationManager::getInstance();
-
+    
+  
   unsigned int mysize = m_EventData->GetMultiplicity();
   for (UShort_t i = 0; i < mysize ; ++i) {
     Double_t Q1 = m_EventData->GetQ1(i);
     Double_t Q2 = m_EventData->GetQ2(i);
+    Double_t Qmax = m_EventData->GetQmax(i);
     if (Q2 > m_E_Threshold) {
       int AnodeNumber = m_EventData->GetAnodeNbr(i);
       double TimeOffset = Cal->GetValue("FissionChamber/ANODE"+NPL::itoa(AnodeNumber)+"_TIMEOFFSET",0);
       double Time = m_EventData->GetTime(i) + TimeOffset;
-
       m_PreTreatedData->SetAnodeNbr(AnodeNumber);
       m_PreTreatedData->SetQ1(Q1);
       m_PreTreatedData->SetQ2(Q2);
+      m_PreTreatedData->SetQmax(Qmax);
       m_PreTreatedData->SetTime(Time);
       m_PreTreatedData->SetFakeFissionStatus(m_EventData->GetFakeFissionStatus(i));
+    
     }
   }
   unsigned int mysizeHF = m_EventData->GetHFMultiplicity();
@@ -204,6 +208,7 @@ void TFissionChamberPhysics::Clear() {
   AnodeNumber.clear();
   Q1.clear();
   Q2.clear();
+  Qmax.clear();
   Time.clear();
   Time_HF.clear();
   isFakeFission.clear();
