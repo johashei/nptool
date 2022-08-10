@@ -43,12 +43,22 @@ class Analysis: public NPL::VAnalysis{
     static NPL::VAnalysis* Construct();
 
   private:
-    vector<double> ThetaLab;
-    vector<double> ELab;
-    vector<double> Tof;
-    vector<double> Q1;
-    vector<double> Q2;
-    vector<bool>   HG_status;
+    vector<double> LG_ID;
+    vector<double> LG_ThetaLab;
+    vector<double> LG_ELab;
+    vector<double> LG_Tof;
+    vector<double> LG_Q1;
+    vector<double> LG_Q2;
+    vector<double> LG_Qmax;
+
+    vector<double> HG_ID;
+    vector<double> HG_ThetaLab;
+    vector<double> HG_ELab;
+    vector<double> HG_Tof;
+    vector<double> HG_Q1;
+    vector<double> HG_Q2;
+    vector<double> HG_Qmax;
+    
 
   private:
     TVendetaPhysics* Vendeta;
