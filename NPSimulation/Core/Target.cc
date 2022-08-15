@@ -52,6 +52,7 @@ using namespace CLHEP ;
 #include "MaterialManager.hh"
 #include "Decay.hh"
 #include "FissionDecay.hh"
+#include "ThreeBody.hh"
 // NPL
 #include "NPOptionManager.h"
 #include "NPInputParser.h"
@@ -468,6 +469,9 @@ void Target::SetReactionRegion(){
   fsm = new NPS::Decay("Decay",m_ReactionRegion);
   m_ReactionModel.push_back(fsm); 
   fsm = new NPS::FissionDecay("FissionDecay",m_ReactionRegion);
+  m_ReactionModel.push_back(fsm); 
+  fsm = new NPS::ThreeBody("ThreeBody",m_ReactionRegion);
+  ((NPS::ThreeBody*) fsm)->SetStepSize(m_TargetThickness/100.);
   m_ReactionModel.push_back(fsm); 
 
 }
