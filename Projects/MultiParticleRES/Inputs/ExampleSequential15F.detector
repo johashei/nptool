@@ -1,0 +1,75 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Target
+ THICKNESS= 106.5 micrometer
+ RADIUS=  30 mm
+ MATERIAL= CH2
+ ANGLE= 0 deg
+ X= 0 mm
+ Y= 0 mm 
+ Z= 0 cm
+
+% %%%%%%%%%%%%%%%%%%%%%%%%%
+% % Experiment thickness = 34um
+% beam_dump
+%  R= 830 mm
+%  THETA = 0
+%  PHI = 0 
+%  Thickness= 45 micrometer 
+% 
+%%%%%%% Telescope 1 DSSD5 %%%%%%%     
+M2Telescope      
+ X128_Y128=	-12.05	104.5	147.54
+ X128_Y1=	-102.43	104.7	111.59
+ X1_Y1=	-114.08	12.53	140.36
+ X1_Y128=	-23.71	12.32	176.3
+ SI= 1    
+ SILI= 0    
+ CSI= 1    
+ VIS= all
+
+%%%%%%% Telescope 2 DSSD 4 %%%%%%%     
+M2Telescope      
+ X128_Y128=	-114.49	-10.46	140.4
+ X128_Y1=	-103.09	-102.67	111.64
+ X1_Y1=	-12.56	-102.58	147.47
+ X1_Y128=	-23.97	-10.38	176.22
+ SI= 1    
+ SILI= 0    
+ CSI= 1    
+ VIS= all    
+     
+%%%%%%% Telescope 3 DSSD 7 %%%%%%%     
+M2Telescope      
+ X128_Y128=	13.11	-103.21	147.01
+ X128_Y1=	103.38	-103.24	110.82
+ X1_Y1=	114.96	-10.99	139.34
+ X1_Y128=	24.66	-10.9	175.56
+ SI= 1    
+ SILI= 0    
+ CSI= 1    
+ VIS= all
+     
+%%%%%%% Telescope 4 DSSD 11 %%%%%%%
+M2Telescope      
+ X128_Y128=	115.09	11.03	140.54
+ X128_Y1=	103.67	103.32	111.26
+ X1_Y1=	13.52	103.53	147.05
+ X1_Y128=	24.94	11.24	176.34
+ SI= 1    
+ SILI= 0    
+ CSI= 1    
+ VIS= all    
+
+% %%%%%%% Telescope 5 DSSD 2 %%%%%%%
+% M2Telescope
+%  X128_Y128=	-48.51	47.21	860.3
+%  X128_Y1=	-48.84	-50.07	860.45
+%  X1_Y1=	48.45	-50.36	860.26
+%  X1_Y128=	48.81	46.91	860.11
+%  SI= 1    
+%  SILI= 0    
+%  CSI= 1    
+%  VIS= all
+
+
+

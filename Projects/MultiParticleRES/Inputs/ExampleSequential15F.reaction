@@ -1,0 +1,38 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Beam
+ Particle= 14O
+ Energy= 103.885 MeV
+ %Energy= 93.8 MeV
+ SigmaEnergy= 0.005 MeV
+ SigmaThetaX= 0. deg
+ SigmaPhiY= 0. deg
+ %SigmaX= 7 mm
+ %SigmaY= 7 mm
+ SigmaX= 8 mm
+ SigmaY= 8 mm
+ MeanThetaX= 0. deg
+ MeanPhiY= 0. deg
+ MeanX= -4. mm
+ MeanY= -1. mm
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ThreeBody
+ Type= sequential
+ Beam= 14O
+ Target= 1H
+ CompoundNucleusEnergy= 6.3 MeV
+ CompoundNucleusStateWidth= 0.02 MeV
+ IntermediaryNucleus= 14O
+ IntermediaryState= 0 MeV
+ IntermediaryStateWidth= 0.01 MeV
+ Light1= 1H
+ Heavy= 13N
+ Light2= 1H
+ ExcitationEnergyHeavy= 0. MeV
+ ShootLight1= 1
+ ShootLight2= 1
+ ShootHeavy= 1
+ UserEnergyCS= 1
+ EnergyCSPath= $NPTOOL/Projects/MultiParticleRES/Inputs/BW.root
+ EnergyCSName= BW
