@@ -40,8 +40,8 @@
 #include "G4THitsMap.hh"
 
 // NPTool header
-//#include "CalorimeterScorers.hh"
-#include "SiliconScorers.hh"
+#include "CalorimeterScorers.hh"
+//#include "SiliconScorers.hh"
 #include "InteractionScorers.hh"
 #include "MaterialManager.hh"
 #include "Miniball.hh"
@@ -305,10 +305,10 @@ void Miniball::ReadSensitive(const G4Event* event) {
     if (Energy > Miniball_NS::EnergyThreshold) {
       double Time = RandGauss::shoot(Scorer->GetTime(i), Miniball_NS::ResoTime);
       // double Angle = RandGauss::shoot(Info[5]/deg,Miniball_NS::ResoAngle);
-      m_Event->SetEnergy(DetectorNbr, Energy);
+      m_Event->SetEnergy(DetectorNbr, 4, Energy);
       // m_Event->SetAngle(DetectorNbr,Angle);
-      m_Event->SetTime(DetectorNbr, Time);
-      m_Event->SetAngle(DetectorNbr, m_Inter->GetDetectedAngleTheta(i));
+      m_Event->SetTime(DetectorNbr, 4, Time);
+      m_Event->SetAngle(DetectorNbr, 4, m_Inter->GetDetectedAngleTheta(i));
       // Looks like interaction coordinate XYZ can also be gotten from m_Inter
     }
   }
@@ -336,6 +336,7 @@ void Miniball::ReadSensitive(const G4Event* event) {
 //   The above statement appears to give reasonable output. The problem is therefore probably in the Setters
     }
   }
+  */
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -351,21 +352,21 @@ void Miniball::InitializeScorers() {
   // Otherwise the scorer is initialised
   vector<int> level;
   level.push_back(1);
-//  G4VPrimitiveScorer* Calorimeter = new CalorimeterScorers::PS_Calorimeter("Crystal", level, 0);
-  G4VPrimitiveScorer* Trifold = new SILICONSCORERS::PS_Silicon_Annular("Crystal",
-		  			level[0],
-					0.0,
-					Miniball_NS::CrystalDiameter,
-					0.0*deg,
-					360.0*deg,
-					1, // 1 ring
-					1, // 1 sector
-					3, // 3 quadrants divide the three crystals
-					0);
+  G4VPrimitiveScorer* Calorimeter = new CalorimeterScorers::PS_Calorimeter("Crystal", level, 0);
+//  G4VPrimitiveScorer* Trifold = new SILICONSCORERS::PS_Silicon_Annular("Crystal",
+//		  			level[0],
+//					0.0,
+//					Miniball_NS::CrystalDiameter,
+//					0.0*deg,
+//					360.0*deg,
+//					1, // 1 ring
+//					1, // 1 sector
+//					3, // 3 quadrants divide the three crystals
+//					0);
   G4VPrimitiveScorer* Inter = new InteractionScorers::PS_Interactions("Inter", m_Inter, 1);
   // and register it to the multifunctionnal detector
-//  m_MiniballScorer->RegisterPrimitive(Calorimeter);
-  m_MiniballScorer->RegisterPrimitive(Trifold);
+  m_MiniballScorer->RegisterPrimitive(Calorimeter);
+//  m_MiniballScorer->RegisterPrimitive(Trifold);
   m_MiniballScorer->RegisterPrimitive(Inter);
   G4SDManager::GetSDMpointer()->AddNewDetector(m_MiniballScorer);
 }
