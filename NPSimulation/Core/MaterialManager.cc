@@ -220,6 +220,7 @@ G4Material* MaterialManager::GetMaterialFromLibrary(string Name, double density)
       m_Material[Name] = material;
       return material;
     }
+    // Metalic natural Lithium
     else if (Name == "Li") {
       if (!density)
         density = 0.534 * g / cm3;
@@ -228,6 +229,8 @@ G4Material* MaterialManager::GetMaterialFromLibrary(string Name, double density)
       m_Material[Name] = material;
       return material;
     }
+
+    // Metalic enriched Lithium
     else if (Name == "6Li") {
       if (!density)
         density = 0.534 * g / cm3;
@@ -236,6 +239,8 @@ G4Material* MaterialManager::GetMaterialFromLibrary(string Name, double density)
       m_Material[Name] = material;
       return material;
     }
+
+    // Metalic enriched Lithium
     else if (Name == "7Li") {
       if (!density)
         density = 0.534 * g / cm3;
