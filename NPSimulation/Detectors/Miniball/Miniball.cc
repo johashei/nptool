@@ -269,9 +269,16 @@ void Miniball::ConstructDetector(G4LogicalVolume* world) {
 // Add Detector branch to the EventTree.
 // Called After DetecorConstruction::AddDetector Method
 void Miniball::InitializeRootOutput() {
+  std::cout << "Calling Miniball::InitializeRootOutput" << std::endl;
   RootOutput* pAnalysis = RootOutput::getInstance();
   TTree* pTree = pAnalysis->GetTree();
   if (!pTree->FindBranch("Miniball")) {
+    std::cout << " > Found branch Miniball" << std::endl;
+    std::cout << " > adding object m_event with" 
+              //<< "   \nEnergy " << m_Event->Get_Energy(0)
+	      //<< "   \nE_DetN " << m_Event->GetE_DetectorNbr(0)
+	      //<< "   \nE_CryN " << m_Event->GetE_CrystalNbr(0)
+	      << std::endl;
     pTree->Branch("Miniball", "TMiniballData", &m_Event);
   }
   pTree->SetBranchAddress("Miniball", &m_Event);
