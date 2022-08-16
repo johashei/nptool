@@ -290,7 +290,7 @@ void Miniball::InitializeRootOutput() {
 void Miniball::ReadSensitive(const G4Event* event) {
   m_Event->Clear();
 
-  /*
+  ///*
   ///////////
   CalorimeterScorers::PS_Calorimeter* Scorer = (CalorimeterScorers::PS_Calorimeter*)m_MiniballScorer->GetPrimitive(0);
   // InteractionScorers::PS_Interactions* Inter= (InteractionScorers::PS_Interactions*)
@@ -312,8 +312,9 @@ void Miniball::ReadSensitive(const G4Event* event) {
       // Looks like interaction coordinate XYZ can also be gotten from m_Inter
     }
   }
-  */
-
+  //*/
+	
+  /*
   G4THitsMap<G4double*>* CrystalHitMap;
   std::map<G4int, G4double**>::iterator Crystal_itr;
   G4int CrystalCollectionID = G4SDManager::GetSDMpointer()->GetCollectionID("MiniballScorer/Crystal");
