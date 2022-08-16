@@ -9,7 +9,7 @@
  * Original Author: Adrien Matta  contact address: a.matta@surrey.ac.uk      *
  *                                                                           *
  * Creation Date  : January 2016                                             *
- * Last update    :                                                          *
+ * Last update    : August 2022 - Johannes Sorby Heines                      *
  *---------------------------------------------------------------------------*
  * Decription:                                                               *
  *  This class hold Miniball Treated  data                                   *
@@ -64,6 +64,7 @@ void TMiniballPhysics::BuildSimplePhysicalEvent() {
 
 ///////////////////////////////////////////////////////////////////////////
 void TMiniballPhysics::BuildPhysicalEvent() {
+  std::cout << "Calling TMiniballPhysics::BuildPhysicalEvent()" << endl; 
   // apply thresholds and calibration
   PreTreat();
   // match energy and time together
@@ -72,11 +73,19 @@ void TMiniballPhysics::BuildPhysicalEvent() {
       for (UShort_t a = 0; a < m_PreTreatedData->GetMultAngle(); a++) {
 
         if (m_PreTreatedData->GetE_DetectorNbr(e) == m_PreTreatedData->GetT_DetectorNbr(t) 
-         && m_PreTreatedData->GetE_DetectorNbr(e) == m_PreTreatedData->GetA_DetectorNbr(a)) {
+         && m_PreTreatedData->GetE_DetectorNbr(e) == m_PreTreatedData->GetA_DetectorNbr(a)
+	 && m_PreTreatedData->GetE_CrystalNbr(e) == m_PreTreatedData->GetT_CrystalNbr(t)
+	 && m_PreTreatedData->GetE_CrystalNbr(e) == m_PreTreatedData->GetA_CrystalNbr(a)) {
           DetectorNumber.push_back(m_PreTreatedData->GetE_DetectorNbr(e));
+	  CrystalNumber.push_back(m_PreTreatedData->GetE_CrystalNbr(e));
           Energy.push_back(m_PreTreatedData->Get_Energy(e));
           Angle.push_back(m_PreTreatedData->Get_Angle(a));
           Time.push_back(m_PreTreatedData->Get_Time(t));
+	  cout << "Values after pretreatment:\nDetectorNumber : " << DetectorNumber.back() <<
+		  "\nCrystalNumber : " << CrystalNumber.back() <<
+		  "\nEnergy : " << Energy.back() <<
+		  "\nAngle : " << Angle.back() <<
+		  "\nTime : " << Time.back() << endl;
         }
       }
     }
@@ -96,9 +105,9 @@ void TMiniballPhysics::PreTreat() {
 
   for (UShort_t i = 0; i < m_EventData->GetMultEnergy(); ++i) {
     if (m_EventData->Get_Energy(i) > m_E_RAW_Threshold) {
-      Double_t Energy = Cal->ApplyCalibration("Miniball/ENERGY"+NPL::itoa(m_EventData->GetE_DetectorNbr(i)),m_EventData->Get_Energy(i));
+      Double_t Energy = Cal->ApplyCalibration("Miniball/D"+NPL::itoa(m_EventData->GetE_DetectorNbr(i))+"_CRYSTAL"+NPL::itoa(m_EventData->GetE_CrystalNbr(i))+"_ENERGY",m_EventData->Get_Energy(i));
       if (Energy > m_E_Threshold) {
-        m_PreTreatedData->SetEnergy(m_EventData->GetE_DetectorNbr(i), Energy);
+        m_PreTreatedData->SetEnergy(m_EventData->GetE_DetectorNbr(i), m_EventData->GetE_CrystalNbr(i), Energy);
       }
     }
   }
@@ -106,13 +115,13 @@ void TMiniballPhysics::PreTreat() {
   // Angle
   for (UShort_t i = 0; i < m_EventData->GetMultAngle(); ++i) {
     Double_t Angle = m_EventData->Get_Angle(i);
-    m_PreTreatedData->SetAngle(m_EventData->GetA_DetectorNbr(i), Angle);
+    m_PreTreatedData->SetAngle(m_EventData->GetA_DetectorNbr(i), m_EventData->GetA_CrystalNbr(i), Angle);
   }
   
   // Time 
   for (UShort_t i = 0; i < m_EventData->GetMultTime(); ++i) {
-    Double_t Time= Cal->ApplyCalibration("Miniball/TIME"+NPL::itoa(m_EventData->GetT_DetectorNbr(i)),m_EventData->Get_Time(i));
-    m_PreTreatedData->SetTime(m_EventData->GetT_DetectorNbr(i), Time);
+    Double_t Time= Cal->ApplyCalibration("Miniball/D"+NPL::itoa(m_EventData->GetT_DetectorNbr(i))+"_CRYSTAL"+NPL::itoa(m_EventData->GetT_CrystalNbr(i))+"_TIME",m_EventData->Get_Time(i));
+    m_PreTreatedData->SetTime(m_EventData->GetT_DetectorNbr(i), m_EventData->GetT_CrystalNbr(i), Time);
   }
 }
 
@@ -185,6 +194,7 @@ void TMiniballPhysics::ReadAnalysisConfig() {
 ///////////////////////////////////////////////////////////////////////////
 void TMiniballPhysics::Clear() {
   DetectorNumber.clear();
+  CrystalNumber.clear();
   Energy.clear();
   Angle.clear();
   Time.clear();
@@ -270,10 +280,13 @@ void TMiniballPhysics::WriteSpectra() {
 
 ///////////////////////////////////////////////////////////////////////////
 void TMiniballPhysics::AddParameterToCalibrationManager() {
+  std::cout << "Calling TMiniballPhysics::AddParameterToCalibrationManager()" << endl;
   CalibrationManager* Cal = CalibrationManager::getInstance();
   for (int i = 0; i < m_NumberOfDetectors; ++i) {
-    Cal->AddParameter("Miniball", "D"+ NPL::itoa(i+1)+"_ENERGY","Miniball_D"+ NPL::itoa(i+1)+"_ENERGY");
-    Cal->AddParameter("Miniball", "D"+ NPL::itoa(i+1)+"_TIME","Miniball_D"+ NPL::itoa(i+1)+"_TIME");
+    for (int j = 0; i < 3; j++) {
+      Cal->AddParameter("Miniball", "D"+ NPL::itoa(i+1)+ "_CRYSTAL"+ NPL::itoa(j+1)+ "_ENERGY","Miniball_D"+ NPL::itoa(i+1)+"_CRYSTAL"+ NPL::itoa(j+1)+ "_ENERGY");
+      Cal->AddParameter("Miniball", "D"+ NPL::itoa(i+1)+ "_CRYSTAL"+ NPL::itoa(j+1)+ "_TIME","Miniball_D"+ NPL::itoa(i+1)+ "_CRYSTAL"+ NPL::itoa(j+1)+ "_TIME");
+    }
   }
 }
 

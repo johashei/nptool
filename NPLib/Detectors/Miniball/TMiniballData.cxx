@@ -46,14 +46,17 @@ TMiniballData::~TMiniballData() {
 void TMiniballData::Clear() {
   // Energy
   fMiniball_E_DetectorNbr.clear();
+  fMiniball_E_CrystalNbr.clear();
   fMiniball_Energy.clear();
 
   // Angle
   fMiniball_A_DetectorNbr.clear();
+  fMiniball_A_CrystalNbr.clear();
   fMiniball_Angle.clear();
 
   // Time
   fMiniball_T_DetectorNbr.clear();
+  fMiniball_T_CrystalNbr.clear();
   fMiniball_Time.clear();
 }
 
@@ -68,8 +71,9 @@ void TMiniballData::Dump() const {
   cout << "Miniball_E_Mult: " << mysize << endl;
  
   for (size_t i = 0 ; i < mysize ; i++){
-    cout << "DetNbr: " << fMiniball_E_DetectorNbr[i]
-         << " Energy: " << fMiniball_Energy[i];
+    cout << "    DetNbr: " << fMiniball_E_DetectorNbr[i]
+         << "CrystalNbr: " << fMiniball_E_CrystalNbr[i]
+         << "    Energy: " << fMiniball_Energy[i];
   }
   
   // Angle
@@ -77,8 +81,9 @@ void TMiniballData::Dump() const {
   cout << "Miniball_E_Mult: " << mysize << endl;
  
   for (size_t i = 0 ; i < mysize ; i++){
-    cout << "DetNbr: " << fMiniball_A_DetectorNbr[i]
-         << " Angle: " << fMiniball_Angle[i];
+    cout << "    DetNbr: " << fMiniball_A_DetectorNbr[i]
+         << "CrystalNbr: " << fMiniball_A_CrystalNbr[i]
+         << "     Angle: " << fMiniball_Angle[i];
   }
   
 
@@ -87,7 +92,8 @@ void TMiniballData::Dump() const {
   cout << "Miniball_T_Mult: " << mysize << endl;
  
   for (size_t i = 0 ; i < mysize ; i++){
-    cout << "DetNbr: " << fMiniball_T_DetectorNbr[i]
-         << " Time: " << fMiniball_Time[i];
+    cout << "    DetNbr: " << fMiniball_T_DetectorNbr[i]
+         << "CrystalNbr: " << fMiniball_T_CrystalNbr[i]
+         << "      Time: " << fMiniball_Time[i];
   }
 }

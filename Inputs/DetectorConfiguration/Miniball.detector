@@ -2,60 +2,60 @@
 GeneralTarget
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 Target
- THICKNESS= 10
- RADIUS=	20
- MATERIAL= CD2
- ANGLE= 0
- X= 0
- Y= 0
- Z= 0
+ THICKNESS= 10 micrometer
+ RADIUS= 20
+ MATERIAL= CD2 
+ ANGLE= 0 deg
+ X= 0 mm
+ Y= 0 mm
+ Z= 0 mm
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 Miniball
- R= 110
- THETA= 125
- PHI= 320
+ R= 110 mm
+ THETA= 125 deg
+ PHI= 320 deg
  Shape= Square
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 Miniball
- R= 110
- THETA= 125 
- PHI= 220
+ R= 110 mm
+ THETA= 125 deg
+ PHI= 220 deg
  Shape= Square
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 Miniball
- R= 110
- THETA= 67 
- PHI= 320
+ R= 110 mm
+ THETA= 67 deg
+ PHI= 320 deg
  Shape= Square
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 Miniball
- R= 110
- THETA= 67
- PHI= 220
+ R= 110 mm
+ THETA= 67 deg
+ PHI= 220 deg
  Shape= Square
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 Miniball
- R= 110
- THETA= 67
- PHI= 40
+ R= 110 mm
+ THETA= 67 deg
+ PHI= 40 deg
  Shape= Square
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 Miniball
- R= 110
- THETA= 67
- PHI= 140
+ R= 110 mm
+ THETA= 67 deg
+ PHI= 140 deg
  Shape= Square
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 Miniball
- R= 110
- THETA= 125 
- PHI= 40
+ R= 110 mm 
+ THETA= 125 deg 
+ PHI= 40 deg
  Shape= Square
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 Miniball
- R= 110
- THETA= 125 
- PHI= 140
+ R= 110 mm
+ THETA= 125 deg
+ PHI= 140 deg
  Shape= Square
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

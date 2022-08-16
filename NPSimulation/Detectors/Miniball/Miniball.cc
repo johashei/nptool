@@ -37,9 +37,11 @@
 #include "G4PVPlacement.hh"
 #include "G4Transform3D.hh"
 #include "G4VisAttributes.hh"
+#include "G4THitsMap.hh"
 
 // NPTool header
-#include "CalorimeterScorers.hh"
+//#include "CalorimeterScorers.hh"
+#include "SiliconScorers.hh"
 #include "InteractionScorers.hh"
 #include "MaterialManager.hh"
 #include "Miniball.hh"
@@ -55,10 +57,12 @@ using namespace CLHEP;
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 namespace Miniball_NS {
   // Energy and time Resolution
-  const double EnergyThreshold = 0.01 * MeV;
-  const double ResoTime = 4.5 * ns;
-  const double ResoEnergy = 0.003 * MeV;
-  const double ResoAngle = 5 * deg;
+  const double EnergyThreshold = 0.01*MeV;
+  const double ResoTime = 4.5*ns;
+  const double ResoEnergy = 0.003*MeV;
+  const double ResoAngle = 5*deg;
+  const double CrystalDiameter = 80*mm;
+  const G4int NumberOfCrystals = 3;
 } // namespace Miniball_NS
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -75,10 +79,19 @@ Miniball::Miniball() {
 Miniball::~Miniball() {}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-void Miniball::AddMiniball(double R, double Theta, double Phi) {
+double Miniball::m_EnergyResolutionFWHM(double energy, double a, double b, double c) {
+  double FWHM = a + b*sqrt(energy + c*energy*energy);
+  return FWHM;
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+void Miniball::AddMiniball(double R, double Theta, double Phi, double A, double B, double C) {
   m_R.push_back(R);
   m_Theta.push_back(Theta);
   m_Phi.push_back(Phi);
+  m_A.push_back(A);
+  m_B.push_back(B);
+  m_C.push_back(C);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -111,7 +124,6 @@ G4AssemblyVolume* Miniball::BuildClusterDetector() {
         G4Transform3D Trans(*Rot, Pos);
         m_ClusterDetector->AddPlacedVolume(HPGE, Trans);
         m_NumberOfPlacedVolume++;
-
         for (unsigned int d = 0; d < HPGE->GetNoDaughters(); d++) {
           G4VPhysicalVolume* dVPV = HPGE->GetDaughter(d);
           dname = dVPV->GetLogicalVolume()->GetName();
@@ -147,6 +159,7 @@ G4AssemblyVolume* Miniball::BuildClusterDetector() {
         G4ThreeVector Pos = VPV->GetObjectTranslation();
         G4Transform3D Trans(*Rot, Pos);
         m_ClusterDetector->AddPlacedVolume(HPGE, Trans);
+        m_NumberOfPlacedVolume++;
         for (unsigned int d = 0; d < HPGE->GetNoDaughters(); d++) {
           G4VPhysicalVolume* dVPV = HPGE->GetDaughter(d);
           dname = dVPV->GetLogicalVolume()->GetName();
@@ -155,7 +168,6 @@ G4AssemblyVolume* Miniball::BuildClusterDetector() {
             DeadLayer->SetVisAttributes(DL);
           }
         }
-        m_NumberOfPlacedVolume++;
       }
       else if (name.compare(0, 8, "cluster0") == 0 || name == "nozzle_log") {
         G4LogicalVolume* Capsule = VPV->GetLogicalVolume();
@@ -183,7 +195,7 @@ void Miniball::ReadConfiguration(NPL::InputParser parser) {
   if (NPOptionManager::getInstance()->GetVerboseLevel())
     cout << "//// " << blocks.size() << " detectors found " << endl;
 
-  vector<string> token = {"R", "Theta", "Phi"};
+  vector<string> token = {"R", "Theta", "Phi", "A", "B", "C"};
 
   for (unsigned int i = 0; i < blocks.size(); i++) {
     if (blocks[i]->HasTokenList(token)) {
@@ -192,8 +204,12 @@ void Miniball::ReadConfiguration(NPL::InputParser parser) {
       double R = blocks[i]->GetDouble("R", "mm");
       double Theta = blocks[i]->GetDouble("Theta", "deg");
       double Phi = blocks[i]->GetDouble("Phi", "deg");
+      double A = blocks[i]->GetDouble("A", "MeV");
+      double B = blocks[i]->GetDouble("B", "void");
+      double C = blocks[i]->GetDouble("C", "void");
+      cout << "////  Energy resolution defined as " << A << " + " << B << "*sqrt(E + " << C << "*E*E)" << endl; 
 
-      AddMiniball(R, Theta, Phi);
+      AddMiniball(R, Theta, Phi, A, B, C);
     }
 
     else {
@@ -264,9 +280,10 @@ void Miniball::InitializeRootOutput() {
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 // Read sensitive part and fill the Root tree.
 // Called at in the EventAction::EndOfEventAction
-void Miniball::ReadSensitive(const G4Event*) {
+void Miniball::ReadSensitive(const G4Event* event) {
   m_Event->Clear();
 
+  /*
   ///////////
   CalorimeterScorers::PS_Calorimeter* Scorer = (CalorimeterScorers::PS_Calorimeter*)m_MiniballScorer->GetPrimitive(0);
   // InteractionScorers::PS_Interactions* Inter= (InteractionScorers::PS_Interactions*)
@@ -275,15 +292,40 @@ void Miniball::ReadSensitive(const G4Event*) {
   unsigned int size = Scorer->GetMult();
   for (unsigned int i = 0; i < size; i++) {
     vector<unsigned int> level = Scorer->GetLevel(i);
-    double Energy = RandGauss::shoot(Scorer->GetEnergy(i), Miniball_NS::ResoEnergy);
+    int DetectorNbr = level[0];
+    double EnergyStdDev = Miniball::m_EnergyResolutionFWHM(Scorer->GetEnergy(i), m_A[DetectorNbr-1], m_B[DetectorNbr-1], m_C[DetectorNbr-1]) / (2*sqrt(2*log(2)));
+    double Energy = RandGauss::shoot(Scorer->GetEnergy(i), EnergyStdDev);  
     if (Energy > Miniball_NS::EnergyThreshold) {
       double Time = RandGauss::shoot(Scorer->GetTime(i), Miniball_NS::ResoTime);
-      int DetectorNbr = level[0];
       // double Angle = RandGauss::shoot(Info[5]/deg,Miniball_NS::ResoAngle);
       m_Event->SetEnergy(DetectorNbr, Energy);
       // m_Event->SetAngle(DetectorNbr,Angle);
       m_Event->SetTime(DetectorNbr, Time);
       m_Event->SetAngle(DetectorNbr, m_Inter->GetDetectedAngleTheta(i));
+      // Looks like interaction coordinate XYZ can also be gotten from m_Inter
+    }
+  }
+  */
+
+  G4THitsMap<G4double*>* CrystalHitMap;
+  std::map<G4int, G4double**>::iterator Crystal_itr;
+  G4int CrystalCollectionID = G4SDManager::GetSDMpointer()->GetCollectionID("MiniballScorer/Crystal");
+  CrystalHitMap = (G4THitsMap<G4double*>*)(event->GetHCofThisEvent()->GetHC(CrystalCollectionID));
+
+  // Loop on the Crystal map
+  for (Crystal_itr = CrystalHitMap->GetMap()->begin() ; Crystal_itr != CrystalHitMap->GetMap()->end() ; Crystal_itr++){
+    G4double* Info = *(Crystal_itr->second);
+    double Energy = RandGauss::shoot(Info[0], Miniball_NS::ResoEnergy);
+    if(Energy > Miniball_NS::EnergyThreshold){
+      double Time     = RandGauss::shoot(Info[1], Miniball_NS::ResoTime);
+      double Angle    = Info[5]; 
+      int DetNbr      = (int) Info[7];
+      int CrystalNbr    = (int) Info[10];
+      m_Event->SetEnergy(DetNbr, CrystalNbr, Energy);
+      m_Event->SetAngle(DetNbr, CrystalNbr, Angle);
+      m_Event->SetTime(DetNbr, CrystalNbr, Time);
+//      std::cout << "\n//////\n" << "Time : " << Time << "\nAngle : " << Angle << "\nEnergy : " << Energy << "\nDetNbr : " << DetNbr << "\nCrystalNbr : " << CrystalNbr << endl;
+//   The above statement appears to give reasonable output. The problem is therefore probably in the Setters
     }
   }
 }
@@ -301,10 +343,21 @@ void Miniball::InitializeScorers() {
   // Otherwise the scorer is initialised
   vector<int> level;
   level.push_back(1);
-  G4VPrimitiveScorer* Calorimeter = new CalorimeterScorers::PS_Calorimeter("Crystal", level, 0);
+//  G4VPrimitiveScorer* Calorimeter = new CalorimeterScorers::PS_Calorimeter("Crystal", level, 0);
+  G4VPrimitiveScorer* Trifold = new SILICONSCORERS::PS_Silicon_Annular("Crystal",
+		  			level[0],
+					0.0,
+					Miniball_NS::CrystalDiameter,
+					0.0*deg,
+					360.0*deg,
+					1, // 1 ring
+					1, // 1 sector
+					3, // 3 quadrants divide the three crystals
+					0);
   G4VPrimitiveScorer* Inter = new InteractionScorers::PS_Interactions("Inter", m_Inter, 1);
   // and register it to the multifunctionnal detector
-  m_MiniballScorer->RegisterPrimitive(Calorimeter);
+//  m_MiniballScorer->RegisterPrimitive(Calorimeter);
+  m_MiniballScorer->RegisterPrimitive(Trifold);
   m_MiniballScorer->RegisterPrimitive(Inter);
   G4SDManager::GetSDMpointer()->AddNewDetector(m_MiniballScorer);
 }

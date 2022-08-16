@@ -8,17 +8,17 @@
  *****************************************************************************/
 
 /*****************************************************************************
- * Original Author: Adrien Matta  contact address: a.matta@surrey.ac.uk                        *
+ * Original Author: Adrien Matta  contact address: a.matta@surrey.ac.uk      *
  *                                                                           *
- * Creation Date  : January 2016                                           *
- * Last update    :                                                          *
+ * Creation Date  : January 2016                                             *
+ * Last update    : August 2022 - Johannes Sorby Heines                      *
  *---------------------------------------------------------------------------*
  * Decription:                                                               *
- *  This class hold Miniball Spectra                                     *
+ *  This class hold Miniball Spectra                                         *
  *                                                                           *
  *---------------------------------------------------------------------------*
  * Comment:                                                                  *
- *                                                                           *   
+ *   This code structure is not well suited to adding segmentation           *   
  *                                                                           *
  *****************************************************************************/
 
@@ -57,6 +57,7 @@ class TMiniballSpectra : public VSpectra {
   // Detector parameters 
   private:
     unsigned int fNumberOfDetectors;
+    const unsigned int fNumberOfCrystals = 3;
 };
 
 #endif

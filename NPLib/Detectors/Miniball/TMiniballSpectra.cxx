@@ -8,8 +8,8 @@
 /*****************************************************************************
  * Original Author: Adrien Matta  contact address: a.matta@surrey.ac.uk                        *
  *                                                                           *
- * Creation Date  : January 2016                                           *
- * Last update    :                                                          *
+ * Creation Date  : January 2016                                             *
+ * Last update    : August 2022 - Johannes Sorby Heines                      *
  *---------------------------------------------------------------------------*
  * Decription:                                                               *
  *  This class hold Miniball Spectra                                     *
@@ -68,12 +68,14 @@ TMiniballSpectra::~TMiniballSpectra() {
 void TMiniballSpectra::InitRawSpectra() {
   static string name;
   for (unsigned int i = 0; i < fNumberOfDetectors; i++) { // loop on number of detectors
-    // Energy 
-    name = "Miniball"+NPL::itoa(i+1)+"_ENERGY_RAW";
-    AddHisto1D(name, name, 4096, 0, 16384, "Miniball/RAW");
-    // Time 
-    name = "Miniball"+NPL::itoa(i+1)+"_TIME_RAW";
-    AddHisto1D(name, name, 4096, 0, 16384, "Miniball/RAW");
+    for (unsigned int j = 0; j < fNumberOfCrystals; j++) { // loop on number of crystals 
+      // Energy 
+      name = "Miniball"+NPL::itoa(i+1)+"_ENERGY_RAW";
+      AddHisto2D(name, name, fNumberOfCrystals, 1, fNumberOfCrystals, 4096, 0, 16384, "Miniball/RAW");
+      // Time 
+      name = "Miniball"+NPL::itoa(i+1)+"_TIME_RAW";
+      AddHisto2D(name, name, fNumberOfCrystals, 1, fNumberOfCrystals, 4096, 0, 16384, "Miniball/RAW");
+    } // end loop on number of crystals
   } // end loop on number of detectors
 }
 
@@ -83,14 +85,15 @@ void TMiniballSpectra::InitRawSpectra() {
 void TMiniballSpectra::InitPreTreatedSpectra() {
   static string name;
   for (unsigned int i = 0; i < fNumberOfDetectors; i++) { // loop on number of detectors
-    // Energy 
-    name = "Miniball"+NPL::itoa(i+1)+"_ENERGY_CAL";
-    AddHisto1D(name, name, 500, 0, 25, "Miniball/CAL");
-    // Time
-    name = "Miniball"+NPL::itoa(i+1)+"_TIME_CAL";
-    AddHisto1D(name, name, 500, 0, 25, "Miniball/CAL");
+    for (unsigned int j = 0; j < fNumberOfCrystals; j++) { // loop on number of crystals 
+      // Energy 
+      name = "Miniball"+NPL::itoa(i+1)+"_ENERGY_CAL";
+      AddHisto2D(name, name, fNumberOfCrystals, 1, fNumberOfCrystals,500, 0, 25, "Miniball/CAL");
+      // Time
+      name = "Miniball"+NPL::itoa(i+1)+"_TIME_CAL";
+      AddHisto2D(name, name, fNumberOfCrystals, 1, fNumberOfCrystals,500, 0, 25, "Miniball/CAL");
 
-  
+    }  // end loop on number of crystals 
   }  // end loop on number of detectors
 }
 
@@ -117,7 +120,7 @@ void TMiniballSpectra::FillRawSpectra(TMiniballData* RawData) {
     name = "Miniball"+NPL::itoa(RawData->GetE_DetectorNbr(i))+"_ENERGY_RAW";
     family = "Miniball/RAW";
 
-    FillSpectra(family,name ,RawData->Get_Energy(i));
+    FillSpectra(family, name, RawData->GetE_CrystalNbr(i), RawData->Get_Energy(i));
   }
 
   // Time
@@ -126,7 +129,7 @@ void TMiniballSpectra::FillRawSpectra(TMiniballData* RawData) {
     name = "Miniball"+NPL::itoa(RawData->GetT_DetectorNbr(i))+"_TIME_RAW";
     family = "Miniball/RAW";
 
-    FillSpectra(family,name ,RawData->Get_Time(i));
+    FillSpectra(family, name, RawData->GetT_CrystalNbr(i), RawData->Get_Time(i));
   }
 }
 
@@ -143,7 +146,7 @@ void TMiniballSpectra::FillPreTreatedSpectra(TMiniballData* PreTreatedData) {
     name = "Miniball"+NPL::itoa(PreTreatedData->GetE_DetectorNbr(i))+"_ENERGY_CAL";
     family = "Miniball/CAL";
 
-    FillSpectra(family,name ,PreTreatedData->Get_Energy(i));
+    FillSpectra(family, name, PreTreatedData->GetE_CrystalNbr(i), PreTreatedData->Get_Energy(i));
   }
 
   // Time
@@ -152,7 +155,7 @@ void TMiniballSpectra::FillPreTreatedSpectra(TMiniballData* PreTreatedData) {
     name = "Miniball"+NPL::itoa(PreTreatedData->GetT_DetectorNbr(i))+"_TIME_CAL";
     family = "Miniball/CAL";
 
-    FillSpectra(family,name ,PreTreatedData->Get_Time(i));
+    FillSpectra(family, name, PreTreatedData->GetT_CrystalNbr(i), PreTreatedData->Get_Time(i));
   }
 }
 

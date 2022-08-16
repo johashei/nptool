@@ -55,14 +55,18 @@ class Miniball : public NPS::VDetector{
     // Cylindric plastic
     void AddMiniball(double R,
         double Theta,
-        double Phi);  
+        double Phi,
+	double A,
+	double B,
+	double C);  
 
     G4AssemblyVolume* BuildClusterDetector();
   
   private:
     G4GDMLParser m_gdmlparser;
     G4AssemblyVolume* m_ClusterDetector;
-    double m_NumberOfPlacedVolume;    
+    double m_NumberOfPlacedVolume;   
+
     ////////////////////////////////////////////////////
     //////  Inherite from NPS::VDetector class /////////
     ////////////////////////////////////////////////////
@@ -107,7 +111,13 @@ class Miniball : public NPS::VDetector{
     
     //   Shape type
     vector<string> m_Shape ;
-     
+
+  private: // Energy resolution
+    double m_EnergyResolutionFWHM(double energy, double a, double b, double c);
+    vector<double> m_A;	// TODO: better names
+    vector<double> m_B;
+    vector<double> m_C;
+
   // Needed for dynamic loading of the library
   public:
     static NPS::VDetector* Construct();

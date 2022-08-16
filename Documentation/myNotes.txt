@@ -1,0 +1,5 @@
+RGBA colours defined in NPSimulation/ressources/macro/vis.mac
+	0 0 1  1 (blue) = beam
+	0 1 .5 1 = reaction
+	1 0 1 1 (magenta) = decay
+

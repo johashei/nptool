@@ -65,6 +65,7 @@ class TMiniballPhysics : public TObject, public NPL::VDetector {
   // output ROOT file
   public:
     vector<int>      DetectorNumber;
+    vector<int>      CrystalNumber;
     vector<double>   Energy;
     vector<double>   Angle;
     vector<double>   Time;
