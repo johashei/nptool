@@ -60,9 +60,10 @@ void EventAction::BeginOfEventAction(const G4Event *event) {
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 void EventAction::EndOfEventAction(const G4Event *event) {
-  std::cout << "Calling EventAction::EndOfEventAction" << std::endl;
+  std::cout << std::endl << "Calling EventAction::EndOfEventAction" << std::endl;
   m_detector->ReadAllSensitive(event);
   event->Print();
+  event->Dump();
   m_tree->Fill();
   m_detector->ClearInteractionCoordinates();
   //    if(treated%10000==0){

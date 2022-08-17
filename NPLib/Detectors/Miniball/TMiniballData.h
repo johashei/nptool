@@ -40,18 +40,19 @@ class TMiniballData : public TObject {
   private: 
     // Energy
     vector<UShort_t>   fMiniball_E_DetectorNbr;
-    vector<UShort_t>   fMiniball_E_CrystalNbr;
     vector<Double_t>   fMiniball_Energy;	
 
     // Angle
     vector<UShort_t>   fMiniball_A_DetectorNbr;
-    vector<UShort_t>   fMiniball_A_CrystalNbr;
     vector<Double_t>   fMiniball_Angle;
 
     // Time
     vector<UShort_t>   fMiniball_T_DetectorNbr;
-    vector<UShort_t>   fMiniball_T_CrystalNbr;
     vector<Double_t>   fMiniball_Time;
+
+    vector<UShort_t>   fMiniball_E_CrystalNbr;
+    vector<UShort_t>   fMiniball_A_CrystalNbr;
+    vector<UShort_t>   fMiniball_T_CrystalNbr;
 
 
   //////////////////////////////////////////////////////////////
@@ -88,7 +89,7 @@ class TMiniballData : public TObject {
       SetE_DetectorNbr(DetNbr);
       SetE_CrystalNbr(CrystalNbr);
       Set_Energy(Energy);
-      std::cout << "\nValues added to Miniball:\nfMiniball_E_DetectorNbr : " << fMiniball_E_DetectorNbr.back() << "\nfMiniball_E_CrystalNbr : " << fMiniball_E_CrystalNbr.back() << "\nfMiniball_Energy : " << fMiniball_Energy.back() << "\n" << std::endl;
+//      std::cout << "\nValues added to Miniball:\nfMiniball_E_DetectorNbr : " << fMiniball_E_DetectorNbr.back() << "\nfMiniball_E_CrystalNbr : " << fMiniball_E_CrystalNbr.back() << "\nfMiniball_Energy : " << fMiniball_Energy.back() << "\n" << std::endl;
     };//!
 
     // Angle
@@ -103,7 +104,7 @@ class TMiniballData : public TObject {
       SetA_DetectorNbr(DetNbr);
       SetA_CrystalNbr(CrystalNbr);
       Set_Angle(Angle);
-      std::cout << "\nValues added to Miniball:\nfMiniball_A_DetectorNbr : " << fMiniball_A_DetectorNbr.back() << "\nfMiniball_A_CrystalNbr : " << fMiniball_A_CrystalNbr.back() << "\nfMiniball_Angle : " << fMiniball_Angle.back() << "\n" << std::endl;
+//      std::cout << "\nValues added to Miniball:\nfMiniball_A_DetectorNbr : " << fMiniball_A_DetectorNbr.back() << "\nfMiniball_A_CrystalNbr : " << fMiniball_A_CrystalNbr.back() << "\nfMiniball_Angle : " << fMiniball_Angle.back() << "\n" << std::endl;
     };//!
 
 
@@ -119,7 +120,7 @@ class TMiniballData : public TObject {
       SetT_DetectorNbr(DetNbr);
       SetT_CrystalNbr(CrystalNbr);
       Set_Time(Time);
-      std::cout << "\nValues added to Miniball:\nfMiniball_T_DetectorNbr : " << fMiniball_T_DetectorNbr.back() << "\nfMiniball_T_CrystalNbr : " << fMiniball_T_CrystalNbr.back() << "\nfMiniball_Time : " << fMiniball_Time.back() << "\n" << std::endl;
+//      std::cout << "\nValues added to Miniball:\nfMiniball_T_DetectorNbr : " << fMiniball_T_DetectorNbr.back() << "\nfMiniball_T_CrystalNbr : " << fMiniball_T_CrystalNbr.back() << "\nfMiniball_Time : " << fMiniball_Time.back() << "\n" << std::endl;
     };//!
 
 
