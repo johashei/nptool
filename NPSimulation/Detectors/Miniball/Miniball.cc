@@ -274,14 +274,11 @@ void Miniball::InitializeRootOutput() {
   TTree* pTree = pAnalysis->GetTree();
   if (!pTree->FindBranch("Miniball")) {
     std::cout << " > Found branch Miniball" << std::endl;
-    std::cout << " > adding object m_event with" 
-              //<< "   \nEnergy " << m_Event->Get_Energy(0)
-	      //<< "   \nE_DetN " << m_Event->GetE_DetectorNbr(0)
-	      //<< "   \nE_CryN " << m_Event->GetE_CrystalNbr(0)
-	      << std::endl;
     pTree->Branch("Miniball", "TMiniballData", &m_Event);
   }
   pTree->SetBranchAddress("Miniball", &m_Event);
+  std::cout << "Branch address set to " << &m_Event << std::endl;
+  m_Event->Dump();
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
