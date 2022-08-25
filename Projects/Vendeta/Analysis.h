@@ -58,7 +58,9 @@ class Analysis: public NPL::VAnalysis{
     vector<double> HG_Q1;
     vector<double> HG_Q2;
     vector<double> HG_Qmax;
-    
+
+		vector<double> FC_Q1;    
+		vector<double> FC_Q2;    
 
   private:
     TVendetaPhysics* Vendeta;

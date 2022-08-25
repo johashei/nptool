@@ -129,9 +129,9 @@ void TVendetaPhysics::PreTreat() {
   unsigned int mysizeHG = m_EventData->GetHGMultEnergy();
   
   // LG pretreat
-  static double LG_Limits[4] = {16172,16804,16810,16341};
-  int ID_Saturation = -1;
-  int ID_Echoes =-1;
+  //static double LG_Limits[4] = {16172,16804,16810,16341};
+  //int ID_Saturation = -1;
+  //int ID_Echoes =-1;
   for (UShort_t i = 0; i < mysizeLG ; ++i){
     int det = m_EventData->GetLGDetectorNbr(i);
     double Qmax = m_EventData->GetLGQmax(i);
@@ -139,45 +139,44 @@ void TVendetaPhysics::PreTreat() {
     TimeOffset = Cal->GetValue("Vendeta/DET"+NPL::itoa(det)+"_LG_ANODE"+NPL::itoa(m_AnodeNumber)+"_TIMEOFFSET",0);
     double Time = m_EventData->GetLGTime(i) + TimeOffset;
     // Remove saturated detector and echoes (signals after a specific amplitude) 
-    if(Qmax < LG_Limits[det-1] && det != ID_Saturation && det != ID_Echoes ){ 
+    //if(Qmax < LG_Limits[det-1] && det != ID_Saturation && det != ID_Echoes ){ 
       m_PreTreatedData->SetLGDetectorNbr(det);
       m_PreTreatedData->SetLGQ1(m_EventData->GetLGQ1(i));
       m_PreTreatedData->SetLGQ2(m_EventData->GetLGQ2(i));
       m_PreTreatedData->SetLGTime(Time);
       m_PreTreatedData->SetLGQmax(Qmax);
-      if(Qmax > 17000){
+      /*if(Qmax > 17000){
         ID_Echoes = det;
-      }
-    }
-    else if(Qmax > LG_Limits[det-1]){
+      }*/
+    //}
+    /*else if(Qmax > LG_Limits[det-1]){
         ID_Saturation = det;
-    }
+    }*/
   }
 
   // HG pretreat
-  static double HG_Limits[4] = {16292,16314,16604,16399};
+  /*static double HG_Limits[4] = {16292,16314,16604,16399};
   ID_Saturation = -1;
-  ID_Echoes =-1;
+  ID_Echoes =-1;*/
   for (UShort_t i = 0; i < mysizeHG ; ++i){
     int det = m_EventData->GetHGDetectorNbr(i);
     double Qmax = m_EventData->GetHGQmax(i);
     double TimeOffset=0;
     TimeOffset = Cal->GetValue("Vendeta/DET"+NPL::itoa(det)+"_HG_ANODE"+NPL::itoa(m_AnodeNumber)+"_TIMEOFFSET",0);
-    TimeOffset=0;
     double Time = m_EventData->GetHGTime(i) + TimeOffset;
-    if(Qmax < HG_Limits[det-1] && det != ID_Saturation && det != ID_Echoes ){ 
+    //if(Qmax < HG_Limits[det-1] && det != ID_Saturation && det != ID_Echoes ){ 
       m_PreTreatedData->SetHGDetectorNbr(det);
       m_PreTreatedData->SetHGQ1(m_EventData->GetHGQ1(i));
       m_PreTreatedData->SetHGQ2(m_EventData->GetHGQ2(i));
       m_PreTreatedData->SetHGTime(Time);
       m_PreTreatedData->SetHGQmax(Qmax);
-      if(Qmax > 1500){
+      /*if(Qmax > 1500){
         ID_Echoes = det;
-      }
-    }
-    else if(Qmax > HG_Limits[det-1]){
+      }*/
+    //}
+    /*else if(Qmax > HG_Limits[det-1]){
       ID_Saturation = det;
-    }
+    }*/
   }
 
 }

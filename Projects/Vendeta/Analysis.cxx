@@ -74,10 +74,10 @@ void Analysis::TreatEvent(){
 				double DeltaTheta = atan(63.5/Rdet);
 				double Theta_Vendeta = DetPos.Theta();
 				double Theta_random = ra.Uniform(Theta_Vendeta-DeltaTheta,Theta_Vendeta+DeltaTheta);
-				//cout << DT << " " << Rdet << endl;
+				//cout << DetNbr << " " << Rdet << endl;
 				//neutron->SetTimeOfFlight(DT*1e-9/(Rdet*1e-3));
-				neutron->SetTimeOfFlight(DT*1e-9/(0.55));
-				//neutron->SetBeta( (LoF_Vend[DetNbr-1] / DT )/ c_light); 
+				//neutron->SetTimeOfFlight(DT*1e-9/(0.55));
+				neutron->SetBeta(  (Rdet/DT) / c_light); 
 
 				double En = neutron->GetEnergy();
 
@@ -89,6 +89,8 @@ void Analysis::TreatEvent(){
 				LG_Q1.push_back(Vendeta->LG_Q1[i]);
 				LG_Q2.push_back(Vendeta->LG_Q2[i]);
 				LG_Qmax.push_back(Vendeta->LG_Qmax[i]);
+				FC_Q1.push_back(FC->Q1[0]);
+				FC_Q2.push_back(FC->Q2[0]);
 			}
 		}
 
@@ -106,10 +108,10 @@ void Analysis::TreatEvent(){
 				double DeltaTheta = atan(63.5/Rdet);
 				double Theta_Vendeta = DetPos.Theta();
 				double Theta_random = ra.Uniform(Theta_Vendeta-DeltaTheta,Theta_Vendeta+DeltaTheta);
-				//cout << DT << " " << Rdet << endl;
+				//cout << DetNbr << " " << Rdet << endl;
 				//neutron->SetTimeOfFlight(DT*1e-9/(Rdet*1e-3));
-				neutron->SetTimeOfFlight(DT*1e-9/(0.55));
-				//neutron->SetBeta( (LoF_Vend[DetNbr-1] / DT )/ c_light); 
+				//neutron->SetTimeOfFlight(DT*1e-9/(0.55));
+				neutron->SetBeta( (Rdet/DT) / c_light); 
 				double En = neutron->GetEnergy();
 
 				// Filling output tree
@@ -120,6 +122,8 @@ void Analysis::TreatEvent(){
 				HG_Q1.push_back(Vendeta->HG_Q1[i]);
 				HG_Q2.push_back(Vendeta->HG_Q2[i]);
 				HG_Qmax.push_back(Vendeta->HG_Qmax[i]);
+				FC_Q1.push_back(FC->Q1[0]);
+				FC_Q2.push_back(FC->Q2[0]);
 			}
 		}
 
@@ -173,6 +177,8 @@ void Analysis::TreatEvent(){
 		RootOutput::getInstance()->GetTree()->Branch("HG_Q1",&HG_Q1);
 		RootOutput::getInstance()->GetTree()->Branch("HG_Q2",&HG_Q2);
 		RootOutput::getInstance()->GetTree()->Branch("HG_Qmax",&HG_Qmax);
+		RootOutput::getInstance()->GetTree()->Branch("FC_Q1",&FC_Q1);
+		RootOutput::getInstance()->GetTree()->Branch("FC_Q2",&FC_Q2);
 
 	}
 
@@ -193,6 +199,9 @@ void Analysis::TreatEvent(){
 		HG_Q1.clear();
 		HG_Q2.clear();
 		HG_Qmax.clear();
+
+		FC_Q1.clear();
+		FC_Q2.clear();
 
 	}
 
