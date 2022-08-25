@@ -137,7 +137,6 @@ void TVendetaPhysics::PreTreat() {
     double Qmax = m_EventData->GetLGQmax(i);
     double TimeOffset=0;
     TimeOffset = Cal->GetValue("Vendeta/DET"+NPL::itoa(det)+"_LG_ANODE"+NPL::itoa(m_AnodeNumber)+"_TIMEOFFSET",0);
-    TimeOffset=0;
     double Time = m_EventData->GetLGTime(i) + TimeOffset;
     // Remove saturated detector and echoes (signals after a specific amplitude) 
     if(Qmax < LG_Limits[det-1] && det != ID_Saturation && det != ID_Echoes ){ 
