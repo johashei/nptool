@@ -84,6 +84,7 @@ void Analysis::TreatEvent(){
 				// Filling output tree
 				LG_Tof.push_back(DT);
 				LG_ID.push_back(DetNbr);
+				LG_Anode_ID.push_back(anode);
 				LG_ELab.push_back(En);
 				LG_ThetaLab.push_back(Theta_random);
 				LG_Q1.push_back(Vendeta->LG_Q1[i]);
@@ -116,6 +117,7 @@ void Analysis::TreatEvent(){
 
 				// Filling output tree
 				HG_ID.push_back(DetNbr);
+			  HG_Anode_ID.push_back(anode);
 				HG_Tof.push_back(DT);
 				HG_ELab.push_back(En);
 				HG_ThetaLab.push_back(Theta_random);
@@ -163,6 +165,7 @@ void Analysis::TreatEvent(){
 	////////////////////////////////////////////////////////////////////////////////
 	void Analysis::InitOutputBranch(){
 		RootOutput::getInstance()->GetTree()->Branch("LG_ID",&LG_ID);
+		RootOutput::getInstance()->GetTree()->Branch("LG_Anode_ID",&LG_Anode_ID);
 		RootOutput::getInstance()->GetTree()->Branch("LG_ThetaLab",&LG_ThetaLab);
 		RootOutput::getInstance()->GetTree()->Branch("LG_ELab",&LG_ELab);
 		RootOutput::getInstance()->GetTree()->Branch("LG_Tof",&LG_Tof);
@@ -171,6 +174,7 @@ void Analysis::TreatEvent(){
 		RootOutput::getInstance()->GetTree()->Branch("LG_Qmax",&LG_Qmax);
 
 		RootOutput::getInstance()->GetTree()->Branch("HG_ID",&HG_ID);
+		RootOutput::getInstance()->GetTree()->Branch("HG_Anode_ID",&HG_Anode_ID);
 		RootOutput::getInstance()->GetTree()->Branch("HG_ThetaLab",&HG_ThetaLab);
 		RootOutput::getInstance()->GetTree()->Branch("HG_ELab",&HG_ELab);
 		RootOutput::getInstance()->GetTree()->Branch("HG_Tof",&HG_Tof);
@@ -188,6 +192,7 @@ void Analysis::TreatEvent(){
 		LG_ELab.clear();
 		LG_Tof.clear();
 		LG_ID.clear();
+		LG_Anode_ID.clear();
 		LG_Q1.clear();
 		LG_Q2.clear();
 		LG_Qmax.clear();
@@ -196,6 +201,7 @@ void Analysis::TreatEvent(){
 		HG_ELab.clear();
 		HG_Tof.clear();
 		HG_ID.clear();
+		HG_Anode_ID.clear();
 		HG_Q1.clear();
 		HG_Q2.clear();
 		HG_Qmax.clear();

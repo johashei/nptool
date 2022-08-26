@@ -44,6 +44,7 @@ class Analysis: public NPL::VAnalysis{
 
   private:
     vector<double> LG_ID;
+    vector<double> LG_Anode_ID;
     vector<double> LG_ThetaLab;
     vector<double> LG_ELab;
     vector<double> LG_Tof;
@@ -52,6 +53,7 @@ class Analysis: public NPL::VAnalysis{
     vector<double> LG_Qmax;
 
     vector<double> HG_ID;
+    vector<double> HG_Anode_ID;
     vector<double> HG_ThetaLab;
     vector<double> HG_ELab;
     vector<double> HG_Tof;
