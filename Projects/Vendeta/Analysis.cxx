@@ -1,23 +1,23 @@
 /*****************************************************************************
- * Copyright (C) 2009-2016    this file is part of the NPTool Project        *
- *                                                                           *
- * For the licensing terms see $NPTOOL/Licence/NPTool_Licence                *
- * For the list of contributors see $NPTOOL/Licence/Contributors             *
- *****************************************************************************/
+	* Copyright (C) 2009-2016    this file is part of the NPTool Project        *
+	*                                                                           *
+	* For the licensing terms see $NPTOOL/Licence/NPTool_Licence                *
+	* For the list of contributors see $NPTOOL/Licence/Contributors             *
+	*****************************************************************************/
 
 /*****************************************************************************
- * Original Author: XAUTHORX  contact address: XMAILX                        *
- *                                                                           *
- * Creation Date  : XMONTHX XYEARX                                           *
- * Last update    :                                                          *
- *---------------------------------------------------------------------------*
- * Decription:                                                               *
- *  This class describe  Vendeta analysis project                       *
- *                                                                           *
- *---------------------------------------------------------------------------*
- * Comment:                                                                  *
- *                                                                           *
- *****************************************************************************/
+	* Original Author: XAUTHORX  contact address: XMAILX                        *
+	*                                                                           *
+	* Creation Date  : XMONTHX XYEARX                                           *
+	* Last update    :                                                          *
+	*---------------------------------------------------------------------------*
+	* Decription:                                                               *
+	*  This class describe  Vendeta analysis project                       *
+	*                                                                           *
+	*---------------------------------------------------------------------------*
+	* Comment:                                                                  *
+	*                                                                           *
+	*****************************************************************************/
 
 #include<iostream>
 using namespace std;
@@ -36,134 +36,137 @@ Analysis::~Analysis(){
 
 ////////////////////////////////////////////////////////////////////////////////
 void Analysis::Init(){
-	InitOutputBranch();
+		InitOutputBranch();
 
-	Vendeta= (TVendetaPhysics*) m_DetectorManager->GetDetector("Vendeta");
-	FC= (TFissionChamberPhysics*) m_DetectorManager->GetDetector("FissionChamber");
+		Vendeta= (TVendetaPhysics*) m_DetectorManager->GetDetector("Vendeta");
+		FC= (TFissionChamberPhysics*) m_DetectorManager->GetDetector("FissionChamber");
 
-	neutron = new NPL::Particle("1n");
+		neutron = new NPL::Particle("1n");
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 void Analysis::TreatEvent(){
 
-	ReInitValue();
+		ReInitValue();
 
-	unsigned int FC_mult = FC->AnodeNumber.size();
-	if(FC_mult==1 ){
-		int anode = FC->AnodeNumber[0];
-		double Time_FC = FC->Time[0];
+		unsigned int FC_mult = FC->AnodeNumber.size();
+		if(FC_mult==1 ){
+				
+				int anode = FC->AnodeNumber[0];
+				double Time_FC = FC->Time[0];
+			 bool isFake = FC->isFakeFission[0];
 
-		Vendeta->SetAnodeNumber(anode);
-		Vendeta->BuildPhysicalEvent();
-		FC->BuildPhysicalEvent();
+				Vendeta->SetAnodeNumber(anode);
+				Vendeta->BuildPhysicalEvent();
+				FC->BuildPhysicalEvent();
 
-		// VENDETA LG 
-		unsigned int Vendeta_LG_mult = Vendeta->LG_DetectorNumber.size();
-		for(unsigned int i=0; i<Vendeta_LG_mult; i++){
+				// VENDETA LG 
+				unsigned int Vendeta_LG_mult = Vendeta->LG_DetectorNumber.size();
+				for(unsigned int i=0; i<Vendeta_LG_mult; i++){
 
-			int DetNbr          = Vendeta->LG_DetectorNumber[i];
-			double Time_Vendeta = Vendeta->LG_Time[i];
-			double Rdet         = Vendeta->GetDistanceFromTarget(DetNbr);
-			TVector3 DetPos     = Vendeta->GetVectorDetectorPosition(DetNbr);
+						int DetNbr          = Vendeta->LG_DetectorNumber[i];
+						double Time_Vendeta = Vendeta->LG_Time[i];
+						double Rdet         = Vendeta->GetDistanceFromTarget(DetNbr);
+						TVector3 DetPos     = Vendeta->GetVectorDetectorPosition(DetNbr);
 
-			double DT = Time_Vendeta - Time_FC;// + ToF_Shift_Vendlg[DetNbr-1];
+						double DT = Time_Vendeta - Time_FC;// + ToF_Shift_Vendlg[DetNbr-1];
 
-			if(DT>0){
+						if(DT>0){
 
-				double DeltaTheta = atan(63.5/Rdet);
-				double Theta_Vendeta = DetPos.Theta();
-				double Theta_random = ra.Uniform(Theta_Vendeta-DeltaTheta,Theta_Vendeta+DeltaTheta);
-				//cout << DetNbr << " " << Rdet << endl;
-				//neutron->SetTimeOfFlight(DT*1e-9/(Rdet*1e-3));
-				//neutron->SetTimeOfFlight(DT*1e-9/(0.55));
-				neutron->SetBeta(  (Rdet/DT) / c_light); 
+								double DeltaTheta = atan(63.5/Rdet);
+								double Theta_Vendeta = DetPos.Theta();
+								double Theta_random = ra.Uniform(Theta_Vendeta-DeltaTheta,Theta_Vendeta+DeltaTheta);
+								//cout << DetNbr << " " << Rdet << endl;
+								//neutron->SetTimeOfFlight(DT*1e-9/(Rdet*1e-3));
+								//neutron->SetTimeOfFlight(DT*1e-9/(0.55));
+								neutron->SetBeta(  (Rdet/DT) / c_light); 
 
-				double En = neutron->GetEnergy();
+								double En = neutron->GetEnergy();
 
-				// Filling output tree
-				LG_Tof.push_back(DT);
-				LG_ID.push_back(DetNbr);
-				LG_Anode_ID.push_back(anode);
-				LG_ELab.push_back(En);
-				LG_ThetaLab.push_back(Theta_random);
-				LG_Q1.push_back(Vendeta->LG_Q1[i]);
-				LG_Q2.push_back(Vendeta->LG_Q2[i]);
-				LG_Qmax.push_back(Vendeta->LG_Qmax[i]);
-				FC_Q1.push_back(FC->Q1[0]);
-				FC_Q2.push_back(FC->Q2[0]);
-			}
-		}
-
-		// VENDETA HG 
-		unsigned int Vendeta_HG_mult = Vendeta->HG_DetectorNumber.size();
-		for(unsigned int i=0; i<Vendeta_HG_mult; i++){
-			int DetNbr          = Vendeta->HG_DetectorNumber[i];
-			double Time_Vendeta = Vendeta->HG_Time[i];
-			double Rdet         = Vendeta->GetDistanceFromTarget(DetNbr);
-			TVector3 DetPos     = Vendeta->GetVectorDetectorPosition(DetNbr);
-
-			double DT = Time_Vendeta - Time_FC;// + ToF_Shift_Vendhg[DetNbr-1];
-
-			if(DT>0){
-				double DeltaTheta = atan(63.5/Rdet);
-				double Theta_Vendeta = DetPos.Theta();
-				double Theta_random = ra.Uniform(Theta_Vendeta-DeltaTheta,Theta_Vendeta+DeltaTheta);
-				//cout << DetNbr << " " << Rdet << endl;
-				//neutron->SetTimeOfFlight(DT*1e-9/(Rdet*1e-3));
-				//neutron->SetTimeOfFlight(DT*1e-9/(0.55));
-				neutron->SetBeta( (Rdet/DT) / c_light); 
-				double En = neutron->GetEnergy();
-
-				// Filling output tree
-				HG_ID.push_back(DetNbr);
-			  HG_Anode_ID.push_back(anode);
-				HG_Tof.push_back(DT);
-				HG_ELab.push_back(En);
-				HG_ThetaLab.push_back(Theta_random);
-				HG_Q1.push_back(Vendeta->HG_Q1[i]);
-				HG_Q2.push_back(Vendeta->HG_Q2[i]);
-				HG_Qmax.push_back(Vendeta->HG_Qmax[i]);
-				FC_Q1.push_back(FC->Q1[0]);
-				FC_Q2.push_back(FC->Q2[0]);
-			}
-		}
-
-		//Process coincidences signals in VENDETA LG / HG
-
-		/*if(HG_Tof.size() > 0 && LG_Tof.size() > 0 ){
-			for(int j = 0; j < LG_Tof.size();j++){
-				for(int k = 0; k < HG_Tof.size(); k++){
-					if(abs(HG_Tof[k]-LG_Tof[j]) < 2 && HG_ID[k] == LG_ID[j]){
-						if( HG_Q2[k]>120000){
-							//  HG_ID[k] = 
-							HG_Tof[k] = - 100000;
-							HG_ELab[k] = - 100000;
-							HG_ThetaLab[k] = - 100000;
-							HG_Q1[k] = - 100000;
-							HG_Q2[k] = - 100000;
-							HG_Qmax[k] = - 100000;
-						}  
-						else if( HG_Q2[k]<120000){
-							// HG_ID[k] = 
-							LG_Tof[k] = - 100000;
-							LG_ELab[k] = - 100000;
-							LG_ThetaLab[k] = - 100000;
-							LG_Q1[k] = - 100000;
-							LG_Q2[k] = - 100000;
-
+								// Filling output tree
+								LG_Tof.push_back(DT);
+								LG_ID.push_back(DetNbr);
+								LG_Anode_ID.push_back(anode);
+								LG_ELab.push_back(En);
+								LG_ThetaLab.push_back(Theta_random);
+								LG_Q1.push_back(Vendeta->LG_Q1[i]);
+								LG_Q2.push_back(Vendeta->LG_Q2[i]);
+								LG_Qmax.push_back(Vendeta->LG_Qmax[i]);
+								LG_FakeFission.push_back(isFake);
+								FC_Q1.push_back(FC->Q1[0]);
+								FC_Q2.push_back(FC->Q2[0]);
 						}
-					}
 				}
-			}
-		} // if LG && HG*/
-	}// if FC = 1
 
+				// VENDETA HG 
+				unsigned int Vendeta_HG_mult = Vendeta->HG_DetectorNumber.size();
+				for(unsigned int i=0; i<Vendeta_HG_mult; i++){
+						int DetNbr          = Vendeta->HG_DetectorNumber[i];
+						double Time_Vendeta = Vendeta->HG_Time[i];
+						double Rdet         = Vendeta->GetDistanceFromTarget(DetNbr);
+						TVector3 DetPos     = Vendeta->GetVectorDetectorPosition(DetNbr);
 
-	}
+						double DT = Time_Vendeta - Time_FC;// + ToF_Shift_Vendhg[DetNbr-1];
 
-	////////////////////////////////////////////////////////////////////////////////
-	void Analysis::InitOutputBranch(){
+						if(DT>0){
+								double DeltaTheta = atan(63.5/Rdet);
+								double Theta_Vendeta = DetPos.Theta();
+								double Theta_random = ra.Uniform(Theta_Vendeta-DeltaTheta,Theta_Vendeta+DeltaTheta);
+								//cout << DetNbr << " " << Rdet << endl;
+								//neutron->SetTimeOfFlight(DT*1e-9/(Rdet*1e-3));
+								//neutron->SetTimeOfFlight(DT*1e-9/(0.55));
+								neutron->SetBeta( (Rdet/DT) / c_light); 
+								double En = neutron->GetEnergy();
+
+								// Filling output tree
+								HG_ID.push_back(DetNbr);
+								HG_Anode_ID.push_back(anode);
+								HG_Tof.push_back(DT);
+								HG_ELab.push_back(En);
+								HG_ThetaLab.push_back(Theta_random);
+								HG_Q1.push_back(Vendeta->HG_Q1[i]);
+								HG_Q2.push_back(Vendeta->HG_Q2[i]);
+								HG_Qmax.push_back(Vendeta->HG_Qmax[i]);
+								HG_FakeFission.push_back(isFake);
+								FC_Q1.push_back(FC->Q1[0]);
+								FC_Q2.push_back(FC->Q2[0]);
+						}
+				}
+
+				//Process coincidences signals in VENDETA LG / HG
+
+				/*if(HG_Tof.size() > 0 && LG_Tof.size() > 0 ){
+						for(int j = 0; j < LG_Tof.size();j++){
+						for(int k = 0; k < HG_Tof.size(); k++){
+						if(abs(HG_Tof[k]-LG_Tof[j]) < 2 && HG_ID[k] == LG_ID[j]){
+						if( HG_Q2[k]>120000){
+				//  HG_ID[k] = 
+				HG_Tof[k] = - 100000;
+				HG_ELab[k] = - 100000;
+				HG_ThetaLab[k] = - 100000;
+				HG_Q1[k] = - 100000;
+				HG_Q2[k] = - 100000;
+				HG_Qmax[k] = - 100000;
+				}  
+				else if( HG_Q2[k]<120000){
+				// HG_ID[k] = 
+				LG_Tof[k] = - 100000;
+				LG_ELab[k] = - 100000;
+				LG_ThetaLab[k] = - 100000;
+				LG_Q1[k] = - 100000;
+				LG_Q2[k] = - 100000;
+
+				}
+				}
+				}
+				}
+				} // if LG && HG*/
+		
+		}// if FC = 1
+}
+
+////////////////////////////////////////////////////////////////////////////////
+void Analysis::InitOutputBranch(){
 		RootOutput::getInstance()->GetTree()->Branch("LG_ID",&LG_ID);
 		RootOutput::getInstance()->GetTree()->Branch("LG_Anode_ID",&LG_Anode_ID);
 		RootOutput::getInstance()->GetTree()->Branch("LG_ThetaLab",&LG_ThetaLab);
@@ -172,6 +175,7 @@ void Analysis::TreatEvent(){
 		RootOutput::getInstance()->GetTree()->Branch("LG_Q1",&LG_Q1);
 		RootOutput::getInstance()->GetTree()->Branch("LG_Q2",&LG_Q2);
 		RootOutput::getInstance()->GetTree()->Branch("LG_Qmax",&LG_Qmax);
+		RootOutput::getInstance()->GetTree()->Branch("LG_FakeFission",&LG_FakeFission);
 
 		RootOutput::getInstance()->GetTree()->Branch("HG_ID",&HG_ID);
 		RootOutput::getInstance()->GetTree()->Branch("HG_Anode_ID",&HG_Anode_ID);
@@ -183,11 +187,11 @@ void Analysis::TreatEvent(){
 		RootOutput::getInstance()->GetTree()->Branch("HG_Qmax",&HG_Qmax);
 		RootOutput::getInstance()->GetTree()->Branch("FC_Q1",&FC_Q1);
 		RootOutput::getInstance()->GetTree()->Branch("FC_Q2",&FC_Q2);
+		RootOutput::getInstance()->GetTree()->Branch("HG_FakeFission",&HG_FakeFission);
+}
 
-	}
-
-	////////////////////////////////////////////////////////////////////////////////
-	void Analysis::ReInitValue(){
+////////////////////////////////////////////////////////////////////////////////
+void Analysis::ReInitValue(){
 		LG_ThetaLab.clear();
 		LG_ELab.clear();
 		LG_Tof.clear();
@@ -196,6 +200,7 @@ void Analysis::TreatEvent(){
 		LG_Q1.clear();
 		LG_Q2.clear();
 		LG_Qmax.clear();
+		LG_FakeFission.clear();
 
 		HG_ThetaLab.clear();
 		HG_ELab.clear();
@@ -205,35 +210,36 @@ void Analysis::TreatEvent(){
 		HG_Q1.clear();
 		HG_Q2.clear();
 		HG_Qmax.clear();
+		HG_FakeFission.clear();
 
 		FC_Q1.clear();
 		FC_Q2.clear();
 
-	}
+}
 
-	////////////////////////////////////////////////////////////////////////////////
-	void Analysis::End(){
-	}
+////////////////////////////////////////////////////////////////////////////////
+void Analysis::End(){
+}
 
 
-	////////////////////////////////////////////////////////////////////////////////
-	//            Construct Method to be pass to the DetectorFactory              //
-	////////////////////////////////////////////////////////////////////////////////
-	NPL::VAnalysis* Analysis::Construct(){
+////////////////////////////////////////////////////////////////////////////////
+//            Construct Method to be pass to the DetectorFactory              //
+////////////////////////////////////////////////////////////////////////////////
+NPL::VAnalysis* Analysis::Construct(){
 		return (NPL::VAnalysis*) new Analysis();
-	}
+}
 
-	////////////////////////////////////////////////////////////////////////////////
-	//            Registering the construct method to the factory                 //
-	////////////////////////////////////////////////////////////////////////////////
-	extern "C"{
+////////////////////////////////////////////////////////////////////////////////
+//            Registering the construct method to the factory                 //
+////////////////////////////////////////////////////////////////////////////////
+extern "C"{
 		class proxy{
-			public:
-				proxy(){
-					NPL::AnalysisFactory::getInstance()->SetConstructor(Analysis::Construct);
-				}
+				public:
+						proxy(){
+								NPL::AnalysisFactory::getInstance()->SetConstructor(Analysis::Construct);
+						}
 		};
 
 		proxy p;
-	}
+}
 

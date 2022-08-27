@@ -51,6 +51,7 @@ class Analysis: public NPL::VAnalysis{
     vector<double> LG_Q1;
     vector<double> LG_Q2;
     vector<double> LG_Qmax;
+    vector<bool>   LG_FakeFission;
 
     vector<double> HG_ID;
     vector<double> HG_Anode_ID;
@@ -60,6 +61,7 @@ class Analysis: public NPL::VAnalysis{
     vector<double> HG_Q1;
     vector<double> HG_Q2;
     vector<double> HG_Qmax;
+    vector<bool>   HG_FakeFission;
 
 		vector<double> FC_Q1;    
 		vector<double> FC_Q2;    
