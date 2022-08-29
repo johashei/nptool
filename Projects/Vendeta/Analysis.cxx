@@ -151,32 +151,31 @@ void Analysis::TreatEvent(){
 				}
 
 				//Process coincidences signals in VENDETA LG / HG
-
-				/*if(HG_Tof.size() > 0 && LG_Tof.size() > 0 ){
+				if(HG_Tof.size() > 0 && LG_Tof.size() > 0 ){
 						for(int j = 0; j < LG_Tof.size();j++){
-						for(int k = 0; k < HG_Tof.size(); k++){
-						if(abs(HG_Tof[k]-LG_Tof[j]) < 2 && HG_ID[k] == LG_ID[j]){
-						if( HG_Q2[k]>120000){
-				//  HG_ID[k] = 
-				HG_Tof[k] = - 100000;
-				HG_ELab[k] = - 100000;
-				HG_ThetaLab[k] = - 100000;
-				HG_Q1[k] = - 100000;
-				HG_Q2[k] = - 100000;
-				HG_Qmax[k] = - 100000;
-				}  
-				else if( HG_Q2[k]<120000){
-				// HG_ID[k] = 
-				LG_Tof[k] = - 100000;
-				LG_ELab[k] = - 100000;
-				LG_ThetaLab[k] = - 100000;
-				LG_Q1[k] = - 100000;
-				LG_Q2[k] = - 100000;
+								for(int k = 0; k < HG_Tof.size(); k++){
+										if(abs(HG_Tof[k]-LG_Tof[j]) < 2 && HG_ID[k] == LG_ID[j]){
+												if( HG_Q2[k]>120000){
+														//  HG_ID[k] = 
+														HG_Tof[k] = - 100000;
+														HG_ELab[k] = - 100000;
+														HG_ThetaLab[k] = - 100000;
+														HG_Q1[k] = - 100000;
+														HG_Q2[k] = - 100000;
+														HG_Qmax[k] = - 100000;
+												}  
+												else if( HG_Q2[k]<120000){
+														// HG_ID[k] = 
+														LG_Tof[k] = - 100000;
+														LG_ELab[k] = - 100000;
+														LG_ThetaLab[k] = - 100000;
+														LG_Q1[k] = - 100000;
+														LG_Q2[k] = - 100000;
 
-				}
-				}
-				}
-				}
+												}
+										}
+								}
+						}
 				} // if LG && HG*/
 
 		}// if FC = 1

@@ -24,6 +24,7 @@ void ShowRawFCSpectra(string Nucleus="Cf"){
 		TCanvas* c3   = new TCanvas("Charge Qmax","Charge Qmax",1800,1800);
 		TCanvas* c4   = new TCanvas("Q2 vs Q1","Q2 vs Q1",1800,1800);
 		TCanvas* c5   = new TCanvas("Qmax vs Q1","Qmax vs Q1",1800,1800);
+		TCanvas* c6   = new TCanvas("Anode Distribution","Anode Distribution",1200,1200);
 
 		if(Nucleus=="U" || Nucleus=="238U"){
 				c1->Divide(3,4);
@@ -32,6 +33,7 @@ void ShowRawFCSpectra(string Nucleus="Cf"){
 				c4->Divide(3,4);
 				c5->Divide(3,4);
 		}
+		c6->Divide(1,2);
 
 		for(int i=0; i<NumberOfAnodes; i++){
 				// Draw //
@@ -68,5 +70,14 @@ void ShowRawFCSpectra(string Nucleus="Cf"){
 				if(Nucleus=="U") c5->cd(i+1)->SetLogz();
 				else c5->cd()->SetLogz();
 				chain->Draw(draw_QmaxvsQ1,condition,"colz",NumberOfEvents);
+
+				c6->cd(1);
+				chain->Draw("fFC_AnodeNbr>>hAnodeDist(12,0,12)","","",NumberOfEvents);
+				c6->cd(2);
+				chain->Draw("fFC_AnodeNbr@.size():fFC_AnodeNbr>>hAnodeMult(12,0,12,11,0,11)","","colz",NumberOfEvents);
+				TH2F* hAnodeMult = (TH2F*)gDirectory->FindObjectAny("hAnodeMult");
+				hAnodeMult->GetXaxis()->SetTitle("Anode Number");
+				hAnodeMult->GetYaxis()->SetTitle("Anode Mult");
+
 		}
 }
