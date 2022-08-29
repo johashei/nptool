@@ -43,7 +43,10 @@ class Analysis: public NPL::VAnalysis{
     static NPL::VAnalysis* Construct();
 
   private:
-    vector<double> LG_ID;
+    vector<double> inToF;
+    vector<double> inEnergy;
+
+				vector<double> LG_ID;
     vector<double> LG_Anode_ID;
     vector<double> LG_ThetaLab;
     vector<double> LG_ELab;
