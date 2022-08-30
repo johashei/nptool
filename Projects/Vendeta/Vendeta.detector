@@ -9,15 +9,18 @@ Target
  Z= 0 mm
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 Vendeta
- R= 1000 mm
- THETA= 0 deg
+ R= 61 cm
+ THETA= -5 deg
  PHI= 0 deg
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 Vendeta
- R= 1000 mm
- THETA= 20 deg
+ R= 62 cm
+ THETA= 5 deg
  PHI= 0 deg
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
+FissionChamber
+ POS= 0 0 0 mm
+ GasMaterial= CF4
+ Pressure= 1 bar
 
