@@ -156,7 +156,7 @@ void Analysis::TreatEvent(){
 								for(int k = 0; k < HG_Tof.size(); k++){
 										if(abs(HG_Tof[k]-LG_Tof[j]) < 2 && HG_ID[k] == LG_ID[j]){
 												if( HG_Q2[k]>120000){
-														//  HG_ID[k] = 
+														HG_ID[k] = -1;
 														HG_Tof[k] = - 100000;
 														HG_ELab[k] = - 100000;
 														HG_ThetaLab[k] = - 100000;
@@ -165,12 +165,13 @@ void Analysis::TreatEvent(){
 														HG_Qmax[k] = - 100000;
 												}  
 												else if( HG_Q2[k]<120000){
-														// HG_ID[k] = 
-														LG_Tof[k] = - 100000;
-														LG_ELab[k] = - 100000;
-														LG_ThetaLab[k] = - 100000;
-														LG_Q1[k] = - 100000;
-														LG_Q2[k] = - 100000;
+														LG_ID[j] = -1;
+														LG_Tof[j] = - 100000;
+														LG_ELab[j] = - 100000;
+														LG_ThetaLab[j] = - 100000;
+														LG_Q1[j] = - 100000;
+														LG_Q2[j] = - 100000;
+														LG_Qmax[j] = - 100000;
 
 												}
 										}
