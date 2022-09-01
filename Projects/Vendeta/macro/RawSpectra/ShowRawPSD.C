@@ -1,18 +1,21 @@
 TChain* chain;
 
-int NumberOfDetectors= 2;
+int NumberOfDetectors= 72;
 int NumberOfAnodes= 1;
-int NumberOfEvents= 1e6;
+int NumberOfEvents= 1e7;
 
 //////////////////////////////////////////////////
 void OpenRootFile(){
 		chain = new TChain("RawTree");
-		chain->Add("/home/faster/fastertonptool/data/rootfiles/V4B_SAMPLING_6_0001.root");
+		//chain->Add("/home/faster/fastertonptool/data/rootfiles/V4B_SAMPLING_6_0001.root");
+ 	chain->Add("/home/faster/fastertonptool/data/rootfiles/test_cf4_q1_160ns.root");
 }
 
 //////////////////////////////////////////////////
 void ShowRawPSD(){
 		OpenRootFile();
+
+		TFile* ofile = new TFile("PSD_Q1_160ns.root","recreate");
 
 		// Canvas Definition for Low Gain //
 		TCanvas* cLG_RI   = new TCanvas("Det-LG RI","Det-LG RI",1800,1800);
@@ -53,49 +56,51 @@ void ShowRawPSD(){
 				TString to_draw_HG = Form("fVendeta_HG_Q2/fVendeta_HG_Q1:fVendeta_HG_Q1>>hHG_det%i(500,0,800e3,500,0,1)",i+1);
 				TString condition_HG = Form("fVendeta_HG_DetectorNbr==%i",i+1);
 
+				cout << to_draw_LG << endl;
+				
 				if(i+1<12){
-						cLG_RI->cd(i+1);
-						chain->Draw(to_draw_LG,condition_LG,"colz",NumberOfEvents);
-
-						cHG_RI->cd(i+1);
-						chain->Draw(to_draw_HG,condition_HG,"colz",NumberOfEvents);
-				}
-				if(i+1>12 && i+1<24){
-						cLG_RII->cd(i+1);
-						chain->Draw(to_draw_LG,condition_LG,"colz",NumberOfEvents);
-
-						cHG_RII->cd(i+1);
-						chain->Draw(to_draw_HG,condition_HG,"colz",NumberOfEvents);
-				}
-				if(i+1>24 && i+1<36){
-						cLG_RIII->cd(i+1);
-						chain->Draw(to_draw_LG,condition_LG,"colz",NumberOfEvents);
-
-						cHG_RIII->cd(i+1);
-						chain->Draw(to_draw_HG,condition_HG,"colz",NumberOfEvents);
-				}
-				if(i+1>46 && i+1<48){
 						cLG_LI->cd(i+1);
 						chain->Draw(to_draw_LG,condition_LG,"colz",NumberOfEvents);
 
 						cHG_LI->cd(i+1);
 						chain->Draw(to_draw_HG,condition_HG,"colz",NumberOfEvents);
 				}
-				if(i+1>48 && i+1<60){
-						cLG_LII->cd(i+1);
+				if(i+1>12 && i+1<24){
+						cLG_LII->cd(i+1-12);
+						chain->Draw(to_draw_LG,condition_LG,"colz",NumberOfEvents);
+						cHG_LII->cd(i+1-12);
+						chain->Draw(to_draw_HG,condition_HG,"colz",NumberOfEvents);
+				}
+				if(i+1>24 && i+1<36){
+						cLG_LIII->cd(i+1-24);
 						chain->Draw(to_draw_LG,condition_LG,"colz",NumberOfEvents);
 
-						cHG_LII->cd(i+1);
+						cHG_LIII->cd(i+1-24);
+						chain->Draw(to_draw_HG,condition_HG,"colz",NumberOfEvents);
+				}
+				if(i+1>36 && i+1<48){
+						cLG_RI->cd(i+1-36);
+						chain->Draw(to_draw_LG,condition_LG,"colz",NumberOfEvents);
+
+						cHG_RI->cd(i+1-36);
+						chain->Draw(to_draw_HG,condition_HG,"colz",NumberOfEvents);
+				}
+				if(i+1>48 && i+1<60){
+						cLG_RII->cd(i+1-48);
+						chain->Draw(to_draw_LG,condition_LG,"colz",NumberOfEvents);
+
+						cHG_RII->cd(i+1-48);
 						chain->Draw(to_draw_HG,condition_HG,"colz",NumberOfEvents);
 				}
 				if(i+1>60){
-						cLG_LIII->cd(i+1);
+						cLG_RIII->cd(i+1-60);
 						chain->Draw(to_draw_LG,condition_LG,"colz",NumberOfEvents);
 				
-						cHG_LIII->cd(i+1);
+						cHG_RIII->cd(i+1-60);
 						chain->Draw(to_draw_HG,condition_HG,"colz",NumberOfEvents);
 				}
-
 		}
 
+		ofile->Write();
+		ofile->Close();
 }
