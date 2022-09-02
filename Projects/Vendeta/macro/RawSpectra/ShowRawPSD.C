@@ -8,14 +8,15 @@ int NumberOfEvents= 1e7;
 void OpenRootFile(){
 		chain = new TChain("RawTree");
 		//chain->Add("/home/faster/fastertonptool/data/rootfiles/V4B_SAMPLING_6_0001.root");
- 	chain->Add("/home/faster/fastertonptool/data/rootfiles/test_cf4_q1_160ns.root");
+ 	//chain->Add("/home/faster/fastertonptool/data/rootfiles/test_cf4_q1_160ns.root");
+ 	chain->Add("/home/faster/fastertonptool/data/rootfiles/test_sampler_qdc_cf_1.root");
 }
 
 //////////////////////////////////////////////////
 void ShowRawPSD(){
 		OpenRootFile();
 
-		TFile* ofile = new TFile("PSD_Q1_160ns.root","recreate");
+		TFile* ofile = new TFile("PSD_histo.root","recreate");
 
 		// Canvas Definition for Low Gain //
 		TCanvas* cLG_RI   = new TCanvas("Det-LG RI","Det-LG RI",1800,1800);

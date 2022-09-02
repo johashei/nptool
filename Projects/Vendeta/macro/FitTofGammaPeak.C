@@ -10,7 +10,8 @@ bool Finder(TH1F* h, Double_t *mean, Double_t *sigma);
 
 /////////////////////////////////////////////////////
 void OpenRootFile(){
-  ifile = new TFile("histo_tof_file_q1_80ns.root");
+  //ifile = new TFile("histo_tof_file_q1_80ns.root");
+  ifile = new TFile("histo_tof_file.root");
 }
 
 /////////////////////////////////////////////////////

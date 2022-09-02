@@ -88,7 +88,7 @@ void Analysis::TreatEvent(){
 
 						double DT = Time_Vendeta - Time_FC;// + ToF_Shift_Vendlg[DetNbr-1];
 
-						if(DT>0){
+						if(DT>-500){
 
 								double DeltaTheta = atan(63.5/Rdet);
 								double Theta_Vendeta = DetPos.Theta();
@@ -125,7 +125,7 @@ void Analysis::TreatEvent(){
 
 						double DT = Time_Vendeta - Time_FC;// + ToF_Shift_Vendhg[DetNbr-1];
 
-						if(DT>0){
+						if(DT>-500){
 								double DeltaTheta = atan(63.5/Rdet);
 								double Theta_Vendeta = DetPos.Theta();
 								double Theta_random = ra.Uniform(Theta_Vendeta-DeltaTheta,Theta_Vendeta+DeltaTheta);
