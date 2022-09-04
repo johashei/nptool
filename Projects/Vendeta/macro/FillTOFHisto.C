@@ -1,13 +1,14 @@
 TChain* chain;
 
 int NumberOfDetectors= 72;
-int NumberOfAnodes= 1;
+int NumberOfAnodes= 11;
 int nentries=1e6;
 
 /////////////////////////////////////
 void LoadRootFile(){
 	chain = new TChain("PhysicsTree");
-	chain->Add("/home/faster/nptool/Outputs/Analysis/test_sampler_qdc_cf_1.root");
+	chain->Add("/home/faster/nptool/Outputs/Analysis/run5.root");
+	//chain->Add("/home/faster/nptool/Outputs/Analysis/test_sampler_qdc_cf_1.root");
 	//chain->Add("/home/faster/nptool/Outputs/Analysis/test_sampler_qdc_cf_2.root");
 	//chain->Add("/home/faster/nptool/Outputs/Analysis/test_sampler_qdc_cf_3.root");
 	//chain->Add("/home/faster/nptool/Outputs/Analysis/test_sampler_qdc_cf_4.root");
@@ -20,9 +21,9 @@ void FillTOFHisto(){
 	nentries = chain->GetEntries();
 	cout << "Number of entries: " << nentries << endl;
 
-	TFile* ofile = new TFile("histo_tof_file.root","recreate");
-	TH1F* hLG[792];
-	TH1F* hHG[792];
+	TFile* ofile = new TFile("histo_tof_file_run5.root","recreate");
+	TH1F* hLG[791];
+	TH1F* hHG[791];
 	
 	vector<double>* FC_Q1 = new vector<double>();
  	
@@ -47,18 +48,14 @@ void FillTOFHisto(){
 	
 for(int i=0; i<NumberOfDetectors; i++){
 			for(int j=0; j<NumberOfAnodes; j++){
-					int anode = 6;
-					//int index = (i+1) * (j+1);
-					int index = (i+1) * anode;
-					//TString histo_name = Form("hLG_Det%i_Anode%i",i+1,j+1);
-					TString histo_name = Form("hLG_Det%i_Anode%i",i+1,anode);
-					hLG[index-1] = new TH1F(histo_name,histo_name,4000,-100,300);
-					//histo_name = Form("hHG_Det%i_Anode%i",i+1,j+1);
-					histo_name = Form("hHG_Det%i_Anode%i",i+1,anode);
-					hHG[index-1] = new TH1F(histo_name,histo_name,3000,0,300);
+					int index = j + i*NumberOfAnodes;
+					TString histo_name = Form("hLG_Det%i_Anode%i",i+1,j+1);
+					hLG[index] = new TH1F(histo_name,histo_name,4000,-100,300);
+					
+					histo_name = Form("hHG_Det%i_Anode%i",i+1,j+1);
+					hHG[index] = new TH1F(histo_name,histo_name,3000,0,300);
 			}
 	}
-	
 	for(int i=0; i<nentries; i++){
 			chain->GetEntry(i);
 
@@ -70,34 +67,22 @@ for(int i=0; i<NumberOfDetectors; i++){
 			int mysize = LG_Tof->size();
 			for(int j=0; j<mysize; j++){
 					// LG //
-					int index_LG = LG_ID->at(j) * LG_Anode_ID->at(j);
+					int index_LG = (LG_Anode_ID->at(j)-1) + (LG_ID->at(j)-1)*NumberOfAnodes;
 					if(LG_ID->at(j)>0 && LG_Anode_ID->at(j)>0){ 
-							hLG[index_LG-1]->Fill(LG_Tof->at(j));		
+							hLG[index_LG]->Fill(LG_Tof->at(j));		
 					}
 			}
 			
 			mysize = HG_Tof->size();
 			for(int j=0; j<mysize; j++){
 					// HG //
-					int index_HG = HG_ID->at(j) * HG_Anode_ID->at(j);
+					int index_HG = (HG_Anode_ID->at(j)-1) + (HG_ID->at(j)-1)*NumberOfAnodes;
 					if(HG_ID->at(j)>0 && HG_Anode_ID->at(j)>0){
-							hHG[index_HG-1]->Fill(HG_Tof->at(j));			
+							hHG[index_HG]->Fill(HG_Tof->at(j));			
 					}
 			}
 	}
 
-	/* for(int i=0; i<NumberOfDetectors; i++){ */
-	/* 		for(int j=0; j<NumberOfAnodes; j++){ */
-	/* 				int anode = 6; */
-	/* 				//int index = (i+1) * (j+1); */
-	/* 				int index = (i+1) * anode; */
-						
-	/* 				hLG[index]->Write(); */
-	/* 				hHG[index]->Write(); */
-	/* 		} */
-	/* } */
-
-	//hLG[6]->Draw();
 	ofile->Write();
 	ofile->Close();
 

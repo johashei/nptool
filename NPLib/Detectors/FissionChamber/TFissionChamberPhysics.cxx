@@ -60,6 +60,12 @@ void TFissionChamberPhysics::AddDetector(TVector3 ){
   // Typically for more complex detector one would calculate the relevant 
   // positions (stripped silicon) or angles (gamma array)
   m_NumberOfDetectors++;
+
+		for(int i=0; i<12; i++){
+				LastTime[i] = 0;
+				CurrentTime[i] = 0;
+				counter[i] = 0;
+		}
 } 
 
 ///////////////////////////////////////////////////////////////////////////
@@ -85,7 +91,15 @@ void TFissionChamberPhysics::BuildPhysicalEvent() {
   // match energy and time together
   unsigned int mysizeE = m_PreTreatedData->GetMultiplicity();
   for (UShort_t e = 0; e < mysizeE ; e++) {
-    AnodeNumber.push_back(m_PreTreatedData->GetAnodeNbr(e));
+				
+				int A = m_EventData->GetAnodeNbr(e);
+				CurrentTime[A] = m_EventData->GetTime(e);
+				double DT = CurrentTime[A] - LastTime[A];
+				
+				LastTime[A] = m_EventData->GetTime(e);
+ 
+				DT_FC.push_back(DT);
+				AnodeNumber.push_back(m_PreTreatedData->GetAnodeNbr(e));
     Q1.push_back(m_PreTreatedData->GetQ1(e));
     Q2.push_back(m_PreTreatedData->GetQ2(e));
     Qmax.push_back(m_PreTreatedData->GetQmax(e));
@@ -117,17 +131,19 @@ void TFissionChamberPhysics::PreTreat() {
     Double_t Q1 = m_EventData->GetQ1(i);
     Double_t Q2 = m_EventData->GetQ2(i);
     Double_t Qmax = m_EventData->GetQmax(i);
-    if (Q2 > m_E_Threshold) {
-      int AnodeNumber = m_EventData->GetAnodeNbr(i);
+
+   
+				if (Q1 > m_E_Threshold) {
+						int AnodeNumber = m_EventData->GetAnodeNbr(i);
       double TimeOffset = Cal->GetValue("FissionChamber/ANODE"+NPL::itoa(AnodeNumber)+"_TIMEOFFSET",0);
-      double Time = m_EventData->GetTime(i) + TimeOffset;
-      m_PreTreatedData->SetAnodeNbr(AnodeNumber);
+      double Time = m_EventData->GetTime(i);// + TimeOffset;
+
+						m_PreTreatedData->SetAnodeNbr(AnodeNumber);
       m_PreTreatedData->SetQ1(Q1);
       m_PreTreatedData->SetQ2(Q2);
       m_PreTreatedData->SetQmax(Qmax);
       m_PreTreatedData->SetTime(Time);
       m_PreTreatedData->SetFakeFissionStatus(m_EventData->GetFakeFissionStatus(i));
-    
     }
   }
   unsigned int mysizeHF = m_EventData->GetHFMultiplicity();
@@ -212,6 +228,7 @@ void TFissionChamberPhysics::Clear() {
   Time.clear();
   Time_HF.clear();
   isFakeFission.clear();
+		DT_FC.clear();
 }
 
 

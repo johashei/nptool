@@ -46,6 +46,7 @@ class Analysis: public NPL::VAnalysis{
     vector<double> inToF;
     vector<double> inEnergy;
 
+				vector<double> LG_DT;
 				vector<double> LG_ID;
     vector<double> LG_Anode_ID;
     vector<double> LG_ThetaLab;
@@ -56,6 +57,7 @@ class Analysis: public NPL::VAnalysis{
     vector<double> LG_Qmax;
     vector<bool>   LG_FakeFission;
 
+    vector<double> HG_DT;
     vector<double> HG_ID;
     vector<double> HG_Anode_ID;
     vector<double> HG_ThetaLab;

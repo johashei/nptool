@@ -1,7 +1,7 @@
 TFile* ifile;
 
 int NumberOfDetectors=72;
-int NumberOfAnodes=1;
+int NumberOfAnodes=11;
 int m_NumberOfGammaPeak=1;
 
 double PosGammaPeak = 3.2;
@@ -11,7 +11,7 @@ bool Finder(TH1F* h, Double_t *mean, Double_t *sigma);
 /////////////////////////////////////////////////////
 void OpenRootFile(){
   //ifile = new TFile("histo_tof_file_q1_80ns.root");
-  ifile = new TFile("histo_tof_file.root");
+  ifile = new TFile("histo_tof_file_run5.root");
 }
 
 /////////////////////////////////////////////////////
@@ -24,7 +24,9 @@ void FitTofGammaPeak(){
   ofstream ofile;
   ofile.open("Vendeta_Time.cal");
 
-  for(int i=0; i<11; i++){
+		TFile* orootfile = new TFile("histo_tof_fitted.root","recreate");
+
+  /*for(int i=0; i<11; i++){
     TString canvas_name = Form("LG_Anode%i",i+1);
     cLG[i] = new TCanvas(canvas_name,canvas_name,1800,1800);
     cLG[i]->Divide(10,8);
@@ -33,21 +35,22 @@ void FitTofGammaPeak(){
     cHG[i] = new TCanvas(canvas_name,canvas_name,1800,1800);
     cHG[i]->Divide(10,8);
 
-  }
+  }*/
 
   Double_t* mean = new Double_t[1];
   Double_t* sigma = new Double_t[1];
 		TGraph* gSigma_LG = new TGraph();
 		TGraph* gSigma_HG = new TGraph();
 
+		int countLG=0;
+		int countHG=0;
   for(int i=0; i<NumberOfDetectors; i++){
     for(int j=0; j<NumberOfAnodes; j++){
-						j=5;
       // LG //
       TString histo_name = Form("hLG_Det%i_Anode%i",i+1,j+1);
       TH1F* h = (TH1F*) ifile->FindObjectAny(histo_name);
 
-      cLG[j]->cd(i+1);
+      //cLG[j]->cd(i+1);
       h->Draw();
 
       mean[0] = 0;
@@ -55,7 +58,9 @@ void FitTofGammaPeak(){
       TString LG_token = Form("Vendeta_DET%i_LG_ANODE%i_TIMEOFFSET",i+1,j+1);
       if(Finder(h, mean, sigma)){
         ofile << LG_token << " " << -mean[0]+PosGammaPeak << endl;
-								gSigma_LG->SetPoint(i,i+1,sigma[0]);
+								gSigma_LG->SetPoint(countLG,countLG+1,sigma[0]);
+								countLG++;
+								h->Write();
       }
       else{
         ofile << LG_token << " 0" << endl;
@@ -65,7 +70,7 @@ void FitTofGammaPeak(){
       histo_name = Form("hHG_Det%i_Anode%i",i+1,j+1);
       h = (TH1F*) ifile->FindObjectAny(histo_name);
 
-      cHG[j]->cd(i+1);
+      //cHG[j]->cd(i+1);
       h->Draw();
 
       mean[0] = 0;
@@ -73,7 +78,9 @@ void FitTofGammaPeak(){
       TString HG_token = Form("Vendeta_DET%i_HG_ANODE%i_TIMEOFFSET",i+1,j+1);
       if(Finder(h, mean, sigma)){
         ofile << HG_token << " " << -mean[0]+PosGammaPeak << endl;
-								gSigma_HG->SetPoint(i,i+1,sigma[0]);
+								gSigma_HG->SetPoint(countHG,countHG+1,sigma[0]);
+								countHG++;
+								h->Write();
       }
       else{
         ofile << HG_token << " 0" << endl;
@@ -92,7 +99,11 @@ void FitTofGammaPeak(){
 		c1->cd(2);
 		gSigma_HG->Draw();
 
+		gSigma_LG->Write();
+		gSigma_HG->Write();
 
+		orootfile->Write();
+		orootfile->Close();
 
 }
 
@@ -101,7 +112,7 @@ void FitTofGammaPeak(){
 bool Finder(TH1F* h, Double_t *mean, Double_t *sigma){
   Double_t resolsig = 2;
   Double_t resolsigTSpec = 1;
-  Double_t seuil = 0.2;
+  Double_t seuil = 0.3;
 
   TSpectrum* s = new TSpectrum(m_NumberOfGammaPeak,resolsigTSpec);
 
@@ -114,7 +125,7 @@ bool Finder(TH1F* h, Double_t *mean, Double_t *sigma){
     cout << "Gamma Peak Found" << endl;
     for(int i=0; i<nfound; i++){
       linf = xpeaks[i]-2;
-      lsup = xpeaks[i]+0.4;
+      lsup = xpeaks[i]+1;
 
       TF1* gauss = new TF1("gaus","gaus",linf,lsup);
       h->Fit(gauss,"RQ");
@@ -124,7 +135,7 @@ bool Finder(TH1F* h, Double_t *mean, Double_t *sigma){
     return true;
   }
 
-  if(nfound != m_NumberOfGammaPeak){
+		else if(nfound != m_NumberOfGammaPeak){
     cout << "Warning. Number of peak different of " << m_NumberOfGammaPeak << " !! / nfound = " << nfound << endl; 
     return false;
   }

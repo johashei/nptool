@@ -69,6 +69,7 @@ class TFissionChamberPhysics : public TObject, public NPL::VDetector {
     vector<double>   Time;
     vector<bool>     isFakeFission;
     vector<double>   Time_HF;
+				vector<double>   DT_FC;				
 
   /// A usefull method to bundle all operation to add a detector
   void AddDetector(TVector3 POS); 
@@ -162,7 +163,9 @@ class TFissionChamberPhysics : public TObject, public NPL::VDetector {
     // thresholds
     double m_E_RAW_Threshold; //!
     double m_E_Threshold;     //!
-
+				double CurrentTime[12];   //!
+				double LastTime[12];      //!
+				int counter[12];          //!
   // number of detectors
   private:
     int m_NumberOfDetectors;  //!

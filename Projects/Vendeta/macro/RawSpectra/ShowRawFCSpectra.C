@@ -6,7 +6,7 @@ int NumberOfEvents= 1e6;
 //////////////////////////////////////////////////
 void OpenRootFile(){
 		chain = new TChain("RawTree");
-		chain->Add("/home/faster/fastertonptool/data/rootfiles/V4B_SAMPLING_6_0001.root");
+		chain->Add("/home/faster/fastertonptool/data/rootfiles/u238_carbon_1.root");
 }
 
 //////////////////////////////////////////////////

@@ -52,13 +52,18 @@ void Analysis::TreatEvent(){
 		unsigned int FC_mult = FC->AnodeNumber.size();
 		unsigned int HF_mult = FC->Time_HF.size();
 
+		double GammaOffset[11] = {971.37, 970.67, 972.73, 972.59, 989.33, 982.03, 985.83, 985.13, 980.03, 976.83, 971.33};
+
 		double incomingDT=0;
 		double incomingE=0;
 		double flight_path = 21500.;
 		for(unsigned int j=0; j<HF_mult; j++){
 				for(unsigned int i=0; i<FC_mult; i++){
-						incomingDT = FC->Time[i] - FC->Time_HF[j];
-						double length = flight_path + 6*FC->AnodeNumber[i];	
+						incomingDT = FC->Time[i] - FC->Time_HF[j] - GammaOffset[FC->AnodeNumber[i]-1];
+						if(incomingDT<0){
+							incomingDT += 1790;
+						}
+						double length = flight_path;// + 6*FC->AnodeNumber[i];	
 						neutron->SetBeta((length/incomingDT) / c_light);
 						incomingE = neutron->GetEnergy();
 
@@ -72,10 +77,11 @@ void Analysis::TreatEvent(){
 				int anode = FC->AnodeNumber[0];
 				double Time_FC = FC->Time[0];
 				bool isFake = FC->isFakeFission[0];
+				double FC_DT = FC->DT_FC[0];
 
 				Vendeta->SetAnodeNumber(anode);
 				Vendeta->BuildPhysicalEvent();
-				FC->BuildPhysicalEvent();
+				//FC->BuildPhysicalEvent();
 
 				// VENDETA LG 
 				unsigned int Vendeta_LG_mult = Vendeta->LG_DetectorNumber.size();
@@ -101,6 +107,7 @@ void Analysis::TreatEvent(){
 								double En = neutron->GetEnergy();
 
 								// Filling output tree
+								LG_DT.push_back(FC_DT);
 								LG_Tof.push_back(DT);
 								LG_ID.push_back(DetNbr);
 								LG_Anode_ID.push_back(anode);
@@ -136,6 +143,7 @@ void Analysis::TreatEvent(){
 								double En = neutron->GetEnergy();
 
 								// Filling output tree
+								HG_DT.push_back(FC_DT),
 								HG_ID.push_back(DetNbr);
 								HG_Anode_ID.push_back(anode);
 								HG_Tof.push_back(DT);
@@ -188,6 +196,7 @@ void Analysis::InitOutputBranch(){
 		RootOutput::getInstance()->GetTree()->Branch("inToF",&inToF);
 		RootOutput::getInstance()->GetTree()->Branch("inEnergy",&inEnergy);
 
+		RootOutput::getInstance()->GetTree()->Branch("LG_DT",&LG_DT);
 		RootOutput::getInstance()->GetTree()->Branch("LG_ID",&LG_ID);
 		RootOutput::getInstance()->GetTree()->Branch("LG_Anode_ID",&LG_Anode_ID);
 		RootOutput::getInstance()->GetTree()->Branch("LG_ThetaLab",&LG_ThetaLab);
@@ -198,6 +207,7 @@ void Analysis::InitOutputBranch(){
 		RootOutput::getInstance()->GetTree()->Branch("LG_Qmax",&LG_Qmax);
 		RootOutput::getInstance()->GetTree()->Branch("LG_FakeFission",&LG_FakeFission);
 
+		RootOutput::getInstance()->GetTree()->Branch("HG_DT",&HG_DT);
 		RootOutput::getInstance()->GetTree()->Branch("HG_ID",&HG_ID);
 		RootOutput::getInstance()->GetTree()->Branch("HG_Anode_ID",&HG_Anode_ID);
 		RootOutput::getInstance()->GetTree()->Branch("HG_ThetaLab",&HG_ThetaLab);
@@ -225,6 +235,7 @@ void Analysis::ReInitValue(){
 		LG_Q2.clear();
 		LG_Qmax.clear();
 		LG_FakeFission.clear();
+		LG_DT.clear();
 
 		HG_ThetaLab.clear();
 		HG_ELab.clear();
@@ -235,6 +246,7 @@ void Analysis::ReInitValue(){
 		HG_Q2.clear();
 		HG_Qmax.clear();
 		HG_FakeFission.clear();
+		HG_DT.clear();
 
 		FC_Q1.clear();
 		FC_Q2.clear();

@@ -6,10 +6,11 @@ int nentries=1e6;
 //////////////////////////////////////////////////
 void OpenRootFile(){
 		chain = new TChain("RawTree");
- 	chain->Add("/home/faster/fastertonptool/data/rootfiles/test_sampler_qdc_cf_1.root");
- 	chain->Add("/home/faster/fastertonptool/data/rootfiles/test_sampler_qdc_cf_2.root");
- 	chain->Add("/home/faster/fastertonptool/data/rootfiles/test_sampler_qdc_cf_3.root");
- 	chain->Add("/home/faster/fastertonptool/data/rootfiles/test_sampler_qdc_cf_4.root");
+ 	chain->Add("/home/faster/fastertonptool/data/rootfiles/run11_0001.root");
+ 	chain->Add("/home/faster/fastertonptool/data/rootfiles/run11_0002.root");
+ 	chain->Add("/home/faster/fastertonptool/data/rootfiles/run11_0003.root");
+ 	chain->Add("/home/faster/fastertonptool/data/rootfiles/run11_0004.root");
+ 	chain->Add("/home/faster/fastertonptool/data/rootfiles/run11_0005.root");
 }
 
 //////////////////////////////////////////////////
@@ -17,7 +18,7 @@ void FillRawPSD(){
 		OpenRootFile();
 		nentries = chain->GetEntries();
 		
-		TFile* ofile = new TFile("PSD_histo.root","recreate");
+		TFile* ofile = new TFile("PSD_histo_run11.root","recreate");
 		TH2F* hLG[72];
 		TH2F* hHG[72];
 
