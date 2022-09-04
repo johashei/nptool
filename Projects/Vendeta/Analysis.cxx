@@ -52,7 +52,7 @@ void Analysis::TreatEvent(){
 		unsigned int FC_mult = FC->AnodeNumber.size();
 		unsigned int HF_mult = FC->Time_HF.size();
 
-		double GammaOffset[11] = {971.37, 970.67, 972.73, 972.59, 989.33, 982.03, 985.83, 985.13, 980.03, 976.83, 971.33};
+		double GammaOffset[11] = {971.37, 970.67, 972.73, 972.59, 989.33, 982.03, 999.59, 985.13, 980.03, 976.83, 958.46};
 
 		double incomingDT=0;
 		double incomingE=0;
@@ -72,7 +72,7 @@ void Analysis::TreatEvent(){
 				}
 		}
 
-		if(FC_mult==1){
+		if(FC_mult==1 && incomingDT<1790 && incomingDT>0){
 
 				int anode = FC->AnodeNumber[0];
 				double Time_FC = FC->Time[0];

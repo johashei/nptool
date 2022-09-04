@@ -10,8 +10,7 @@ bool Finder(TH1F* h, Double_t *mean, Double_t *sigma);
 
 /////////////////////////////////////////////////////
 void OpenRootFile(){
-  //ifile = new TFile("histo_tof_file_q1_80ns.root");
-  ifile = new TFile("histo_tof_file_run5.root");
+  ifile = new TFile("histo_tof_file_run11.root");
 }
 
 /////////////////////////////////////////////////////
@@ -99,6 +98,9 @@ void FitTofGammaPeak(){
 		c1->cd(2);
 		gSigma_HG->Draw();
 
+		gSigma_LG->SetName("sigma_LG");
+		gSigma_HG->SetName("sigma_HG");
+		
 		gSigma_LG->Write();
 		gSigma_HG->Write();
 
@@ -124,8 +126,8 @@ bool Finder(TH1F* h, Double_t *mean, Double_t *sigma){
   if(nfound == m_NumberOfGammaPeak){
     cout << "Gamma Peak Found" << endl;
     for(int i=0; i<nfound; i++){
-      linf = xpeaks[i]-2;
-      lsup = xpeaks[i]+1;
+      linf = xpeaks[i]-1.8;
+      lsup = xpeaks[i]+0.8;
 
       TF1* gauss = new TF1("gaus","gaus",linf,lsup);
       h->Fit(gauss,"RQ");
