@@ -6,11 +6,7 @@ int nentries= 1e6;
 //////////////////////////////////////////////////
 void OpenRootFile(){
 		chain = new TChain("RawTree");
-		chain->Add("/home/faster/fastertonptool/data/rootfiles/run9_0001.root");
-		chain->Add("/home/faster/fastertonptool/data/rootfiles/run9_0002.root");
-		chain->Add("/home/faster/fastertonptool/data/rootfiles/run9_0003.root");
-		chain->Add("/home/faster/fastertonptool/data/rootfiles/run9_0004.root");
-		chain->Add("/home/faster/fastertonptool/data/rootfiles/run9_0005.root");
+		chain->Add("/home/faster/fastertonptool/data/rootfiles/run28_*.root");
 }
 
 //////////////////////////////////////////////////
@@ -18,7 +14,7 @@ void FillRawFCSpectra(){
 		OpenRootFile();
 		nentries = chain->GetEntries();
 
-		TFile* ofile = new TFile("FC_Raw_spectra_run9.root","recreate");
+		TFile* ofile = new TFile("FC_Raw_spectra_run28.root","recreate");
 		TH1F* Q1[11];
 		TH1F* Q2[11];
 		TH1F* Qmax[11];

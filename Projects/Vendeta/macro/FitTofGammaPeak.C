@@ -10,7 +10,7 @@ bool Finder(TH1F* h, Double_t *mean, Double_t *sigma);
 
 /////////////////////////////////////////////////////
 void OpenRootFile(){
-  ifile = new TFile("histo_tof_file_run11.root");
+  ifile = new TFile("histo_tof_file_run21.root");
 }
 
 /////////////////////////////////////////////////////
@@ -21,7 +21,7 @@ void FitTofGammaPeak(){
   TCanvas *cHG[11];
 
   ofstream ofile;
-  ofile.open("Vendeta_Time.cal");
+  ofile.open("Vendeta_Time_run21.cal");
 
 		TFile* orootfile = new TFile("histo_tof_fitted.root","recreate");
 

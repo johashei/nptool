@@ -105,12 +105,14 @@ void TFissionChamberPhysics::BuildPhysicalEvent() {
     Qmax.push_back(m_PreTreatedData->GetQmax(e));
     Time.push_back(m_PreTreatedData->GetTime(e));
     isFakeFission.push_back(m_PreTreatedData->GetFakeFissionStatus(e));
-  }
-  
-  unsigned int mysizeHF = m_PreTreatedData->GetHFMultiplicity();
-  for(UShort_t e =0; e < mysizeHF ; e++){  
+
     Time_HF.push_back(m_PreTreatedData->GetTimeHF(e));
   }
+  
+  /*unsigned int mysizeHF = m_PreTreatedData->GetHFMultiplicity();
+  for(UShort_t e =0; e < mysizeHF ; e++){  
+    Time_HF.push_back(m_PreTreatedData->GetTimeHF(e));
+  }*/
 
 }
 
@@ -144,12 +146,14 @@ void TFissionChamberPhysics::PreTreat() {
       m_PreTreatedData->SetQmax(Qmax);
       m_PreTreatedData->SetTime(Time);
       m_PreTreatedData->SetFakeFissionStatus(m_EventData->GetFakeFissionStatus(i));
+    		m_PreTreatedData->SetTimeHF(m_EventData->GetTimeHF(i));
     }
   }
-  unsigned int mysizeHF = m_EventData->GetHFMultiplicity();
+  
+		/*unsigned int mysizeHF = m_EventData->GetHFMultiplicity();
   for (UShort_t i = 0; i < mysizeHF ; ++i) {
     m_PreTreatedData->SetTimeHF(m_EventData->GetTimeHF(i));
-  }
+  }*/
 
 }
 

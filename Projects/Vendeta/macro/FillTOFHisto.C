@@ -7,7 +7,7 @@ int nentries=1e6;
 /////////////////////////////////////
 void LoadRootFile(){
 		chain = new TChain("PhysicsTree");
-		chain->Add("/home/faster/nptool/Outputs/Analysis/run11.root");
+		chain->Add("/home/faster/nptool/Outputs/Analysis/run21.root");
 		//chain->Add("/home/faster/nptool/Outputs/Analysis/test_sampler_qdc_cf_1.root");
 		//chain->Add("/home/faster/nptool/Outputs/Analysis/test_sampler_qdc_cf_2.root");
 		//chain->Add("/home/faster/nptool/Outputs/Analysis/test_sampler_qdc_cf_3.root");
@@ -21,7 +21,7 @@ void FillTOFHisto(){
 		nentries = chain->GetEntries();
 		cout << "Number of entries: " << nentries << endl;
 
-		TFile* ofile = new TFile("histo_tof_file_run11.root","recreate");
+		TFile* ofile = new TFile("histo_tof_file_run21.root","recreate");
 		TH1F* hLG[791];
 		TH1F* hHG[791];
 
@@ -69,7 +69,7 @@ void FillTOFHisto(){
 						hLG[index] = new TH1F(histo_name,histo_name,2000,-100,300);
 
 						histo_name = Form("hHG_Det%i_Anode%i",i+1,j+1);
-						hHG[index] = new TH1F(histo_name,histo_name,1500,0,300);
+						hHG[index] = new TH1F(histo_name,histo_name,2500,0,500);
 				}
 		}
 		for(int i=0; i<nentries; i++){
@@ -85,23 +85,27 @@ void FillTOFHisto(){
 						// LG //
 						int index_LG = (LG_Anode_ID->at(j)-1) + (LG_ID->at(j)-1)*NumberOfAnodes;
 						double PSD = LG_Q2->at(j)/LG_Q1->at(j);
-						if(LG_ID->at(j)>0 && LG_Anode_ID->at(j)>0 && LG_FakeFission->at(j)==0 && LG_DT->at(j)>1e7 && PSD>0.7){ 
+						//if(LG_ID->at(j)>0 && LG_Anode_ID->at(j)>0 && LG_FakeFission->at(j)==0 && LG_DT->at(j)>1e7 && PSD>0.7){ 
+						if(LG_ID->at(j)>0 && LG_Anode_ID->at(j)>0 && LG_FakeFission->at(j)==0){ 
 								hLG[index_LG]->Fill(LG_Tof->at(j));		
 						}
 				}
 
 				mysize = HG_Tof->size();
-				for(int j=0; j<mysize; j++){
-						// HG //
-						int index_HG = (HG_Anode_ID->at(j)-1) + (HG_ID->at(j)-1)*NumberOfAnodes;
-						double PSD = HG_Q2->at(j)/HG_Q1->at(j);
-						if(HG_ID->at(j)>0 && HG_Anode_ID->at(j)>0 && HG_FakeFission->at(j)==0 && HG_DT->at(j)>1e7 && PSD>0.7){
-								hHG[index_HG]->Fill(HG_Tof->at(j));			
+				if(mysize==1){
+						for(int j=0; j<mysize; j++){
+								// HG //
+								int index_HG = (HG_Anode_ID->at(j)-1) + (HG_ID->at(j)-1)*NumberOfAnodes;
+								double PSD = HG_Q2->at(j)/HG_Q1->at(j);
+								//if(HG_ID->at(j)>0 && HG_Anode_ID->at(j)>0 && HG_FakeFission->at(j)==0 && HG_DT->at(j)>1e7 && PSD>0.7){
+								if(HG_ID->at(j)>0 && HG_Anode_ID->at(j)>0 && HG_FakeFission->at(j)==0){
+										hHG[index_HG]->Fill(HG_Tof->at(j));			
+								}
+						}
 						}
 				}
-		}
 
-		ofile->Write();
-		ofile->Close();
+				ofile->Write();
+				ofile->Close();
 
-}
+				}

@@ -6,7 +6,7 @@ int nentries=1e6;
 //////////////////////////////////////////////////
 void OpenRootFile(){
 		chain = new TChain("RawTree");
- 	chain->Add("/home/faster/fastertonptool/data/rootfiles/run11_*.root");
+ 	chain->Add("/home/faster/fastertonptool/data/rootfiles/run25_*.root");
 }
 
 //////////////////////////////////////////////////
@@ -15,7 +15,7 @@ void FillRawPSD(){
 		nentries = chain->GetEntries();
 		cout << "Number of entries= " << nentries << endl;
 
-		TFile* ofile = new TFile("PSD_histo_run11_160ns.root","recreate");
+		TFile* ofile = new TFile("PSD_histo_run25.root","recreate");
 		TH2F* hLG[72];
 		TH2F* hHG[72];
 
