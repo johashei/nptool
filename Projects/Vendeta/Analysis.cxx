@@ -72,13 +72,24 @@ void Analysis::TreatEvent(){
 				}
 		}*/
 
+		/*if(FC_mult==2){
+				double HF1, HF2;
+				for(int i=0; i<2; i++){
+						HF1 = FC->Time[0] - FC->Time_HF[0];
+						HF2 = FC->Time[1] - FC->Time_HF[1];
+				}
+				if(FC->AnodeNumber[0]>0 && FC->AnodeNumber[1]>0 && HF1<1790 && HF2<1790)
+					cout << FC->AnodeNumber[0] << " / " << FC->AnodeNumber[1] << endl;
+		}*/
+
 		if(FC_mult==1){
 
 				int anode = FC->AnodeNumber[0];
 				double Time_FC = FC->Time[0];
 				bool isFake = FC->isFakeFission[0];
-
-				incomingDT = FC->Time[0] - FC->Time_HF[0] - GammaOffset[anode-1];
+				
+				incomingDT = FC->Time[0] - FC->Time_HF[0];
+				if(anode>0) incomingDT -= GammaOffset[anode-1];
 				if(incomingDT<0){
 						incomingDT += 1790;
 				}
