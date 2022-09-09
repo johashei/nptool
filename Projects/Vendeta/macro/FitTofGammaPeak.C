@@ -3,14 +3,14 @@ TFile* ifile;
 int NumberOfDetectors=72;
 int NumberOfAnodes=11;
 int m_NumberOfGammaPeak=1;
-
+int run=59;
 double PosGammaPeak = 3.2;
 
 bool Finder(TH1F* h, Double_t *mean, Double_t *sigma);
 
 /////////////////////////////////////////////////////
 void OpenRootFile(){
-  ifile = new TFile("histo_tof_file_run21.root");
+  ifile = new TFile(Form("histo_tof_file_run%i.root",run));
 }
 
 /////////////////////////////////////////////////////
@@ -21,9 +21,9 @@ void FitTofGammaPeak(){
   TCanvas *cHG[11];
 
   ofstream ofile;
-  ofile.open("Vendeta_Time_run21.cal");
+  ofile.open(Form("Vendeta_Time_run%i.cal",run));
 
-		TFile* orootfile = new TFile("histo_tof_fitted.root","recreate");
+		TFile* orootfile = new TFile(Form("histo_tof_fitted_run%i.root",run),"recreate");
 
   /*for(int i=0; i<11; i++){
     TString canvas_name = Form("LG_Anode%i",i+1);
@@ -126,8 +126,8 @@ bool Finder(TH1F* h, Double_t *mean, Double_t *sigma){
   if(nfound == m_NumberOfGammaPeak){
     cout << "Gamma Peak Found" << endl;
     for(int i=0; i<nfound; i++){
-      linf = xpeaks[i]-1.8;
-      lsup = xpeaks[i]+0.8;
+      linf = xpeaks[i]-2;
+      lsup = xpeaks[i]+1;
 
       TF1* gauss = new TF1("gaus","gaus",linf,lsup);
       h->Fit(gauss,"RQ");

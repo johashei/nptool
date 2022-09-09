@@ -2,11 +2,12 @@ TChain* chain;
 
 int NumberOfAnodes= 11;
 int nentries= 1e6;
+int run = 59;
 
 //////////////////////////////////////////////////
 void OpenRootFile(){
 		chain = new TChain("RawTree");
-		chain->Add("/home/faster/fastertonptool/data/rootfiles/run31_*.root");
+		chain->Add(Form("/home/faster/fastertonptool/data/rootfiles/run%d_*.root",run));
 }
 
 //////////////////////////////////////////////////
@@ -14,7 +15,7 @@ void FillRawFCSpectra(){
 		OpenRootFile();
 		nentries = chain->GetEntries();
 
-		TFile* ofile = new TFile("FC_Raw_spectra_run31.root","recreate");
+		TFile* ofile = new TFile(Form("FC_Raw_spectra_run%d.root",run),"recreate");
 		TH1F* Q1[11];
 		TH1F* Q2[11];
 		TH1F* Qmax[11];
