@@ -3,8 +3,10 @@ TFile* ifile;
 int NumberOfDetectors=72;
 int NumberOfAnodes=11;
 int m_NumberOfGammaPeak=1;
-int run=59;
+int run=86;
 double PosGammaPeak = 3.2;
+
+double sigma_anode[11];
 
 bool Finder(TH1F* h, Double_t *mean, Double_t *sigma);
 
@@ -25,16 +27,9 @@ void FitTofGammaPeak(){
 
 		TFile* orootfile = new TFile(Form("histo_tof_fitted_run%i.root",run),"recreate");
 
-  /*for(int i=0; i<11; i++){
-    TString canvas_name = Form("LG_Anode%i",i+1);
-    cLG[i] = new TCanvas(canvas_name,canvas_name,1800,1800);
-    cLG[i]->Divide(10,8);
-
-    canvas_name = Form("HG_Anode%i",i+1);
-    cHG[i] = new TCanvas(canvas_name,canvas_name,1800,1800);
-    cHG[i]->Divide(10,8);
-
-  }*/
+  for(int i=0; i<NumberOfAnodes; i++){
+			sigma_anode[i]=0;
+  }
 
   Double_t* mean = new Double_t[1];
   Double_t* sigma = new Double_t[1];
@@ -58,6 +53,9 @@ void FitTofGammaPeak(){
       if(Finder(h, mean, sigma)){
         ofile << LG_token << " " << -mean[0]+PosGammaPeak << endl;
 								gSigma_LG->SetPoint(countLG,countLG+1,sigma[0]);
+
+								sigma_anode[j] += sigma[0];
+
 								countLG++;
 								h->Write();
       }
@@ -107,6 +105,10 @@ void FitTofGammaPeak(){
 		orootfile->Write();
 		orootfile->Close();
 
+		for(int i=0; i<NumberOfAnodes; i++){
+			cout << "Anode= " << i+1 << " / " << sigma_anode[i]/NumberOfDetectors << endl; 
+		}
+
 }
 
 
@@ -141,6 +143,4 @@ bool Finder(TH1F* h, Double_t *mean, Double_t *sigma){
     cout << "Warning. Number of peak different of " << m_NumberOfGammaPeak << " !! / nfound = " << nfound << endl; 
     return false;
   }
-
-
 }

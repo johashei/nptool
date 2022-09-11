@@ -1,13 +1,5 @@
 TTreeName
   RawTree
 RootFileName
- /home/faster/fastertonptool/data/rootfiles/run61_*.root
+ /home/faster/fastertonptool/data/rootfiles/run86_*.root
  
-	%/home/faster/fastertonptool/data/rootfiles/u238_carbon_1.root
- %/home/faster/fastertonptool/data/rootfiles/u238_carbon_2.root
- %/home/faster/fastertonptool/data/rootfiles/u238_carbon_3.root
- %/home/faster/fastertonptool/data/rootfiles/u238_carbon_2_1.root
- %/home/faster/fastertonptool/data/rootfiles/u238_carbon_2_2.root
- %/home/faster/fastertonptool/data/rootfiles/test_sampler_qdc_cf_2.root
- %/home/faster/fastertonptool/data/rootfiles/test_sampler_qdc_cf_3.root
- %/home/faster/fastertonptool/data/rootfiles/test_sampler_qdc_cf_4.root

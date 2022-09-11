@@ -2,11 +2,12 @@ TChain* chain;
 
 int NumberOfDetectors= 72;
 int nentries=1e6;
+int run=86;
 
 //////////////////////////////////////////////////
 void OpenRootFile(){
 		chain = new TChain("RawTree");
- 	chain->Add("/home/faster/fastertonptool/data/rootfiles/run59_*.root");
+ 	chain->Add(Form("/home/faster/fastertonptool/data/rootfiles/run%i_*.root",run));
 }
 
 //////////////////////////////////////////////////
@@ -15,16 +16,16 @@ void FillRawPSD(){
 		nentries = chain->GetEntries();
 		cout << "Number of entries= " << nentries << endl;
 
-		TFile* ofile = new TFile("PSD_histo_run59.root","recreate");
+		TFile* ofile = new TFile(Form("PSD_histo_run%i.root",run),"recreate");
 		TH2F* hLG[72];
 		TH2F* hHG[72];
 
 		TString histo_name;
 		for(int i=0; i<NumberOfDetectors;i++){
 				histo_name = Form("hLG_det%i",i+1);
-				hLG[i] = new TH2F(histo_name,histo_name,500,0,500e3,500,0,1.1);
+				hLG[i] = new TH2F(histo_name,histo_name,100,0,50e3,250,0,1.1);
 				histo_name = Form("hHG_det%i",i+1);
-				hHG[i] = new TH2F(histo_name,histo_name,500,0,900e3,500,0,1.1);
+				hHG[i] = new TH2F(histo_name,histo_name,100,0,50e3,250,0,1.1);
 		}
 
 		TVendetaData* Vendeta = new TVendetaData();

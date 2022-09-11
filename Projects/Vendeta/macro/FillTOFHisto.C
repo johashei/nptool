@@ -3,7 +3,7 @@ TChain* chain;
 int NumberOfDetectors= 72;
 int NumberOfAnodes= 11;
 int nentries=1e6;
-int run=59;
+int run=86;
 /////////////////////////////////////
 void LoadRootFile(){
 		chain = new TChain("PhysicsTree");
@@ -68,7 +68,7 @@ void FillTOFHisto(){
 				chain->GetEntry(i);
 
 				if(i%100000==0){
-						cout << "\033[34m\r Processing tree..." << (double)i/nentries*100 << "\% done" << flush;
+								cout << setprecision(2) << "\033[34m\r Processing tree..." << (double)i/nentries*100 << "\% done" << flush;
 				}
 				
 				if(FC_Anode_ID->size()>0){
@@ -81,7 +81,7 @@ void FillTOFHisto(){
 								// LG //
 								int index_LG = (anode-1) + (LG_ID->at(j)-1)*NumberOfAnodes;
 								double PSD = LG_Q2->at(j)/LG_Q1->at(j);
-								if(LG_ID->at(j)>0 && anode>0 && Fake==0){
+								if(LG_ID->at(j)>0 && anode>0 && Fake==0 && LG_Q1->at(j)>2000){
 										hLG[index_LG]->Fill(LG_Tof->at(j));		
 								}
 						}
