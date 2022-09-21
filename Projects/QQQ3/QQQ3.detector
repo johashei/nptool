@@ -11,59 +11,54 @@ Target
  X= 0 mm
  Y= 0 mm
  Z= 0 mm
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Alias beta
+  Action= Replace
+  Value= 10
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Alias Radius 
+  Action= Replace
+  Value= 70 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Alias Theta 
+  Action= Replace
+  Value= 0
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Alias Offset 
+  Action= Replace
+  Value= 4
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % QQQ3
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
- %Upstream CD
+ % DownStream
 QQQ3
- Z= -70 mm
- R= 0 mm
+ R= @Radius mm
+ Theta= @Theta deg
  Phi= 0 deg
+ beta= -@beta -@beta 0 deg
+ offset = @Offset -@Offset 0 mm
  ThicknessDetector= 500 micrometer
 QQQ3
- Z= -70 mm
- R= 0 mm
+ R= @Radius mm
+ Theta= @Theta deg
  Phi= 90 deg
+ beta= -@beta @beta 0 deg
+ offset = -@Offset -@Offset 0 mm
  ThicknessDetector= 500 micrometer
 QQQ3
- Z= -70 mm
- R= 0 mm
+ R= @Radius mm
+ Theta= @Theta  deg
  Phi= 180 deg
+ beta= @beta @beta 0 deg
+ offset = -@Offset @Offset 0 mm
  ThicknessDetector= 500 micrometer
 QQQ3
- Z= -70 mm
- R= 0 mm
+ R= @Radius mm
+ Theta= @Theta deg
  Phi= 270 deg
+ beta= @beta -@beta 0 deg
+ offset = @Offset @Offset 0 mm
  ThicknessDetector= 500 micrometer
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%Downstream CD
-QQQ3
- Z= 70 mm
- R= 0 mm
- Phi= 0 deg
- %THETA= 60 deg
- ThicknessDetector= 500 micrometer
-QQQ3
- Z= 70 mm
- R= 0 mm
- %THETA= 60 deg 
- Phi= 90 deg
- ThicknessDetector= 500 micrometer
-QQQ3
- Z= 70 mm
- R= 0 mm
- Phi= 180 deg
- ThicknessDetector= 500 micrometer
-QQQ3 
- Z= 70 mm
- R= 0 mm
- Phi= 270 deg
- ThicknessDetector= 500 micrometer
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

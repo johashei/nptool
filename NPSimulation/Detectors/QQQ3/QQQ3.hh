@@ -80,11 +80,10 @@ class QQQ3 : public NPS::VDetector {
   ////////////////////////////////////////////////////
  public:
   // To add a Quadrant detector
-  void AddQQQDetector(G4ThreeVector Pos, G4double Thickness);
+  void AddDetector(G4ThreeVector Pos, G4double Thickness);
+  void AddDetector(double R, double Theta, double Phi, double beta_u, double beta_v, double beta_w,
+                   G4ThreeVector Offset, double Thickness);
 
-  // Effectively construct Volume
-  void ConstructQQQDetector(G4LogicalVolume* world);
-  void ConstructTargetFan(G4LogicalVolume* world);
   ////////////////////////////////////////////////////
   /////////  Inherite from NPS::VDetector class ///////////
   ////////////////////////////////////////////////////
@@ -139,8 +138,9 @@ class QQQ3 : public NPS::VDetector {
   vector<bool> m_Type;
 
   // Used for Quadrant detectors
-  vector<G4ThreeVector> m_Pos; // R , Phi , Z
+  vector<G4ThreeVector> m_Pos, m_Offset; // R , Phi , Z
   vector<G4double> m_ThicknessQQQ;
+  vector<double> m_R, m_Theta, m_Phi, m_beta_u, m_beta_v, m_beta_w;
 
   // Used for Box detectors
   vector<G4double> m_Z;

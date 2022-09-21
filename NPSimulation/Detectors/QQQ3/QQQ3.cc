@@ -79,9 +79,31 @@ QQQ3::~QQQ3() {
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-void QQQ3::AddQQQDetector(G4ThreeVector Pos, G4double Thickness) {
-  m_Type.push_back(false);
+void QQQ3::AddDetector(G4ThreeVector Pos, G4double Thickness) {
+  m_Type.push_back(true);
   m_Pos.push_back(Pos);
+  m_ThicknessQQQ.push_back(Thickness);
+  m_R.push_back(-1000);
+  m_Theta.push_back(-1000);
+  m_Phi.push_back(-1000);
+  m_beta_u.push_back(-1000);
+  m_beta_v.push_back(-1000);
+  m_beta_w.push_back(-1000);
+  m_Offset.push_back(G4ThreeVector(-1000, -1000, -1000));
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+void QQQ3::AddDetector(double R, double Theta, double Phi, double beta_u, double beta_v, double beta_w,
+                       G4ThreeVector Offset, double Thickness) {
+  m_Type.push_back(false);
+  m_R.push_back(R);
+  m_Theta.push_back(Theta);
+  m_Phi.push_back(Phi);
+  m_beta_u.push_back(beta_u);
+  m_beta_v.push_back(beta_v);
+  m_beta_w.push_back(beta_w);
+  m_Offset.push_back(Offset);
+  m_Pos.push_back(G4ThreeVector(-1000, -1000, -1000));
   m_ThicknessQQQ.push_back(Thickness);
 }
 
@@ -94,18 +116,30 @@ void QQQ3::ReadConfiguration(NPL::InputParser parser) {
   if (NPOptionManager::getInstance()->GetVerboseLevel())
     cout << "//// " << blocks.size() << " detectors found " << endl;
 
-  vector<string> tokenQQQ = {"Z", "R", "Phi", "ThicknessDetector"};
+  vector<string> cyli = {"Z", "R", "Phi", "ThicknessDetector"};
+  vector<string> sphe = {"R", "THETA", "PHI", "BETA", "ThicknessDetector"};
 
   for (unsigned int i = 0; i < blocks.size(); i++) {
 
-    if (blocks[i]->HasTokenList(tokenQQQ)) {
+    if (blocks[i]->HasTokenList(cyli)) {
       if (NPOptionManager::getInstance()->GetVerboseLevel())
         cout << endl << "////  QQQ3 " << i + 1 << endl;
       double Z = blocks[i]->GetDouble("Z", "mm");
       double R = blocks[i]->GetDouble("R", "mm");
       double Phi = blocks[i]->GetDouble("Phi", "deg");
       double Thickness = blocks[i]->GetDouble("ThicknessDetector", "micrometer");
-      AddQQQDetector(G4ThreeVector(R, Phi, Z), Thickness);
+      AddDetector(G4ThreeVector(R, Phi, Z), Thickness);
+    }
+    else if (blocks[i]->HasTokenList(sphe)) {
+      if (NPOptionManager::getInstance()->GetVerboseLevel())
+        cout << endl << "////  QQQ " << i + 1 << endl;
+      double R = blocks[i]->GetDouble("R", "mm");
+      double Theta = blocks[i]->GetDouble("THETA", "deg");
+      double Phi = blocks[i]->GetDouble("PHI", "deg");
+      vector<double> beta = blocks[i]->GetVectorDouble("BETA", "deg");
+      G4ThreeVector Offset = NPS::ConvertVector(blocks[i]->GetTVector3("Offset", "mm"));
+      double Thickness = blocks[i]->GetDouble("ThicknessDetector", "micrometer");
+      AddDetector(R, Theta, Phi, beta[0], beta[1], beta[2], Offset, Thickness);
     }
     else {
       cout << "Warning: check your input file formatting " << endl;
@@ -114,63 +148,10 @@ void QQQ3::ReadConfiguration(NPL::InputParser parser) {
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-// Construct detector and inialise sensitive part.
-// Called After DetecorConstruction::AddDetector Method
 void QQQ3::ConstructDetector(G4LogicalVolume* world) {
-  ConstructQQQDetector(world);
-  // ConstructTargetFan(world);
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-// void QQQ3::ConstructTargetFan(G4LogicalVolume* world) {
-// G4double FanBase_OutterRadius = 8 * mm;
-// G4double FanBase_InnerRadius = 4 * mm;
-// G4double FanBase_Thickness = 9 * mm;
-
-// G4double FanPlate_OutterRadius = 66 * mm;
-// G4double FanPlate_InnerRadius = 0 * mm;
-// G4double FanPlateHole_OutterRadius = 53 * mm;
-// G4double FanPlateHole_InnerRadius = 18 * mm;
-// G4double FanPlate_Thickness = 3 * mm;
-
-// G4double TargetFrame_Thickness;
-// TargetFrame_Thickness= 0.5*mm;
-// G4double Fan_Shift = 70 * mm + 16 * mm;
-
-// G4Tubs* FanBaseSolid =
-//   new G4Tubs("TargetFanBase", FanBase_InnerRadius, FanBase_OutterRadius, FanBase_Thickness * 0.5, 0., M_PI * 2);
-
-// G4Tubs* FanPlateWholeSolid = new G4Tubs("TargetFanPlate", FanPlate_InnerRadius, FanPlate_OutterRadius,
-//      FanPlate_Thickness * 0.5, 0 * deg, 60 * deg);
-
-// G4Tubs* FanPlateHoleSolid = new G4Tubs("TargetFanPlateHole", FanPlateHole_InnerRadius, FanPlateHole_OutterRadius,
-//          FanPlate_Thickness, 0 * deg, 60 * deg);
-
-// G4SubtractionSolid* FanPlateSolid =
-//    new G4SubtractionSolid("TargetFanSolid", FanPlateWholeSolid, FanPlateHoleSolid, new G4RotationMatrix(),
-//                           G4ThreeVector(8 * mm * sin(60 * deg), 8 * mm * cos(60 * deg), 0));
-
-// G4UnionSolid* TargetFanSolid =
-//    new G4UnionSolid("TargetFanSolid", FanPlateSolid, FanBaseSolid, new G4RotationMatrix(),
-//                    G4ThreeVector(16 * mm * sin(60 * deg), 16 * mm * cos(60 * deg), FanPlate_Thickness));
-
-// G4LogicalVolume* TargetFan = new G4LogicalVolume(TargetFanSolid, m_MaterialVacuum, "TargetFan", 0, 0, 0);
-
-// G4RotationMatrix* Rot = new G4RotationMatrix();
-// Rot->rotateZ(30 * deg - 9 * deg);
-// new G4PVPlacement(Rot, G4ThreeVector(-Fan_Shift, 0, 0.5 * FanPlate_Thickness), TargetFan, "TargetFan", world, false,
-//               0);
-//}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-void QQQ3::ConstructQQQDetector(G4LogicalVolume* world) {
   // create the QQQ
-  for (unsigned int i = 0; i < m_Pos.size(); i++) {
-    int DetNbr = 0;
-    if (m_Pos[i].z() < 0)
-      DetNbr = i + 1;
-    else
-      DetNbr = i + 1 + 8;
+  for (unsigned int i = 0; i < m_Type.size(); i++) {
+    int DetNbr = i + 1;
     // Make the a single detector geometry
     G4Tubs* QQQDetector =
         new G4Tubs("QQQDetector", QQQ_PCB_Inner_Radius, QQQ_PCB_Outer_Radius, QQQ_PCB_Thickness * 0.5, 0., M_PI / 2.);
@@ -207,10 +188,46 @@ void QQQ3::ConstructQQQDetector(G4LogicalVolume* world) {
     new G4PVPlacement(new G4RotationMatrix(0, 0, 0), G4ThreeVector(0, 0, 0), logicWafer, "QQQ_Wafer", logicQQQDetector,
                       false, DetNbr);
 
-    // Place the masters volume in the world
+    if (m_Type[i]) {
+      // Place the masters volume in the world
+      new G4PVPlacement(new G4RotationMatrix(0, 0, m_Pos[i].y()), G4ThreeVector(0, 0, m_Pos[i].z()), logicQQQDetector,
+                        "QQQ", world, false, DetNbr);
+    }
+    else {
+      // (u,v,w) unitary vector associated to telescope referencial
+      // (u,v) // to silicon plan
+      // w perpendicular to (u,v) plan and pointing ThirdStage
+      // Phi is angle between X axis and projection in (X,Y) plan
+      // m_Theta[0] is angle between  position vector and z axis
+      G4double wX = m_R[i] * sin(m_Theta[i] / rad) * cos(m_Phi[i] / rad);
+      G4double wY = m_R[i] * sin(m_Theta[i] / rad) * sin(m_Phi[i] / rad);
+      G4double wZ = m_R[i] * cos(m_Theta[i] / rad);
+      auto Det_w = G4ThreeVector(wX, wY, wZ);
+      // vector corresponding to the center of the module
+      G4ThreeVector CT = Det_w;
 
-    new G4PVPlacement(new G4RotationMatrix(0, 0, m_Pos[i].y()), G4ThreeVector(0, 0, m_Pos[i].z()), logicQQQDetector,
-                      "QQQ", world, false, DetNbr);
+      // vector parallel to one axis of silicon plane
+      G4double ii = cos(m_Theta[i] / rad) * cos(m_Phi[i] / rad);
+      G4double jj = cos(m_Theta[i] / rad) * sin(m_Phi[i] / rad);
+      G4double kk = -sin(m_Theta[i] / rad);
+      G4ThreeVector Y = G4ThreeVector(ii, jj, kk);
+
+      Det_w = Det_w.unit();
+      auto Det_u = Det_w.cross(Y);
+      auto Det_v = Det_w.cross(Det_u);
+      Det_v = Det_v.unit();
+      Det_u = Det_u.unit();
+      // Passage Matrix from Lab Referential to Telescope Referential
+      auto Det_rot = new G4RotationMatrix(Det_u, Det_v, Det_w);
+      // Telescope is rotate of Beta angle around Det_v axis.
+      Det_rot->rotate(m_beta_u[i], Det_u);
+      Det_rot->rotate(m_beta_v[i], Det_v);
+      Det_rot->rotate(m_beta_w[i], Det_w);
+      // translation to place Telescope
+      auto Det_pos = Det_w + CT + m_Offset[i];
+      // Place the masters volume in the world
+      new G4PVPlacement(Det_rot, Det_pos, logicQQQDetector, "QQQ", world, false, DetNbr);
+    }
   }
 }
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
