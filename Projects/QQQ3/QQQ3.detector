@@ -1,0 +1,64 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+GeneralTarget
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%0.5mg/cm2
+Target
+ THICKNESS= 1.9 micrometer
+ RADIUS=	5 mm
+ MATERIAL= 7Li
+ ANGLE= 0 deg
+ X= 0 mm
+ Y= 0 mm
+ Z= 0 mm
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Alias beta
+  Action= Replace
+  Value= 10
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Alias Radius 
+  Action= Replace
+  Value= 70 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Alias Theta 
+  Action= Replace
+  Value= 0
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Alias Offset 
+  Action= Replace
+  Value= 4
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% QQQ3
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ % DownStream
+QQQ3
+ R= @Radius mm
+ Theta= @Theta deg
+ Phi= 0 deg
+ beta= -@beta -@beta 0 deg
+ offset = @Offset -@Offset 0 mm
+ ThicknessDetector= 500 micrometer
+QQQ3
+ R= @Radius mm
+ Theta= @Theta deg
+ Phi= 90 deg
+ beta= -@beta @beta 0 deg
+ offset = -@Offset -@Offset 0 mm
+ ThicknessDetector= 500 micrometer
+QQQ3
+ R= @Radius mm
+ Theta= @Theta  deg
+ Phi= 180 deg
+ beta= @beta @beta 0 deg
+ offset = -@Offset @Offset 0 mm
+ ThicknessDetector= 500 micrometer
+QQQ3
+ R= @Radius mm
+ Theta= @Theta deg
+ Phi= 270 deg
+ beta= @beta -@beta 0 deg
+ offset = @Offset @Offset 0 mm
+ ThicknessDetector= 500 micrometer
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
