@@ -24,6 +24,7 @@
 
 // STL
 #include <vector>
+#include <map>
 using namespace std;
 
 // ROOT
@@ -35,6 +36,7 @@ using namespace std;
 
 #include "NPParticle.h"
 
+
 class GladFieldMap{
   public: 
     GladFieldMap();
@@ -42,10 +44,18 @@ class GladFieldMap{
     
   private:
     // GLAD parameters
-    TVector3 m_Bfield;
+    map<vector<double>, vector<double>> m_field;
     double m_Z_Glad;
     double m_Leff;
     double m_Tilt;
+    double m_x_min;
+    double m_y_min;
+    double m_z_min;
+    double m_x_max;
+    double m_y_max;
+    double m_z_max;
+    double m_Scale;
+    int m_bin;
     // MWPC3 paramters
     double m_CentralTheta;
     double m_X_MWPC3;
@@ -61,7 +71,6 @@ class GladFieldMap{
 
 
   public:
-    void SetBfield(TVector3 vec) {m_Bfield = vec;}
     void SetZGlad(double val) {m_Z_Glad = val;}
     void SetLeff(double val) {m_Leff = val;}
     void SetGladTiltAngle(double val) {m_Tilt = val;}
@@ -78,7 +87,9 @@ class GladFieldMap{
     void SetInitDir(TVector3 Dir) {m_InitPos = Dir;}
 
   public:
-    TVector3 LoadMap(TVector3 pos);
+    void LoadMap(string filename);
+    vector<double> InterpolateB(const vector<double>& pos);
+    vector<double> GetB(const vector<double>& pos);
     TGraph* BrhoScan(double Brho_min, double Brho_max, double Brho_step);
     TVector3 CalculateIntersectionPoint(vector<TVector3> vPos);
     vector<TVector3> Propagate(double Brho, TVector3 Pos, TVector3 Dir);
