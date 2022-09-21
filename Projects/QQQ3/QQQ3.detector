@@ -1,0 +1,69 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+GeneralTarget
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%0.5mg/cm2
+Target
+ THICKNESS= 1.9 micrometer
+ RADIUS=	5 mm
+ MATERIAL= 7Li
+ ANGLE= 0 deg
+ X= 0 mm
+ Y= 0 mm
+ Z= 0 mm
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% QQQ3
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ %Upstream CD
+QQQ3
+ Z= -70 mm
+ R= 0 mm
+ Phi= 0 deg
+ ThicknessDetector= 500 micrometer
+QQQ3
+ Z= -70 mm
+ R= 0 mm
+ Phi= 90 deg
+ ThicknessDetector= 500 micrometer
+QQQ3
+ Z= -70 mm
+ R= 0 mm
+ Phi= 180 deg
+ ThicknessDetector= 500 micrometer
+QQQ3
+ Z= -70 mm
+ R= 0 mm
+ Phi= 270 deg
+ ThicknessDetector= 500 micrometer
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%Downstream CD
+QQQ3
+ Z= 70 mm
+ R= 0 mm
+ Phi= 0 deg
+ %THETA= 60 deg
+ ThicknessDetector= 500 micrometer
+QQQ3
+ Z= 70 mm
+ R= 0 mm
+ %THETA= 60 deg 
+ Phi= 90 deg
+ ThicknessDetector= 500 micrometer
+QQQ3
+ Z= 70 mm
+ R= 0 mm
+ Phi= 180 deg
+ ThicknessDetector= 500 micrometer
+QQQ3 
+ Z= 70 mm
+ R= 0 mm
+ Phi= 270 deg
+ ThicknessDetector= 500 micrometer
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
