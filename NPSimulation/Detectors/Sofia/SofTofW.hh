@@ -115,6 +115,7 @@ class SofTofW : public NPS::VDetector{
     int m_Build_MagneticField;
     double m_GLAD_MagField;
     double m_GLAD_DistanceFromTarget;
+    double m_GLAD_Yoffset;
     double m_GLAD_TiltAngle;
     double m_VacuumPipeX;
     double m_VacuumPipeY;

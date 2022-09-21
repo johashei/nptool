@@ -54,6 +54,7 @@ struct TofPair
   double x2twim = -1000;
   double x2 = -1000;
   double x3 = -1000;
+  double y3 = -1000;
   double x3lab = 0;
   double z3lab = 0;
 };
@@ -252,9 +253,14 @@ void Analysis::FissionFragmentAnalysis(){
 
    for(unsigned int k=0; k<X3.size(); k++){
       double posx = X3[k];
+      double posy = -1000;
+      if(Y3.size()==X3.size())
+        posy = Y3[k];
       if(abs(tofx-posx) < 150){
-        if(abs(tofx-posx)<abs(tofx-TofHit[i].x3))
+        if(abs(tofx-posx)<abs(tofx-TofHit[i].x3)){
           TofHit[i].x3 = posx;
+          TofHit[i].y3 = posy;
+        }
       }
     }
   }
@@ -621,9 +627,11 @@ void Analysis::FissionFragmentAnalysis(){
       m_GladField->SetCentralTheta(20.*deg);
       m_GladField->SetX_MWPC3(-1.436*m);
       m_GladField->SetZ_MWPC3(8.380*m);
-      
-      double Brho1 = m_GladField->FindBrho(InitPos[0], InitDir[0], FinalPos[0]);
-      double Brho2 = m_GladField->FindBrho(InitPos[1], InitDir[1], FinalPos[1]);
+     
+      double Brho1 = 0;
+      double Brho2 = 0;
+      //Brho1 = m_GladField->FindBrho(InitPos[0], InitDir[0], FinalPos[0]);
+      //Brho2 = m_GladField->FindBrho(InitPos[1], InitDir[1], FinalPos[1]);
       
       Beta_Z1 = TofHit[0].beta;
       Beta_Z2 = TofHit[1].beta;
@@ -650,8 +658,14 @@ void Analysis::FissionFragmentAnalysis(){
       SofFF->SetPosX1(TofHit[1].x2twim);
       SofFF->SetPosX2(TofHit[0].x2);
       SofFF->SetPosX2(TofHit[1].x2);
-      SofFF->SetPosX3(TofHit[0].x3lab);
-      SofFF->SetPosX3(TofHit[1].x3lab);
+      SofFF->SetPosX3(TofHit[0].x3);
+      SofFF->SetPosX3(TofHit[1].x3);
+      SofFF->SetPosY3(TofHit[0].y3);
+      SofFF->SetPosY3(TofHit[1].y3);
+ 
+      //SofFF->SetPosX3(TofHit[0].x3lab);
+      //SofFF->SetPosX3(TofHit[1].x3lab);
+
 
       SofFF->SetThetaIn(TofHit[0].theta_in);
       SofFF->SetThetaIn(TofHit[1].theta_in);
@@ -807,7 +821,7 @@ void Analysis::InitParameter(){
   fK_LS2 = -30e-8;
 
   fBrho0 = 12.3255;
-  fRunID = 5;
+  fRunID = 12;
 
   // Beam parameter //
   fZBeta_p0 = 1;

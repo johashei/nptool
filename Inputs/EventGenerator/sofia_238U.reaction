@@ -12,9 +12,9 @@ Beam
  SigmaThetaX= 0 
  SigmaPhiY= 0
  MeanThetaX= 0
- MeanPhiY= 0.1 deg
- MeanX= -20.0 mm
- MeanY= -2.8 mm
+ MeanPhiY= 0 deg
+ MeanX= 0.0 mm
+ MeanY= 0.0 mm
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %TwoBodyReaction
  Beam= 238U

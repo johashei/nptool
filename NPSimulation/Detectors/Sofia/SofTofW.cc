@@ -100,6 +100,7 @@ SofTofW::SofTofW(){
   m_GLAD_MagField = 0;
   m_GLAD_DistanceFromTarget= 0;
   m_GLAD_TiltAngle= 7.;
+  m_GLAD_Yoffset= 0.;
 
   // RGB Color + Transparency
   m_VisSquare = new G4VisAttributes(G4Colour(0.53, 0.81, 0.98, 1));   
@@ -272,6 +273,7 @@ void SofTofW::ReadConfiguration(NPL::InputParser parser){
       double R = blocks[i]->GetDouble("R","mm");
       double Theta = blocks[i]->GetDouble("Theta","deg");
       double Phi = blocks[i]->GetDouble("Phi","deg");
+      m_GLAD_Yoffset = blocks[i]->GetDouble("Yoffset","mm");
       m_Build_GLAD = blocks[i]->GetInt("Build_GLAD");
       m_GLAD_TiltAngle = blocks[i]->GetDouble("GLAD_TiltAngle","deg");
       m_Build_VacuumPipe = blocks[i]->GetInt("Build_VacuumPipe");
@@ -324,7 +326,7 @@ void SofTofW::ConstructDetector(G4LogicalVolume* world){
     BuildTOFDetector()->MakeImprint(world,Det_pos,Rot);
   }
 
-  G4ThreeVector GLAD_pos = G4ThreeVector(0,0,m_GLAD_DistanceFromTarget);
+  G4ThreeVector GLAD_pos = G4ThreeVector(0,m_GLAD_Yoffset,m_GLAD_DistanceFromTarget);
   if(m_Build_MagneticField==1){ 
     BuildMagneticField()->MakeImprint(world,GLAD_pos,0);
   }

@@ -95,6 +95,7 @@ G4bool FissionDecay::IsApplicable( const G4ParticleDefinition& particleType) {
 
   // Strip name from excitation energy
   m_CurrentName = m_CurrentName.substr(0,m_CurrentName.find("["));
+
   if (m_CompoundName==m_CurrentName) {
     return true;
   }
@@ -110,7 +111,7 @@ G4bool FissionDecay::ModelTrigger(const G4FastTrack& fastTrack) {
   m_PreviousEnergy = PrimaryTrack->GetKineticEnergy();
 
   m_FissionConditions->Clear();
-  if(Parent_ID>=0){
+  if(Parent_ID>0){
     Trigger = true;
   }
   

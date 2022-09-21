@@ -75,9 +75,9 @@ void Analysis::TreatEvent(){
       Distance.push_back(R);	
       Det.push_back(m_ChiNu->DetectorNumber[i]); 
       T.push_back(m_ChiNu->Time[i]);
-      double T_stop = m_ChiNu->Time[i]*1e-9;
+      double T_stop = (m_ChiNu->Time[i])*1e-9;
       //neutron->SetTimeOfFlight((T_stop-beam_TOF)/(Rdet*1e-3));
-      neutron->SetTimeOfFlight((T_stop)/(Rdet*1e-3));
+      neutron->SetTimeOfFlight((T_stop)/(Rdet*1e-3-8e-3));
       E.push_back(m_ChiNu->Energy[i]);
       Elab.push_back(neutron->GetEnergy());
 
