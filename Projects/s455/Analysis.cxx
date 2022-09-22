@@ -79,7 +79,8 @@ void Analysis::Init(){
   SofMwpc= (TSofMwpcPhysics*) m_DetectorManager->GetDetector("SofMwpc");
   
   m_GladField = new GladFieldMap();
-  m_GladField->SetZGlad(4.434*m);
+  m_GladField->SetScale(-2135./3583.81);
+  m_GladField->SetZGlad(4434.);
   m_GladField->SetLeff(2.067*m);
   m_GladField->SetGladTiltAngle(14.*deg);
   m_GladField->SetCentralTheta(20.*deg);

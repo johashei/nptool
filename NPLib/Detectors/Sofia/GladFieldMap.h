@@ -74,7 +74,8 @@ class GladFieldMap{
     void SetZGlad(double val) {m_Z_Glad = val;}
     void SetLeff(double val) {m_Leff = val;}
     void SetGladTiltAngle(double val) {m_Tilt = val;}
- 
+    void SetScale(double val) {m_Scale = val;}
+
     void SetCentralTheta(double val) {m_CentralTheta = val;}
     void SetX_MWPC3(double val) {m_X_MWPC3 = val;}
     void SetZ_MWPC3(double val) {m_Z_MWPC3 = val;}
