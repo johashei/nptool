@@ -80,14 +80,15 @@ void Analysis::Init(){
   
   m_GladField = new GladFieldMap();
   m_GladField->SetScale(-2135./3583.81);
-  m_GladField->SetZGlad(4434.);
+  //m_GladField->SetZGlad(4434.);
+  m_GladField->SetZGlad(2724.);
   m_GladField->SetLeff(2.067*m);
   m_GladField->SetGladTiltAngle(14.*deg);
   m_GladField->SetCentralTheta(20.*deg);
   m_GladField->SetX_MWPC3(-1.436*m);
   m_GladField->SetZ_MWPC3(8.380*m);
   m_GladField->LoadMap("GladFieldMap.dat");
-
+  
   InitParameter();
   InitOutputBranch();
   LoadSpline();
@@ -558,6 +559,7 @@ void Analysis::FissionFragmentAnalysis(){
       double Theta0 = 20.*deg;
       double XA;
       double ZA = 2328.;
+      //double ZA = 2328.-4434.;
       double XC;
       double ZG = 4434.;
       double ZC;
@@ -631,8 +633,9 @@ void Analysis::FissionFragmentAnalysis(){
 
       double Brho1 = 0;
       double Brho2 = 0;
-      //Brho1 = m_GladField->FindBrho(InitPos[0], InitDir[0], FinalPos[0]);
-      //Brho2 = m_GladField->FindBrho(InitPos[1], InitDir[1], FinalPos[1]);
+      Brho1 = m_GladField->FindBrho(InitPos[0], InitDir[0], FinalPos[0]);
+      Brho2 = m_GladField->FindBrho(InitPos[1], InitDir[1], FinalPos[1]);
+      //cout << Brho1 << " " << Brho2 << endl;
 
       Beta_Z1 = TofHit[0].beta;
       Beta_Z2 = TofHit[1].beta;

@@ -54,12 +54,15 @@ class GladFieldMap{
     double m_x_max;
     double m_y_max;
     double m_z_max;
+    double m_R_max;
     double m_Scale;
     int m_bin;
     // MWPC3 paramters
     double m_CentralTheta;
     double m_X_MWPC3;
     double m_Z_MWPC3;
+    double m_R_MWPC3;
+    double m_Angle_MWPC3;
     // Runge-Kunta 4 paramaters
     double m_dt;
     int m_Limit;
@@ -90,10 +93,15 @@ class GladFieldMap{
   public:
     void LoadMap(string filename);
     vector<double> InterpolateB(const vector<double>& pos);
+    inline vector<double> InterpolateB(const TVector3& pos){
+      vector<double> position={(double)pos.X(),(double)pos.Y(),(double)pos.Z()};
+      return InterpolateB(position);
+    };
     vector<double> GetB(const vector<double>& pos);
     TGraph* BrhoScan(double Brho_min, double Brho_max, double Brho_step);
     TVector3 CalculateIntersectionPoint(vector<TVector3> vPos);
-    vector<TVector3> Propagate(double Brho, TVector3 Pos, TVector3 Dir);
+    vector<TVector3> Propagate(double Brho, TVector3 Pos, TVector3 Dir, bool store);
+    TVector3 PropagateToMWPC(TVector3 pos, TVector3 dir);
     void func(NPL::Particle& N, TVector3 Pos, TVector3 Imp, TVector3& xk, TVector3& pk);
     double FindBrho(TVector3 Pos_init, TVector3 Dir_init, TVector3 Pos_final);
 

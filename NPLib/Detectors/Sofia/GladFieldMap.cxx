@@ -42,17 +42,25 @@ ClassImp(GladFieldMap)
     m_min->SetPrintLevel(-1);
     m_bin = 50;
     m_Scale = -2135./3583.81;
-    m_Z_Glad = 4.434*m;
+    m_Z_Glad = 2724.;
     m_Leff = 2.*m;
     m_Tilt = 14.*deg;
 
-    m_Zmax = 9.*m;
+    m_Zmax = 8.5*m;
     m_Limit = 1000;
     m_dt = 0.1*nanosecond;
+    m_x_min=1e6;
+    m_x_max=-1e6;
+    m_y_min=1e6;
+    m_y_max=-1e6;
+    m_z_min=1e6;
+    m_z_max=-1e6;
 
     m_CentralTheta = 20.*deg;
     m_X_MWPC3 = -1436.;
     m_Z_MWPC3 = 8380.;
+    m_Angle_MWPC3 = 20.*deg;
+    m_R_MWPC3 = 4199.; 
 
     m_InitPos = TVector3(0,0,0);
     m_InitDir = TVector3(0,0,1);
@@ -66,18 +74,23 @@ GladFieldMap::~GladFieldMap() {
 
 //////////////////////////////////////////////////////////////////////
 double GladFieldMap::Delta(const double* parameter){
-  static double diff;
-  static vector<TVector3> vPos;
+  static TVector3 diff;
+  static vector<TVector3> pos;
 
-  vPos = Propagate(parameter[0], m_InitPos, m_InitDir);
-  TVector3 M_inter = CalculateIntersectionPoint(vPos);
-
-  diff = abs(M_inter.X() - m_FinalPos.X()); 
-  return diff;
+  pos = Propagate(parameter[0], m_InitPos, m_InitDir, false);
+  //pos.back().RotateY(-m_Angle_MWPC3+m_Tilt);
+  
+  diff = pos.back() - m_FinalPos;
+  //cout << pos.back().X() << " " << pos.back().Z() << endl;
+  return diff.Mag2();
 }
 
 //////////////////////////////////////////////////////////////////////
 double GladFieldMap::FindBrho(TVector3 Pos_init, TVector3 Dir_init, TVector3 Pos_final){
+    
+  if(!m_BrhoScan)
+    BrhoScan(6.,11,1);
+
   m_InitPos  = Pos_init;
   m_InitDir  = Dir_init;
   m_FinalPos = Pos_final;
@@ -85,20 +98,17 @@ double GladFieldMap::FindBrho(TVector3 Pos_init, TVector3 Dir_init, TVector3 Pos
   if(m_FinalPos.X()>-2000){
     m_InitDir = m_InitDir.Unit();
 
-    if(!m_BrhoScan)
-      BrhoScan(4.,14.,0.2);
-
     double param[1];
     param[0] = m_BrhoScan->Eval(m_FinalPos.X());
-
+    
+    return param[0];
+    
     m_min->Clear();
     m_min->SetPrecision(1e-6);
     m_min->SetMaxFunctionCalls(1000);
-    m_min->SetLimitedVariable(0,"B",param[0],0.1,4,14);
+    m_min->SetLimitedVariable(0,"B",param[0],0.1,6,11);
     m_min->Minimize();
-    //cout << "************" << endl;
-    //cout << m_min->MinValue() << endl;
-    //cout << param[0] << " / " << m_min->X()[0] << endl;
+    
     return m_min->X()[0];
   }
 
@@ -112,46 +122,101 @@ TGraph* GladFieldMap::BrhoScan(double Brho_min, double Brho_max, double Brho_ste
     delete m_BrhoScan;
 
   m_BrhoScan = new TGraph();
-  int i=0;
+  unsigned int size = (Brho_max-Brho_min)/Brho_step;
+  m_BrhoScan->Set(size);
+
+  unsigned int i=0;
+  TVector3 pos = TVector3(0,0,0);
+  TVector3 dir = TVector3(0,0,1);
+  //pos.RotateY(m_Tilt);
+  //dir.RotateY(m_Tilt);
   for(double Brho=Brho_min; Brho<Brho_max; Brho+=Brho_step){
-    TVector3 pos = TVector3(0,0,0);
-    TVector3 dir = TVector3(0,0,1);
-    //vector<TVector3> vPos = Propagate(Brho, m_InitPos, m_InitDir);
-    vector<TVector3> vPos = Propagate(Brho, pos, dir);
+    vector<TVector3> vPos = Propagate(Brho, pos, dir, false);
+    //vPos.back().RotateY(-m_Angle_MWPC3);
 
-    TVector3 M_inter = CalculateIntersectionPoint(vPos);
-
-    m_BrhoScan->SetPoint(i,M_inter.X(),Brho);
-    //cout << Brho << " / " << M_inter.X() << endl;
-    i++;
+    m_BrhoScan->SetPoint(i++,vPos.back().X(),Brho);
+    //cout << vPos.back().X() << " " << Brho << endl;
   }
+
+  m_BrhoScan->Sort();
 
   return m_BrhoScan;
 }
 
 //////////////////////////////////////////////////////////////////////
-vector<TVector3> GladFieldMap::Propagate(double Brho, TVector3 Pos, TVector3 Dir){
-  vector<TVector3> vPos;
+TVector3 GladFieldMap::PropagateToMWPC(TVector3 pos, TVector3 dir){
+  // go to MWPC3 frame reference
+  //pos.RotateY(-m_Angle_MWPC3);
+  //dir.RotateY(-m_Angle_MWPC3);
 
-  TVector3 xk1, xk2, xk3, xk4;
-  TVector3 pk1, pk2, pk3, pk4;
+  double deltaZ = m_Z_MWPC3 - pos.Z();
+  dir*=deltaZ/dir.Z();
+  pos+=dir;
+  pos.SetX(pos.X());
+  //pos.RotateY(m_Angle_MWPC3);
 
+  return pos;
+
+}
+//////////////////////////////////////////////////////////////////////
+vector<TVector3> GladFieldMap::Propagate(double Brho, TVector3 Pos, TVector3 Dir, bool store){
+  //Pos.RotateY(m_Tilt);
+  //Dir.RotateY(m_Tilt);
   static NPL::Particle N("90Zr");
   N.SetBrho(Brho);
-  double T = N.GetEnergy();
-  double M = N.Mass();
-  double E = T + M;
-  double P = sqrt(T*T + 2*M*T)/c_light;
+  
+  // track result
+  static std::vector<TVector3> track;
+  track.clear();
 
+  // starting point of the track
+  if(store){
+    //Pos.RotateY(-m_Tilt);
+    track.push_back(Pos);
+    //Pos.RotateY(-m_Tilt);
+  }
+
+  static double r;
+  r = sqrt(Pos.X()*Pos.X() + Pos.Z()*Pos.Z());
+
+  // Propagate to m_R_max with one line
+  /*while(r>m_R_max && count<m_Limit){
+    Pos+=(r-m_R_max)/cos(Dir.Theta())*Dir.Unit();
+    r = 1.01*sqrt(Pos.X()*Pos.X() + Pos.Z()*Pos.Z());
+  }
+
+  if(r<=m_R_max){ // success
+    if(store){
+      //Pos.RotateY(-m_Tilt);
+      track.push_back(Pos);
+      //Pos.RotateY(m_Tilt);
+    }
+  }
+  else{
+    cout << "Fail" << endl;
+    return track;
+  }*/
+
+  static TVector3 xk1, xk2, xk3, xk4;
+  static TVector3 pk1, pk2, pk3, pk4;
+  static double T, M, E, P;
+  static double px, py, pz;
+  static TVector3 Imp;
+  
+  T = N.GetEnergy();
+  M = N.Mass();
+  E = T + M;
+  P = sqrt(T*T + 2*M*T)/c_light;
+ 
   Dir = Dir.Unit();
 
-  double px = P*Dir.X();
-  double py = P*Dir.Y();
-  double pz = P*Dir.Z();
-  TVector3 Imp = TVector3(px,py,pz);
+  px = P*Dir.X();
+  py = P*Dir.Y();
+  pz = P*Dir.Z();
+  Imp = TVector3(px,py,pz);
 
-  int count=0;
-  while(Pos.Z()<m_Zmax && count<m_Limit){
+  unsigned int count=0;
+  while(Pos.Z()<=m_Zmax && count<m_Limit){
     func(N, Pos, Imp, xk1, pk1);
     func(N, Pos + (m_dt/2)*xk1, Imp + (m_dt/2)*pk1, xk2, pk2);
     func(N, Pos + (m_dt/2)*xk2, Imp + (m_dt/2)*pk2, xk3, pk3);
@@ -160,26 +225,41 @@ vector<TVector3> GladFieldMap::Propagate(double Brho, TVector3 Pos, TVector3 Dir
     Pos += (m_dt/6)*(xk1 + 2*xk2 + 2*xk3 + xk4);
     Imp += (m_dt/6)*(pk1 + 2*pk2 + 2*pk3 + pk4);
 
-    vPos.push_back(Pos);
+    if(store){
+      //Pos.RotateY(-m_Tilt);
+      track.push_back(Pos);
+      //Pos.RotateY(m_Tilt);
+    }
+    r = sqrt(Pos.X()*Pos.X() + Pos.Z()*Pos.Z());
     count++;
   }
 
-  return vPos;
+  Imp=Imp.Unit();
+  Pos = PropagateToMWPC(Pos,Imp);
+  //Pos.RotateY(-m_Tilt);
+  track.push_back(Pos);
+
+  return track;
 
 }
 
 //////////////////////////////////////////////////////////////////////
 void GladFieldMap::func(NPL::Particle& N, TVector3 Pos, TVector3 Imp, TVector3& xk, TVector3& pk){
-  double px, py, pz;
+  static vector<double> B;
+  static double px, py, pz;
+  static double Bx, By, Bz;
+  static double vx, vy, vz;
+  static double M, T, E;
+  static double q;
+
   px = Imp.X();
   py = Imp.Y();
   pz = Imp.Z();
 
-  double M = N.Mass();
-  double T = N.GetEnergy();
-  double E = T + M;
+  M = N.Mass();
+  T = N.GetEnergy();
+  E = T + M;
 
-  double vx, vy, vz;
   vx = px*pow(c_light,2)/E;
   vy = py*pow(c_light,2)/E;
   vz = pz*pow(c_light,2)/E;
@@ -187,13 +267,13 @@ void GladFieldMap::func(NPL::Particle& N, TVector3 Pos, TVector3 Imp, TVector3& 
   xk.SetY(vy);
   xk.SetZ(vz);
 
-  vector<double> position = {Pos.X(),Pos.Y(),Pos.Z()};
-  vector<double> B = InterpolateB(position);
-  double Bx, By, Bz;
+  //vector<double> position = {Pos.X(),Pos.Y(),Pos.Z()};
+  B = InterpolateB(Pos);
   Bx = B[0];
   By = B[1];
   Bz = B[2];
-  double q = N.GetZ()*eplus;
+
+  q = N.GetZ()*eplus;
   pk.SetX(q*(vy*Bz - vz*By));
   pk.SetY(q*(vz*Bx - vx*Bz));
   pk.SetZ(q*(vx*By - vy*Bx));
@@ -237,15 +317,19 @@ void GladFieldMap::LoadMap(string filename) {
   double x,y,z,Bx,By,Bz;
 
   unsigned int count=0;
-  while(!ifile.eof()){
+  //while(!ifile.eof()){
+  for(unsigned int i=0; i<401841; i++){
     ifile >> x >> y >> z >> Bx >> By >> Bz;
     if(++count%10000==0)
       cout << "\r - Loading " << count << " values " << flush;
 
     x = x*10;
     y = y*10;
-    z = z*10+m_Z_Glad;
+    z = z*10;
 
+    z = z + x*sin(m_Tilt);
+    z += m_Z_Glad;
+    
     Bx *= m_Scale;
     By *= m_Scale;
     Bz *= m_Scale;
@@ -272,8 +356,19 @@ void GladFieldMap::LoadMap(string filename) {
 
   }
 
+  m_R_max = m_z_max;
+  cout << endl;
   cout << "///////// ASCII file loaded"<< endl;
-
+  cout << "m_field size= " << m_field.size() << endl;
+  cout << "m_x_min= " << m_x_min << endl;
+  cout << "m_x_max= " << m_x_max << endl;
+  cout << "m_y_min= " << m_y_min << endl;
+  cout << "m_y_max= " << m_y_max << endl;
+  cout << "m_z_min= " << m_z_min << endl;
+  cout << "m_z_max= " << m_z_max << endl;
+  cout << "/////////"<< endl;
+  
+  ifile.close();
 }
 
 //////////////////////////////////
