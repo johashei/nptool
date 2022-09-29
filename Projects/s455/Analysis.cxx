@@ -80,14 +80,13 @@ void Analysis::Init(){
   
   m_GladField = new GladFieldMap();
   m_GladField->SetScale(-2135./3583.81);
-  //m_GladField->SetZGlad(4434.);
   m_GladField->SetZGlad(2724.);
   m_GladField->SetLeff(2.067*m);
   m_GladField->SetGladTiltAngle(14.*deg);
+  m_GladField->LoadMap("GladFieldMap.dat");
   m_GladField->SetCentralTheta(20.*deg);
   m_GladField->SetX_MWPC3(-1.436*m);
   m_GladField->SetZ_MWPC3(8.380*m);
-  m_GladField->LoadMap("GladFieldMap.dat");
   
   InitParameter();
   InitOutputBranch();

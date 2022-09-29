@@ -36,6 +36,9 @@ using namespace std;
 
 #include "NPParticle.h"
 
+#define NX 80;
+#define NY 40;
+#define NZ 120;
 
 class GladFieldMap{
   public: 
@@ -45,9 +48,15 @@ class GladFieldMap{
   private:
     // GLAD parameters
     map<vector<double>, vector<double>> m_field;
+    vector<double> m_Bx;
+    vector<double> m_By;
+    vector<double> m_Bz;
     double m_Z_Glad;
     double m_Leff;
     double m_Tilt;
+    int m_Nx;
+    int m_Ny;
+    int m_Nz;
     double m_x_min;
     double m_y_min;
     double m_z_min;
@@ -57,21 +66,23 @@ class GladFieldMap{
     double m_R_max;
     double m_Scale;
     int m_bin;
+  private:
     // MWPC3 paramters
     double m_CentralTheta;
     double m_X_MWPC3;
     double m_Z_MWPC3;
     double m_R_MWPC3;
     double m_Angle_MWPC3;
+  private:
     // Runge-Kunta 4 paramaters
     double m_dt;
     int m_Limit;
     double m_Zmax;
 
+  private:
     TVector3 m_InitPos;
     TVector3 m_InitDir;
     TVector3 m_FinalPos;
-
 
   public:
     void SetZGlad(double val) {m_Z_Glad = val;}
@@ -97,8 +108,8 @@ class GladFieldMap{
       vector<double> position={(double)pos.X(),(double)pos.Y(),(double)pos.Z()};
       return InterpolateB(position);
     };
-    vector<double> GetB(const vector<double>& pos);
-    TGraph* BrhoScan(double Brho_min, double Brho_max, double Brho_step);
+    double GetB(TVector3 localpoint, string field_component);
+    TGraph* BrhoScan(double Brho_min, double Brho_max, double Brho_step, TVector3 pos, TVector3 dir);
     TVector3 CalculateIntersectionPoint(vector<TVector3> vPos);
     vector<TVector3> Propagate(double Brho, TVector3 Pos, TVector3 Dir, bool store);
     TVector3 PropagateToMWPC(TVector3 pos, TVector3 dir);
@@ -110,6 +121,12 @@ class GladFieldMap{
     ROOT::Math::Minimizer* m_min;
     ROOT::Math::Functor m_func;
     double Delta(const double* parameter);
+    bool IsInside(TVector3 localpoint, int& ix, int& iy, int& iz, double& dx, double& dy, double& dz);
+    double Interpolate(double dx, double dy, double dz);
+
+    double m_C0[2][2][2]; //!
+    double m_C1[2][2]; //!
+    double m_C2[2]; //!
 
   private:
 

@@ -30,41 +30,47 @@ using namespace NPUNITS;
 #include <string>
 using namespace std; 
 
-ClassImp(GladFieldMap)
 
-  //////////////////////////////////////////////////////////////////////
-  GladFieldMap::GladFieldMap() {
+ClassImp(GladFieldMap);
 
-    m_BrhoScan=NULL;
-    m_min = ROOT::Math::Factory::CreateMinimizer("Minuit2","Migrad");
-    m_func = ROOT::Math::Functor(this,&GladFieldMap::Delta,1);
-    m_min->SetFunction(m_func);
-    m_min->SetPrintLevel(-1);
-    m_bin = 50;
-    m_Scale = -2135./3583.81;
-    m_Z_Glad = 2724.;
-    m_Leff = 2.*m;
-    m_Tilt = 14.*deg;
+//////////////////////////////////////////////////////////////////////
+GladFieldMap::GladFieldMap() {
 
-    m_Zmax = 8.5*m;
-    m_Limit = 1000;
-    m_dt = 0.1*nanosecond;
-    m_x_min=1e6;
-    m_x_max=-1e6;
-    m_y_min=1e6;
-    m_y_max=-1e6;
-    m_z_min=1e6;
-    m_z_max=-1e6;
+  m_BrhoScan=NULL;
+  m_Bx.clear();
+  m_By.clear();
+  m_Bz.clear();
+  m_min = ROOT::Math::Factory::CreateMinimizer("Minuit2","Migrad");
+  m_func = ROOT::Math::Functor(this,&GladFieldMap::Delta,1);
+  m_min->SetFunction(m_func);
+  m_min->SetPrintLevel(-1);
+  m_bin = 50;
+  m_Scale = -2135./3583.81;
+  m_Z_Glad = 2724.;
+  m_Leff = 2.*m;
+  m_Tilt = 14.*deg;
 
-    m_CentralTheta = 20.*deg;
-    m_X_MWPC3 = -1436.;
-    m_Z_MWPC3 = 8380.;
-    m_Angle_MWPC3 = 20.*deg;
-    m_R_MWPC3 = 4199.; 
+  m_Zmax = 8.5*m;
+  m_Limit = 1000;
+  m_dt = 0.1*nanosecond;
+  m_x_min=1e6;
+  m_x_max=-1e6;
+  m_y_min=1e6;
+  m_y_max=-1e6;
+  m_z_min=1e6;
+  m_z_max=-1e6;
+  m_Nx= 0;
+  m_Ny= 0;
+  m_Nz= 0;
+  m_CentralTheta = 20.*deg;
+  m_X_MWPC3 = -1436.;
+  m_Z_MWPC3 = 8380.;
+  m_Angle_MWPC3 = 20.*deg;
+  m_R_MWPC3 = 4199.; 
 
-    m_InitPos = TVector3(0,0,0);
-    m_InitDir = TVector3(0,0,1);
-  }
+  m_InitPos = TVector3(0,0,0);
+  m_InitDir = TVector3(0,0,1);
+}
 
 
 
@@ -79,7 +85,7 @@ double GladFieldMap::Delta(const double* parameter){
 
   pos = Propagate(parameter[0], m_InitPos, m_InitDir, false);
   //pos.back().RotateY(-m_Angle_MWPC3+m_Tilt);
-  
+
   diff = pos.back() - m_FinalPos;
   //cout << pos.back().X() << " " << pos.back().Z() << endl;
   return diff.Mag2();
@@ -87,37 +93,37 @@ double GladFieldMap::Delta(const double* parameter){
 
 //////////////////////////////////////////////////////////////////////
 double GladFieldMap::FindBrho(TVector3 Pos_init, TVector3 Dir_init, TVector3 Pos_final){
-    
+
   if(!m_BrhoScan)
-    BrhoScan(6.,11,1);
+    BrhoScan(6.,11,1,TVector3(0,0,0), TVector3(0,0,1));
 
   m_InitPos  = Pos_init;
   m_InitDir  = Dir_init;
   m_FinalPos = Pos_final;
 
-  if(m_FinalPos.X()>-2000){
+  //if(m_FinalPos.X()>-2000){
     m_InitDir = m_InitDir.Unit();
-
-    double param[1];
+    //BrhoScan(6,12,3,m_InitPos, m_InitDir);
+    static double param[1];
     param[0] = m_BrhoScan->Eval(m_FinalPos.X());
-    
-    return param[0];
-    
+
+    //return param[0];
+
     m_min->Clear();
     m_min->SetPrecision(1e-6);
     m_min->SetMaxFunctionCalls(1000);
     m_min->SetLimitedVariable(0,"B",param[0],0.1,6,11);
     m_min->Minimize();
-    
-    return m_min->X()[0];
-  }
 
-  else
-    return -1;
+    return m_min->X()[0];
+  //}
+
+  //else
+    //return -1;
 }
 
 //////////////////////////////////////////////////////////////////////
-TGraph* GladFieldMap::BrhoScan(double Brho_min, double Brho_max, double Brho_step){
+TGraph* GladFieldMap::BrhoScan(double Brho_min, double Brho_max, double Brho_step, TVector3 pos, TVector3 dir){
   if(m_BrhoScan)
     delete m_BrhoScan;
 
@@ -126,8 +132,8 @@ TGraph* GladFieldMap::BrhoScan(double Brho_min, double Brho_max, double Brho_ste
   m_BrhoScan->Set(size);
 
   unsigned int i=0;
-  TVector3 pos = TVector3(0,0,0);
-  TVector3 dir = TVector3(0,0,1);
+  //TVector3 pos = TVector3(0,0,0);
+  //TVector3 dir = TVector3(0,0,1);
   //pos.RotateY(m_Tilt);
   //dir.RotateY(m_Tilt);
   for(double Brho=Brho_min; Brho<Brho_max; Brho+=Brho_step){
@@ -164,7 +170,7 @@ vector<TVector3> GladFieldMap::Propagate(double Brho, TVector3 Pos, TVector3 Dir
   //Dir.RotateY(m_Tilt);
   static NPL::Particle N("90Zr");
   N.SetBrho(Brho);
-  
+
   // track result
   static std::vector<TVector3> track;
   track.clear();
@@ -183,18 +189,18 @@ vector<TVector3> GladFieldMap::Propagate(double Brho, TVector3 Pos, TVector3 Dir
   /*while(r>m_R_max && count<m_Limit){
     Pos+=(r-m_R_max)/cos(Dir.Theta())*Dir.Unit();
     r = 1.01*sqrt(Pos.X()*Pos.X() + Pos.Z()*Pos.Z());
-  }
-
-  if(r<=m_R_max){ // success
-    if(store){
-      //Pos.RotateY(-m_Tilt);
-      track.push_back(Pos);
-      //Pos.RotateY(m_Tilt);
     }
+
+    if(r<=m_R_max){ // success
+    if(store){
+  //Pos.RotateY(-m_Tilt);
+  track.push_back(Pos);
+  //Pos.RotateY(m_Tilt);
+  }
   }
   else{
-    cout << "Fail" << endl;
-    return track;
+  cout << "Fail" << endl;
+  return track;
   }*/
 
   static TVector3 xk1, xk2, xk3, xk4;
@@ -202,12 +208,12 @@ vector<TVector3> GladFieldMap::Propagate(double Brho, TVector3 Pos, TVector3 Dir
   static double T, M, E, P;
   static double px, py, pz;
   static TVector3 Imp;
-  
+
   T = N.GetEnergy();
   M = N.Mass();
   E = T + M;
   P = sqrt(T*T + 2*M*T)/c_light;
- 
+
   Dir = Dir.Unit();
 
   px = P*Dir.X();
@@ -267,11 +273,14 @@ void GladFieldMap::func(NPL::Particle& N, TVector3 Pos, TVector3 Imp, TVector3& 
   xk.SetY(vy);
   xk.SetZ(vz);
 
-  //vector<double> position = {Pos.X(),Pos.Y(),Pos.Z()};
-  B = InterpolateB(Pos);
+  /*B = InterpolateB(Pos);
   Bx = B[0];
   By = B[1];
-  Bz = B[2];
+  Bz = B[2];*/
+
+  Bx = GetB(Pos,"X");
+  By = GetB(Pos,"Y");
+  Bz = GetB(Pos,"Z");
 
   q = N.GetZ()*eplus;
   pk.SetX(q*(vy*Bz - vz*By));
@@ -307,6 +316,7 @@ TVector3 GladFieldMap::CalculateIntersectionPoint(vector<TVector3> vPos){
 
 //////////////////////////////////////////////////////////////////////
 void GladFieldMap::LoadMap(string filename) {
+
   ifstream ifile(filename.c_str());
   if(!ifile.is_open()){
     cout << "Error: failed to load Glad field map: " << filename << endl;
@@ -315,51 +325,58 @@ void GladFieldMap::LoadMap(string filename) {
 
   cout << "///////// Loading ASCII Glad field map: " << filename << endl;
   double x,y,z,Bx,By,Bz;
+  ifile.precision(6);
+  string symmetry;
+  ifile >> symmetry;
+  ifile >> m_x_min >> m_x_max >> m_Nx;
+  ifile >> m_y_min >> m_y_max >> m_Ny;
+  ifile >> m_z_min >> m_z_max >> m_Nz;
 
   unsigned int count=0;
+  int index = 0;
   //while(!ifile.eof()){
-  for(unsigned int i=0; i<401841; i++){
-    ifile >> x >> y >> z >> Bx >> By >> Bz;
-    if(++count%10000==0)
-      cout << "\r - Loading " << count << " values " << flush;
+  //for(unsigned int i=0; i<401841; i++){
+  for(int ix=0; ix<m_Nx; ix++){
+    for(int iy=0; iy<m_Ny; iy++){
+      for(int iz=0; iz<m_Nz; iz++){
+        ifile >> x >> y >> z >> Bx >> By >> Bz;
+        if(++count%10000==0)
+          cout << "\r - Loading " << count << " values " << flush;
 
-    x = x*10;
-    y = y*10;
-    z = z*10;
+        index = ix*m_Ny*m_Nz + iy*m_Nz + iz;
 
-    z = z + x*sin(m_Tilt);
-    z += m_Z_Glad;
-    
-    Bx *= m_Scale;
-    By *= m_Scale;
-    Bz *= m_Scale;
+        //cout << x << " " << y << " " << z << " " << Bx << " " << By << " " << Bz << endl;
+          
+        x = x*10;
+        y = y*10;
+        z = z*10;
 
-    vector<double> p = {x,y,z};
-    Bx*=tesla;
-    By*=tesla;
-    Bz*=tesla;
-    vector<double> B = {Bx,By,Bz};
-    m_field[p] = B;
+        z = z + x*sin(m_Tilt);
+        z += m_Z_Glad;
 
-    if(x<m_x_min)
-      m_x_min=x;
-    if(y<m_y_min)
-      m_y_min=y;
-    if(z<m_z_min)
-      m_z_min=z;
-    if(x>m_x_max)
-      m_x_max=x;
-    if(y>m_y_max)
-      m_y_max=y;
-    if(z>m_z_max)
-      m_z_max=z;
+        Bx *= m_Scale;
+        By *= m_Scale;
+        Bz *= m_Scale;
 
+        m_Bx.push_back(Bx*tesla);
+        m_By.push_back(By*tesla);
+        m_Bz.push_back(Bz*tesla);
+
+
+        /*vector<double> p = {x,y,z};
+        Bx*=tesla;
+        By*=tesla;
+        Bz*=tesla;
+        vector<double> B = {Bx,By,Bz};
+        m_field[p] = B;*/
+      }
+    }
   }
 
   m_R_max = m_z_max;
   cout << endl;
   cout << "///////// ASCII file loaded"<< endl;
-  cout << "m_field size= " << m_field.size() << endl;
+  cout << "m_field size= " << m_By.size() << endl;
   cout << "m_x_min= " << m_x_min << endl;
   cout << "m_x_max= " << m_x_max << endl;
   cout << "m_y_min= " << m_y_min << endl;
@@ -367,7 +384,7 @@ void GladFieldMap::LoadMap(string filename) {
   cout << "m_z_min= " << m_z_min << endl;
   cout << "m_z_max= " << m_z_max << endl;
   cout << "/////////"<< endl;
-  
+
   ifile.close();
 }
 
@@ -376,7 +393,7 @@ vector<double> GladFieldMap::InterpolateB(const vector<double>& pos)
 {
   static vector<double> nullv = {0,0,0};
 
-  double x,y,z;
+  static double x,y,z;
   x=pos[0];
   y=pos[1];
   z=pos[2];
@@ -389,48 +406,49 @@ vector<double> GladFieldMap::InterpolateB(const vector<double>& pos)
   if(z<m_z_min || z>m_z_max)
     return nullv;
 
-  double x0 = (double)((int)(x)/m_bin)*m_bin;
+  static double x0,x1,y0,y1,z0,z1;
+  x0 = (double)((int)(x)/m_bin)*m_bin;
   if(x<=x0)
     x0=(double)((int)(x-m_bin)/m_bin)*m_bin; 
 
-  double x1 = (double)((int)(x)/m_bin)*m_bin;
+  x1 = (double)((int)(x)/m_bin)*m_bin;
   if(x>=x1)
     x1=(double)((int)(x+m_bin)/m_bin)*m_bin; 
 
-  double y0 = (double)((int)(y)/m_bin)*m_bin;
+  y0 = (double)((int)(y)/m_bin)*m_bin;
   if(y<=y0)
     y0=(double)((int)(y-m_bin)/m_bin)*m_bin; 
 
-  double y1 = (double)((int)(y)/m_bin)*m_bin;
+  y1 = (double)((int)(y)/m_bin)*m_bin;
   if(y>=y1)
     y1=(double)((int)(y+m_bin)/m_bin)*m_bin; 
 
-  double z0 = (double)((int)(z)/m_bin)*m_bin;
+  z0 = (double)((int)(z)/m_bin)*m_bin;
   if(z<=z0)
     z0=(double)((int)(z-m_bin)/m_bin)*m_bin; 
 
-  double z1 = (double)((int)(z)/m_bin)*m_bin;
+  z1 = (double)((int)(z)/m_bin)*m_bin;
   if(z>=z1)
     z1=(double)((int)(z+m_bin)/m_bin)*m_bin; 
 
   //vector<double> X={xm,ym,zm};
-  vector<double> X000={x0,y0,z0};
-  vector<double> X111={x1,y1,z1};
-  vector<double> X100={x1,y0,z0};
-  vector<double> X010={x0,y1,z0};
-  vector<double> X001={x0,y0,z1};
-  vector<double> X101={x1,y0,z1};
-  vector<double> X011={x0,y1,z1};
-  vector<double> X110={x1,y1,z0};
+  static vector<double> X000; X000={x0,y0,z0};
+  static vector<double> X111; X111={x1,y1,z1};
+  static vector<double> X100; X100={x1,y0,z0};
+  static vector<double> X010; X010={x0,y1,z0};
+  static vector<double> X001; X001={x0,y0,z1};
+  static vector<double> X101; X101={x1,y0,z1};
+  static vector<double> X011; X011={x0,y1,z1};
+  static vector<double> X110; X110={x1,y1,z0};
 
-  vector<double> C000;
-  vector<double> C111;
-  vector<double> C100;
-  vector<double> C010;
-  vector<double> C001;
-  vector<double> C101;
-  vector<double> C011;
-  vector<double> C110;
+  static vector<double> C000;
+  static vector<double> C111;
+  static vector<double> C100;
+  static vector<double> C010;
+  static vector<double> C001;
+  static vector<double> C101;
+  static vector<double> C011;
+  static vector<double> C110;
 
   if(m_field.lower_bound(X000)!=m_field.end())
     C000=m_field.lower_bound(X000)->second;
@@ -493,16 +511,109 @@ vector<double> GladFieldMap::InterpolateB(const vector<double>& pos)
 }
 
 //////////////////////////////////
-vector<double> GladFieldMap::GetB(const vector<double>& pos)
+double GladFieldMap::GetB(TVector3 localpoint, string field_component)
 {
-  static vector<double> nullv = {0,0,0};
+  TVector3 vtrans(0,0,-m_Z_Glad);
 
-  auto it = m_field.find(pos);
-  if(it!=m_field.end()){
-    return it->second;
+  localpoint = localpoint + vtrans;
+
+  static int ix, iy, iz;
+  static double dx, dy, dz;
+  double val = 0;
+
+  if(IsInside(localpoint, ix, iy, iz, dx, dy, dz)){
+    // B component value at grid cell corner
+    if(field_component=="X"){
+      m_C0[0][0][0] = m_Bx.at(ix*m_Ny*m_Nz + iy*m_Nz + iz);
+      m_C0[1][0][0] = m_Bx.at((ix+1)*m_Ny*m_Nz + iy*m_Nz + iz);
+      m_C0[0][1][0] = m_Bx.at(ix*m_Ny*m_Nz + (iy+1)*m_Nz + iz);
+      m_C0[1][1][0] = m_Bx.at((ix+1)*m_Ny*m_Nz + (iy+1)*m_Nz + iz);
+      m_C0[0][0][1] = m_Bx.at(ix*m_Ny*m_Nz + iy*m_Nz + (iz+1));
+      m_C0[1][0][1] = m_Bx.at((ix+1)*m_Ny*m_Nz + iy*m_Nz + (iz+1));
+      m_C0[0][1][1] = m_Bx.at(ix*m_Ny*m_Nz + (iy+1)*m_Nz + (iz+1));
+      m_C0[1][1][1] = m_Bx.at((ix+1)*m_Ny*m_Nz + (iy+1)*m_Nz + (iz+1));
+
+      val = Interpolate(dx,dy,dz);
+    }
+    if(field_component=="Y"){
+      m_C0[0][0][0] = m_By.at(ix*m_Ny*m_Nz + iy*m_Nz + iz);
+      m_C0[1][0][0] = m_By.at((ix+1)*m_Ny*m_Nz + iy*m_Nz + iz);
+      m_C0[0][1][0] = m_By.at(ix*m_Ny*m_Nz + (iy+1)*m_Nz + iz);
+      m_C0[1][1][0] = m_By.at((ix+1)*m_Ny*m_Nz + (iy+1)*m_Nz + iz);
+      m_C0[0][0][1] = m_By.at(ix*m_Ny*m_Nz + iy*m_Nz + (iz+1));
+      m_C0[1][0][1] = m_By.at((ix+1)*m_Ny*m_Nz + iy*m_Nz + (iz+1));
+      m_C0[0][1][1] = m_By.at(ix*m_Ny*m_Nz + (iy+1)*m_Nz + (iz+1));
+      m_C0[1][1][1] = m_By.at((ix+1)*m_Ny*m_Nz + (iy+1)*m_Nz + (iz+1));
+
+      val = Interpolate(dx,dy,dz);
+    }
+    if(field_component=="Z"){
+      m_C0[0][0][0] = m_Bz.at(ix*m_Ny*m_Nz + iy*m_Nz + iz);
+      m_C0[1][0][0] = m_Bz.at((ix+1)*m_Ny*m_Nz + iy*m_Nz + iz);
+      m_C0[0][1][0] = m_Bz.at(ix*m_Ny*m_Nz + (iy+1)*m_Nz + iz);
+      m_C0[1][1][0] = m_Bz.at((ix+1)*m_Ny*m_Nz + (iy+1)*m_Nz + iz);
+      m_C0[0][0][1] = m_Bz.at(ix*m_Ny*m_Nz + iy*m_Nz + (iz+1));
+      m_C0[1][0][1] = m_Bz.at((ix+1)*m_Ny*m_Nz + iy*m_Nz + (iz+1));
+      m_C0[0][1][1] = m_Bz.at(ix*m_Ny*m_Nz + (iy+1)*m_Nz + (iz+1));
+      m_C0[1][1][1] = m_Bz.at((ix+1)*m_Ny*m_Nz + (iy+1)*m_Nz + (iz+1));
+
+      val = Interpolate(dx,dy,dz);
+    }
+
+
   }
-  else
-    return nullv;
+
+  return val;
 
 }
+
+//////////////////////////////////
+bool GladFieldMap::IsInside(TVector3 localpoint, int& ix, int& iy, int& iz, double& dx, double& dy, double& dz)
+{
+  bool isIn=false;
+
+  double x = localpoint.X();
+  double y = localpoint.X();
+  double z = localpoint.X();
+
+  if(!(x>=m_x_min && x<=m_x_max && y>=m_y_min && y<=m_y_max && z>=m_z_min && z<=m_z_max)){
+    ix = iy = iz = 0;
+    dx = dy = dz = 0;
+
+    isIn = false;
+  }
+
+  else{
+    ix = int((x - m_x_min) / m_bin);
+    iy = int((y - m_y_min) / m_bin);
+    iz = int((z - m_z_min) / m_bin);
+
+    dx = (x - m_x_min) / m_bin - double(ix);
+    dy = (y - m_y_min) / m_bin - double(iy);
+    dz = (z - m_z_min) / m_bin - double(iz);
+
+    isIn = true;
+  }
+
+  return isIn;
+}
+
+//////////////////////////////////
+double GladFieldMap::Interpolate(double dx, double dy, double dz)
+{
+  m_C1[0][0] = m_C0[0][0][0] + (m_C0[1][0][0] - m_C0[0][0][0]) * dx;
+  m_C1[1][0] = m_C0[0][1][0] + (m_C0[1][1][0] - m_C0[0][1][0]) * dx;
+  m_C1[0][1] = m_C0[0][0][1] + (m_C0[1][0][1] - m_C0[0][0][1]) * dx;
+  m_C1[1][1] = m_C0[0][1][1] + (m_C0[1][1][1] - m_C0[0][1][1]) * dx;
+
+  m_C2[0] = m_C1[0][0] + (m_C1[1][0] - m_C1[0][0]) * dy;
+  m_C2[1] = m_C1[0][1] + (m_C1[1][1] - m_C1[0][1]) * dy;
+
+  double val = m_C2[0] + (m_C2[1] - m_C2[0]) * dz;
+
+  return val;
+}
+
+
+
 
