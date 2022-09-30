@@ -332,6 +332,13 @@ void GladFieldMap::LoadMap(string filename) {
   ifile >> m_y_min >> m_y_max >> m_Ny;
   ifile >> m_z_min >> m_z_max >> m_Nz;
 
+  m_x_min = m_x_min*10;
+  m_x_max = m_x_max*10;
+  m_y_min = m_y_min*10;
+  m_y_max = m_y_max*10;
+  m_z_min = m_z_min*10;
+  m_z_max = m_z_max*10;
+
   unsigned int count=0;
   int index = 0;
   //while(!ifile.eof()){
@@ -573,8 +580,8 @@ bool GladFieldMap::IsInside(TVector3 localpoint, int& ix, int& iy, int& iz, doub
   bool isIn=false;
 
   double x = localpoint.X();
-  double y = localpoint.X();
-  double z = localpoint.X();
+  double y = localpoint.Y();
+  double z = localpoint.Z();
 
   if(!(x>=m_x_min && x<=m_x_max && y>=m_y_min && y<=m_y_max && z>=m_z_min && z<=m_z_max)){
     ix = iy = iz = 0;
