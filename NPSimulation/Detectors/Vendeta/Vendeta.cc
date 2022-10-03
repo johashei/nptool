@@ -351,6 +351,7 @@ void Vendeta::ReadSensitive(const G4Event* ){
         m_Event->SetHGQ2(Energy);
         m_Event->SetHGTime(Time); 
         m_Event->SetHGQmax(0); 
+        m_Event->SetHGIsSat(0); 
       }
       else if(Energy > 1){
         m_Event->SetLGDetectorNbr(DetectorNbr);
@@ -358,6 +359,7 @@ void Vendeta::ReadSensitive(const G4Event* ){
         m_Event->SetLGQ2(Energy);
         m_Event->SetLGTime(Time); 
         m_Event->SetLGQmax(0); 
+        m_Event->SetLGIsSat(0); 
       }
 
     }
