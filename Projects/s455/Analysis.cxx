@@ -86,7 +86,7 @@ void Analysis::Init(){
   m_GladField->LoadMap("GladFieldMap.dat");
   m_GladField->SetCentralTheta(20.*deg);
   m_GladField->SetX_MWPC3(-1.436*m);
-  m_GladField->SetZ_MWPC3(8.380*m);
+  m_GladField->SetZ_MWPC3(7.8*m);
   
   InitParameter();
   InitOutputBranch();
