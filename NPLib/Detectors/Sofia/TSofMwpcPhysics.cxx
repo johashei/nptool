@@ -148,10 +148,11 @@ void TSofMwpcPhysics::BuildPhysicalEvent() {
     }
   }
 
-  double X1 = -1000;
-  double X2 = -1000;
-  double Y  = -1000;
   for(int i=0; i<m_NumberOfDetectors; i++){
+    double X1 = -1000;
+    double X2 = -1000;
+    double Y  = -1000;
+
     int det_num = i+1;
     if(det_num<4){
       double qleft  = Buffer_X1_Q[i][StripMaxX1[i]-1];
@@ -177,6 +178,8 @@ void TSofMwpcPhysics::BuildPhysicalEvent() {
       PositionX1.push_back(X1);
       PositionX2.push_back(X2);
       PositionY.push_back(Y);
+
+      //cout << det_num << " " << X1 << " " << X2 << " " << Y << endl;
     }
 
     if(det_num==4 && fPairX.size()>0 && fPairY.size()>0){
@@ -196,12 +199,12 @@ void TSofMwpcPhysics::BuildPhysicalEvent() {
         }
         else break;
       }
-      
+
       // *** Finding Y clusters *** //
       while(GetChargeMax(fPairY) > fThresholdY && fPairY.size() > 4){
         const auto pelt = max_element(fPairY.begin(), fPairY.end(), compare_charge);
         int indice = distance(fPairY.begin(), pelt);
-        
+
         if(indice>0 && indice<fPairY.size()-1){
           fClusterY.push_back(FindCluster(fPairY));
         }

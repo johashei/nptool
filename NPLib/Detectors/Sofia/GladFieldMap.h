@@ -51,8 +51,11 @@ class GladFieldMap{
     vector<double> m_Bx;
     vector<double> m_By;
     vector<double> m_Bz;
+    double m_Bmax;
+    double m_B;
+    double m_Current;
     double m_Z_Glad;
-    double m_Leff;
+    double m_Leff[81][41];
     double m_Tilt;
     int m_Nx;
     int m_Ny;
@@ -86,9 +89,14 @@ class GladFieldMap{
 
   public:
     void SetZGlad(double val) {m_Z_Glad = val;}
-    void SetLeff(double val) {m_Leff = val;}
+    void SetLeff(int ix, int iy, double val) {m_Leff[ix][iy] = val;}
     void SetGladTiltAngle(double val) {m_Tilt = val;}
     void SetScale(double val) {m_Scale = val;}
+    void SetCurrent(double val){
+      m_Current = val;
+      m_Scale = m_Current/3583.81;
+      m_B = 2.2*m_Scale;
+    }
 
     void SetCentralTheta(double val) {m_CentralTheta = val;}
     void SetX_MWPC3(double val) {m_X_MWPC3 = val;}
@@ -100,6 +108,16 @@ class GladFieldMap{
 
     void SetInitPos(TVector3 Pos) {m_InitPos = Pos;}
     void SetInitDir(TVector3 Dir) {m_InitPos = Dir;}
+
+  public:
+    double GetLeff(int ix, int iy) {return m_Leff[ix][iy];}
+    double GetB() {return m_B;}
+    double GetXmin() {return m_x_min;}
+    double GetXmax() {return m_x_max;}
+    double GetYmin() {return m_y_min;}
+    double GetYmax() {return m_y_max;}
+    double GetZmin() {return m_z_min;}
+    double GetZmax() {return m_z_max;}
 
   public:
     void LoadMap(string filename);

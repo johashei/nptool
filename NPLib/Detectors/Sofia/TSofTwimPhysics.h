@@ -131,7 +131,7 @@ class TSofTwimPhysics : public TObject, public NPL::VDetector {
     // needed for online analysis for example
     void SetRawDataPointer(TSofTwimData* rawDataPointer) {m_EventData = rawDataPointer;}
    
-    void LoadSplineBeta();
+    void LoadSplineDT();
 
     void SetBeta(double beta) {m_Beta = beta;}
     double GetBeta() {return m_Beta;}
@@ -153,10 +153,11 @@ class TSofTwimPhysics : public TObject, public NPL::VDetector {
     double m_E_Threshold;     //!
     double m_Beta;     //!
     double m_BetaNorm;     //!
-    string m_SPLINE_SECTION_BETA_PATH;     //!
+    string m_SPLINE_DT_PATH;     //!
+    bool m_SPLINE_CORRECTION; //!
 
   private:
-    TSpline3* fcorr_beta_sec[4]; //!
+    TSpline3* fcorr_dt[4][16]; //!
 
   // number of detectors
   private:

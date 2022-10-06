@@ -44,11 +44,19 @@ GladFieldMap::GladFieldMap() {
   m_func = ROOT::Math::Functor(this,&GladFieldMap::Delta,1);
   m_min->SetFunction(m_func);
   m_min->SetPrintLevel(-1);
+  m_Bmax = 2.2;
   m_bin = 50;
-  m_Scale = -2135./3583.81;
+  m_Current = 2135.;
+  m_Scale = m_Current/3583.81;
   m_Z_Glad = 2724.;
-  m_Leff = 2.*m;
   m_Tilt = 14.*deg;
+  m_B = m_Scale*m_Bmax;
+  for(int i=0; i<81; i++){
+    for(int j=0; j<41; j++){
+      m_Leff[i][j] = 0;
+    }
+  }
+
 
   m_Zmax = 8.5*m;
   m_Limit = 1000;
@@ -332,8 +340,7 @@ void GladFieldMap::LoadMap(string filename) {
 
   unsigned int count=0;
   int index = 0;
-  //while(!ifile.eof()){
-  //for(unsigned int i=0; i<401841; i++){
+  TGraph* gBy = new TGraph();
   for(int ix=0; ix<m_Nx; ix++){
     for(int iy=0; iy<m_Ny; iy++){
       for(int iz=0; iz<m_Nz; iz++){
@@ -348,26 +355,30 @@ void GladFieldMap::LoadMap(string filename) {
         x = x*10;
         y = y*10;
         z = z*10;
+      
+        //m_Leff[ix][iy] += abs(By)*m_bin;
+        // Need to fill this TGraph before scaling the field to get the proper Leff //
+        gBy->SetPoint(iz,z,abs(By));
 
         z = z + x*sin(m_Tilt);
         z += m_Z_Glad;
 
-        Bx *= m_Scale;
-        By *= m_Scale;
-        Bz *= m_Scale;
+        Bx *= -m_Scale;
+        By *= -m_Scale;
+        Bz *= -m_Scale;
 
         m_Bx.push_back(Bx*tesla);
         m_By.push_back(By*tesla);
         m_Bz.push_back(Bz*tesla);
 
-
-        /*vector<double> p = {x,y,z};
+       /*vector<double> p = {x,y,z};
           Bx*=tesla;
           By*=tesla;
           Bz*=tesla;
           vector<double> B = {Bx,By,Bz};
           m_field[p] = B;*/
       }
+      m_Leff[ix][iy] = gBy->Integral()/m_Bmax;
     }
   }
 

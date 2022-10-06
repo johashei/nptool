@@ -57,6 +57,9 @@ struct TofPair
   double y3 = -1000;
   double x3lab = 0;
   double z3lab = 0;
+  double xc = 0;
+  double yc = 0;
+  double zc = 0;
 };
 
 
@@ -79,9 +82,8 @@ void Analysis::Init(){
   SofMwpc= (TSofMwpcPhysics*) m_DetectorManager->GetDetector("SofMwpc");
   
   m_GladField = new GladFieldMap();
-  m_GladField->SetScale(-2135./3583.81);
+  m_GladField->SetCurrent(2135.);
   m_GladField->SetZGlad(2724.);
-  m_GladField->SetLeff(2.067*m);
   m_GladField->SetGladTiltAngle(14.*deg);
   m_GladField->LoadMap("GladFieldMap.dat");
   m_GladField->SetCentralTheta(20.*deg);
@@ -556,14 +558,12 @@ void Analysis::FissionFragmentAnalysis(){
 
       // *** Calculation Theta_out *** //
       double Theta0 = 20.*deg;
-      double XA;
+      double XA = 0;
       double ZA = 2328.;
       //double ZA = 2328.-4434.;
-      double XC;
-      double ZG = 4434.;
-      double ZC;
-      double XMW3 = -1436.;
-      double ZMW3 = 8380;
+      double ZG = 2724+1075;//4434.;
+      double ZMW3 = 8483;
+      double XMW3 = -(ZMW3-ZG)*tan(Theta0);
       double ZMW2 = 2576;
       double X3lab = 0;
       double Z3lab = 0;;
@@ -576,9 +576,10 @@ void Analysis::FissionFragmentAnalysis(){
       TVector3 FinalPos[2];
       for(int i=0; i<2; i++){
         XA = TofHit[i].DT;
-        XC = (XA+(ZG-ZA)*tan(TofHit[i].theta_in)) / (1-tan(Tilt)*tan(TofHit[i].theta_in));
-        ZC = ZG + XC*tan(Tilt);
-
+        TofHit[i].xc = (XA+(ZG-ZA)*tan(TofHit[i].theta_in)) / (1-tan(Tilt)*tan(TofHit[i].theta_in));
+        TofHit[i].yc = TofHit[i].y*0.5;
+        TofHit[i].zc = ZG + TofHit[i].xc*tan(Tilt);
+        
         X3lab = TofHit[i].x3*cos(Theta0) + XMW3;
         Z3lab = TofHit[i].x3*sin(Theta0) + ZMW3;
         TofHit[i].x3lab = X3lab;
@@ -588,8 +589,8 @@ void Analysis::FissionFragmentAnalysis(){
         InitDir[i]  = TVector3(sin(TofHit[i].theta_in),0,cos(TofHit[i].theta_in));
         FinalPos[i] = TVector3(X3lab,0,Z3lab);
 
-        vC    = TVector3(XC,0,ZC);
-        vOut  = TVector3(X3lab-XC,0,Z3lab-ZC);
+        vC    = TVector3(TofHit[i].xc,0,TofHit[i].zc);
+        vOut  = TVector3(X3lab-TofHit[i].xc,0,Z3lab-TofHit[i].zc);
 
         double PathLength = vC.Mag() + vOut.Mag() + 74.;
         PathLength = PathLength/1000.;
@@ -619,22 +620,24 @@ void Analysis::FissionFragmentAnalysis(){
         iZsum = iZ1 + iZ2;
       }
 
-      double MagB = 2185*2.2/3584;
-      double Bx = 0;
-      double By = MagB/1000.;
-      double Bz = 0;
-      TVector3 B = TVector3(Bx,By,Bz);
-      double Leff = 2.067;
-      /*double rho1 = Leff/abs(2*sin(0.5*(TofHit[0].theta_out-TofHit[0].theta_in))*cos(Tilt-0.5*(TofHit[0].theta_out-TofHit[0].theta_in)));
-        double rho2 = Leff/abs(2*sin(0.5*(TofHit[1].theta_out-TofHit[1].theta_in))*cos(Tilt-0.5*(TofHit[1].theta_out-TofHit[1].theta_in)));
-        double Brho1 = MagB*rho1;
-        double Brho2 = MagB*rho2;*/
+      double MagB = m_GladField->GetB()/1000;
+      int ix, iy;
+      ix = (int)(TofHit[0].xc - m_GladField->GetXmin())/50;
+      iy = (int)(TofHit[0].yc - m_GladField->GetYmin())/50;
+      double Leff1 = m_GladField->GetLeff(ix,iy);
+      ix = (int)(TofHit[1].xc - m_GladField->GetXmin())/50;
+      iy = (int)(TofHit[1].yc - m_GladField->GetYmin())/50;
+      double Leff2 = m_GladField->GetLeff(ix,iy);
+      double rho1 = Leff1/abs(2*sin(0.5*(TofHit[0].theta_out-TofHit[0].theta_in))*cos(Tilt-0.5*(TofHit[0].theta_out-TofHit[0].theta_in)));
+      double rho2 = Leff2/abs(2*sin(0.5*(TofHit[1].theta_out-TofHit[1].theta_in))*cos(Tilt-0.5*(TofHit[1].theta_out-TofHit[1].theta_in)));
+      double Brho1 = MagB*rho1;
+      double Brho2 = MagB*rho2;
 
-      double Brho1 = 0;
+      /*double Brho1 = 0;
       double Brho2 = 0;
       Brho1 = m_GladField->FindBrho(InitPos[0], InitDir[0], FinalPos[0]);
       Brho2 = m_GladField->FindBrho(InitPos[1], InitDir[1], FinalPos[1]);
-      //cout << Brho1 << " " << Brho2 << endl;
+      //cout << Brho1 << " " << Brho2 << endl;*/
 
       Beta_Z1 = TofHit[0].beta;
       Beta_Z2 = TofHit[1].beta;
@@ -824,7 +827,7 @@ void Analysis::InitParameter(){
   fK_LS2 = -30e-8;
 
   fBrho0 = 12.3255;
-  fRunID = 12;
+  fRunID = 5;
 
   // Beam parameter //
   fZBeta_p0 = 1;

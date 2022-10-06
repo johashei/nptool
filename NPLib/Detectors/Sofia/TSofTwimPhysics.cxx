@@ -50,7 +50,8 @@ TSofTwimPhysics::TSofTwimPhysics()
   m_NumberOfDetectors(0), 
   m_Beta(-1), 
   m_BetaNorm(0.838), 
-  m_NumberOfSections(4), 
+  m_NumberOfSections(4),
+  m_SPLINE_CORRECTION(0),
   m_NumberOfAnodesPerSection(16) {
   }
 
@@ -225,6 +226,12 @@ void TSofTwimPhysics::PreTreat() {
       double Energy = Cal->ApplyCalibration("SofTwim/SEC"+NPL::itoa(m_EventData->GetSectionNbr(i))+"_ANODE"+NPL::itoa(m_EventData->GetAnodeNbr(i))+"_ENERGY",m_EventData->GetEnergy(i));
       double DT = Cal->ApplyCalibration("SofTwim/SEC"+NPL::itoa(m_EventData->GetSectionNbr(i))+"_ANODE"+NPL::itoa(m_EventData->GetAnodeNbr(i))+"_TIME",m_EventData->GetDriftTime(i));
 
+      int section = m_EventData->GetSectionNbr(i);
+      int anode = m_EventData->GetAnodeNbr(i);
+      if(m_SPLINE_CORRECTION){
+        DT = DT - fcorr_dt[section-1][anode-1]->Eval(DT);
+      }
+
       m_PreTreatedData->SetSectionNbr(m_EventData->GetSectionNbr(i));
       m_PreTreatedData->SetAnodeNbr(m_EventData->GetAnodeNbr(i));
       m_PreTreatedData->SetEnergy(Energy);
@@ -280,11 +287,11 @@ void TSofTwimPhysics::ReadAnalysisConfig() {
         AnalysisConfigFile.ignore(numeric_limits<streamsize>::max(), '\n' );
       }
 
-      else if (whatToDo=="SPLINE_SECTION_BETA_PATH") {
+      else if (whatToDo=="SPLINE_CORR_DT_PATH") {
         AnalysisConfigFile >> DataBuffer;
-        m_SPLINE_SECTION_BETA_PATH = DataBuffer;
-        cout << "*** Loading Spline for Beta correction per section ***" << endl;
-        LoadSplineBeta();
+        m_SPLINE_DT_PATH = DataBuffer;
+        cout << "*** Loading Spline for Drift Time Correction per section and anode ***" << endl;
+        LoadSplineDT();
       }
 
       else if (whatToDo=="E_THRESHOLD") {
@@ -302,16 +309,21 @@ void TSofTwimPhysics::ReadAnalysisConfig() {
 
 
 ///////////////////////////////////////////////////////////////////////////
-void TSofTwimPhysics::LoadSplineBeta(){
-  TString filename = m_SPLINE_SECTION_BETA_PATH;
+void TSofTwimPhysics::LoadSplineDT(){
+  TString filename = m_SPLINE_DT_PATH;
   TFile* ifile = new TFile(filename,"read");
 
   if(ifile->IsOpen()){
     cout << "Loading splines..." << endl;
+
+    m_SPLINE_CORRECTION = true;
+    
     for(int s=0; s<m_NumberOfSections; s++){
-      TString splinename = Form("spline_sec%i",s+1);
-      fcorr_beta_sec[s] = (TSpline3*) ifile->FindObjectAny(splinename);
-      cout << fcorr_beta_sec[s]->GetName() << endl;
+      for(int a=0; a<m_NumberOfAnodesPerSection; a++){
+        TString splinename = Form("spline_corr_dt_sec%i_anode%i",s+1,a+1);
+        fcorr_dt[s][a] = (TSpline3*) ifile->FindObjectAny(splinename);
+        cout << fcorr_dt[s][a]->GetName() << endl;
+      }
     }
   }
   else
