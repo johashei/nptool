@@ -169,13 +169,29 @@ void TSofTwimPhysics::BuildPhysicalEvent() {
   }
 
   static CalibrationManager* Cal = CalibrationManager::getInstance();
+
   if(Esec1>0){
     Esec1 = Cal->ApplyCalibration("SofTwim/SEC1_ALIGN",Esec1);
     EnergySection.push_back(Esec1);
     DriftTime.push_back(DTsec1);
     SectionNbr.push_back(1);
 
-    Theta1 = atan((AnodeDriftTime[0][11]-AnodeDriftTime[0][3])/(7*31.));
+    double xsum=0;
+    double x2sum=0;
+    double ysum=0;
+    double xysum=0;
+    for(int p=0; p<12; p++){
+      double Z = p*31;
+      double X = AnodeDriftTime[0][p+2];
+
+      xsum = xsum + Z;
+      ysum = ysum + X;
+      x2sum = x2sum + pow(Z,2);
+      xysum = xysum + X*Z;
+    }
+
+    double p1 = (12*xysum -xsum*ysum)/(12*x2sum - xsum*xsum);
+    Theta1 = p1;
     Theta.push_back(-Theta1);
   }
   if(Esec2>0){
@@ -184,7 +200,22 @@ void TSofTwimPhysics::BuildPhysicalEvent() {
     DriftTime.push_back(DTsec2);
     SectionNbr.push_back(2);
 
-    Theta2 = atan((AnodeDriftTime[1][11]-AnodeDriftTime[1][3])/(7*31.));
+    double xsum=0;
+    double x2sum=0;
+    double ysum=0;
+    double xysum=0;
+    for(int p=0; p<12; p++){
+      double Z = p*31;
+      double X = AnodeDriftTime[1][p+2];
+
+      xsum = xsum + Z;
+      ysum = ysum + X;
+      x2sum = x2sum + pow(Z,2);
+      xysum = xysum + X*Z;
+    }
+
+    double p1 = (12*xysum -xsum*ysum)/(12*x2sum - xsum*xsum);
+    Theta2 = p1; 
     Theta.push_back(-Theta2);
   }
   if(Esec3>0){
@@ -193,7 +224,22 @@ void TSofTwimPhysics::BuildPhysicalEvent() {
     DriftTime.push_back(DTsec3);
     SectionNbr.push_back(3);
 
-    Theta3 = atan((AnodeDriftTime[2][11]-AnodeDriftTime[2][3])/(7*31.));
+    double xsum=0;
+    double x2sum=0;
+    double ysum=0;
+    double xysum=0;
+    for(int p=0; p<12; p++){
+      double Z = p*31;
+      double X = AnodeDriftTime[2][p+2];
+
+      xsum = xsum + Z;
+      ysum = ysum + X;
+      x2sum = x2sum + pow(Z,2);
+      xysum = xysum + X*Z;
+    }
+
+    double p1 = (12*xysum -xsum*ysum)/(12*x2sum - xsum*xsum);
+    Theta3 = p1;
     Theta.push_back(-Theta3);
   }
   if(Esec4>0){
@@ -202,7 +248,22 @@ void TSofTwimPhysics::BuildPhysicalEvent() {
     DriftTime.push_back(DTsec4);
     SectionNbr.push_back(4);
 
-    Theta4 = atan((AnodeDriftTime[3][11]-AnodeDriftTime[3][3])/(7*31.));
+    double xsum=0;
+    double x2sum=0;
+    double ysum=0;
+    double xysum=0;
+    for(int p=0; p<12; p++){
+      double Z = p*31;
+      double X = AnodeDriftTime[3][p+2];
+
+      xsum = xsum + Z;
+      ysum = ysum + X;
+      x2sum = x2sum + pow(Z,2);
+      xysum = xysum + X*Z;
+    }
+
+    double p1 = (12*xysum -xsum*ysum)/(12*x2sum - xsum*xsum);
+    Theta4 = p1;
     Theta.push_back(-Theta4);
   }
 

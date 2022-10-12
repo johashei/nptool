@@ -64,6 +64,7 @@ void TSofFissionFragment::Clear() {
   fFF_PosY1.clear();
   fFF_PosY2.clear();
   fFF_PosY3.clear();
+  fFF_FlightPath.clear();
 
   fFF_Zsum = -1;
   fFF_iZsum = -1;

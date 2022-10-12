@@ -55,8 +55,8 @@ RootFileName
   %/media/sofia/s455/raw/run_raw_0401.root
   
   %% 187Pb
-  /media/sofia/s455/raw/run_raw_0402.root
-  /media/sofia/s455/raw/run_raw_0403.root
+  %/media/sofia/s455/raw/run_raw_0402.root
+  %/media/sofia/s455/raw/run_raw_0403.root
   
   %% 184Hg
   %/media/sofia/s455/raw/run_raw_0404.root
@@ -85,6 +85,6 @@ RootFileName
   %/media/sofia/s455/raw/run_raw_0426.root
   
   %% 197At
-  %/media/sofia/s455/raw/run_raw_0427.root
-  %/media/sofia/s455/raw/run_raw_0428.root
-  %/media/sofia/s455/raw/run_raw_0429.root
+  /media/sofia/s455/raw/run_raw_0427.root
+  /media/sofia/s455/raw/run_raw_0428.root
+  /media/sofia/s455/raw/run_raw_0429.root

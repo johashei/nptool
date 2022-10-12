@@ -55,6 +55,7 @@ class TSofFissionFragment : public TObject {
     vector<double> fFF_PosY1;
     vector<double> fFF_PosY2;
     vector<double> fFF_PosY3;
+    vector<double> fFF_FlightPath;
     double fFF_Zsum;
     int fFF_iZsum;
 
@@ -103,6 +104,7 @@ class TSofFissionFragment : public TObject {
     inline void SetPosY1(double val){fFF_PosY1.push_back(val);};//!
     inline void SetPosY2(double val){fFF_PosY2.push_back(val);};//!
     inline void SetPosY3(double val){fFF_PosY3.push_back(val);};//!
+    inline void SetFlightPath(double val){fFF_FlightPath.push_back(val);};//!
 
 
     //////////////////////    GETTERS    ////////////////////////
@@ -134,6 +136,7 @@ class TSofFissionFragment : public TObject {
     inline double GetPosY1(int i) const {return fFF_PosY1[i];}//! 
     inline double GetPosY2(int i) const {return fFF_PosY2[i];}//! 
     inline double GetPosY3(int i) const {return fFF_PosY3[i];}//! 
+    inline double GetFlightPath(int i) const {return fFF_FlightPath[i];}//! 
 
 
   //////////////////////////////////////////////////////////////
