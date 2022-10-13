@@ -1220,7 +1220,7 @@ G4Element* MaterialManager::GetElementFromLibrary(string Name) {
 //
 G4Material* MaterialManager::GetGasFromLibrary(string Name, double Pressure, double Temperature) {
   ostringstream oss;
-  oss << Name << "_" << Pressure << "_" << Temperature;
+  oss << Name << "_" << Pressure / bar << "bar_" << Temperature << "K";
   string newName = oss.str();
   map<string, G4Material*>::iterator it;
   it = m_Material.find(Name);
