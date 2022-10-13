@@ -560,12 +560,13 @@ void Analysis::FissionFragmentAnalysis(){
       // *** Calculation Theta_out *** //
       double Theta0 = 20.*deg;
       double XA = 0;
-      double ZA = 2328.;
+      double ZA = 2272;
       double Zfission = 335.;
-      double ZGlad_entrance = 2724.;
+      double ZGlad_entrance = 2694.;
       double Leff_init = 2150.;
-      double ZG = ZGlad_entrance+Leff_init/2;
-      double ZMW3 = 8483;
+      //double ZG = ZGlad_entrance+Leff_init/2;
+      double ZG = ZGlad_entrance+540;
+      double ZMW3 = 8450;//8483;
       double XMW3 = -(ZMW3-ZG)*tan(Theta0);
       double ZMW2 = 2576;
       double X3lab = 0;
@@ -583,7 +584,6 @@ void Analysis::FissionFragmentAnalysis(){
       for(int i=0; i<2; i++){
         XA = TofHit[i].DT;
         if(XA != -1e6){
-          ZG = ZGlad_entrance+Leff_init/2;
           XC = (XA+(ZG-ZA)*tan(TofHit[i].theta_in)) / (1-tan(Tilt)*tan(TofHit[i].theta_in));
           ZC = ZG + XC*tan(Tilt);
           
@@ -689,10 +689,10 @@ void Analysis::FissionFragmentAnalysis(){
       SofFF->SetPosY3(TofHit[0].y3);
       SofFF->SetPosY3(TofHit[1].y3);
 
-      SofFF->SetThetaIn(TofHit[0].theta_in);
-      SofFF->SetThetaIn(TofHit[1].theta_in);
-      SofFF->SetThetaOut(TofHit[0].theta_out);
-      SofFF->SetThetaOut(TofHit[1].theta_out);
+      SofFF->SetThetaIn(TofHit[0].theta_in/deg);
+      SofFF->SetThetaIn(TofHit[1].theta_in/deg);
+      SofFF->SetThetaOut(TofHit[0].theta_out/deg);
+      SofFF->SetThetaOut(TofHit[1].theta_out/deg);
 
       SofFF->SetBeta(Beta_Z1);
       SofFF->SetBeta(Beta_Z2);

@@ -152,6 +152,7 @@ class TSofTwimPhysics : public TObject, public NPL::VDetector {
   private:
     double m_E_Threshold;     //!
     double m_Beta;     //!
+    double m_AnodeWidth; //!
     double m_BetaNorm;     //!
     string m_SPLINE_DT_PATH;     //!
     bool m_SPLINE_CORRECTION; //!

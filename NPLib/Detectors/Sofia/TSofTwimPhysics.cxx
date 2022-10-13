@@ -48,7 +48,8 @@ TSofTwimPhysics::TSofTwimPhysics()
   m_PreTreatedData(new TSofTwimData),
   m_EventPhysics(this),
   m_NumberOfDetectors(0), 
-  m_Beta(-1), 
+  m_Beta(-1),
+  m_AnodeWidth(25.),
   m_BetaNorm(0.838), 
   m_NumberOfSections(4),
   m_SPLINE_CORRECTION(0),
@@ -181,7 +182,7 @@ void TSofTwimPhysics::BuildPhysicalEvent() {
     double ysum=0;
     double xysum=0;
     for(int p=0; p<12; p++){
-      double Z = p*31;
+      double Z = m_AnodeWidth/2 + p*m_AnodeWidth;
       double X = AnodeDriftTime[0][p+2];
 
       xsum = xsum + Z;
@@ -191,7 +192,7 @@ void TSofTwimPhysics::BuildPhysicalEvent() {
     }
 
     double p1 = (12*xysum -xsum*ysum)/(12*x2sum - xsum*xsum);
-    Theta1 = p1;
+    Theta1 = atan(p1);
     Theta.push_back(-Theta1);
   }
   if(Esec2>0){
@@ -205,7 +206,7 @@ void TSofTwimPhysics::BuildPhysicalEvent() {
     double ysum=0;
     double xysum=0;
     for(int p=0; p<12; p++){
-      double Z = p*31;
+      double Z = m_AnodeWidth/2 + p*m_AnodeWidth;
       double X = AnodeDriftTime[1][p+2];
 
       xsum = xsum + Z;
@@ -215,7 +216,7 @@ void TSofTwimPhysics::BuildPhysicalEvent() {
     }
 
     double p1 = (12*xysum -xsum*ysum)/(12*x2sum - xsum*xsum);
-    Theta2 = p1; 
+    Theta2 = atan(p1); 
     Theta.push_back(-Theta2);
   }
   if(Esec3>0){
@@ -229,7 +230,7 @@ void TSofTwimPhysics::BuildPhysicalEvent() {
     double ysum=0;
     double xysum=0;
     for(int p=0; p<12; p++){
-      double Z = p*31;
+      double Z = m_AnodeWidth/2 + p*m_AnodeWidth;
       double X = AnodeDriftTime[2][p+2];
 
       xsum = xsum + Z;
@@ -239,7 +240,7 @@ void TSofTwimPhysics::BuildPhysicalEvent() {
     }
 
     double p1 = (12*xysum -xsum*ysum)/(12*x2sum - xsum*xsum);
-    Theta3 = p1;
+    Theta3 = atan(p1);
     Theta.push_back(-Theta3);
   }
   if(Esec4>0){
@@ -253,7 +254,7 @@ void TSofTwimPhysics::BuildPhysicalEvent() {
     double ysum=0;
     double xysum=0;
     for(int p=0; p<12; p++){
-      double Z = p*31;
+      double Z = m_AnodeWidth/2 + p*m_AnodeWidth;
       double X = AnodeDriftTime[3][p+2];
 
       xsum = xsum + Z;
@@ -263,7 +264,7 @@ void TSofTwimPhysics::BuildPhysicalEvent() {
     }
 
     double p1 = (12*xysum -xsum*ysum)/(12*x2sum - xsum*xsum);
-    Theta4 = p1;
+    Theta4 = atan(p1);
     Theta.push_back(-Theta4);
   }
 
