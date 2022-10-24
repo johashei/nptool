@@ -3,7 +3,7 @@
 #include "KnownPeakFitter.h"
 #include "DrawPlots.h"
 
-//#include "CS2.h"
+#include "CS2_dt.h"
 //#include "ThreeBodyBreakup.h"
 //#include "ThreeBodyBreakup_FitPhaseSpace.h"
 
@@ -69,13 +69,45 @@ void MM_Timing_Comparison(){
 void Plots_47Kdt(){
 
   /* Load graphical cut */
-  TFile gcIn("GraphicalCut_22Jun22.root");
+  //TFile gcIn("GraphicalCut_22Jun22.root");
+  //TCutG* cutTritons = (TCutG*) gcIn.FindObjectAny("cutTritons");
+  
+  //TFile gcIn("cutTritonsWide.root");
+  TFile gcIn("cutTritons_26Aug22Long.root");
+  //TCutG* cutTritons = (TCutG*) gcIn.FindObjectAny("cutTritonsWide");
   TCutG* cutTritons = (TCutG*) gcIn.FindObjectAny("cutTritons");
+  cutTritons->SetName("cutTritons");
+
+  TFile gcIn2("cutTime.root");
+  TCutG* cutTime = (TCutG*) gcIn2.FindObjectAny("cutTime");
+  cutTime->SetName("cutTime");
+
+  TFile gcIn3("cutDoublePeakGarbage.root");
+  TCutG* cutGarbage = (TCutG*) gcIn3.FindObjectAny("cutDoublePeakGarbage");
+  cutGarbage->SetName("cutGarbage");
+
+
+  /**************/
+  TFile gcInA("cutTritons_HighTLowE.root");
+  TCutG* cutHighTLowE = (TCutG*) gcInA.FindObjectAny("cutTritons");
+  cutHighTLowE->SetName("cutHighTLowE");
+
+  TFile gcInB("cutTritons_SlimGate.root");
+  TCutG* cutSlim = (TCutG*) gcInB.FindObjectAny("cutTritons");
+  cutSlim->SetName("cutSlim");
+
+  TFile gcInC("cutTritons_HighELowT.root");
+  TCutG* cutHighELowT = (TCutG*) gcInC.FindObjectAny("cutTritons");
+  cutHighELowT->SetName("cutHighELowT");
+
+
+  /**************/
 
   LoadChain47Kdt();
   gStyle->SetOptStat("nemMrRi");
 
-  tCentre = 2750;  tRange = 350;
+  tCentre = 2750;  tRange = 350; //Wide is fine because I use the 2D time gate
+  //tCentre = 2550;  tRange = 150;
   timegate = "abs(T_MUGAST_VAMOS-" + to_string(tCentre) + ")<" + to_string(tRange);
   det_gate = "MUST2.TelescopeNumber>0 && MUST2.TelescopeNumber<5";
   reactionName = "47K(d,t)";

@@ -225,14 +225,20 @@ void Analysis::TreatEvent(){
     // MUST2
     int TelescopeNumber = M2->TelescopeNumber[countMust2];
 
+    /**/
     if(isSim && !isPhaseSpace){
-      ThetaCM_detected_MM->Fill(ReactionConditions->GetThetaCM());
-      ThetaLab_detected_MM->Fill(ReactionConditions->GetTheta(0));
+      if(M2->Si_E[countMust2]>0 && M2->CsI_E[countMust2]<=0){
+        /* IS a count in DSSD, but NOT in CsI to exclude punch through  */
+        /* May need further gating in Si_E & _T */
+        ThetaCM_detected_MM->Fill(ReactionConditions->GetThetaCM());
+        ThetaLab_detected_MM->Fill(ReactionConditions->GetTheta(0));
 
-      int MMX = TelescopeNumber-1;
-      ThetaCM_detected_MMX[MMX]->Fill(ReactionConditions->GetThetaCM());
-      ThetaLab_detected_MMX[MMX]->Fill(ReactionConditions->GetTheta(0));
+        int MMX = TelescopeNumber-1;
+        ThetaCM_detected_MMX[MMX]->Fill(ReactionConditions->GetThetaCM());
+        ThetaLab_detected_MMX[MMX]->Fill(ReactionConditions->GetTheta(0));
+      }
     }
+    /**/
 
     /************************************************/
     // Part 1 : Impact Angle
@@ -307,7 +313,20 @@ void Analysis::TreatEvent(){
 
     ThetaLab.push_back(thetalab_tmp/deg);
     PhiLab.push_back(philab_tmp/deg);
-//cout << "here_EndMustLoop" << endl;
+
+    //if(isSim && !isPhaseSpace){
+    //  ThetaCM_detected_MM->Fill(reaction.EnergyLabToThetaCM(elab_tmp, thetalab_tmp)/deg);
+    //  ThetaLab_detected_MM->Fill(thetalab_tmp/deg);
+
+    //  int MMX = TelescopeNumber-1;
+    //  ThetaCM_detected_MMX[MMX]->Fill(reaction.EnergyLabToThetaCM(elab_tmp, thetalab_tmp)/deg);
+    //  ThetaLab_detected_MMX[MMX]->Fill(thetalab_tmp/deg);
+    //}
+
+
+
+
+    //cout << "here_EndMustLoop" << endl;
   }
 
 //cout << "here_BeforeMugastLoop" << endl;
@@ -1106,3 +1125,4 @@ extern "C"{
 
   proxy_analysis p_analysis;
 }
+
