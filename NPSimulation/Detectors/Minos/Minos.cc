@@ -323,6 +323,12 @@ void Minos::ReadConfiguration(NPL::InputParser parser) {
     }
     else {
       cout << "ERROR: check your input file formatting " << endl;
+      cout << " missing token : ";
+      auto missing = blocks[i]->GetMissingToken(token);
+      for (unsigned int i = 0; i < missing.size(); i++) {
+        std::cout << missing[i] << " ";
+      }
+      std::cout << endl;
       exit(1);
     }
   }
@@ -333,7 +339,7 @@ void Minos::ReadConfiguration(NPL::InputParser parser) {
 // Called After DetecorConstruction::AddDetector Method
 void Minos::ConstructDetector(G4LogicalVolume* world) {
   for (unsigned short i = 0; i < m_POS.size(); i++) {
-    bool TPCOnly = m_TPCOnly[i];
+    TPCOnly = m_TPCOnly[i];
 
     /* TargetMaterial = MaterialManager::getInstance()->GetMaterialFromLibrary("Vacuum"); */
     TargetMaterial = MaterialManager::getInstance()->GetMaterialFromLibrary("LH2");

@@ -27,12 +27,14 @@ Minos
  Position= 0.345399 1.02061 -4650 mm
  ZRotation= 40.6 deg
  TargetLength= 151.72 mm
+ TargetZOffset= 0 mm 
+ ZOffset= 0 mm 
  TargetMaterial= LH2 
  CellMaterial= Mylar 
  TPCOnly= 0 
  TimeBin= 30 ns
  ShapingTime= 333.9 ns
- BaseLine= 250
+ Baseline= 250
  Sampling= 10
  XML= db/MINOS.xml
 
