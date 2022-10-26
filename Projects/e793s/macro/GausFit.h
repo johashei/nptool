@@ -94,6 +94,8 @@ vector<double> DoubleGausNumbs(TH1F* hist, double minFit, double maxFit, double 
       //g2->SetParLimits(2, 0.05, 0.20);
       g2->SetParLimits(2, 0.4, 1.0);//FOR ELASTICS
 
+    bg->SetParameter(0, 5.0);//FOR ELASTICS
+      bg->SetParLimits(0, 0.0, 20.0);//FOR ELASTICS
 
     hist->Fit(g1, "WWR", "", minFit, mean1+5);//maxFit);
     hist->Fit(g2, "WWR", "", mean2-5, maxFit);//minFit, maxFit);

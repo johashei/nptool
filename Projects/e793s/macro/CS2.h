@@ -21,9 +21,13 @@ bool loud = 1;
 /* Scale method toggle */
 bool scaleTogether = 1;
 
-/* String for image */
+/* Strings for image */
 string orbitalname;
 string orbital;
+
+/* Strings for SolidAngle input file */
+string statename;
+string inputdate;
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -84,22 +88,6 @@ void CS_Diagnosis(){
 ////////////////////////////////////////////////////////////////////////////////
 void CS(){
 /* Overload function */
-/*
-  cout << " Inputs:\n Experimental...\n\t - Energy of state\n\t - Spin of state" << endl;
-  cout << " Theory...\n\t - Orbital l\n\t - Orbital j\n\t - Orbital n\n\n" << endl;
-
-  cout << "  0f5/2 | -----  |  --?-- |   l=3, j=2.5, n=0" << endl;
-  cout << "        |        |        |" << endl;
-  cout << "  1p1/2 | -----  |  --?-- |   l=1, j=0.5, n=1" << endl;
-  cout << "  1p3/2 | -----  |  --?-- |   l=1, j=1.5, n=1" << endl;
-  cout << "  0f7/2 | -----  |  ===== |" << endl;
-  cout << "        |        |        |" << endl;
-  cout << "  0d3/2 | -----  |  ===== |" << endl;
-  cout << "  1s1/2 | --x--  |  ===== |" << endl;
-  cout << "        |        |        |" << endl;
-  cout << "        |   p    |    n   |" << endl;
-*/
-
   cout << "- CS(stateE, stateSp, orb_l, orb_j, nodes) "<< endl;
   cout << "---- 0.143, p3/2 = CS(0.143, 2, 1, 1.5) "<< endl;
   cout << "---- 0.279, p3/2 = CS(0.279, 2, 1, 1.5) "<< endl;
@@ -113,8 +101,6 @@ void CS(){
   cout << "---- 3.8  , f5/2 = CS(3.8  , 3, 3, 2.5) "<< endl;
   cout << "---- 4.1  , f5/2 = CS(4.1  , 3, 3, 2.5) "<< endl;
   cout << "---- 4.4  , f5/2 = CS(4.4  , 3, 3, 2.5) "<< endl;
-
-
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -129,7 +115,7 @@ void CS(double Energy, double Spin, double spdf, double angmom){
   //double ElasticNorm = 3.7, ElasticNormErr = 0.000; // Estimated 'goal' normalization
 
   double ElasticNorm = 0.000220, ElasticNormErr = 0.000; //14Oct22
-
+  inputdate = "18Oct22";
 
   orbitalname.clear();
   orbital.clear();
@@ -195,6 +181,9 @@ void CS(double Energy, double Spin, double spdf, double angmom){
       cout << "Identified as state #" << i << ", E = " << means[i] << endl;
       indexE = i;
       found = 1;
+      stringstream ss;
+      ss << setfill('0') << setw(4) << (int)(means[i]*1000.);
+      statename = ss.str();
     }
   }
   if(!found){
@@ -210,10 +199,39 @@ void CS(double Energy, double Spin, double spdf, double angmom){
   //auto file = new TFile("../SolidAngle_HistFile_19Jul22_47Kdp_1p981.root");
   //auto file = new TFile("../SolidAngle_HistFile_19Jul22_47Kdp_4p393.root");
   //auto file = new TFile("../SolidAngle_HistFile_30Jul22_47Kdp_0p000_ThetaBin0p5.root");
-  auto file = new TFile("../SolidAngle_HistFile_10Aug22_TrueStripRemoval.root");
+  //auto file = new TFile("SolidAngle_HistFiles/SolidAngle_HistFile_10Aug22_TrueStripRemoval.root");
+
+  string backupFileName = "SolidAngle_HistFiles/SolidAngle_HistFile_10Aug22_TrueStripRemoval.root";
+
+  string saFileName = "SolidAngle_HistFiles/SAHF_";
+    saFileName.append(inputdate);
+    saFileName.append("_47Kdp_");
+    saFileName.append(statename);
+    saFileName.append(".root");
+
+  TFile* file;
+  ifstream infile(saFileName);
+  ifstream backup(backupFileName);
+  if(infile.good()){
+    cout << "Opening file " << saFileName << endl;
+      file = TFile::Open(saFileName.c_str());
+  } else if (backup.good()){
+    cout << BOLDRED << "FAILED TO OPEN " << saFileName << endl;
+    cout << "Open standard backup file " << backupFileName << endl;
+    cout << RESET;
+      file = TFile::Open(backupFileName.c_str());
+  } else {
+    cout << BOLDRED << "FAILED TO OPEN MAIN OR BACKUP SOLID ANGLE FILE" << endl;
+    cout << RED << "Check SolidAngle file exists..." << RESET << endl;
+  }
+  //cout << "MADE IT OUT" << endl;
+
+
+
   //auto file = new TFile("../SolidAngle_HistFile_New.root");
   /* ADD OPTION TO CHANGE SOLID ANGLE FILE DEPENDING ON PEAK!!!!*/
   TH1F* SolidAngle = (TH1F*) file->FindObjectAny("SolidAngle_Lab_MG");
+  //cout << BLUE << "MADE IT HERE" << endl;
   TCanvas* c_SolidAngle = new TCanvas("c_SolidAngle","c_SolidAngle",1000,1000);
   SolidAngle->Draw("HIST");
   SolidAngle->GetXaxis()->SetRangeUser(100.,160.);

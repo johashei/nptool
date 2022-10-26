@@ -115,8 +115,15 @@ void LoadChain47Kpp(){
   //files.push_back("../../../Outputs/Analysis/47Kpp_08Nov_PartI.root");
   //files.push_back("../../../Outputs/Analysis/47Kpp_08Nov_PartII.root");
 
-  files.push_back("../../../Outputs/Analysis/47Kpp_11Jul22_PartI.root");
-  files.push_back("../../../Outputs/Analysis/47Kpp_11Jul22_PartII.root");
+  //files.push_back("../../../Outputs/Analysis/47Kpp_11Jul22_PartI.root");
+  //files.push_back("../../../Outputs/Analysis/47Kpp_11Jul22_PartII.root");
+
+  //files.push_back("../../../Outputs/Analysis/24Oct22_47Kpp_PartI.root");
+  //files.push_back("../../../Outputs/Analysis/24Oct22_47Kpp_PartII.root");
+
+  files.push_back("../../../Outputs/Analysis/25Oct22_47Kpp_PartI.root");
+  files.push_back("../../../Outputs/Analysis/25Oct22_47Kpp_PartII.root");
+  
 
   chain = Chain("PhysicsTree",files,true);
 }
@@ -384,18 +391,20 @@ void Draw_2DParticleGamma(){
   ExEg->GetXaxis()->SetTitle("E_{#gamma} [MeV]");
   ExEg->GetYaxis()->SetRangeUser(-1.0,7.0);
   ExEg->Draw();
+  if(reactionName=="47K(d,p)"){
+    TLine *Sn = new TLine(0,4.644,4.644,4.644);
+      Sn->SetLineColor(kRed);Sn->SetLineStyle(2);
+      Sn->Draw("same");
+    TLatex *TSn = new TLatex(.5,.5,"S_{n}");
+      TSn->SetTextColor(kRed);
+      TSn->SetTextSize(0.05);
+      TSn->SetX(2.50);
+      TSn->SetY(4.90);
+      TSn->Draw("same");
+  }
   TLine *XeqY = new TLine(0,0,5,5);
     XeqY->SetLineColor(kRed);
     XeqY->Draw("same");
-  TLine *Sn = new TLine(0,4.644,4.644,4.644);
-    Sn->SetLineColor(kRed);Sn->SetLineStyle(2);
-    Sn->Draw("same");
-  TLatex *TSn = new TLatex(.5,.5,"S_{n}");
-    TSn->SetTextColor(kRed);
-    TSn->SetTextSize(0.05);
-    TSn->SetX(2.50);
-    TSn->SetY(4.90);
-    TSn->Draw("same");
   TLatex *Texeg = new TLatex(.5,.5,"Ex = E_{#gamma}");
     Texeg->SetTextColor(kRed);
     Texeg->SetTextSize(0.05);
