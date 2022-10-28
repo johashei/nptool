@@ -1,0 +1,4 @@
+[ libNPMiniball.dylib ]
+# List of selected classes
+class TMiniballPhysics
+header TMiniballPhysics.h

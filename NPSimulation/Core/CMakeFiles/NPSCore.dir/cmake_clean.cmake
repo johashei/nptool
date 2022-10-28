@@ -1,0 +1,43 @@
+file(REMOVE_RECURSE
+  "../lib/libNPSCore.dylib"
+  "../lib/libNPSCore.pdb"
+  "CMakeFiles/NPSCore.dir/Chamber.cc.o"
+  "CMakeFiles/NPSCore.dir/Chamber.cc.o.d"
+  "CMakeFiles/NPSCore.dir/DetectorConstruction.cc.o"
+  "CMakeFiles/NPSCore.dir/DetectorConstruction.cc.o.d"
+  "CMakeFiles/NPSCore.dir/DetectorMessenger.cc.o"
+  "CMakeFiles/NPSCore.dir/DetectorMessenger.cc.o.d"
+  "CMakeFiles/NPSCore.dir/EventAction.cc.o"
+  "CMakeFiles/NPSCore.dir/EventAction.cc.o.d"
+  "CMakeFiles/NPSCore.dir/MaterialManager.cc.o"
+  "CMakeFiles/NPSCore.dir/MaterialManager.cc.o.d"
+  "CMakeFiles/NPSCore.dir/MyMagneticField.cc.o"
+  "CMakeFiles/NPSCore.dir/MyMagneticField.cc.o.d"
+  "CMakeFiles/NPSCore.dir/NPSDetectorFactory.cc.o"
+  "CMakeFiles/NPSCore.dir/NPSDetectorFactory.cc.o.d"
+  "CMakeFiles/NPSCore.dir/NPSFunction.cc.o"
+  "CMakeFiles/NPSCore.dir/NPSFunction.cc.o.d"
+  "CMakeFiles/NPSCore.dir/NPSVDetector.cc.o"
+  "CMakeFiles/NPSCore.dir/NPSVDetector.cc.o.d"
+  "CMakeFiles/NPSCore.dir/Particle.cc.o"
+  "CMakeFiles/NPSCore.dir/Particle.cc.o.d"
+  "CMakeFiles/NPSCore.dir/ParticleStack.cc.o"
+  "CMakeFiles/NPSCore.dir/ParticleStack.cc.o.d"
+  "CMakeFiles/NPSCore.dir/PrimaryGeneratorAction.cc.o"
+  "CMakeFiles/NPSCore.dir/PrimaryGeneratorAction.cc.o.d"
+  "CMakeFiles/NPSCore.dir/PrimaryGeneratorActionMessenger.cc.o"
+  "CMakeFiles/NPSCore.dir/PrimaryGeneratorActionMessenger.cc.o.d"
+  "CMakeFiles/NPSCore.dir/RunAction.cc.o"
+  "CMakeFiles/NPSCore.dir/RunAction.cc.o.d"
+  "CMakeFiles/NPSCore.dir/SteppingAction.cc.o"
+  "CMakeFiles/NPSCore.dir/SteppingAction.cc.o.d"
+  "CMakeFiles/NPSCore.dir/SteppingVerbose.cc.o"
+  "CMakeFiles/NPSCore.dir/SteppingVerbose.cc.o.d"
+  "CMakeFiles/NPSCore.dir/Target.cc.o"
+  "CMakeFiles/NPSCore.dir/Target.cc.o.d"
+)
+
+# Per-language clean rules from dependency scanning.
+foreach(lang CXX)
+  include(CMakeFiles/NPSCore.dir/cmake_clean_${lang}.cmake OPTIONAL)
+endforeach()
