@@ -12,23 +12,23 @@ Beam
   SigmaY= 2.0 millimeter
   MeanThetaX= 0 deg
   MeanPhiY= 0 deg
-  MeanX= -3.9164 millimeter 
-  MeanY= +0.0550 millimeter
+  MeanX= -3.989139 millimeter 
+  MeanY= +0.991160 millimeter
  
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 TwoBodyReaction
- Beam=47K
- Target=2H
- Light=2H
- Heavy=47K
+ Beam= 47K
+ Target= 2H
+ Light= 1H
+ Heavy= 48K
 
  ExcitationEnergyLight= 0.0 MeV
- ExcitationEnergyHeavy= 0.0 MeV
-
+ ExcitationEnergyHeavy= 0.143 MeV
+ 
  LabCrossSectionPath= flat.txt CSR
-
- HalfOpenAngleMin =   0 deg
- HalfOpenAngleMax = 180 deg
 
  ShootLight= 1
  ShootHeavy= 0
+ 
+ HalfOpenAngleMin =   0 deg
+ HalfOpenAngleMax = 180 deg

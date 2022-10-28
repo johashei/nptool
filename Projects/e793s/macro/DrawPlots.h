@@ -12,7 +12,7 @@ NPL::Reaction Scdp("47Sc(d,p)48Sc@355");
 NPL::Reaction K46dp("46K(d,p)47K@355");
 
 NPL::Reaction Kdp("47K(d,p)48K@355");
-NPL::Reaction Kdt("47K(d,t)46K@355");
+NPL::Reaction Kdt("47K(d,t)46K@355");//@355");
 NPL::Reaction Kdd("47K(d,d)47K@355");
 NPL::Reaction Kpp("47K(p,p)47K@355");
 NPL::Reaction K12C12C("47K(12C,12C)47K@355");
@@ -48,9 +48,9 @@ TChain* Chain(std::string TreeName, std::vector<std::string>& file, bool EventLi
 void LoadChain47Kdp(){
   vector<string> files;
   
-//  files.push_back("../../../Outputs/Analysis/OriginalValues_ptI.root");
-//  files.push_back("../../../Outputs/Analysis/OriginalValues_ptII.root");
-//  files.push_back("../../../Outputs/Analysis/OriginalValues_ptIII.root");
+  //files.push_back("../../../Outputs/Analysis/OriginalValues_ptI.root");
+  //files.push_back("../../../Outputs/Analysis/OriginalValues_ptII.root");
+  //files.push_back("../../../Outputs/Analysis/OriginalValues_ptIII.root");
 
   //files.push_back("../../../Outputs/Analysis/47Kdp_08Nov_PartI.root");
   //files.push_back("../../../Outputs/Analysis/47Kdp_08Nov_PartII.root");
@@ -59,50 +59,32 @@ void LoadChain47Kdp(){
   //files.push_back("../../../Outputs/Analysis/47Kdp_11Apr22_PartI.root");
   //files.push_back("../../../Outputs/Analysis/47Kdp_11Apr22_PartII.root");
 
-  /* As above, with thicker target! */
-  //files.push_back("../../../Outputs/Analysis/47Kdp_26May22_v2_PartI.root");
-  //files.push_back("../../../Outputs/Analysis/47Kdp_26May22_v2_PartII.root");
-
-  /* Fix Z=0 */
-  //files.push_back("../../../Outputs/Analysis/47Kdp_27May22_PartI.root");
-  //files.push_back("../../../Outputs/Analysis/47Kdp_27May22_PartII.root");
-
-  /* Not fixed, but Z near 0 */
-  //files.push_back("../../../Outputs/Analysis/47Kdp_01Jul22_PartI.root");
-  //files.push_back("../../../Outputs/Analysis/47Kdp_01Jul22_PartII.root");
-
   /* New target thickness analysis */
-  files.push_back("../../../Outputs/Analysis/47Kdp_11Jul22_PartI.root");
-  files.push_back("../../../Outputs/Analysis/47Kdp_11Jul22_PartII.root");
+  //files.push_back("../../../Outputs/Analysis/47Kdp_11Jul22_PartI.root");
+  //files.push_back("../../../Outputs/Analysis/47Kdp_11Jul22_PartII.root");
 
+  //files.push_back("../../../Outputs/Analysis/47Kdp_10Aug22_TrueStripRemoval_PartI.root");
+  //files.push_back("../../../Outputs/Analysis/47Kdp_10Aug22_TrueStripRemoval_PartII.root");
+  
+  //files.push_back("../../../Outputs/Analysis/47Kdp_22Sep22_RmvMM5_NoRun51-52_PartI.root");
+  //files.push_back("../../../Outputs/Analysis/47Kdp_22Sep22_RmvMM5_NoRun51-52_PartII.root");
+  
+  /*************************/
+
+  files.push_back("../../../Outputs/Analysis/47Kdp_18Oct22_PartI.root");
+  files.push_back("../../../Outputs/Analysis/47Kdp_18Oct22_PartII.root");
 
   chain = Chain("PhysicsTree",files,true);
 }
 
 void LoadChain47Kdt(){
   vector<string> files;
-  //files.push_back("../../../Outputs/Analysis/47Kdt_13May22_PartI.root");
-  //files.push_back("../../../Outputs/Analysis/47Kdt_13May22_PartII.root");
-  //files.push_back("../../../Outputs/Analysis/47Kdt_25May22_TestingDiffTimeCalib_PartI.root");
-  //files.push_back("../../../Outputs/Analysis/47Kdt_25May22_TestingDiffTimeCalib_PartII.root");
   
   /* Offset MM1 timing by -5 */
-  //files.push_back("../../../Outputs/Analysis/47Kdt_22Jun22_PartI.root");
-  //files.push_back("../../../Outputs/Analysis/47Kdt_22Jun22_PartII.root");
+  /* Push MM1-4 +200mm in Z */
 
-  /* As above, with 01Jul22 XYZT */
-  //files.push_back("../../../Outputs/Analysis/47Kdt_22Jun22_PartI.root");
-  //files.push_back("../../../Outputs/Analysis/47Kdt_22Jun22_PartII.root");
-
-  /* As above, with 11Jul22 XYZT */
-  //files.push_back("../../../Outputs/Analysis/47Kdt_11Jul22_PartI.root");
-  //files.push_back("../../../Outputs/Analysis/47Kdt_11Jul22_PartII.root");
-
-  files.push_back("../../../Outputs/Analysis/47Kdt_14Jul22_PartI.root");
-  files.push_back("../../../Outputs/Analysis/47Kdt_14Jul22_PartII.root");
-
-
-  //files.push_back("../../../Outputs/Analysis/TESTING_PartII.root");
+  files.push_back("../../../Outputs/Analysis/47Kdt_18Oct22_PartI.root");
+  files.push_back("../../../Outputs/Analysis/47Kdt_18Oct22_PartII.root");
 
   chain = Chain("PhysicsTree",files,true);
 }
@@ -112,9 +94,19 @@ void LoadChain47Kdd(){
   //files.push_back("../../../Outputs/Analysis/47Kdd_08Nov_PartI.root");
   //files.push_back("../../../Outputs/Analysis/47Kdd_08Nov_PartII.root");
 
-  files.push_back("../../../Outputs/Analysis/47Kdd_11Jul22_PartI.root");
-  files.push_back("../../../Outputs/Analysis/47Kdd_11Jul22_PartII.root");
+  //files.push_back("../../../Outputs/Analysis/47Kdd_11Jul22_PartI.root");
+  //files.push_back("../../../Outputs/Analysis/47Kdd_11Jul22_PartII.root");
  
+  /* Removing MM5x103+ */
+  //files.push_back("../../../Outputs/Analysis/47Kdd_01Sep22_RemoveMoreMM5_PartI.root");
+  //files.push_back("../../../Outputs/Analysis/47Kdd_01Sep22_RemoveMoreMM5_PartII.root");
+
+  /* Now without runs 51&52, due to CATS not being in the trigger for these runs */
+  files.push_back("../../../Outputs/Analysis/47Kdd_21Sep22_RmvMM5_NoRun51-52_PartI.root");
+  files.push_back("../../../Outputs/Analysis/47Kdd_21Sep22_RmvMM5_NoRun51-52_PartII.root");
+  //cout << RED << " ONLY USING ONE PART OF THE SORT" << RESET << endl;
+
+
   chain = Chain("PhysicsTree",files,true);
 }
 
@@ -123,8 +115,15 @@ void LoadChain47Kpp(){
   //files.push_back("../../../Outputs/Analysis/47Kpp_08Nov_PartI.root");
   //files.push_back("../../../Outputs/Analysis/47Kpp_08Nov_PartII.root");
 
-  files.push_back("../../../Outputs/Analysis/47Kpp_11Jul22_PartI.root");
-  files.push_back("../../../Outputs/Analysis/47Kpp_11Jul22_PartII.root");
+  //files.push_back("../../../Outputs/Analysis/47Kpp_11Jul22_PartI.root");
+  //files.push_back("../../../Outputs/Analysis/47Kpp_11Jul22_PartII.root");
+
+  //files.push_back("../../../Outputs/Analysis/24Oct22_47Kpp_PartI.root");
+  //files.push_back("../../../Outputs/Analysis/24Oct22_47Kpp_PartII.root");
+
+  files.push_back("../../../Outputs/Analysis/25Oct22_47Kpp_PartI.root");
+  files.push_back("../../../Outputs/Analysis/25Oct22_47Kpp_PartII.root");
+  
 
   chain = Chain("PhysicsTree",files,true);
 }
@@ -152,65 +151,39 @@ void DrawParticleStates(TCanvas* canvas){
   
   canvas->Update();
   double max = canvas->GetUymax();
-  TLine *Sn = new TLine(4.644, 0.0, 4.644, max);
-    Sn->SetLineColor(kRed);
-    Sn->SetLineStyle(7);
-    Sn->Draw();
   TLine *gs = new TLine(0.000, 0.0, 0.000, max);
     gs->SetLineColor(kGreen);
     gs->SetLineStyle(7);
     gs->Draw();
+  TLine *Sn = new TLine(4.644, 0.0, 4.644, max);
+    Sn->SetLineColor(kRed);
+    Sn->SetLineStyle(7);
+    Sn->Draw();
 
-  TLine** lines = new TLine*[numPeaks];
-  for(int j = 0; j < numPeaks; j++){
-    lines[j] = new TLine(means[j],0.0,means[j],max);
-    lines[j]->SetLineStyle(8);
-    lines[j]->SetLineColor(kGray);
-    lines[j]->Draw();
+  
+/*  if(reactionName=="47K(d,p)"){
+    TLine** lines = new TLine*[numPeaks];
+    for(int j = 0; j < numPeaks; j++){
+      lines[j] = new TLine(means[j],0.0,means[j],max);
+      lines[j]->SetLineStyle(8);
+      lines[j]->SetLineColor(kGray);
+      lines[j]->Draw();
+    }
   }
-
-/*
-  TLine *l0143 = new TLine(0.143, 0.0, 0.143, max);
-    l0143->SetLineStyle(kDashed);
-    l0143->Draw();
-  TLine *l0728 = new TLine(0.728, 0.0, 0.728, max);
-    l0728->SetLineStyle(kDotted);
-    l0728->Draw();
-  TLine *l0968 = new TLine(0.968, 0.0, 0.968, max);
-    l0968->SetLineStyle(kDotted);
-    l0968->Draw();
-  TLine *l1410 = new TLine(1.410, 0.0, 1.410, max);
-    l1410->SetLineStyle(kDotted);
-    l1410->Draw();
-  TLine *l1981 = new TLine(1.981, 0.0, 1.981, max);
-    l1981->SetLineStyle(kDotted);
-    l1981->Draw("same");
-  TLine *l2410 = new TLine(2.410, 0.0, 2.410, max);
-    l2410->SetLineStyle(kDotted);
-    l2410->Draw("same");
-  TLine *l2907 = new TLine(2.907, 0.0, 2.907, max);
-    l2907->SetLineStyle(kDotted);
-    l2907->Draw("same");
-  TLine *l3200 = new TLine(3.2, 0.0, 3.2, max);
-    l3200->SetLineStyle(kDotted);
-    l3200->Draw("same");
-  TLine *l3605 = new TLine(3.605, 0.0, 3.605, max);
-    l3605->SetLineStyle(kDotted);
-    l3605->Draw("same");
-  TLine *l3800 = new TLine(3.792, 0.0, 3.792, max);
-    l3800->SetLineStyle(kDotted);
-    l3800->Draw("same");
-  TLine *l3870 = new TLine(3.876, 0.0, 3.876, max);
-    l3870->SetLineStyle(kDotted);
-    l3870->Draw("same");
-  TLine *l4100 = new TLine(4.1, 0.0, 4.1, max);
-    l4100->SetLineStyle(kDotted);
-    l4100->Draw("same");
- TLine *l4510 = new TLine(4.51, 0.0, 4.51, max);
-    l4510->SetLineStyle(kDotted);
-    l4510->Draw("same");
-
 */
+//  if(reactionName=="47K(d,t)"){
+    TLine *l1945 = new TLine(1.945, 0.0, 1.945, max);
+    l1945->SetLineStyle(kDashed);
+    l1945->Draw();
+ 
+    TLine *l2233 = new TLine(2.233, 0.0, 2.233, max);
+    l2233->SetLineStyle(kDashed);
+    l2233->Draw();
+
+    TLine *l3344 = new TLine(3.344, 0.0, 3.344, max);
+    l3344->SetLineStyle(kDashed);
+    l3344->Draw();
+//  }
 }
 
 void plot_kine(NPL::Reaction r, double Ex,Color_t c,int w, int s){
@@ -219,7 +192,7 @@ void plot_kine(NPL::Reaction r, double Ex,Color_t c,int w, int s){
   g->SetLineColor(c) ;
   g->SetLineStyle(s) ;
   g->SetLineWidth(w) ;
-  g->Draw("c");
+  g->Draw("c same");
 }
 
 void plot_state(double Ex,double max,Color_t c,int w, int s){
@@ -267,6 +240,9 @@ void Draw_1DGamma_DetGate(){
   string gate = timegate 
 	      + " && " + det_gate
 	      + " && " + exclBmDcy;
+  if(reactionName=="47K(d,t)"){
+    gate = gate + " && cutTritons && cutTime";
+  }
 
   TCanvas *cEg = new TCanvas("cEg","cEg",1000,1000);
   gStyle->SetOptStat(0);
@@ -366,18 +342,27 @@ void Load_1DParticle_SubPhaseSpace(){
 }
 
 void Draw_1DParticle(){
+  string gate2;
+  string gate3;
   string gate = timegate 
 	      + " && " + det_gate
               + " && Ex@.size()==1";
+  if(reactionName=="47K(d,t)"){
+    gate = gate + " && cutTritons && cutTime";
+  }
 
   TCanvas *cEx = new TCanvas("cEx","cEx",1000,1000);
-  chain->Draw("Ex>>Ep(600,-15,15)", gate.c_str(),"");
+  chain->Draw("Ex>>Ep(400,-2,8)", gate.c_str(),"");
   TH1F* Ep = (TH1F*) gDirectory->Get("Ep");
-//  Ep->SetTitle("Ex");
   Ep->GetXaxis()->SetTitle("Ex [MeV]");
-  Ep->GetYaxis()->SetTitle("Counts / 0.05 MeV");
+  Ep->GetYaxis()->SetTitle("Counts / 0.025 MeV");
 
-  DrawParticleStates(cEx);
+  if(reactionName=="47K(d,t)"){
+    Ep->Rebin(2); 
+    Ep->GetYaxis()->SetTitle("Counts / 0.05 MeV");
+  }
+
+  if(reactionName=="47K(d,p)"){DrawParticleStates(cEx);}
 }
 
 void Load_2DParticleGamma(){
@@ -392,6 +377,9 @@ void Draw_2DParticleGamma(){
   string gate = timegate 
 	      + " && " + det_gate
               + " && Ex@.size()==1";
+  if(reactionName=="47K(d,t)"){
+    gate = gate + " && cutTritons && cutTime";
+  }
 
   TCanvas *cExEg = new TCanvas("cExEg","cExEg",1000,1000);
   gStyle->SetOptStat(0);
@@ -399,24 +387,24 @@ void Draw_2DParticleGamma(){
   chain->Draw("Ex:AddBack_EDC>>ExEg(5000,0,5,3000,-15,15)", gate.c_str(), "");
   TH1F* ExEg = (TH1F*) gDirectory->Get("ExEg");
   ExEg->SetTitle("");
-  //ExEg->GetXaxis()->SetTitle("Ex [MeV]");
   ExEg->GetYaxis()->SetTitle("Ex [MeV]");
-  //ExEg->GetYaxis()->SetTitle("Eg [MeV]");
   ExEg->GetXaxis()->SetTitle("E_{#gamma} [MeV]");
   ExEg->GetYaxis()->SetRangeUser(-1.0,7.0);
   ExEg->Draw();
+  if(reactionName=="47K(d,p)"){
+    TLine *Sn = new TLine(0,4.644,4.644,4.644);
+      Sn->SetLineColor(kRed);Sn->SetLineStyle(2);
+      Sn->Draw("same");
+    TLatex *TSn = new TLatex(.5,.5,"S_{n}");
+      TSn->SetTextColor(kRed);
+      TSn->SetTextSize(0.05);
+      TSn->SetX(2.50);
+      TSn->SetY(4.90);
+      TSn->Draw("same");
+  }
   TLine *XeqY = new TLine(0,0,5,5);
     XeqY->SetLineColor(kRed);
     XeqY->Draw("same");
-  TLine *Sn = new TLine(0,4.644,4.644,4.644);
-    Sn->SetLineColor(kRed);Sn->SetLineStyle(2);
-    Sn->Draw("same");
-  TLatex *TSn = new TLatex(.5,.5,"S_{n}");
-    TSn->SetTextColor(kRed);
-    TSn->SetTextSize(0.05);
-    TSn->SetX(2.50);
-    TSn->SetY(4.90);
-    TSn->Draw("same");
   TLatex *Texeg = new TLatex(.5,.5,"Ex = E_{#gamma}");
     Texeg->SetTextColor(kRed);
     Texeg->SetTextSize(0.05);
@@ -496,10 +484,13 @@ void GateGamma_SeeParticle(double gamma, double width, double binsize){
       + to_string(gamma)
       + ")<"
       + to_string(width);
+  if(reactionName=="47K(d,t)"){
+    gating = gating + " && cutTritons && cutTime";
+  }
 
   string title = to_string(gamma-width)+" < Eg < "+to_string(gamma+width);
   string ytitle = "Counts / " + to_string(binsize) + " MeV";
-  string draw = "Ex>>ExGate(" + to_string(30.0/binsize) + ",-15,15)";
+  string draw = "Ex>>ExGate(" + to_string(10.0/binsize) + ",-2,8)";
 
   TCanvas *cEx_Gate = new TCanvas("cEx_Gate","cEx_Gate",1000,1000);
   //chain->Draw("Ex>>ExGate(60,-1,5)",gating.c_str(),"colz");
@@ -508,8 +499,8 @@ void GateGamma_SeeParticle(double gamma, double width, double binsize){
   ExGate->GetXaxis()->SetTitle("Ex [MeV]");
   ExGate->GetYaxis()->SetTitle(ytitle.c_str());
   ExGate->SetTitle(title.c_str());
-
-  DrawParticleStates(cEx_Gate);
+  
+  if(reactionName=="47K(d,p)"){DrawParticleStates(cEx_Gate);}
 }
 
 void GateGamma_SeeParticle_WithBG(double gamma, double width, double bg){
@@ -521,12 +512,16 @@ void GateGamma_SeeParticle_WithBG(double gamma, double width, double bg){
       + to_string(bg)
       + ")<"
       + to_string(width);
+  if(reactionName=="47K(d,t)"){
+    gating = gating + " && cutTritons && cutTime";
+    bggate = bggate + " && cutTritons && cutTime";
+  }
 
   string title = "Gate: "+to_string(gamma-width)+" to "+to_string(gamma+width)+"."
 	  + "  BG: "+to_string(bg-width)+" to "+to_string(bg+width)+".";
   
   TCanvas *cEx_Gate = new TCanvas("cEx_Gate","cEx_Gate",1000,1000);
-  chain->Draw("Ex>>ExGate(600,-15,15)",gating.c_str(),"");
+  chain->Draw("Ex>>ExGate(200,-2,8)",gating.c_str(),"");
   //chain->Draw("Ex>>ExGate(120,-1,5)",gating.c_str(),"");
   TH1F* ExGate = (TH1F*) gDirectory->Get("ExGate");
   ExGate->GetXaxis()->SetTitle("Ex [MeV]");
@@ -556,6 +551,10 @@ void GateGamma_SeeParticle_WithBG(double gamma, double width, double bg, double 
       + to_string(bg)
       + ")<"
       + to_string(widthbg);
+  if(reactionName=="47K(d,t)"){
+    gating = gating + " && cutTritons && cutTime";
+    bggate = bggate + " && cutTritons && cutTime";
+  }
 
   double ratio = width/widthbg;
 
@@ -563,7 +562,7 @@ void GateGamma_SeeParticle_WithBG(double gamma, double width, double bg, double 
 	  + "  BG: "+to_string(bg-width)+" to "+to_string(bg+width)+".";
   
   TCanvas *cEx_Gate = new TCanvas("cEx_Gate","cEx_Gate",1000,1000);
-  chain->Draw("Ex>>ExGate(600,-15,15)",gating.c_str(),"");
+  chain->Draw("Ex>>ExGate(200,-2,8)",gating.c_str(),"");
   //chain->Draw("Ex>>ExGate(120,-1,5)",gating.c_str(),"");
   TH1F* ExGate = (TH1F*) gDirectory->Get("ExGate");
   ExGate->GetXaxis()->SetTitle("Ex [MeV]");
@@ -574,7 +573,7 @@ void GateGamma_SeeParticle_WithBG(double gamma, double width, double bg, double 
   ExGate->SetFillStyle(3154);
   ExGate->SetTitle(title.c_str());
 
-  chain->Draw("Ex>>ExBG(600,-15,15)",bggate.c_str(),"same");
+  chain->Draw("Ex>>ExBG(200,-2,8)",bggate.c_str(),"same");
   //chain->Draw("Ex>>ExBG(120,-1,5)",bggate.c_str(),"same");
   TH1F* ExBG = (TH1F*) gDirectory->Get("ExBG");
   ExBG->Scale(ratio);
@@ -593,6 +592,9 @@ void GateParticle_SeeGamma(double particle, double width){
       + to_string(particle)
       + ")<"
       + to_string(width);
+  if(reactionName=="47K(d,t)"){
+    gating = gating + " && cutTritons && cutTime";
+  }
 
   string title = to_string(particle-width)+" < Ex < "+to_string(particle+width);
   
@@ -625,6 +627,10 @@ void GateParticle_SeeGamma_WithBG(double particle, double width, double bg, doub
       + to_string(bg)
       + ")<"
       + to_string(width2);
+  if(reactionName=="47K(d,t)"){
+    gating = gating + " && cutTritons && cutTime";
+    bggate = bggate + " && cutTritons && cutTime";
+  }
 
   double ratio = width/width2;
 
@@ -1135,11 +1141,17 @@ void ExPhiLab_ForPoster(){
 }
 
 void ExThetaLab(){
+  string gate = timegate 
+	      + " && " + det_gate
+              + " && Ex@.size()==1";
+  if(reactionName=="47K(d,t)"){
+    gate = gate + " && cutTritons && cutTime";
+  }
+
   TCanvas *diagnoseTheta = new TCanvas("diagnoseTheta","diagnoseTheta",1000,1000);
   chain->Draw(
-    "Ex:ThetaLab>>thetaHist(120,100,160,180,-1,8)", 
-    "abs(T_MUGAST_VAMOS-2700)<400 && Mugast.TelescopeNumber>0 && Mugast.TelescopeNumber<8",
-    "colz");
+    "Ex:ThetaLab>>thetaHist(360,0,180,180,-1,8)", 
+    gate.c_str(), "colz");
   TH1F* thetaHist = (TH1F*) gDirectory->Get("thetaHist");  
   thetaHist->GetXaxis()->SetTitle("#theta_{lab} [deg]");
   thetaHist->GetYaxis()->SetTitle("Ex [MeV]");
@@ -1189,11 +1201,16 @@ void ExThetaLab(){
 
 void ExThetaLab(double gamma, double width){
   TCanvas *diagnoseTheta = new TCanvas("diagnoseTheta","diagnoseTheta",1000,1000);
+  string gate = timegate 
+	      + " && " + det_gate
+              + " && Ex@.size()==1";
+  if(reactionName=="47K(d,t)"){
+    gate = gate + " && cutTritons && cutTime";
+  }
+  gate = gate + "&& abs(AddBack_EDC-"
+	      + to_string(gamma) + ") < " + to_string(width); 
 
-  string gating = "abs(T_MUGAST_VAMOS-2700)<400 && Mugast.TelescopeNumber>0 && Mugast.TelescopeNumber<8 && abs(AddBack_EDC-"
-	        + to_string(gamma) + ") < " + to_string(width); 
-
-  chain->Draw("Ex:ThetaLab>>thetaHist(60,100,160,100,-1,9)", gating.c_str(), "colz");
+  chain->Draw("Ex:ThetaLab>>thetaHist(360,0,180,100,-1,9)", gate.c_str(), "colz");
   TH1F* thetaHist = (TH1F*) gDirectory->Get("thetaHist");  
   thetaHist->GetXaxis()->SetTitle("Theta (degrees)");
   thetaHist->GetYaxis()->SetTitle("Ex [MeV]");
@@ -1240,53 +1257,54 @@ void ExThetaLab(double gamma, double width){
 }
 
 void ELabThetaLab(){
-  TCanvas *cELabTLaab = new TCanvas("cELabTLab","cELabTLab",1000,1000);
+  TCanvas *cELabTLab = new TCanvas("cELabTLab","cELabTLab",1000,1000);
   gStyle->SetOptStat(0);
 
   string gate = timegate 
 	      + " && " + det_gate;
   if(reactionName=="47K(d,t)"){
-    gate = gate + " && cutTritons";
+    gate = gate + " && cutTritons && cutTime";
   }
 
 
-cout << "test" << endl;
   chain->Draw("ELab:ThetaLab>>hKine(360,0,180,500,0,10)",gate.c_str(),"col");
-cout << "test2" << endl;
   TH2F* hKine = (TH2F*) gDirectory->Get("hKine");
-cout << "test3" << endl;
   hKine->SetTitle("");
   hKine->GetXaxis()->SetTitle("#theta_{lab} [deg]");
   hKine->GetYaxis()->SetTitle("E_{lab} [MeV]");
-  plot_kine(Kdt, 0.000, kBlack, 2, 1);
+
+  plot_kine(K12C12C, 0.000, kRed, 2, 1);
+
+  if(reactionName=="47K(d,t)"){
+    cout << "  Trying to draw lines for " << reactionName << endl;
+    plot_kine(Kdt, 0.000, kBlack, 2, 1);
+    plot_kine(Kdt, 1.944, kBlack, 2, 1);
+    plot_kine(Kdt, 3.340, kBlack, 2, 1);
+    plot_kine(Kdt, 4.3  , kBlack, 2, 1);
+    plot_kine(Kdt, 5.8  , kBlack, 2, 1);
+  }
   
-  plot_kine(Kdd, 0.000, kRed, 2, 1);
-  plot_kine(Kpp, 0.000, kRed, 2, 1);
+  if(reactionName=="47K(d,d)"){
+    cout << "  Trying to draw lines for " << reactionName << endl;
+    plot_kine(Kdd, 0.000, kBlack, 2, 1);
+    plot_kine(Kpp, 0.000, kBlack, 2, 6);
+  }
   
-  plot_kine(Kdp, 0.000, kBlack, 2, 1);
-  plot_kine(Kdp, 4.644, kBlack, 2, 1);
+  if(reactionName=="47K(p,p)"){
+    cout << "  Trying to draw lines for " << reactionName << endl;
+    plot_kine(Kdd, 0.000, kBlack, 2, 6);
+    plot_kine(Kpp, 0.000, kBlack, 2, 1);
+  }
 
-  /**
-  plot_kine(Kdp, 0.143, kRed, 1, 2);
-  plot_kine(Kdp, 0.968, kRed, 1, 2);
-  plot_kine(Kdp, 1.410, kRed, 1, 2);
-  plot_kine(Kdp, 1.981, kRed, 1, 2);
-  plot_kine(Kdp, 2.410, kRed, 1, 2);
-  plot_kine(Kdp, 2.907, kRed, 1, 2);
-  plot_kine(Kdp, 3.600, kRed, 1, 2);
-  plot_kine(Kdp, 3.8  , kRed, 1, 2);
-  plot_kine(Kdp, 4.3  , kRed, 1, 2);
-  plot_kine(Kdp, 4.507, kRed, 1, 2);
-  **/
-
-  plot_kine(Kdd, 0.000, kBlack, 2, 9);
-  plot_kine(Kpp, 0.000, kBlack, 2, 9);
-
-  plot_kine(Cadp, 0.000, kRed, 2, 1);
-  plot_kine(Tidp, 0.000, kBlue, 2, 1);
-  plot_kine(Scdp, 0.000, kGreen, 2, 1);
-  plot_kine(K46dp, 0.000, kViolet, 2, 1);
-  //plot_kine(Tidp, 5.652, kBlack, 2, 6); //strongest populated state according to PDBarnes(1965)
+  if(reactionName=="47K(d,p)"){
+    cout << "  Trying to draw lines for " << reactionName << endl;
+    plot_kine(Kdp, 0.000, kBlack, 2, 1);
+    plot_kine(Kdp, 4.644, kBlack, 2, 1);
+    plot_kine(Cadp, 0.000, kRed, 2, 1);
+    plot_kine(Tidp, 0.000, kBlue, 2, 1);
+    plot_kine(Scdp, 0.000, kGreen, 2, 1);
+    plot_kine(K46dp, 0.000, kViolet, 2, 1);
+  }
 }
 
 void XYMust2(){
@@ -1747,8 +1765,11 @@ void ExTheta_Analysis(double gamma, double width){
               + " && Ex@.size()==1"
               + " && abs(AddBack_EDC-"
 	      + to_string(gamma) + ")<"
-	      + to_string(width)
-	      ;
+	      + to_string(width);
+  if(reactionName=="47K(d,t)"){
+    gate = gate + " && cutTritons && cutTime";
+  }
+
   string gateLow = gate + " && abs(ThetaLab-117.5)<12.5";
   string gateHigh = gate + " && abs(ThetaLab-142.5)<12.5";
 
@@ -1884,7 +1905,7 @@ void ElasticsGate(double EMin, double EMax){
 	       + ")< " 
 	       + to_string(width);
 
-  chain->Draw("ThetaLab>>hist(160,50,90)", gate.c_str(), "");
+  chain->Draw("ThetaLab>>hist(80,50,90)", gate.c_str(), "");
 }
 
 void GateThetaCM(double minTheta, double maxTheta, double binsize){
@@ -1960,8 +1981,89 @@ void GateThetaLab_AllOverlaid(){
 }
 
 void GateThetaLab_MultiWrite(double startTheta, double finishTheta, int numGates, double binsize){
+  string core = timegate 
+	      + " && " + det_gate;
+  if(reactionName=="47K(d,t)"){
+    core = core + " && cutTritons && cutTime";
+  }
+  core = core + " && Ex@.size()==1 && ThetaLab > ";
+
+  string ytitle = "Counts / " + to_string(binsize) + " MeV";
+  double gatesize = (finishTheta-startTheta)/numGates;
+  TList* list = new TList();
+
+  for (int i=0; i<numGates; i++){
+    cout << GREEN << "Writing gate " << i+1 << "/" << numGates << RESET << endl;
+    double minTheta = startTheta + (i * gatesize);
+    string title = to_string((int) minTheta)+" < ThetaLab < "+to_string((int) (minTheta+gatesize));
+    string gating = core
+        + to_string(minTheta)
+        + " && ThetaLab < "
+        + to_string(minTheta+gatesize);
+    string histname = "cThetaLabGate_" + to_string((int) minTheta) + "-" + to_string((int) (minTheta+gatesize));
+    string draw = "Ex>>" + histname + "(" + to_string(30.0/binsize) + ",-15,15)";
+
+    TCanvas *cEx_ThetaLabGate = new TCanvas(histname.c_str(),histname.c_str(),1000,1000);
+    chain->Draw(draw.c_str(),gating.c_str(),"colz");
+    TH1F* Ex_ThetaLabGate = (TH1F*) gDirectory->Get(histname.c_str());
+    Ex_ThetaLabGate->GetXaxis()->SetTitle("Ex [MeV]");
+    Ex_ThetaLabGate->GetYaxis()->SetTitle(ytitle.c_str());
+    Ex_ThetaLabGate->Sumw2();
+    Ex_ThetaLabGate->SetTitle(title.c_str());
+    list->Add(Ex_ThetaLabGate);
+    delete cEx_ThetaLabGate;
+  }
+
+  TFile* file = new TFile("GateThetaLabHistograms.root","RECREATE");
+  list->Write("GateThetaLabHistograms",TObject::kSingleKey);
+  file->ls();
+}
+
+void GateThetaCM_MultiWrite(double startTheta, double finishTheta, int numGates, double binsize){
+  string core = timegate 
+	      + " && " + det_gate;
+  if(reactionName=="47K(d,t)"){
+    core = core + " && cutTritons && cutTime";
+  }
+  core = core + " && Ex@.size()==1 && ThetaCM > ";
+
+  string ytitle = "Counts / " + to_string(binsize) + " MeV";
+  double gatesize = (finishTheta-startTheta)/numGates;
+  TList* list = new TList();
+
+  for (int i=0; i<numGates; i++){
+    cout << GREEN << "Writing gate " << i+1 << "/" << numGates << RESET << endl;
+    double minTheta = startTheta + (i * gatesize);
+    string title = to_string((int) minTheta)+" < ThetaCM < "+to_string((int) (minTheta+gatesize));
+    string gating = core
+        + to_string(minTheta)
+        + " && ThetaCM < "
+        + to_string(minTheta+gatesize);
+    string histname = "cThetaCMGate_" + to_string((int) minTheta) + "-" + to_string((int) (minTheta+gatesize));
+    string draw = "Ex>>" + histname + "(" + to_string(30.0/binsize) + ",-15,15)";
+
+    TCanvas *cEx_ThetaCMGate = new TCanvas(histname.c_str(),histname.c_str(),1000,1000);
+    chain->Draw(draw.c_str(),gating.c_str(),"colz");
+    TH1F* Ex_ThetaCMGate = (TH1F*) gDirectory->Get(histname.c_str());
+    Ex_ThetaCMGate->GetXaxis()->SetTitle("Ex [MeV]");
+    Ex_ThetaCMGate->GetYaxis()->SetTitle(ytitle.c_str());
+    Ex_ThetaCMGate->Sumw2();
+    Ex_ThetaCMGate->SetTitle(title.c_str());
+    list->Add(Ex_ThetaCMGate);
+    delete cEx_ThetaCMGate;
+  }
+
+  TFile* file = new TFile("GateThetaCMHistograms.root","RECREATE");
+  list->Write("GateThetaCMHistograms",TObject::kSingleKey);
+  file->ls();
+}
+
+
+
+void GateThetaLab_MultiWrite(double startTheta, double finishTheta, int numGates, double binsize, int MGX){
    string core = timegate 
 	      + " && " + det_gate
+	      + " && Mugast.TelescopeNumber==" + to_string(MGX)
               + " && Ex@.size()==1 && ThetaLab > ";
 // string core = "abs(T_MUGAST_VAMOS-2700)<400 && Mugast.TelescopeNumber>0 && Mugast.TelescopeNumber<8 && ThetaLab > ";
   string ytitle = "Counts / " + to_string(binsize) + " MeV";
@@ -1989,8 +2091,8 @@ void GateThetaLab_MultiWrite(double startTheta, double finishTheta, int numGates
     delete cEx_ThetaLabGate;
   }
 
-  TFile* file = new TFile("GateThetaLabHistograms.root","RECREATE");
-  list->Write("GateThetaLabHistograms",TObject::kSingleKey);
+  TFile* file = new TFile("GateThetaLabHistograms_MGX.root","RECREATE");
+  list->Write("GateThetaLabHistograms_MGX",TObject::kSingleKey);
   file->ls();
 }
 
@@ -2031,10 +2133,16 @@ void GateThetaLab_MultiWrite(double startTheta, double finishTheta, int numGates
 }
 
 void CompareThetaLabGatesFromFile(){
-  TFile* oldF = new TFile("GateThetaLabHistograms_11Apr22_20angles.root","READ");
+  //TFile* oldF = new TFile("GateThetaLabHistograms_11Apr22_20angles.root","READ");
+  //TFile* oldF = new TFile("GateThetaLabHistograms_11Jul22.root","READ");
+  //TFile* oldF = new TFile("GateThetaLabHistograms_29Aug22_TrueStripRemoval_0p05.root","READ");
+  TFile* oldF = new TFile("GateThetaLabHistograms_14Oct22_bin0p05.root","READ");
   TList* oldL = (TList*) oldF->FindObjectAny("GateThetaLabHistograms");
   
-  TFile* newF = new TFile("GateThetaLabHistograms_11Jul22.root","READ");
+  //TFile* newF = new TFile("GateThetaLabHistograms_11Jul22.root","READ");
+  //TFile* newF = new TFile("GateThetaLabHistograms_Test2um.root","READ");
+  //TFile* newF = new TFile("GateThetaLabHistograms_30Aug22_2p06um.root","READ");
+  TFile* newF = new TFile("GateThetaLabHistograms_14Oct22_2_bin0p05.root","READ");
   TList* newL = (TList*) newF->FindObjectAny("GateThetaLabHistograms");
 
   double minTheta=105.;
@@ -2066,11 +2174,13 @@ void CompareThetaLabGatesFromFile(){
     //would be faster to set some of these on just the last one but speed not issue here
     cOldNew->cd(1);
     oldH->SetLineColor(30+i);
-    oldH->Rebin(2);
+    //oldH->Rebin(2);
     oldH->GetYaxis()->SetTitle("Counts / 0.100000 MeV");
     oldH->GetXaxis()->SetRangeUser(-1,7);
     oldH->GetYaxis()->SetRangeUser(0,400);
-    oldH->SetTitle("08Nov22: 1.3008 um CD2");
+    //oldH->SetTitle("08Nov22: 1.3008 um CD2");
+    //oldH->SetTitle("11Jul22: 2.8798 um CD2");
+    oldH->SetTitle("14Oct22: 2.8798 um CD2");
     oldH->Draw("HIST SAME");
 
     cOldNew->cd(2);
@@ -2092,7 +2202,9 @@ void CompareThetaLabGatesFromFile(){
     newH->GetXaxis()->SetRangeUser(-1,7);
     newH->GetYaxis()->SetRangeUser(0,400);
     newH->SetLineColor(30+i);
-    newH->SetTitle("11Jul22: 2.8798 um CD2");
+    //newH->SetTitle("11Jul22: 2.8798 um CD2");
+    //newH->SetTitle("AugTest: 2.000 um CD2");
+    newH->SetTitle("14Oct22_2: 2.9992 um CD2");
     newH->Draw("HIST SAME");
 
     cOldNew->cd(5);
@@ -2111,6 +2223,77 @@ void CompareThetaLabGatesFromFile(){
     newH2->Draw("HIST SAME");
 
   }
+
+
+}
+
+void CompareTritonsFomFile(){
+  string gate = timegate 
+	      + " && " + det_gate
+              + " && cutTritons && cutTime";
+  string gate2 = gate + " && Ex@.size()==1 && abs(AddBack_EDC-1.94)<0.05";
+
+  /* Push MM1-4 +190mm in Z */
+  vector<string> f190;
+  f190.push_back("../../../Outputs/Analysis/47Kdt_17Aug22_MM+190mm_PartI.root");
+  f190.push_back("../../../Outputs/Analysis/47Kdt_17Aug22_MM+190mm_PartII.root");
+  TChain* c190 = Chain("PhysicsTree",f190,true);
+
+  /* Push MM1-4 +200mm in Z */
+  vector<string> f200;
+  f200.push_back("../../../Outputs/Analysis/47Kdt_17Aug22_MM+200mm_PartI.root");
+  f200.push_back("../../../Outputs/Analysis/47Kdt_17Aug22_MM+200mm_PartII.root");
+  TChain* c200 = Chain("PhysicsTree",f200,true);
+
+  /* Push MM1-4 +210mm in Z */
+  vector<string> f210;
+  f210.push_back("../../../Outputs/Analysis/47Kdt_17Aug22_MM+210mm_PartI.root");
+  f210.push_back("../../../Outputs/Analysis/47Kdt_17Aug22_MM+210mm_PartII.root");
+  TChain* c210 = Chain("PhysicsTree",f210,true);
+
+  auto cTritons = new TCanvas("cTritons","cTritons",1000,1000);
+  
+  c190->Draw("Ex>>t190(200,-2,8)", gate2.c_str(),"");
+  TH1F* t190 = (TH1F*) gDirectory->Get("t190");
+  t190->GetXaxis()->SetTitle("Ex [MeV]");
+  t190->GetYaxis()->SetTitle("Counts / 0.05 MeV");
+  t190->SetLineColor(kRed); 
+
+  c200->Draw("Ex>>t200(200,-2,8)", gate2.c_str(),"");
+  TH1F* t200 = (TH1F*) gDirectory->Get("t200");
+  t200->SetLineColor(kBlue); 
+
+  c210->Draw("Ex>>t210(200,-2,8)", gate2.c_str(),"");
+  TH1F* t210 = (TH1F*) gDirectory->Get("t210");
+  t210->SetLineColor(kGreen);
+
+  t190->Draw();
+  t200->Draw("same");
+  t210->Draw("same");
+
+  auto cTest = new TCanvas("cTest","cTest",1000,1000);
+  cTest->Divide(3);
+
+  cTest->cd(1);
+  c190->Draw("ELab:ThetaLab>>h190(90,0,45,500,0,10)",gate.c_str(),"colz");
+  TH2F* h190 = (TH2F*) gDirectory->Get("h190");
+  plot_kine(Kdt, 0.000, kBlack, 2, 1);
+  plot_kine(Kdt, 1.944, kBlack, 2, 5);
+  plot_kine(Kdt, 3.290, kBlack, 2, 5);
+
+  cTest->cd(2);
+  c200->Draw("ELab:ThetaLab>>h200(90,0,45,500,0,10)",gate.c_str(),"colz");
+  TH2F* h200 = (TH2F*) gDirectory->Get("h200");
+  plot_kine(Kdt, 0.000, kBlack, 2, 1);
+  plot_kine(Kdt, 1.944, kBlack, 2, 5);
+  plot_kine(Kdt, 3.290, kBlack, 2, 5);
+
+  cTest->cd(3);
+  c210->Draw("ELab:ThetaLab>>h210(90,0,45,500,0,10)",gate.c_str(),"colz");
+  TH2F* h210 = (TH2F*) gDirectory->Get("h210");
+  plot_kine(Kdt, 0.000, kBlack, 2, 1);
+  plot_kine(Kdt, 1.944, kBlack, 2, 5);
+  plot_kine(Kdt, 3.290, kBlack, 2, 5);
 
 
 }
@@ -2283,7 +2466,6 @@ void ggLoad(TTree* chain, TH2F* h){
    }//for i
 }
 
-//void gggLoad(TTree* chain, TH3F* h){
 void gggLoad(TTree* chain, THnSparseF* h){
 
 cout << "THIS IS OLD!!!! UPDATE WITH THE BEAM EXCLUSION!!!" << endl;
@@ -2610,16 +2792,6 @@ void Figure_GateGamma_SeeParticle(double gamma, double width, double bg, double 
   bgH->Draw("SAME");
 
 }
-
-
-
-
-
-
-
-
-
-
 
 void Figure_TopGamma_BottomParticle(double gammaBinWidth, double particleBinWidth){
   string gating = timegate + "&&" + det_gate + " && Ex@.size()==1";

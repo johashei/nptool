@@ -1,7 +1,7 @@
 /* Predefine functions */
 vector<vector<double>> GetExpDiffCross(double Energy);
-TH1F* PullThetaLabHist(int i, double minTheta, double gatesize);
-TH1F* PullPhaseSpaceHist(int i, double minTheta, double gatesize);
+TH1F* PullThetaCMHist(int i, double minTheta, double gatesize);
+//TH1F* PullPhaseSpaceHist(int i, double minTheta, double gatesize);
 void Scale(TGraph* g , TGraphErrors* ex);
 TGraph* TWOFNR(double E, double J0, double J, double n, double l, double j);
 double ToMininize(const double* parameter);
@@ -21,14 +21,13 @@ bool loud = 1;
 /* Scale method toggle */
 bool scaleTogether = 1;
 
-/* Strings for image */
+/* String for image */
 string orbitalname;
 string orbital;
 
 /* Strings for SolidAngle input file */
 string statename;
 string inputdate;
-
 
 ////////////////////////////////////////////////////////////////////////////////
 void canclone(TCanvas* major, int padNum, string name){
@@ -89,18 +88,6 @@ void CS_Diagnosis(){
 void CS(){
 /* Overload function */
   cout << "- CS(stateE, stateSp, orb_l, orb_j, nodes) "<< endl;
-  cout << "---- 0.143, p3/2 = CS(0.143, 2, 1, 1.5) "<< endl;
-  cout << "---- 0.279, p3/2 = CS(0.279, 2, 1, 1.5) "<< endl;
-  cout << "---- 0.728, f7/2 = CS(0.728, 3, 3, 3.5) "<< endl;
-  cout << "---- 0.968, p1/2 = CS(0.968, 0, 1, 0.5) "<< endl;
-  cout << "---- 1.410, p3/2 = CS(1.410, 1, 1, 1.5) "<< endl;
-  cout << "---- 1.981, p3/2 = CS(1.981, 1, 1, 0.5) "<< endl;
-  cout << "---- 2.410, p3/2 = CS(2.410, 0, 1, 0.5) "<< endl;
-  cout << "---- 3.2  , f7/2 = CS(3.2  , 3, 3, 3.5) "<< endl;
-  cout << "---- 3.6  , f5/2 = CS(3.6  , 3, 3, 2.5) "<< endl;
-  cout << "---- 3.8  , f5/2 = CS(3.8  , 3, 3, 2.5) "<< endl;
-  cout << "---- 4.1  , f5/2 = CS(4.1  , 3, 3, 2.5) "<< endl;
-  cout << "---- 4.4  , f5/2 = CS(4.4  , 3, 3, 2.5) "<< endl;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -108,33 +95,34 @@ void CS(double Energy, double Spin, double spdf, double angmom){
   // p3/2 -> spdf = 1, angmom = 1.5
   // J0 is incident spin, which is 47K g.s. therefore J0 = 1/2
   double J0 = 0.5;
-  //double ElasticNorm = 5.8, ElasticNormErr = 1.3; // DeuteronNorm in elastics, 5.8 +- 1.3
-  //double ElasticNorm = 2.70, ElasticNormErr = 0.46; // For thicker 
-  //double ElasticNorm = 2.8, ElasticNormErr = 0.7; // DeuteronNorm in elastics, 2.8 +- 0.7
-  //double ElasticNorm = 2.363, ElasticNormErr = 0.000; // DeuteronNorm in elastics, reconstructed from determined thickness
-  //double ElasticNorm = 3.7, ElasticNormErr = 0.000; // Estimated 'goal' normalization
-
+  
   double ElasticNorm = 0.000220, ElasticNormErr = 0.000; //14Oct22
   inputdate = "18Oct22";
 
+  // Extract spin orbit name
   orbitalname.clear();
   orbital.clear();
-  if(spdf==1){
+  if(spdf==0){
     if(angmom==0.5){
-      orbitalname="p_{1/2}";
-      orbital="p12";
-    } else if (angmom==1.5){
-      orbitalname="p_{3/2}";
-      orbital="p32";
+      orbitalname="s_{1/2}";
+      orbital="s12";
     } else { 
-      orbitalname;
+      orbitalname="?????";
+      orbital="???";
+    }
+  } else if (spdf==2){
+    if(angmom==1.5){
+      orbitalname="d_{3/2}";
+      orbital="d32";
+    } else if (angmom==2.5) {
+      orbitalname="d_{5/2}";
+      orbital="d52";
+    } else { 
+      orbitalname="?????";
       orbital="???";
     }
   } else if (spdf==3){
-    if(angmom==2.5){
-      orbitalname="f_{5/2}";
-      orbital="f52";
-    } else if (angmom==3.5) {
+    if(angmom==3.5){
       orbitalname="f_{7/2}";
       orbital="f72";
     } else { 
@@ -146,17 +134,12 @@ void CS(double Energy, double Spin, double spdf, double angmom){
     orbital="???";
   }
 
-  /* Reduce by factor of 10,000 */
-  //ElasticNorm /= 10000.;
-  ////ElasticNorm /= 1000.;
-  //ElasticNormErr /= 10000.;
-  ////ElasticNormErr /= 1000.;
+  // Number of nodes
   double nodes;
-
-  if(spdf==1){
+  if(spdf==0){
     nodes=1;
   }
-  else if(spdf==3){
+  else if(spdf==3 || spdf == 2){
     nodes=0;
   }
   else{
@@ -176,9 +159,9 @@ void CS(double Energy, double Spin, double spdf, double angmom){
   /* numpeaks and Energy[] defined globally in KnownPeakFitter.h */
   bool found = 0;
   for(int i=0;i<numPeaks;i++){
-    if(abs(Energy-means[i])<0.01){
+    if(abs(Energy-means_dt[i])<0.01){
       cout << "========================================================" << endl;
-      cout << "Identified as state #" << i << ", E = " << means[i] << endl;
+      cout << "Identified as state #" << i << ", E = " << means_dt[i] << endl;
       indexE = i;
       found = 1;
       stringstream ss;
@@ -193,19 +176,11 @@ void CS(double Energy, double Spin, double spdf, double angmom){
   }
 
   /* Solid Angle (from simulation) */
-  /* ADD OPTION TO CHANGE SOLID ANGLE FILE DEPENDING ON PEAK!!!!*/
-  //auto file = new TFile("../SolidAngle_HistFile_47Kdp_26May22_v2_0143.root");
-  //auto file = new TFile("../SolidAngle_HistFile_19Jul22_47Kdp_0p000.root");
-  //auto file = new TFile("../SolidAngle_HistFile_19Jul22_47Kdp_1p981.root");
-  //auto file = new TFile("../SolidAngle_HistFile_19Jul22_47Kdp_4p393.root");
-  //auto file = new TFile("../SolidAngle_HistFile_30Jul22_47Kdp_0p000_ThetaBin0p5.root");
-  //auto file = new TFile("SolidAngle_HistFiles/SolidAngle_HistFile_10Aug22_TrueStripRemoval.root");
-
-  string backupFileName = "SolidAngle_HistFiles/SolidAngle_HistFile_10Aug22_TrueStripRemoval.root";
-
+  //auto file = new TFile("../SolidAngle_HistFile_18Oct22_47Kdt.root");
+  string backupFileName = "SolidAngle_HistFiles/SolidAngle_HistFile_18Oct22_47Kdt.root";
   string saFileName = "SolidAngle_HistFiles/SAHF_";
     saFileName.append(inputdate);
-    saFileName.append("_47Kdp_");
+    saFileName.append("_47Kdt_");
     saFileName.append(statename);
     saFileName.append(".root");
 
@@ -224,22 +199,16 @@ void CS(double Energy, double Spin, double spdf, double angmom){
     cout << BOLDRED << "FAILED TO OPEN MAIN OR BACKUP SOLID ANGLE FILE" << endl;
     cout << RED << "Check SolidAngle file exists..." << RESET << endl;
   }
-  //cout << "MADE IT OUT" << endl;
 
-
-
-  //auto file = new TFile("../SolidAngle_HistFile_New.root");
-  /* ADD OPTION TO CHANGE SOLID ANGLE FILE DEPENDING ON PEAK!!!!*/
-  TH1F* SolidAngle = (TH1F*) file->FindObjectAny("SolidAngle_Lab_MG");
-  //cout << BLUE << "MADE IT HERE" << endl;
+  TH1F* SolidAngle = (TH1F*) file->FindObjectAny("SolidAngle_CM_MM");
   TCanvas* c_SolidAngle = new TCanvas("c_SolidAngle","c_SolidAngle",1000,1000);
   SolidAngle->Draw("HIST");
-  SolidAngle->GetXaxis()->SetRangeUser(100.,160.);
+  SolidAngle->GetXaxis()->SetRangeUser(00.,30.);
   /* (canvas deleted after Area/SA calculation) */
  
   /* Area of experimental peaks */
   TCanvas* c_PeakArea = new TCanvas("c_PeakArea","c_PeakArea",1000,1000);
-  vector<vector<double>> areaArray = GetExpDiffCross(means[indexE]);
+  vector<vector<double>> areaArray = GetExpDiffCross(means_dt[indexE]);
   delete c_PeakArea;
 
   // Array: peakenergy, peakarea, areaerror, anglemin, anglemax
@@ -322,7 +291,7 @@ void CS(double Energy, double Spin, double spdf, double angmom){
 		  //&(anglewidth[0]), &(AoSAerr[0]) );
 		  0, &(AoSAerr[0]) );  //errX, errY 
   gAoSA->SetTitle("Area/SolidAngle");
-  gAoSA->GetXaxis()->SetTitle("ThetaLab [deg]");
+  gAoSA->GetXaxis()->SetTitle("ThetaCM [deg]");
   gAoSA->GetYaxis()->SetTitle("Counts/#Omega [counts/msr]");
   gAoSA->Draw();
 
@@ -347,9 +316,9 @@ void CS(double Energy, double Spin, double spdf, double angmom){
   /* TWOFNR diff. cross section, in mb/msr */ 
   TCanvas* c_TWOFNR = new TCanvas("c_TWOFNR","c_TWOFNR",1000,1000);
   c_TWOFNR->SetLogy();
-  TGraph* TheoryDiffCross = TWOFNR(means[indexE], J0, Spin, nodes, spdf, angmom); 
+  TGraph* TheoryDiffCross = TWOFNR(means_dt[indexE], J0, Spin, nodes, spdf, angmom); 
   TheoryDiffCross->GetYaxis()->SetTitle("d#sigma/d#Omega [mb/msr]"); //msr set in func above
-  TheoryDiffCross->GetXaxis()->SetTitle("ThetaLab [deg]");
+  TheoryDiffCross->GetXaxis()->SetTitle("ThetaCM [deg]");
   TheoryDiffCross->Draw();
 
   /** TEMP **/
@@ -412,15 +381,15 @@ void CS(double Energy, double Spin, double spdf, double angmom){
   gdSdO->SetMarkerStyle(21);
   /* Construct file name string */
   /**/  ostringstream tempstream;
-  /**/  if(means[indexE]<1.0){tempstream << 0;}
-  /**/  tempstream << (int) (means[indexE]*1000);
+  /**/  if(means_dt[indexE]<1.0){tempstream << 0;}
+  /**/  tempstream << (int) (means_dt[indexE]*1000);
   /**/  tempstream << "_" << orbital; 
   /**/  tempstream << "_spin" << Spin;
   /**/  string tempstr = tempstream.str();
   /* Construct hist title string */
   /**/  ostringstream textstream;
   /**/  textstream << std::fixed << setprecision(3);
-  /**/  textstream << "   " << means[indexE];
+  /**/  textstream << "   " << means_dt[indexE];
   /**/  textstream << " MeV, ";
   /**/  textstream <<  orbitalname;
   /**/  textstream << ", spin " << (int)Spin;
@@ -486,9 +455,9 @@ vector<vector<double>> GetExpDiffCross(double Energy){
   vector<vector<double>> AllPeaks_OneGate;
   vector<vector<double>> OnePeak_AllGates;
   /****CHANGE ANGLE GATING****/
-  int numAngleBins = 20;
-  double widthAngleBins = 2.5;
-  double firstAngle = 105.;
+  int numAngleBins = 7;//10;
+  double widthAngleBins = 5.;//2.;
+  double firstAngle = 0.;//3.;
   /***************************/
   double x[numAngleBins], y[numAngleBins];
   //TList* list = new TList();
@@ -496,12 +465,12 @@ vector<vector<double>> GetExpDiffCross(double Energy){
   /* Determine scaling factor for PhaseSpace */
   TCanvas* c_ExSubPSpace = new TCanvas("c_ExSubPSpace","c_ExSubPSpace",1000,1000);
   double trackScale = 0.0;
-  if(scaleTogether){
-    TH1F* baseEx = PullThetaLabHist(0,firstAngle,widthAngleBins);
-    TH1F* basePS = PullPhaseSpaceHist(0,firstAngle,widthAngleBins);
+  //if(scaleTogether){
+    TH1F* baseEx = PullThetaCMHist(0,firstAngle,widthAngleBins);
+  //  TH1F* basePS = PullPhaseSpaceHist(0,firstAngle,widthAngleBins);
     for(int i=1; i<numAngleBins;i++){
-      TH1F* addEx = PullThetaLabHist(i,firstAngle,widthAngleBins); baseEx->Add(addEx,1.);
-      TH1F* addPS = PullPhaseSpaceHist(i,firstAngle,widthAngleBins); basePS->Add(addPS,1.);
+      TH1F* addEx = PullThetaCMHist(i,firstAngle,widthAngleBins); baseEx->Add(addEx,1.);
+  //    TH1F* addPS = PullPhaseSpaceHist(i,firstAngle,widthAngleBins); basePS->Add(addPS,1.);
     }
 
     /* Subtract flat background equal to smallest bin in range */
@@ -514,29 +483,29 @@ vector<vector<double>> GetExpDiffCross(double Energy){
     }
 
     /* Begin scaling within range, track changes */
-    basePS->Scale(0.1);
-    trackScale = 0.1;
-    int numAngleBinsScale = baseEx->GetNbinsX();
-    int nbinlow = basePS->FindBin(4.); int nbinhigh = basePS->FindBin(8.0);
-    for(int b=nbinlow; b<nbinhigh; b++){
-      if(baseEx->GetBinContent(b) > 0.0 && basePS->GetBinContent(b) > baseEx->GetBinContent(b)){
-	while(basePS->GetBinContent(b) > baseEx->GetBinContent(b)){
-          basePS->Scale(0.99999);
-          trackScale *= 0.99999;
-        }
-      }
-    }
-    baseEx->Add(basePS,-1.);
-    baseEx->SetName("ExSubPSpace");
-    baseEx->SetTitle("ExSubPSpace");
+    //basePS->Scale(0.1);
+    //trackScale = 0.1;
+    //int numAngleBinsScale = baseEx->GetNbinsX();
+    //int nbinlow = basePS->FindBin(4.); int nbinhigh = basePS->FindBin(8.0);
+    //for(int b=nbinlow; b<nbinhigh; b++){
+    //  if(baseEx->GetBinContent(b) > 0.0 && basePS->GetBinContent(b) > baseEx->GetBinContent(b)){
+    //	while(basePS->GetBinContent(b) > baseEx->GetBinContent(b)){
+    //      basePS->Scale(0.99999);
+    //      trackScale *= 0.99999;
+    //    }
+    //  }
+    //}
+    //baseEx->Add(basePS,-1.);
+    baseEx->SetName("Ex");//SubPSpace");
+    baseEx->SetTitle("Ex");//SubPSpace");
     baseEx->Draw();
-    cout << "PhaseSpace -> ExpData scaling = " << trackScale << endl;
-  }
+    cout << "PhaseSpace -> ExpData scaling = ZERO! NO PHASE SPACE!" << endl;//" << trackScale << endl;
+  //}
 
   /* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! */
   /* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! */
   // TEMPORARY!!! REMOVE LAST THREE BINS ON HIGH ENERGY STATES!!!
-  if(means[indexE] > 3.0){numAngleBins-=3;}
+  if(means_dt[indexE] > 3.0){numAngleBins-=3;}
   /* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! */
   /* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! */
 
@@ -548,43 +517,43 @@ vector<vector<double>> GetExpDiffCross(double Energy){
     cout << "min: " << min << " max: " << max << endl;
   
     stringstream tmp; tmp << fixed << setprecision(0); 
-    tmp << "c_peakFits_" << min << "_" << max; 
+    tmp << "c_peakFits_dt_" << min << "_" << max; 
     string tmp2 = tmp.str();
     TCanvas* c_peakFits = new TCanvas("c_peakFits",tmp2.c_str(),1000,1000);
 
     /* Retrieve theta-gated Ex TH1F from file GateThetaLabHistograms.root */
     /* To change angle gates, run GateThetaLab_MultiWrite() */
-    TH1F* gate = PullThetaLabHist(i,firstAngle,widthAngleBins);
-    TH1F* pspace = PullPhaseSpaceHist(i,firstAngle,widthAngleBins);
+    TH1F* gate = PullThetaCMHist(i,firstAngle,widthAngleBins);
+    //TH1F* pspace = PullPhaseSpaceHist(i,firstAngle,widthAngleBins);
 
     /* Scale the Phase Space at this angle... */
     /* ... for all angles together */
-    if(scaleTogether){
-      gate->Add(pspace,-trackScale);
-    } 
+    //if(scaleTogether){
+    //  gate->Add(pspace,-trackScale);
+    //} 
     /* ... or seperately for each angular bin */
     /* NOTE THAT THIS DOES NOT ACCOUNT FOR FLAT BACKGROUND */
-    else {
-      if(pspace->Integral() > 50.){ // Non-garbage histogram
-        pspace->Scale(0.01);
-	trackScale=0.01;
-        int numAngleBins = gate->GetNbinsX();
-        for(int b=0; b<numAngleBins; b++){
-	  if(loud){cout << " FROM " << pspace->GetBinContent(b) << 
-		         " > " << gate->GetBinContent(b); 
-	  }
-          while(pspace->GetBinContent(b) > gate->GetBinContent(b)){
-            pspace->Scale(0.9999);
-	    trackScale*=0.9999;
-	  }
-	  if(loud){cout << " TO " << pspace->GetBinContent(b) << 
-	  	      " > " << gate->GetBinContent(b) << endl;
-	  }
-        }
-        cout << " !!! SCALE FOR THIS ANGLE = " << trackScale << endl;
-        gate->Add(pspace,-1);
-      }
-    }
+    //else {
+    //  if(pspace->Integral() > 50.){ // Non-garbage histogram
+    //    pspace->Scale(0.01);
+    //	trackScale=0.01;
+    //    int numAngleBins = gate->GetNbinsX();
+    //    for(int b=0; b<numAngleBins; b++){
+    //	  if(loud){cout << " FROM " << pspace->GetBinContent(b) << 
+    //		         " > " << gate->GetBinContent(b); 
+    //	  }
+    //      while(pspace->GetBinContent(b) > gate->GetBinContent(b)){
+    //        pspace->Scale(0.9999);
+    //	    trackScale*=0.9999;
+    //	  }
+    //	  if(loud){cout << " TO " << pspace->GetBinContent(b) << 
+    //	  	      " > " << gate->GetBinContent(b) << endl;
+    //	  }
+    //    }
+    //    cout << " !!! SCALE FOR THIS ANGLE = " << trackScale << endl;
+    //    gate->Add(pspace,-1);
+    //  }
+    //}
 
     /* Subtract flat background equal to smallest bin in range */
     /* ????? */
@@ -602,7 +571,7 @@ vector<vector<double>> GetExpDiffCross(double Energy){
      * Specific peak of interest selected from the vector by   *
      * global variable indexE                                  */
 
-    AllPeaks_OneGate = FitKnownPeaks_RtrnArry(gate, 0.0); cout << "!!!!!!! NO SLIDING SHIFT!!!!!" << endl;
+    AllPeaks_OneGate = FitKnownPeaks_dt_RtrnArry(gate, 0.0); cout << "!!!!!!! NO SLIDING SHIFT!!!!!" << endl;
     //AllPeaks_OneGate = FitKnownPeaks_RtrnArry(gate, 0.0);  cout << "!!!!!!! WITH A VARIABLE SLIDING SHIFT!!!!!!!!!!!!!!!!!!!!!!!!!" << endl;
     //double slideshift = 0.00218*(((max-min)/2.)+min) - 0.29645; AllPeaks_OneGate = FitKnownPeaks_RtrnArry(gate, slideshift);  cout << "!!!!!!! WITH A FIXED SLIDING SHIFT!!!!!!!!!!!!!!!!!!!!!!!!!" << endl;
     
@@ -619,7 +588,7 @@ vector<vector<double>> GetExpDiffCross(double Energy){
 
 
     /* Check correct OneGate vector is selected */
-    cout << "area of " << means[indexE] << " = "
+    cout << "area of " << means_dt[indexE] << " = "
 	 << AllPeaks_OneGate[indexE][1] 
 	 << " +- " << AllPeaks_OneGate[indexE][2] 
 	 << endl;
@@ -641,39 +610,37 @@ vector<vector<double>> GetExpDiffCross(double Energy){
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-TH1F* PullThetaLabHist(int i, double minTheta, double gatesize){
-  //TFile* file = new TFile("GateThetaLabHistograms.root","READ");
-  //TFile* file = new TFile("GateThetaLabHistograms_11Jul22.root","READ");
-  //TFile* file = new TFile("GateThetaLabHistograms_10Aug22_TrueStripRemoval.root","READ");
-  //TFile* file = new TFile("GateThetaLabHistograms_29Aug22_TrueStripRemoval_0p05.root","READ");
-  //TFile* file = new TFile("GateThetaLabHistograms_22Sep22_NoRun51-52.root","READ");
-  TFile* file = new TFile("GateThetaLabHistograms_47Kdp_18Oct22_bin0p2.root","READ");
+TH1F* PullThetaCMHist(int i, double minTheta, double gatesize){
+  //TFile* file = new TFile("GateThetaCMHistograms_47Kdt_18Oct22_bin0p2.root","READ");
+  TFile* file = new TFile("GateThetaCMHistograms_21Oct22_47Kdt.root","READ");
 
-  string histname = "cThetaLabGate_" 
+  string histname = "cThetaCMGate_" 
 	          + to_string((int) (minTheta+(i*gatesize))) + "-" 
 		  + to_string((int) (minTheta+((i+1)*gatesize)));
   cout << "Loading " << histname << endl;
-  TList *list = (TList*)file->Get("GateThetaLabHistograms");
+  TList *list = (TList*)file->Get("GateThetaCMHistograms");
   TH1F* hist = (TH1F*)list->FindObject(histname.c_str());
 //  file->Close();
   return hist;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+/*
 TH1F* PullPhaseSpaceHist(int i, double minTheta, double gatesize){
-  //TFile* file = new TFile("GatePhaseSpaceThetaLabHistograms_ReadMe.root","READ");
-  //TFile* file = new TFile("GatePhaseSpaceThetaLabHistograms_2p5degAngles_26May22v2.root","READ");
-  //TFile* file = new TFile("GatePhaseSpaceThetaLabHistograms_11Jul22.root","READ");
-  TFile* file = new TFile("GatePhaseSpaceThetaLabHistograms_29Aug22_TrueStripRemoval_0p05.root","READ");
-  string histname = "cPSpaceThetaLabGate_" 
+  //TFile* file = new TFile("GatePhaseSpaceThetaCMHistograms_ReadMe.root","READ");
+  //TFile* file = new TFile("GatePhaseSpaceThetaCMHistograms_2p5degAngles_26May22v2.root","READ");
+  //TFile* file = new TFile("GatePhaseSpaceThetaCMHistograms_11Jul22.root","READ");
+  TFile* file = new TFile("GatePhaseSpaceThetaCMHistograms_29Aug22_TrueStripRemoval_0p05.root","READ");
+  string histname = "cPSpaceThetaCMGate_" 
 	          + to_string((int) (minTheta+(i*gatesize))) + "-" 
 		  + to_string((int) (minTheta+((i+1)*gatesize)));
   cout << "Loading " << histname << endl;
-  TList *list = (TList*)file->Get("GatePhaseSpaceThetaLabHistograms");
+  TList *list = (TList*)file->Get("GatePhaseSpaceThetaCMHistograms");
   TH1F* hist = (TH1F*)list->FindObject(histname.c_str());
   file->Close();
   return hist;
 }
+*/
 
 ////////////////////////////////////////////////////////////////////////////////
 void Scale(TGraph* g , TGraphErrors* ex){
@@ -709,26 +676,26 @@ TGraph* TWOFNR(double E, double J0, double J, double n, double l, double j){
   /* This function mved between directories in order to run TWOFNR in proper *
    * location. This is, weirdly, the least tempremental way of doing this.   */
 
-  cout << "========================================================" << endl;
-  int johnson, tandyval;
-  cout << "Using Johnson-Soper ..."; johnson=5; tandyval=0;
+//  cout << "========================================================" << endl;
+//  int johnson, tandyval;
+//  cout << "Using Johnson-Soper ..."; johnson=5; tandyval=0;
   //cout << "Using Johnson-Tandy 1 ..."; johnson=6; tandyval=1;
   //cout << "Using Johnson-Tandy 2 ..."; johnson=6; tandyval=2;
   //cout << "Using Johnson-Tandy 3 ..."; johnson=6; tandyval=3;
   //cout << "Using Johnson-Tandy 4 ..."; johnson=6; tandyval=4;
 
-  int modelA,modelB;
-//  switch (model):{
-//    case 'K': case 'k':{
-//      cout << " ... Koning-Delaroche." << endl; modelA=6; modelB=4;
-//    }
+//  int modelA,modelB;
+////  switch (model):{
+////    case 'K': case 'k':{
+////      cout << " ... Koning-Delaroche." << endl; modelA=6; modelB=4;
+////    }
 //    case 'C': case 'c':{
-      cout << " ... and Chapel-Hill." << endl; modelA=2; modelB=2;
-//    }      
-//    case 'B': case 'b':{
-//      cout << " ... Bechetti-Greenlees." << endl; modelA=1; modelB=1;
-//    }
-//  }
+////      cout << " ... and Chapel-Hill." << endl; modelA=2; modelB=2;
+////    }      
+////    case 'B': case 'b':{
+////      cout << " ... Bechetti-Greenlees." << endl; modelA=1; modelB=1;
+////    }
+////  }
 
 
   char origDirchar[200];
@@ -747,12 +714,12 @@ TGraph* TWOFNR(double E, double J0, double J, double n, double l, double j){
   remove("24.jjj");
 
   double BeamEnergy =  7.7;
-  double QValue = 2.274 - E;
+  double QValue = -2.112 - E;
 
   std::ofstream Front_Input("in.front");
   Front_Input << "jjj" << std::endl;
   Front_Input << "pipo" << std::endl;
-  Front_Input << 2 << std::endl;
+  Front_Input << 5 << std::endl;
   Front_Input << 0 << std::endl;
   Front_Input << 0 << std::endl;
   Front_Input << BeamEnergy << std::endl;
@@ -767,16 +734,11 @@ TGraph* TWOFNR(double E, double J0, double J, double n, double l, double j){
   Front_Input << 1 << std::endl;
   Front_Input << J0 << std::endl;
   Front_Input << 1 << std::endl;
-  Front_Input << johnson << std::endl;
-  if(johnson==6){//JTandy selected, give version
-    Front_Input << tandyval << std::endl;
-  }
+  Front_Input << 1 << std::endl;
   Front_Input << 1 << std::endl;
   Front_Input << J << std::endl;
   Front_Input << 1 << std::endl;
-  Front_Input << modelA << std::endl;
-  Front_Input << modelB << std::endl;
-  Front_Input << 1 << std::endl;
+  Front_Input << 2 << std::endl;
   Front_Input << 1 << std::endl;
   Front_Input << 1 << std::endl;
   Front_Input << 1.25 << " " << 0.65 << std::endl;
@@ -813,7 +775,9 @@ TGraph* TWOFNR(double E, double J0, double J, double n, double l, double j){
       checktwofnr.close();
     }
 
-  TGraph* CS = new TGraph("24.jjj");
+  /* In file read, %lg means read this column, %*lg means ignore column */
+  //TGraph* CS = new TGraph("24.jjj");
+  TGraph* CS = new TGraph("21.jjj","%lg %lg %*lg"); 
 
   //mb/sr->mb/msr is x1/1000
   for(int i=0; i<CS->GetN(); i++){
