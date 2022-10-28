@@ -75,10 +75,19 @@ Miniball::Miniball() {
 Miniball::~Miniball() {}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-void Miniball::AddMiniball(double R, double Theta, double Phi) {
+double Miniball::m_EnergyResolutionFWHM(double energy, double a, double b, double c) {
+  double FWHM = a + b*sqrt(energy + c*energy*energy);
+  return FWHM;
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+void Miniball::AddMiniball(double R, double Theta, double Phi, double A, double B, double C) {
   m_R.push_back(R);
   m_Theta.push_back(Theta);
   m_Phi.push_back(Phi);
+  m_A.push_back(A);
+  m_B.push_back(B);
+  m_C.push_back(C);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -111,7 +120,6 @@ G4AssemblyVolume* Miniball::BuildClusterDetector() {
         G4Transform3D Trans(*Rot, Pos);
         m_ClusterDetector->AddPlacedVolume(HPGE, Trans);
         m_NumberOfPlacedVolume++;
-
         for (unsigned int d = 0; d < HPGE->GetNoDaughters(); d++) {
           G4VPhysicalVolume* dVPV = HPGE->GetDaughter(d);
           dname = dVPV->GetLogicalVolume()->GetName();
@@ -147,6 +155,7 @@ G4AssemblyVolume* Miniball::BuildClusterDetector() {
         G4ThreeVector Pos = VPV->GetObjectTranslation();
         G4Transform3D Trans(*Rot, Pos);
         m_ClusterDetector->AddPlacedVolume(HPGE, Trans);
+        m_NumberOfPlacedVolume++;
         for (unsigned int d = 0; d < HPGE->GetNoDaughters(); d++) {
           G4VPhysicalVolume* dVPV = HPGE->GetDaughter(d);
           dname = dVPV->GetLogicalVolume()->GetName();
@@ -155,7 +164,6 @@ G4AssemblyVolume* Miniball::BuildClusterDetector() {
             DeadLayer->SetVisAttributes(DL);
           }
         }
-        m_NumberOfPlacedVolume++;
       }
       else if (name.compare(0, 8, "cluster0") == 0 || name == "nozzle_log") {
         G4LogicalVolume* Capsule = VPV->GetLogicalVolume();
@@ -183,7 +191,7 @@ void Miniball::ReadConfiguration(NPL::InputParser parser) {
   if (NPOptionManager::getInstance()->GetVerboseLevel())
     cout << "//// " << blocks.size() << " detectors found " << endl;
 
-  vector<string> token = {"R", "Theta", "Phi"};
+  vector<string> token = {"R", "Theta", "Phi", "A", "B", "C"};
 
   for (unsigned int i = 0; i < blocks.size(); i++) {
     if (blocks[i]->HasTokenList(token)) {
@@ -192,8 +200,10 @@ void Miniball::ReadConfiguration(NPL::InputParser parser) {
       double R = blocks[i]->GetDouble("R", "mm");
       double Theta = blocks[i]->GetDouble("Theta", "deg");
       double Phi = blocks[i]->GetDouble("Phi", "deg");
-
-      AddMiniball(R, Theta, Phi);
+      double A = blocks[i]->GetDouble("A", "MeV");
+      double B = blocks[i]->GetDouble("B", "MeV-1/2");
+      double C = blocks[i]->GetDouble("C", "MeV-1");
+      AddMiniball(R, Theta, Phi, A, B, C);
     }
 
     else {
@@ -275,10 +285,11 @@ void Miniball::ReadSensitive(const G4Event*) {
   unsigned int size = Scorer->GetMult();
   for (unsigned int i = 0; i < size; i++) {
     vector<unsigned int> level = Scorer->GetLevel(i);
-    double Energy = RandGauss::shoot(Scorer->GetEnergy(i), Miniball_NS::ResoEnergy);
+    int DetectorNbr = level[0];
+    double EnergyStdDev = m_EnergyResolutionFWHM(Scorer->GetEnergy(i), m_A[DetectorNbr+1], m_B[DetectorNbr+1], m_C[DetectorNbr+1]) / 2/sqrt(2*log(2)); 
+	double Energy = RandGauss::shoot(Scorer->GetEnergy(i), EnergyStdDev);  
     if (Energy > Miniball_NS::EnergyThreshold) {
       double Time = RandGauss::shoot(Scorer->GetTime(i), Miniball_NS::ResoTime);
-      int DetectorNbr = level[0];
       // double Angle = RandGauss::shoot(Info[5]/deg,Miniball_NS::ResoAngle);
       m_Event->SetEnergy(DetectorNbr, Energy);
       // m_Event->SetAngle(DetectorNbr,Angle);
