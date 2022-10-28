@@ -89,30 +89,30 @@ class TNebulaPlusData : public TObject {
 
     //////////////////////    GETTERS    ////////////////////////
     // MULT //
-    inline unsigned int GetUpMult() const
+    inline unsigned int GetMultUp() const
       {return fNebulaPlus_u_ID.size();};
-    inline unsigned int GetDownMult() const
+    inline unsigned int GetMultDown() const
       {return fNebulaPlus_d_ID.size();};
 
     // Value // 
     // Up 
-    inline UShort_t GetUpID(unsigned int& i) const
+    inline unsigned short GetIDUp(const int& i) const
       {return fNebulaPlus_u_ID[i];};
-    inline double GetUpQ(unsigned int& i) const
+    inline double GetQUp(const int& i) const
       {return fNebulaPlus_u_Q[i];};
-    inline double GetUpQ4(unsigned int& i) const
+    inline double GetQ4Up(const int& i) const
       {return fNebulaPlus_u_Q4[i];};
-    inline double GetUpT(unsigned int& i) const
+    inline double GetTUp(const int& i) const
       {return fNebulaPlus_u_T[i];};
 
     // Down 
-    inline UShort_t GetDownID(unsigned int& i) const
+    inline unsigned short GetIDDown(const int& i) const
       {return fNebulaPlus_d_ID[i];};
-    inline double GetDownQ(unsigned int& i) const
+    inline double GetQDown(const int& i) const
       {return fNebulaPlus_d_Q[i];};
-    inline double GetDownQ4(unsigned int& i) const
+    inline double GetQ4Down(const int& i) const
       {return fNebulaPlus_d_Q4[i];};
-    inline double GetDownT(unsigned int& i) const
+    inline double GetTDown(const int& i) const
       {return fNebulaPlus_d_T[i];};
 
   //////////////////////////////////////////////////////////////

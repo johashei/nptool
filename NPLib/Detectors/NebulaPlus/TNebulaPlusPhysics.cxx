@@ -6,7 +6,7 @@
  *****************************************************************************/
 
 /*****************************************************************************
- * Original Author: Adrien Matta  contact address: matta@lpccaen.in2p3.fr    *
+ * Original Author: Freddy Flavigny  contact: flavigny@lpccaen.in2p3.fr      *
  *                                                                           *
  * Creation Date  : December 2019                                            *
  * Last update    :                                                          *
@@ -21,6 +21,7 @@
  *****************************************************************************/
 
 #include "TNebulaPlusPhysics.h"
+using namespace NEBULAPLUS_LOCAL;
 
 //   STL
 #include <sstream>
@@ -47,50 +48,56 @@ TNebulaPlusPhysics::TNebulaPlusPhysics()
   : m_EventData(new TNebulaPlusData),
   m_EventPhysics(this),
   m_Spectra(0),
-  m_Q_RAW_Threshold(0), // adc channels
-  m_Q_Threshold(7),     // normal bars in MeV
-  m_V_Threshold(1),     // veto bars in MeV
+  m_Q_RAW_Threshold(15000), // adc channels
+  m_Q_Threshold(0),     // normal bars in MeV
+  m_V_Threshold(0),     // veto bar in MeV
+  m_TotalNbrModules(0),  
+  m_BarWidth(12),     // bar width in cm
+  m_BarLength(180),     // bar length in cm
+  m_TdiffRange(12),     // +- range in (Td-Tu) in ns
   m_NumberOfBars(0) {
   }
 
-///////////////////////////////////////////////////////////////////////////
-/// A usefull method to bundle all operation to add a detector
-void TNebulaPlusPhysics::ReadXML(NPL::XmlParser xml){ 
-  std::vector<NPL::XML::block*> b = xml.GetAllBlocksWithName("NEBULA");  
+/////////////////////////////////////////////
+////   Innherited from VDetector Class   ////
+/////////////////////////////////////////////
+void TNebulaPlusPhysics::ReadConfiguration(NPL::InputParser parser) {
 
-  for(unsigned int i = 0 ; i < b.size() ; i++){
-    m_NumberOfBars++;
-    unsigned int id = b[i]->AsInt("ID");
+  vector<NPL::InputBlock*> blocks = parser.GetAllBlocksWithToken("NEBULAPLUS");
+  if (NPOptionManager::getInstance()->GetVerboseLevel())
+    cout << "//// " << blocks.size() << " Nebula layers found " << endl;
 
-    // position
-    PositionX[id] = b[i]->AsDouble("PosX"); 
-    PositionY[id] = b[i]->AsDouble("PosY"); 
-    PositionZ[id] = b[i]->AsDouble("PosZ"); 
-    // linear cal
-    aQu[id] = b[i]->AsDouble("QUCal");
-    bQu[id] = b[i]->AsDouble("QUPed");
-    aQd[id] = b[i]->AsDouble("QDCal");
-    bQd[id] = b[i]->AsDouble("QDPed");
-    aTu[id] = b[i]->AsDouble("TUCal");
-    bTu[id] = b[i]->AsDouble("TUOff");
-    aTd[id] = b[i]->AsDouble("TDCal");
-    bTd[id] = b[i]->AsDouble("TDOff");
+  unsigned int det=0;
+  // Cartesian Case
+  vector<string> info
+    = {"POS","NumberOfModules", "Veto", "Frame"};
+  string Type; 
 
-    // T average offset
-    avgT0[id] = b[i]->AsDouble("TAveOff");
+  for (unsigned int i = 0; i < blocks.size(); i++) {
 
-    // slew correction T= tcal +slwT/sqrt(Qcal)
-    slwTu[id] = b[i]->AsDouble("TUSlw");
-    slwTd[id] = b[i]->AsDouble("TDSlw");
+    if (blocks[i]->HasTokenList(info)) {
+      if (NPOptionManager::getInstance()->GetVerboseLevel())
 
-    // DT position cal
-    DTa[id] = b[i]->AsDouble("DTCal");//!
-    DTb[id] = b[i]->AsDouble("DTOff");//!
+      cout << endl << "//// Nebula Layer " << Type << " " << i + 1 << endl;
+      int NbrOfModulesInLayer = blocks[i]->GetInt("NumberOfModules");
+      //det = i+1;
+      //m_DetectorNumberIndex[detectorNbr]=det;
+      TVector3 Pos = blocks[i]->GetTVector3("Pos", "cm");
+      AddLayer(Pos, NbrOfModulesInLayer);
+    }
 
+    else {
+      cout << "ERROR: Missing token for NebulaPlus, check your input "
+        "file"
+        << endl;
+      exit(1);
+    }
 
-  } 
-  cout << " -> " << m_NumberOfBars << " bars found" << endl;;
-} 
+  }
+
+  //InitializeStandardParameter();
+  //ReadAnalysisConfig();
+}
 
 ///////////////////////////////////////////////////////////////////////////
 void TNebulaPlusPhysics::BuildSimplePhysicalEvent() {
@@ -101,103 +108,101 @@ void TNebulaPlusPhysics::BuildSimplePhysicalEvent() {
 
 ///////////////////////////////////////////////////////////////////////////
 void TNebulaPlusPhysics::BuildPhysicalEvent() {
+
   // apply thresholds and calibration
-/*
+  //std::cout << "----------------" << std::endl;
+  //std::cout << "in BuildPhysical" << std::endl;
+
   // instantiate CalibrationManager
   static CalibrationManager* Cal = CalibrationManager::getInstance();
+  //Cal->Dump();
+  //double offset = Cal->GetValue("NebulaPlus/Tdiff_Offset_58",0); 
+  //double offset = Cal->GetValue("NebulaPlus/U3_ENERGY",1); 
+
+
   static double rawQup,calQup,rawQdown,calQdown,rawTup,calTup,rawTdown,calTdown,calQ,calT,Y;
   static unsigned int ID;
   // All vector size 
-  static unsigned int QUsize, QDsize, TUsize, TDsize ; 
-  QUsize = m_EventData->GetChargeUpMult();
-  QDsize = m_EventData->GetChargeDownMult();
-  TUsize = m_EventData->GetTimeUpMult();
-  TDsize = m_EventData->GetTimeDownMult();
+  static unsigned int Usize, Dsize ; 
+  Usize = m_EventData->GetMultUp();
+  Dsize = m_EventData->GetMultDown();
   static double threshold;
-  // loop on Qup
-  for (unsigned int qup = 0; qup < QUsize ; qup++) {
+  bool matchUD;
+  int unmatched=0;
 
-    rawQup = m_EventData->GetChargeUp(qup);
-    rawTup=-1;
+  // loop on up
+  //std::cout << "size up" << Usize<< std::endl;
+  //std::cout << "size down" << Dsize<< std::endl;
+
+  for (unsigned int up = 0; up < Usize ; up++) {
+
+    rawQup = m_EventData->GetQUp(up);
+    rawTup= m_EventData->GetTUp(up);
     rawQdown=-1;
     rawTdown=-1;
+    matchUD = false;
     if (rawQup > m_Q_RAW_Threshold) {
-      ID = m_EventData->GetChargeUpID(qup);
-      if(ID<121)
-        threshold=m_Q_Threshold;
-      else
-        threshold=m_V_Threshold;
 
-      // look for associated Charge down
-      for(unsigned int qdown = 0 ; qdown < QDsize ; qdown++){
-        if(m_EventData->GetChargeDownID(qdown)==ID){
-          rawQdown=m_EventData->GetChargeDown(qdown); 
-          if(rawQdown > m_Q_RAW_Threshold){
-            // Look for the associate time 
-            for(unsigned int tdown = 0 ; tdown < TDsize; tdown++){
-              if(m_EventData->GetTimeDownID(qdown)==ID) {
-                rawTdown=m_EventData->GetTimeDown(qdown);
-                break;
-              }
-            }// TDown
+      ID = m_EventData->GetIDUp(up);
+
+      // look for associated down
+      for(unsigned int down = 0 ; down < Dsize ; down++){
+        if(m_EventData->GetIDDown(down)==ID){
+
+      	  //std::cout << "-------" << std::endl;
+      	  //std::cout << "same ID:\t" << ID<< std::endl;
+          if( m_EventData->GetQDown(down) > m_Q_RAW_Threshold){
+              rawQdown = m_EventData->GetQDown(down); 
+              rawTdown = m_EventData->GetTDown(down); 
+      	      calQup   = fCalQUp(m_EventData,up);
+      	      calQdown = fCalQDown(m_EventData,down);
+              matchUD = true;
+              break;
           }//if raw threshold down
-
-          break;
         } //if match ID 
+      }// down 
 
-      }// Qdwown 
+      // Got a Down-Up match, do the math
+      if(matchUD){
 
-      if(rawTdown>0){ // Tdown is found, means Qdown as well
-        // look for Tup  
-        for(unsigned int tup = 0 ; tup < TUsize ; tup++){
-          if(m_EventData->GetTimeUpID(tup)==ID){
-            rawTup = m_EventData->GetTimeUp(tup);
-            break;
-          }
-        }
-      }
-      // Got everything, do the math
-      if(rawTup>0){
         // cal Q Up and Down
-        calQup=aQu[ID]*(rawQup-bQu[ID]);
-        calQdown=aQd[ID]*(rawQdown-bQd[ID]);
+        //calQup = aQu[ID] * (rawQup-bQu[ID]);
+        //calQdown= aQd[ID] * (rawQdown-bQd[ID]);
         
         // average value of Up and Down
         calQ=sqrt(calQup*calQdown); 
 
         // cal T  Up
-        calTup=aTu[ID]*rawTup+bTu[ID];
-        // slew correction
-        calTup -= slwTu[ID]/sqrt(rawQup-bQu[ID]);
+        //calTup=aTu[ID]*rawTup+bTu[ID];
+        calTup=rawTup;
 
         // cal T Down
-        calTdown=aTd[ID]*rawTdown+bTd[ID];
-        // slew correction
-        calTdown -= slwTd[ID]/sqrt(rawQdown-bQd[ID]);
+        //calTdown=aTd[ID]*rawTdown+bTd[ID];
+        calTdown=rawTdown;
 
-        
         if(calQ>threshold){
-          calT= (calTdown+calTup)*0.5+avgT0[ID]+Cal->GetPedestal("NEBULA_T_ID"+NPL::itoa(ID)); 
-          Y=(calTdown-calTup)*DTa[ID]+DTb[ID]+Cal->GetPedestal("NEBULA_Y_ID"+NPL::itoa(ID));
+          calT= (calTdown+calTup)*0.5; 
+          Y=(calTdown-calTup) - Cal->GetValue("NebulaPlus/Tdiff_Offset_"+NPL::itoa(ID),0);
 
           DetectorNumber.push_back(ID);
           Charge.push_back(calQ);
           TOF.push_back(calT);
-          PosY.push_back(Y+PositionY[ID]);
-          PosX.push_back(PositionX[ID]);
-          PosZ.push_back(PositionZ[ID]);
-
+          PosX.push_back(m_BarPositionX[ID-1]);
+          PosY.push_back(Y/m_TdiffRange*m_BarLength);
+          PosZ.push_back(m_BarPositionZ[ID-1]);
+/*
           if(ID<121)
             IsVeto.push_back(0);
           else
             IsVeto.push_back(1);
-
+*/
         }
+      } else {
+          unmatched++;/*std::cout << "unmatched=" <<unmatched<< std::endl;*/
       }
-
     }// if raw threshold up
   } // Qup
-*/
+
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -205,8 +210,17 @@ void TNebulaPlusPhysics::PreTreat() {
 
 }
 
+///////////////////////////////////////////////////////////////////////////
 
+void TNebulaPlusPhysics::AddLayer(TVector3 Pos, int n_modules) {
 
+    for(int i=0; i<n_modules; i++){
+        m_BarPositionX.push_back(Pos.X() + i * m_BarWidth);
+        m_BarPositionY.push_back(Pos.Y());
+        m_BarPositionZ.push_back(Pos.Z());
+        m_TotalNbrModules++;
+    }
+}
 ///////////////////////////////////////////////////////////////////////////
 void TNebulaPlusPhysics::ReadAnalysisConfig() {
 }
@@ -227,8 +241,9 @@ void TNebulaPlusPhysics::Clear() {
 
 
 ///////////////////////////////////////////////////////////////////////////
+/*
 void TNebulaPlusPhysics::ReadConfiguration(NPL::InputParser parser) {
-  vector<NPL::InputBlock*> blocks = parser.GetAllBlocksWithToken("NEBULA");
+  vector<NPL::InputBlock*> blocks = parser.GetAllBlocksWithToken("NEBULAPLUS");
   if(NPOptionManager::getInstance()->GetVerboseLevel())
     cout << "//// " << blocks.size() << " detector(s) found " << endl; 
 
@@ -251,7 +266,7 @@ void TNebulaPlusPhysics::ReadConfiguration(NPL::InputParser parser) {
     }
   }
 }
-
+*/
 ///////////////////////////////////////////////////////////////////////////
 void TNebulaPlusPhysics::InitSpectra() {
   m_Spectra = new TNebulaPlusSpectra(m_NumberOfBars);
@@ -296,20 +311,17 @@ void TNebulaPlusPhysics::WriteSpectra() {
   m_Spectra->WriteSpectra();
 }
 
-
-
 ///////////////////////////////////////////////////////////////////////////
 void TNebulaPlusPhysics::AddParameterToCalibrationManager() {
   CalibrationManager* Cal = CalibrationManager::getInstance();
 
-  vector<double> standardO={0};
-  for (int i = 0; i < m_NumberOfBars; ++i) {
-    Cal->AddParameter("NEBULA_T_ID"+ NPL::itoa(i+1),standardO);
-    Cal->AddParameter("NEBULA_Y_ID"+ NPL::itoa(i+1),standardO);
+  vector<double> standard={8192, 6};
+  for (int i = 0; i < m_TotalNbrModules; ++i) {
+    Cal->AddParameter("NebulaPlus","U"+ NPL::itoa(i+1)+"_ENERGY","NebulaPlus_U"+ NPL::itoa(i+1)+"_ENERGY",standard);
+    Cal->AddParameter("NebulaPlus","D"+ NPL::itoa(i+1)+"_ENERGY","NebulaPlus_D"+ NPL::itoa(i+1)+"_ENERGY",standard);
+    Cal->AddParameter("NebulaPlus","Tdiff_Offset_"+ NPL::itoa(i+1),"NebulaPlus_Tdiff_Offset_"+ NPL::itoa(i+1),standard);
   }
 }
-
-
 
 ///////////////////////////////////////////////////////////////////////////
 void TNebulaPlusPhysics::InitializeRootInputRaw() {
@@ -318,14 +330,11 @@ void TNebulaPlusPhysics::InitializeRootInputRaw() {
   inputChain->SetBranchAddress("NebulaPlus", &m_EventData );
 }
 
-
-
 ///////////////////////////////////////////////////////////////////////////
 void TNebulaPlusPhysics::InitializeRootInputPhysics() {
   TChain* inputChain = RootInput::getInstance()->GetChain();
   inputChain->SetBranchAddress("NebulaPlus", &m_EventPhysics);
 }
-
 
 
 ///////////////////////////////////////////////////////////////////////////
@@ -334,7 +343,26 @@ void TNebulaPlusPhysics::InitializeRootOutput() {
   outputTree->Branch("NebulaPlus", "TNebulaPlusPhysics", &m_EventPhysics);
 }
 
+////////////////////////////////////////////////////////////////////////////////
+namespace NEBULAPLUS_LOCAL{
 
+double fCalQUp(const TNebulaPlusData* m_EventData, const int& i){
+    static string name;
+    name = "NebulaPlus/U";
+    name += NPL::itoa(m_EventData->GetIDUp(i));
+    name += "_ENERGY";
+    return CalibrationManager::getInstance()->ApplyCalibration(name, m_EventData->GetQUp(i), 1);
+}
+
+double fCalQDown(const TNebulaPlusData* m_EventData, const int& i){
+    static string name;
+    name = "NebulaPlus/D";
+    name += NPL::itoa(m_EventData->GetIDDown(i));
+    name += "_ENERGY";
+    return CalibrationManager::getInstance()->ApplyCalibration(name, m_EventData->GetQDown(i), 1);
+}
+
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 //            Construct Method to be pass to the DetectorFactory              //

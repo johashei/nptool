@@ -76,7 +76,7 @@ class TNebulaPlusPhysics : public TObject, public NPL::VDetector {
       return TVector3(PosX[i],PosY[i],PosZ[i]);
     }
 
-    // Return true if one veto fired
+    // Return true if one veto fired (not used for now)
     bool HasVeto(){
       unsigned int size = IsVeto.size();
       for(unsigned int i = 0 ; i < size ; i++){
@@ -105,8 +105,8 @@ class TNebulaPlusPhysics : public TObject, public NPL::VDetector {
     };
 
   public:
-    /// A usefull method to bundle all operation to add a detector
-    void ReadXML(NPL::XmlParser); 
+    /// A useful method to bundle all operation to add a detector
+    void ReadCalibration(NPL::InputParser);
 
     //////////////////////////////////////////////////////////////
     // methods inherited from the VDetector ABC class
@@ -193,46 +193,33 @@ class TNebulaPlusPhysics : public TObject, public NPL::VDetector {
     double m_Q_Threshold;     //!
     double m_V_Threshold;     //!
 
+  private: //FF addition
+    int m_TotalNbrModules;  //!
+    double m_BarWidth;  //!
+    double m_BarLength;  //!
+    double m_TdiffRange;  //!
+    vector<double> m_BarPositionX; //!
+    vector<double> m_BarPositionY; //!
+    vector<double> m_BarPositionZ; //!
+    void AddLayer(TVector3 Pos, int n_modules);
+
+  public:
+    double GetBarPositionX(const int N) {return m_BarPositionX[N - 1];}
+    double GetBarPositionY(const int N) {return m_BarPositionY[N - 1];}
+    double GetBarPositionZ(const int N) {return m_BarPositionZ[N - 1];}
+
   public: 
     void SetQThreshold(double t) {m_Q_Threshold=t;};
     void SetVThreshold(double t) {m_V_Threshold=t;};
     // number of detectors
   private:
     int m_NumberOfBars;  //!
-
+/*
   private: // offset and inversion 
     std::map<unsigned int, TVector3> m_offset;//!
     std::map<unsigned int, bool> m_invertX;//!
     std::map<unsigned int, bool> m_invertY;//!
-
-  private: // xml calibration
-    // position
-    std::map<unsigned int , double > PositionX;//!
-    std::map<unsigned int , double > PositionY;//!
-    std::map<unsigned int , double > PositionZ;//!
-
-    // linear cal
-    std::map<unsigned int , double > aQu;//!
-    std::map<unsigned int , double > bQu;//!
-    std::map<unsigned int , double > aQd;//!
-    std::map<unsigned int , double > bQd;//!
-    std::map<unsigned int , double > aTu;//!
-    std::map<unsigned int , double > bTu;//!
-    std::map<unsigned int , double > aTd;//!
-    std::map<unsigned int , double > bTd;//!
-
-    // T average offset
-    std::map<unsigned int , double > avgT0;//!
-
-    // slew correction T= tcal +slwT/sqrt(Qcal)
-    std::map<unsigned int , double > slwTu;//!
-    std::map<unsigned int , double > slwTd;//!
-
-    // DT position cal
-    std::map<unsigned int , double > DTa;//!
-    std::map<unsigned int , double > DTb;//!
-
-
+*/
     // spectra class
   private:
     TNebulaPlusSpectra* m_Spectra; // !
@@ -247,4 +234,12 @@ class TNebulaPlusPhysics : public TObject, public NPL::VDetector {
 
     ClassDef(TNebulaPlusPhysics,1)  // NebulaPlusPhysics structure
 };
+
+namespace NEBULAPLUS_LOCAL{
+double fCalQUp(const TNebulaPlusData* Data, const int& i);
+double fCalQDown(const TNebulaPlusData* Data, const int& i);
+
+
+
+}
 #endif
